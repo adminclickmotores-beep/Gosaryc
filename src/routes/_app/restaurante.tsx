@@ -57,7 +57,7 @@ const MODULOS = [
 ] as const;
 
 const campo =
-  "w-full rounded-lg border border-glass-border bg-glass/40 px-3 py-2.5 text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary/50";
+  "w-full rounded-lg border border-glass-border bg-glass/40 px-3 py-2.5 text-base text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary/50";
 
 function RestaurantePage() {
   const [vista, setVista] = useState<"pedidos" | "menu">("pedidos");
