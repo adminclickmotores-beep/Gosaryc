@@ -21,6 +21,7 @@ import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as AppCalendarRouteImport } from './routes/_app/calendar'
 import { Route as AppConnectorsRouteImport } from './routes/_app/connectors'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppDomiciliosRouteImport } from './routes/_app/domicilios'
 import { Route as AppFunnelRouteImport } from './routes/_app/funnel'
 import { Route as AppIntegrationsRouteImport } from './routes/_app/integrations'
 import { Route as AppLeadsRouteImport } from './routes/_app/leads'
@@ -119,6 +120,11 @@ const AppConnectorsRoute = AppConnectorsRouteImport.update({
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDomiciliosRoute = AppDomiciliosRouteImport.update({
+  id: '/domicilios',
+  path: '/domicilios',
   getParentRoute: () => AppRoute,
 } as any)
 const AppFunnelRoute = AppFunnelRouteImport.update({
@@ -340,6 +346,7 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof AppCalendarRoute
   '/connectors': typeof AppConnectorsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/domicilios': typeof AppDomiciliosRoute
   '/funnel': typeof AppFunnelRoute
   '/integrations': typeof AppIntegrationsRoute
   '/leads': typeof AppLeadsRoute
@@ -393,6 +400,7 @@ export interface FileRoutesByTo {
   '/calendar': typeof AppCalendarRoute
   '/connectors': typeof AppConnectorsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/domicilios': typeof AppDomiciliosRoute
   '/funnel': typeof AppFunnelRoute
   '/integrations': typeof AppIntegrationsRoute
   '/leads': typeof AppLeadsRoute
@@ -448,6 +456,7 @@ export interface FileRoutesById {
   '/_app/calendar': typeof AppCalendarRoute
   '/_app/connectors': typeof AppConnectorsRoute
   '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/domicilios': typeof AppDomiciliosRoute
   '/_app/funnel': typeof AppFunnelRoute
   '/_app/integrations': typeof AppIntegrationsRoute
   '/_app/leads': typeof AppLeadsRoute
@@ -503,6 +512,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/connectors'
     | '/dashboard'
+    | '/domicilios'
     | '/funnel'
     | '/integrations'
     | '/leads'
@@ -556,6 +566,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/connectors'
     | '/dashboard'
+    | '/domicilios'
     | '/funnel'
     | '/integrations'
     | '/leads'
@@ -610,6 +621,7 @@ export interface FileRouteTypes {
     | '/_app/calendar'
     | '/_app/connectors'
     | '/_app/dashboard'
+    | '/_app/domicilios'
     | '/_app/funnel'
     | '/_app/integrations'
     | '/_app/leads'
@@ -763,6 +775,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/domicilios': {
+      id: '/_app/domicilios'
+      path: '/domicilios'
+      fullPath: '/domicilios'
+      preLoaderRoute: typeof AppDomiciliosRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/funnel': {
@@ -1052,6 +1071,7 @@ interface AppRouteChildren {
   AppCalendarRoute: typeof AppCalendarRoute
   AppConnectorsRoute: typeof AppConnectorsRoute
   AppDashboardRoute: typeof AppDashboardRoute
+  AppDomiciliosRoute: typeof AppDomiciliosRoute
   AppFunnelRoute: typeof AppFunnelRoute
   AppIntegrationsRoute: typeof AppIntegrationsRoute
   AppLeadsRoute: typeof AppLeadsRoute
@@ -1083,6 +1103,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCalendarRoute: AppCalendarRoute,
   AppConnectorsRoute: AppConnectorsRoute,
   AppDashboardRoute: AppDashboardRoute,
+  AppDomiciliosRoute: AppDomiciliosRoute,
   AppFunnelRoute: AppFunnelRoute,
   AppIntegrationsRoute: AppIntegrationsRoute,
   AppLeadsRoute: AppLeadsRoute,

@@ -50,7 +50,7 @@ const SIGUIENTE = (p: Pedido): { estado: string; texto: string } | null => {
 const MODULOS = [
   { Icon: UtensilsCrossed, titulo: "Pedidos y menú digital", estado: "Activo" },
   { Icon: ChefHat, titulo: "Cocina y producción", estado: "Activo" },
-  { Icon: Bike, titulo: "Domicilios y clientes", estado: "Próximo" },
+  { Icon: Bike, titulo: "Domicilios y clientes", estado: "Activo" },
   { Icon: Boxes, titulo: "Inventarios y recetas", estado: "Próximo" },
   { Icon: Wallet, titulo: "Finanzas y rentabilidad", estado: "Próximo" },
   { Icon: MessageCircle, titulo: "Asistente de pedidos", estado: "Próximo" },

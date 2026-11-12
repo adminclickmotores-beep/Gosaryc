@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      restaurante_clientes: {
+        Row: {
+          created_at: string
+          direccion: string | null
+          id: string
+          nombre: string
+          notas: string | null
+          telefono: string
+          total_gastado: number
+          total_pedidos: number
+          ultimo_pedido: string | null
+        }
+        Insert: {
+          created_at?: string
+          direccion?: string | null
+          id?: string
+          nombre: string
+          notas?: string | null
+          telefono: string
+          total_gastado?: number
+          total_pedidos?: number
+          ultimo_pedido?: string | null
+        }
+        Update: {
+          created_at?: string
+          direccion?: string | null
+          id?: string
+          nombre?: string
+          notas?: string | null
+          telefono?: string
+          total_gastado?: number
+          total_pedidos?: number
+          ultimo_pedido?: string | null
+        }
+        Relationships: []
+      }
+      restaurante_repartidores: {
+        Row: {
+          activo: boolean
+          created_at: string
+          id: string
+          nombre: string
+          telefono: string | null
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string
+          id?: string
+          nombre: string
+          telefono?: string | null
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string
+          id?: string
+          nombre?: string
+          telefono?: string | null
+        }
+        Relationships: []
+      }
       restaurante_categorias: {
         Row: {
           activa: boolean
@@ -90,6 +150,8 @@ export type Database = {
           id: string
           modalidad: string
           notas: string | null
+          cliente_id: string | null
+          repartidor_id: string | null
           total: number
         }
         Insert: {
@@ -102,6 +164,8 @@ export type Database = {
           id?: string
           modalidad?: string
           notas?: string | null
+          cliente_id?: string | null
+          repartidor_id?: string | null
           total?: number
         }
         Update: {
@@ -114,9 +178,26 @@ export type Database = {
           id?: string
           modalidad?: string
           notas?: string | null
+          cliente_id?: string | null
+          repartidor_id?: string | null
           total?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "restaurante_pedidos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "restaurante_clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurante_pedidos_repartidor_id_fkey"
+            columns: ["repartidor_id"]
+            isOneToOne: false
+            referencedRelation: "restaurante_repartidores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       restaurante_pedido_items: {
         Row: {
