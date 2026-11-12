@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { useNegocio } from "@/hooks/use-negocio";
 
 export const Route = createFileRoute("/menu")({
   head: () => ({
@@ -27,6 +28,7 @@ const campo =
   "w-full rounded-lg border border-glass-border bg-glass/40 px-3 py-2.5 text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary/50";
 
 function MenuPage() {
+  const { negocio } = useNegocio();
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [productos, setProductos] = useState<Producto[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -119,13 +121,36 @@ function MenuPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 pb-32 pt-8">
-      <header className="mb-6 flex items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-3xl text-foreground">Nuestro menú</h1>
-          <p className="text-sm text-muted-foreground">Arma tu pedido y lo preparamos al momento.</p>
+      <header className="mb-6 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="break-words font-display text-3xl text-foreground">{negocio?.nombre ?? "Nuestro menú"}</h1>
+          <p className="text-sm text-muted-foreground">
+            {negocio?.eslogan ?? "Arma tu pedido y lo preparamos al momento."}
+          </p>
         </div>
         <Link to="/instalar" className="shrink-0 text-xs text-primary hover:underline">Instalar app</Link>
       </header>
+
+      {negocio && paso === "menu" && (
+        <GlassPanel className="mb-6 space-y-2 p-4 text-sm">
+          {negocio.descripcion && <p className="text-foreground">{negocio.descripcion}</p>}
+          {(negocio.ciudad || negocio.cobertura) && (
+            <p className="text-muted-foreground">
+              {[negocio.ciudad, negocio.cobertura].filter(Boolean).join(" · ")}
+            </p>
+          )}
+          {negocio.aviso_entrega && <p className="text-muted-foreground">{negocio.aviso_entrega}</p>}
+          {negocio.telefono_pedidos && (
+            <p className="text-foreground">WhatsApp: {negocio.telefono_pedidos}</p>
+          )}
+          {negocio.horarios && (
+            <details className="text-muted-foreground">
+              <summary className="cursor-pointer text-foreground">Horarios</summary>
+              <p className="mt-1 whitespace-pre-line">{negocio.horarios}</p>
+            </details>
+          )}
+        </GlassPanel>
+      )}
 
       {paso === "menu" && (
         <>

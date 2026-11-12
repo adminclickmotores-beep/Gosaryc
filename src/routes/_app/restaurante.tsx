@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { NegocioConfig } from "@/components/restaurante/NegocioConfig";
 
 export const Route = createFileRoute("/_app/restaurante")({
   head: () => ({ meta: [{ title: "Panel del restaurante" }] }),
@@ -60,7 +61,7 @@ const campo =
   "w-full rounded-lg border border-glass-border bg-glass/40 px-3 py-2.5 text-base text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary/50";
 
 function RestaurantePage() {
-  const [vista, setVista] = useState<"pedidos" | "menu">("pedidos");
+  const [vista, setVista] = useState<"pedidos" | "menu" | "negocio">("pedidos");
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [items, setItems] = useState<Item[]>([]);
 
@@ -129,13 +130,13 @@ function RestaurantePage() {
       </div>
 
       <div className="flex gap-2">
-        {(["pedidos", "menu"] as const).map((v) => (
+        {(["pedidos", "menu", "negocio"] as const).map((v) => (
           <button
             key={v}
             onClick={() => setVista(v)}
             className={`rounded-full px-5 py-2 text-sm ${vista === v ? "bg-primary text-primary-foreground" : "border border-glass-border text-muted-foreground"}`}
           >
-            {v === "pedidos" ? "Pedidos y cocina" : "Menú"}
+            {v === "pedidos" ? "Pedidos y cocina" : v === "menu" ? "Menú" : "Mi negocio"}
           </button>
         ))}
       </div>
@@ -186,8 +187,10 @@ function RestaurantePage() {
             );
           })}
         </div>
-      ) : (
+      ) : vista === "menu" ? (
         <GestionMenu />
+      ) : (
+        <NegocioConfig />
       )}
     </div>
   );

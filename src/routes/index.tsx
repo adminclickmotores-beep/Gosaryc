@@ -14,6 +14,7 @@ import { GradientMesh } from "@/components/ui-custom/GradientMesh";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useAuth } from "@/contexts/AuthContext";
 import { BRAND } from "@/lib/brand";
+import { useNegocio } from "@/hooks/use-negocio";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -40,6 +41,7 @@ const MODULOS = [
 function LandingPage() {
   const { session, loading } = useAuth();
   const navigate = useNavigate();
+  const { negocio } = useNegocio();
 
   useEffect(() => {
     if (!loading && session) {
@@ -62,7 +64,7 @@ function LandingPage() {
       <header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-5 sm:px-8">
         <Link to="/" className="inline-flex min-w-0 items-center gap-2 text-sm font-medium">
           <img src="/icono-app.svg" alt="" className="h-7 w-7 rounded-md" />
-          <span className="truncate font-display text-lg">{BRAND.name}</span>
+          <span className="truncate font-display text-lg">{negocio?.nombre ?? BRAND.name}</span>
         </Link>
         <Link
           to="/login"
@@ -74,11 +76,15 @@ function LandingPage() {
 
       <main className="relative z-10 mx-auto max-w-6xl px-5 pb-24 pt-8 sm:px-8 sm:pt-16">
         <section className="mx-auto max-w-3xl text-center">
-          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">{BRAND.tagline}</p>
-          <h1 className="mt-4 font-display text-4xl leading-tight tracking-tight sm:text-6xl">
-            Todo tu restaurante, conectado
+          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+            {negocio?.tipo_negocio ?? BRAND.tagline}
+          </p>
+          <h1 className="mt-4 break-words font-display text-4xl leading-tight tracking-tight sm:text-6xl">
+            {negocio?.nombre ?? "Todo tu negocio, conectado"}
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">{BRAND.description}</p>
+          <p className="mx-auto mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
+            {negocio?.eslogan ?? BRAND.description}
+          </p>
           <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
             <Link
               to="/menu"

@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      negocio_config: {
+        Row: {
+          aviso_entrega: string | null
+          ciudad: string | null
+          cobertura: string | null
+          created_at: string
+          descripcion: string | null
+          eslogan: string | null
+          horarios: string | null
+          id: string
+          instagram: string | null
+          moneda: string
+          nombre: string
+          sitio_web: string | null
+          telefono_pedidos: string | null
+          tipo_negocio: string | null
+          updated_at: string
+        }
+        Insert: {
+          aviso_entrega?: string | null
+          ciudad?: string | null
+          cobertura?: string | null
+          created_at?: string
+          descripcion?: string | null
+          eslogan?: string | null
+          horarios?: string | null
+          id?: string
+          instagram?: string | null
+          moneda?: string
+          nombre?: string
+          sitio_web?: string | null
+          telefono_pedidos?: string | null
+          tipo_negocio?: string | null
+          updated_at?: string
+        }
+        Update: {
+          aviso_entrega?: string | null
+          ciudad?: string | null
+          cobertura?: string | null
+          created_at?: string
+          descripcion?: string | null
+          eslogan?: string | null
+          horarios?: string | null
+          id?: string
+          instagram?: string | null
+          moneda?: string
+          nombre?: string
+          sitio_web?: string | null
+          telefono_pedidos?: string | null
+          tipo_negocio?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       restaurante_clientes: {
         Row: {
           created_at: string
