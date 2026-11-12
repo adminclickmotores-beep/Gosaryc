@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      modulo_registros: {
+        Row: {
+          contacto: string | null
+          created_at: string
+          detalle: string | null
+          estado: string
+          fecha: string | null
+          id: string
+          modulo: string
+          monto: number
+          telefono: string | null
+          titulo: string
+        }
+        Insert: {
+          contacto?: string | null
+          created_at?: string
+          detalle?: string | null
+          estado?: string
+          fecha?: string | null
+          id?: string
+          modulo: string
+          monto?: number
+          telefono?: string | null
+          titulo: string
+        }
+        Update: {
+          contacto?: string | null
+          created_at?: string
+          detalle?: string | null
+          estado?: string
+          fecha?: string | null
+          id?: string
+          modulo?: string
+          monto?: number
+          telefono?: string | null
+          titulo?: string
+        }
+        Relationships: []
+      }
       negocio_config: {
         Row: {
           aviso_entrega: string | null

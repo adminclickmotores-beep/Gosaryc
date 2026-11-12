@@ -17,6 +17,23 @@ import {
   ClipboardList,
   Package,
   Briefcase,
+  Receipt,
+  Coins,
+  Gift,
+  Star,
+  Truck,
+  Smartphone,
+  QrCode,
+  Percent,
+  Tag,
+  Bell,
+  BadgeCheck,
+  Shield,
+  Repeat,
+  Megaphone,
+  Target,
+  Banknote,
+  Armchair,
   type LucideIcon,
 } from "lucide-react";
 
@@ -27,7 +44,7 @@ export type ModuloNegocio = {
   titulo: string;
   descripcion: string;
   Icon: LucideIcon;
-  /** Ruta de la app donde vive el módulo (si ya existe). */
+  /** Ruta de la app donde vive el módulo. */
   ruta?: string;
   estado: "Activo" | "Próximo";
 };
@@ -35,12 +52,33 @@ export type ModuloNegocio = {
 export type TipoNegocio = {
   clave: TipoNegocioClave;
   etiqueta: string;
-  /** Nombre del panel principal en el menú lateral. */
   panel: string;
-  /** Si usa pedidos, cocina/menú digital y domicilios. */
   usaPedidos: boolean;
   modulos: ModuloNegocio[];
 };
+
+/** Módulo funcional con registros propios (pantalla /modulos/<id>). */
+const m = (id: string, titulo: string, descripcion: string, Icon: LucideIcon): ModuloNegocio => ({
+  id,
+  titulo,
+  descripcion,
+  Icon,
+  ruta: `/modulos/${id}`,
+  estado: "Activo",
+});
+
+// ---- Módulos transversales pensados para negocios colombianos ----
+const FIADOS = m("fiados", "Cartera y fiados", "Quién te debe, cuánto y cuándo prometió pagar.", Coins);
+const FACTURAS = m("facturas", "Facturación DIAN", "Control de facturas electrónicas y documentos soporte.", Receipt);
+const PAGOS = m("pagos_digitales", "Nequi, Daviplata y Bre-B", "Concilia pagos por transferencia contra tus ventas.", Smartphone);
+const FIDELIZACION = m("fidelizacion", "Puntos y recompensas", "Premia a tus clientes frecuentes.", Gift);
+const RESENAS = m("resenas", "Reseñas y PQRS", "Quejas, reclamos y opiniones con seguimiento.", Star);
+const DIFUSION = m("difusion", "Difusión por WhatsApp", "Promociones y recordatorios para tus contactos.", Megaphone);
+const CAJA = m("caja_diaria", "Caja y gastos diarios", "Apertura, cierre de caja y gastos del día.", Banknote);
+const PROVEEDORES = m("proveedores", "Proveedores y compras", "Pedidos y deudas con proveedores.", Truck);
+const EMPLEADOS = m("equipo_turnos", "Equipo, turnos y nómina", "Turnos, pagos y novedades del personal.", Briefcase);
+const METAS = m("metas", "Metas y objetivos", "Metas de ventas y seguimiento semanal.", Target);
+const GARANTIAS = m("garantias", "Garantías y postventa", "Seguimiento a reclamos y garantías.", BadgeCheck);
 
 const CLIENTES: ModuloNegocio = {
   id: "clientes",
@@ -84,9 +122,14 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       { id: "pedidos", titulo: "Pedidos y menú digital", descripcion: "Pedidos en línea y carta.", Icon: UtensilsCrossed, ruta: "/restaurante", estado: "Activo" },
       { id: "cocina", titulo: "Cocina y producción", descripcion: "Tablero de preparación.", Icon: ChefHat, ruta: "/restaurante", estado: "Activo" },
       { id: "domicilios", titulo: "Domicilios y clientes", descripcion: "Entregas y base de clientes.", Icon: Bike, ruta: "/domicilios", estado: "Activo" },
-      { id: "inventario", titulo: "Inventarios y recetas", descripcion: "Insumos y costos por receta.", Icon: Boxes, estado: "Próximo" },
-      FINANZAS,
       { id: "asistente", titulo: "Asistente de pedidos", descripcion: "Atiende pedidos por chat.", Icon: MessageCircle, ruta: "/agente", estado: "Activo" },
+      m("repartidores", "Repartidores y liquidación", "Pago por domicilio y cuentas de cada domiciliario.", Bike),
+      m("mesas", "Reservas de mesas", "Reservas y control de mesas.", Armchair),
+      m("combos", "Combos y promociones", "Combos del día, 2x1 y descuentos por horario.", Percent),
+      m("insumos", "Inventario de insumos", "Ingredientes, mermas y alertas de faltantes.", Boxes),
+      m("propinas", "Propinas y reparto", "Registro y reparto de propinas entre el equipo.", Coins),
+      m("suscripciones", "Pedidos recurrentes", "Clientes que piden cada semana (almuerzos, corporativos).", Repeat),
+      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS,
     ],
   },
   {
@@ -95,12 +138,16 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
     panel: "Concesionario",
     usaPedidos: false,
     modulos: [
-      { id: "catalogo", titulo: "Catálogo de vehículos", descripcion: "Inventario con fotos, precio y ficha técnica.", Icon: Car, estado: "Próximo" },
+      m("vehiculos", "Inventario de vehículos", "Placa, marca, modelo, precio y estado de cada vehículo.", Car),
       CLIENTES,
-      { id: "pruebas", titulo: "Pruebas de manejo", descripcion: "Agenda de test drives.", Icon: KeyRound, ruta: "/calendar", estado: "Activo" },
-      { id: "cotizaciones", titulo: "Cotizaciones y financiación", descripcion: "Propuestas y simulación de crédito.", Icon: FileText, ruta: "/requests", estado: "Activo" },
-      { id: "taller", titulo: "Taller y posventa", descripcion: "Mantenimientos y garantías.", Icon: Wrench, estado: "Próximo" },
-      FINANZAS,
+      m("pruebas_manejo", "Pruebas de manejo", "Agenda de test drives con seguimiento.", KeyRound),
+      m("cotizaciones_veh", "Cotizaciones y financiación", "Propuestas, cuota inicial y simulación de crédito.", FileText),
+      m("permutas", "Retomas y permutas", "Avalúo de vehículos recibidos en parte de pago.", Repeat),
+      m("tramites", "Trámites: SOAT, traspaso y matrícula", "Control de trámites y vencimientos por vehículo.", Shield),
+      m("taller", "Taller y mantenimientos", "Órdenes de servicio y repuestos.", Wrench),
+      m("seguimiento_leads", "Seguimiento de interesados", "Recordatorios para cerrar cada venta.", Bell),
+      m("comisiones", "Comisiones de asesores", "Comisión por venta de cada asesor.", Percent),
+      FACTURAS, GARANTIAS, FIDELIZACION, RESENAS, DIFUSION, CAJA, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -109,11 +156,13 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
     panel: "Tienda",
     usaPedidos: false,
     modulos: [
-      { id: "productos", titulo: "Catálogo de productos", descripcion: "Productos, precios y categorías.", Icon: ShoppingBag, estado: "Próximo" },
-      { id: "inventario", titulo: "Inventario", descripcion: "Existencias y reposición.", Icon: Package, estado: "Próximo" },
-      CLIENTES,
-      SOLICITUDES,
-      FINANZAS,
+      m("productos", "Catálogo de productos", "Productos, precios y categorías.", ShoppingBag),
+      m("inventario", "Inventario y reposición", "Existencias y alertas de bajo stock.", Package),
+      m("apartados", "Apartados (plan separe)", "Abonos y entrega de productos separados.", Tag),
+      m("catalogo_whatsapp", "Catálogo para WhatsApp", "Comparte tu catálogo con un enlace.", QrCode),
+      m("devoluciones", "Cambios y devoluciones", "Control de cambios y notas crédito.", Repeat),
+      CLIENTES, SOLICITUDES,
+      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -122,11 +171,14 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
     panel: "Servicios",
     usaPedidos: false,
     modulos: [
-      { id: "servicios", titulo: "Catálogo de servicios", descripcion: "Servicios, duración y precio.", Icon: Scissors, estado: "Próximo" },
+      m("catalogo_servicios", "Catálogo de servicios", "Servicios, duración y precio.", Scissors),
       AGENDA,
-      CLIENTES,
-      SOLICITUDES,
-      FINANZAS,
+      m("paquetes", "Paquetes y membresías", "Bonos de sesiones y planes mensuales.", Gift),
+      m("historial", "Historial del cliente", "Notas y trabajos realizados por cliente.", ClipboardList),
+      m("lista_espera", "Lista de espera", "Clientes por atender cuando se libere un cupo.", Bell),
+      m("comisiones", "Comisiones del personal", "Pago por servicio realizado.", Percent),
+      CLIENTES, SOLICITUDES,
+      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -135,15 +187,21 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
     panel: "Mi negocio",
     usaPedidos: false,
     modulos: [
-      { id: "catalogo", titulo: "Catálogo", descripcion: "Lo que ofreces a tus clientes.", Icon: Store, estado: "Próximo" },
-      CLIENTES,
-      AGENDA,
-      SOLICITUDES,
-      { id: "equipo", titulo: "Equipo y tareas", descripcion: "Organiza a tu equipo.", Icon: Briefcase, estado: "Próximo" },
-      FINANZAS,
+      m("catalogo", "Catálogo", "Lo que ofreces a tus clientes.", Store),
+      CLIENTES, AGENDA, SOLICITUDES,
+      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
 ];
+
+/** Busca un módulo por id en todos los tipos de negocio. */
+export function buscarModulo(id: string): ModuloNegocio | undefined {
+  for (const t of TIPOS_NEGOCIO) {
+    const x = t.modulos.find((mm) => mm.id === id);
+    if (x) return x;
+  }
+  return undefined;
+}
 
 const sinAcentos = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
