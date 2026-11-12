@@ -7,14 +7,14 @@
  */
 export const BRAND = {
   /** Full product name shown in lockups, titles, and email "from" lines. */
-  name: "Marketing Campaign Command Center",
+  name: "Restaurante",
   /** Short label for tight spaces (mobile nav, collapsed sidebar tooltips). */
-  shortName: "MC3",
+  shortName: "RST",
   /** One-line tagline used in headers and email footers. */
-  tagline: "Digital Marketing Campaign Starter",
+  tagline: "Sistema integral para restaurantes",
   /** Short marketing description for meta tags and onboarding. */
   description:
-    "Plan, launch, and track digital marketing campaigns end to end — launch checklists, standardized campaign names, UTM tracking links, and performance dashboards in one shared workspace.",
+    "Pedidos, menú digital, cocina, domicilios, clientes, inventarios y finanzas en una sola app que se instala en tu computador y celular.",
   /**
    * Placeholder domain used in example URLs (Commander AI input hints, etc.).
    * Keep this neutral — it should NOT match the email-sending domain.
