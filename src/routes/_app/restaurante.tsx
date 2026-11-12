@@ -1,15 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import {
-  ChefHat,
-  Bike,
-  Boxes,
-  Wallet,
-  MessageCircle,
-  UtensilsCrossed,
-  Download,
-  ExternalLink,
-} from "lucide-react";
+import { Download, ExternalLink } from "lucide-react";
+import { useNegocio } from "@/hooks/use-negocio";
+import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -48,20 +41,15 @@ const SIGUIENTE = (p: Pedido): { estado: string; texto: string } | null => {
   return null;
 };
 
-const MODULOS = [
-  { Icon: UtensilsCrossed, titulo: "Pedidos y menú digital", estado: "Activo" },
-  { Icon: ChefHat, titulo: "Cocina y producción", estado: "Activo" },
-  { Icon: Bike, titulo: "Domicilios y clientes", estado: "Activo" },
-  { Icon: Boxes, titulo: "Inventarios y recetas", estado: "Próximo" },
-  { Icon: Wallet, titulo: "Finanzas y rentabilidad", estado: "Próximo" },
-  { Icon: MessageCircle, titulo: "Asistente de pedidos", estado: "Activo" },
-] as const;
-
 const campo =
   "w-full rounded-lg border border-glass-border bg-glass/40 px-3 py-2.5 text-base text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary/50";
 
 function RestaurantePage() {
-  const [vista, setVista] = useState<"pedidos" | "menu" | "negocio">("pedidos");
+  const { negocio } = useNegocio();
+  const tipo = resolverTipoNegocio(negocio?.tipo_negocio);
+  const [vistaElegida, setVista] = useState<"pedidos" | "menu" | "negocio">("pedidos");
+  const vista = tipo.usaPedidos ? vistaElegida : "negocio";
+  const vistas = tipo.usaPedidos ? (["pedidos", "menu", "negocio"] as const) : (["negocio"] as const);
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [items, setItems] = useState<Item[]>([]);
 
@@ -104,13 +92,17 @@ function RestaurantePage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-3xl text-foreground">Restaurante</h1>
-          <p className="text-sm text-muted-foreground">Ventas de hoy: {dinero(ventasHoy)}</p>
+          <h1 className="font-display text-3xl text-foreground">{tipo.panel}</h1>
+          <p className="text-sm text-muted-foreground">
+            {tipo.usaPedidos ? `Ventas de hoy: ${dinero(ventasHoy)}` : negocio?.nombre ?? tipo.etiqueta}
+          </p>
         </div>
         <div className="flex flex-wrap gap-2 text-sm">
-          <Link to="/menu" target="_blank" className="inline-flex items-center gap-1.5 rounded-full border border-glass-border px-4 py-2 text-foreground">
-            <ExternalLink className="h-4 w-4" /> Menú público
-          </Link>
+          {tipo.usaPedidos && (
+            <Link to="/menu" target="_blank" className="inline-flex items-center gap-1.5 rounded-full border border-glass-border px-4 py-2 text-foreground">
+              <ExternalLink className="h-4 w-4" /> Menú público
+            </Link>
+          )}
           <Link to="/instalar" className="inline-flex items-center gap-1.5 rounded-full border border-glass-border px-4 py-2 text-foreground">
             <Download className="h-4 w-4" /> Instalar app
           </Link>
@@ -118,19 +110,28 @@ function RestaurantePage() {
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-        {MODULOS.map(({ Icon, titulo, estado }) => (
-          <GlassPanel key={titulo} className="flex items-center gap-3 p-4">
-            <Icon className="h-5 w-5 shrink-0 text-primary" />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-foreground">{titulo}</p>
-              <p className="text-xs text-muted-foreground">{estado}</p>
-            </div>
-          </GlassPanel>
-        ))}
+        {tipo.modulos.map(({ id, Icon, titulo, descripcion, estado, ruta }) => {
+          const contenido = (
+            <GlassPanel className="flex h-full items-center gap-3 p-4">
+              <Icon className="h-5 w-5 shrink-0 text-primary" />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-foreground">{titulo}</p>
+                <p className="truncate text-xs text-muted-foreground">{estado === "Activo" ? descripcion : "Próximo"}</p>
+              </div>
+            </GlassPanel>
+          );
+          return ruta && ruta !== "/restaurante" ? (
+            <Link key={id} to={ruta as never}>
+              {contenido}
+            </Link>
+          ) : (
+            <div key={id}>{contenido}</div>
+          );
+        })}
       </div>
 
       <div className="flex gap-2">
-        {(["pedidos", "menu", "negocio"] as const).map((v) => (
+        {vistas.map((v) => (
           <button
             key={v}
             onClick={() => setVista(v)}

@@ -42,6 +42,8 @@ import { GuidedTour } from "@/components/tour/GuidedTour";
 import { RouteProgressBar } from "@/components/app/RouteProgressBar";
 import { BrandHexLogo } from "@/components/app/BrandHexLogo";
 import { BRAND } from "@/lib/brand";
+import { useNegocio } from "@/hooks/use-negocio";
+import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 
 import { AutosaveStatus } from "@/components/app/AutosaveStatus";
 import { purgeExpiredDrafts } from "@/hooks/use-draft";
@@ -150,6 +152,11 @@ function AppShell() {
   const nav = useNavigate();
   const focusParam = ((loc.search as Record<string, unknown> | undefined)?.focus as string) ?? "";
   const pathnameRef = useRef(loc.pathname);
+  const { negocio } = useNegocio();
+  const tipoNegocio = resolverTipoNegocio(negocio?.tipo_negocio);
+  const navItems = PRIMARY_NAV.filter(
+    (n) => n.to !== "/domicilios" || tipoNegocio.modulos.some((m) => m.id === "domicilios"),
+  ).map((n) => (n.to === "/restaurante" ? { ...n, label: tipoNegocio.panel } : n));
 
   useEffect(() => {
     pathnameRef.current = loc.pathname;
@@ -321,7 +328,7 @@ function AppShell() {
           )}
 
           <nav className={`flex-1 space-y-1 ${collapsed ? "px-2" : "px-3"}`}>
-            {PRIMARY_NAV.map((n) => {
+            {navItems.map((n) => {
               const active =
                 n.to === "/tools"
                   ? loc.pathname === "/tools" || loc.pathname.startsWith("/tools/")

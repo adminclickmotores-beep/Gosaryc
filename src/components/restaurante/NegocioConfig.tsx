@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
+import { TIPOS_NEGOCIO, resolverTipoNegocio } from "@/lib/modulos-negocio";
 
 const campo =
   "w-full rounded-lg border border-glass-border bg-glass/40 px-3 py-2.5 text-base text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary/50";
@@ -38,7 +39,6 @@ const VACIO: Form = {
 const CAMPOS: { clave: keyof Form; etiqueta: string; largo?: boolean }[] = [
   { clave: "nombre", etiqueta: "Nombre del negocio" },
   { clave: "eslogan", etiqueta: "Eslogan" },
-  { clave: "tipo_negocio", etiqueta: "Tipo de negocio (comida, repuestos, vehículos…)" },
   { clave: "descripcion", etiqueta: "Descripción", largo: true },
   { clave: "ciudad", etiqueta: "Ciudad" },
   { clave: "cobertura", etiqueta: "Cobertura de entregas" },
@@ -53,6 +53,7 @@ export function NegocioConfig() {
   const { negocio, recargar } = useNegocio();
   const [form, setForm] = useState<Form>(VACIO);
   const [guardando, setGuardando] = useState(false);
+  const tipoActual = resolverTipoNegocio(form.tipo_negocio);
 
   useEffect(() => {
     if (!negocio) return;
@@ -78,7 +79,7 @@ export function NegocioConfig() {
       nombre: form.nombre.trim(),
       eslogan: form.eslogan.trim() || null,
       descripcion: form.descripcion.trim() || null,
-      tipo_negocio: form.tipo_negocio.trim() || null,
+      tipo_negocio: tipoActual.clave,
       ciudad: form.ciudad.trim() || null,
       cobertura: form.cobertura.trim() || null,
       telefono_pedidos: form.telefono_pedidos.trim() || null,
@@ -103,6 +104,25 @@ export function NegocioConfig() {
         <h2 className="font-medium text-foreground">Datos de tu negocio</h2>
         <p className="text-sm text-muted-foreground">
           Se muestran en el menú digital y los usa el asistente. Cámbialos cuando quieras.
+        </p>
+      </div>
+      <div className="space-y-2">
+        <label className="block space-y-1">
+          <span className="text-xs text-muted-foreground">Tipo de negocio</span>
+          <select
+            className={campo}
+            value={tipoActual.clave}
+            onChange={(e) => setForm({ ...form, tipo_negocio: e.target.value })}
+          >
+            {TIPOS_NEGOCIO.map((t) => (
+              <option key={t.clave} value={t.clave}>
+                {t.etiqueta}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="text-xs text-muted-foreground">
+          Módulos de este tipo: {tipoActual.modulos.map((m) => m.titulo).join(" · ")}. Guarda para activarlos en el menú.
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
