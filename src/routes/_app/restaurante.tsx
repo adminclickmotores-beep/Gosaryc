@@ -53,7 +53,7 @@ const MODULOS = [
   { Icon: Bike, titulo: "Domicilios y clientes", estado: "Activo" },
   { Icon: Boxes, titulo: "Inventarios y recetas", estado: "Próximo" },
   { Icon: Wallet, titulo: "Finanzas y rentabilidad", estado: "Próximo" },
-  { Icon: MessageCircle, titulo: "Asistente de pedidos", estado: "Próximo" },
+  { Icon: MessageCircle, titulo: "Asistente de pedidos", estado: "Activo" },
 ] as const;
 
 const campo =
