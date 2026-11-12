@@ -14,6 +14,155 @@ export type Database = {
   }
   public: {
     Tables: {
+      restaurante_categorias: {
+        Row: {
+          activa: boolean
+          created_at: string
+          id: string
+          nombre: string
+          orden: number
+        }
+        Insert: {
+          activa?: boolean
+          created_at?: string
+          id?: string
+          nombre: string
+          orden?: number
+        }
+        Update: {
+          activa?: boolean
+          created_at?: string
+          id?: string
+          nombre?: string
+          orden?: number
+        }
+        Relationships: []
+      }
+      restaurante_productos: {
+        Row: {
+          activo: boolean
+          categoria_id: string | null
+          created_at: string
+          descripcion: string | null
+          destacado: boolean
+          id: string
+          nombre: string
+          precio: number
+        }
+        Insert: {
+          activo?: boolean
+          categoria_id?: string | null
+          created_at?: string
+          descripcion?: string | null
+          destacado?: boolean
+          id?: string
+          nombre: string
+          precio?: number
+        }
+        Update: {
+          activo?: boolean
+          categoria_id?: string | null
+          created_at?: string
+          descripcion?: string | null
+          destacado?: boolean
+          id?: string
+          nombre?: string
+          precio?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurante_productos_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "restaurante_categorias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      restaurante_pedidos: {
+        Row: {
+          canal: string
+          cliente_nombre: string
+          cliente_telefono: string
+          created_at: string
+          direccion: string | null
+          estado: string
+          id: string
+          modalidad: string
+          notas: string | null
+          total: number
+        }
+        Insert: {
+          canal?: string
+          cliente_nombre: string
+          cliente_telefono: string
+          created_at?: string
+          direccion?: string | null
+          estado?: string
+          id?: string
+          modalidad?: string
+          notas?: string | null
+          total?: number
+        }
+        Update: {
+          canal?: string
+          cliente_nombre?: string
+          cliente_telefono?: string
+          created_at?: string
+          direccion?: string | null
+          estado?: string
+          id?: string
+          modalidad?: string
+          notas?: string | null
+          total?: number
+        }
+        Relationships: []
+      }
+      restaurante_pedido_items: {
+        Row: {
+          cantidad: number
+          created_at: string
+          id: string
+          nombre: string
+          pedido_id: string
+          precio_unitario: number
+          producto_id: string | null
+        }
+        Insert: {
+          cantidad: number
+          created_at?: string
+          id?: string
+          nombre: string
+          pedido_id: string
+          precio_unitario: number
+          producto_id?: string | null
+        }
+        Update: {
+          cantidad?: number
+          created_at?: string
+          id?: string
+          nombre?: string
+          pedido_id?: string
+          precio_unitario?: number
+          producto_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurante_pedido_items_pedido_id_fkey"
+            columns: ["pedido_id"]
+            isOneToOne: false
+            referencedRelation: "restaurante_pedidos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurante_pedido_items_producto_id_fkey"
+            columns: ["producto_id"]
+            isOneToOne: false
+            referencedRelation: "restaurante_productos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_usage_log: {
         Row: {
           called_at: string

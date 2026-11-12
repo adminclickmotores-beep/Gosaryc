@@ -1,0 +1,20 @@
+{
+  "name": "Restaurante — Sistema integral",
+  "short_name": "Restaurante",
+  "description": "Pedidos, menú digital, cocina, domicilios, inventario y finanzas en una sola app.",
+  "start_url": "/restaurante",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#14110f",
+  "theme_color": "#e8590c",
+  "lang": "es",
+  "icons": [
+    { "src": "/icono-app.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icono-app.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Menú digital", "url": "/menu" },
+    { "name": "Panel de pedidos", "url": "/restaurante" }
+  ]
+}

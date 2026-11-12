@@ -52,6 +52,7 @@ export const Route = createFileRoute("/_app")({
 });
 
 const PRIMARY_NAV = [
+  { to: "/restaurante", label: "Restaurante", Icon: IconBolt },
   { to: "/dashboard", label: "This week", Icon: IconHome },
   { to: "/campaigns", label: "Campaigns", Icon: IconWorkspace },
   { to: "/leads", label: "Leads", Icon: IconAudience },
