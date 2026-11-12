@@ -1,17 +1,18 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { IconHome, IconWorkspace, IconCalendar, IconCommand } from "@/components/ui-custom/CustomIcon";
+import { IconHome, IconBolt, IconAudience, IconWorkspace, IconCommand } from "@/components/ui-custom/CustomIcon";
 
 const items = [
-  { to: "/dashboard", label: "Home", Icon: IconHome },
-  { to: "/campaigns", label: "Campaigns", Icon: IconWorkspace },
-  { to: "/calendar", label: "Calendar", Icon: IconCalendar },
+  { to: "/restaurante", label: "Pedidos", Icon: IconBolt },
+  { to: "/domicilios", label: "Domicilios", Icon: IconAudience },
+  { to: "/campaigns", label: "Campañas", Icon: IconWorkspace },
+  { to: "/dashboard", label: "Inicio", Icon: IconHome },
 ] as const;
 
 export function BottomNav() {
   const loc = useLocation();
   return (
     <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-glass-border bg-black/60 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
-      <div className="grid grid-cols-4">
+      <div className="grid grid-cols-5">
         {items.map((it) => {
           const active = loc.pathname.startsWith(it.to);
           return (
