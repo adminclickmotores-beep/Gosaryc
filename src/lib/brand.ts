@@ -7,9 +7,9 @@
  */
 export const BRAND = {
   /** Full product name shown in lockups, titles, and email "from" lines. */
-  name: "Restaurante",
+  name: "Mesari",
   /** Short label for tight spaces (mobile nav, collapsed sidebar tooltips). */
-  shortName: "RST",
+  shortName: "MSR",
   /** One-line tagline used in headers and email footers. */
   tagline: "Sistema integral para restaurantes",
   /** Short marketing description for meta tags and onboarding. */
