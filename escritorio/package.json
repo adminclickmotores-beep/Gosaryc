@@ -1,0 +1,43 @@
+{
+  "name": "mesari-escritorio",
+  "version": "1.0.0",
+  "description": "Mesari - aplicación de escritorio",
+  "author": "Mesari",
+  "main": "main.cjs",
+  "private": true,
+  "scripts": {
+    "iniciar": "electron .",
+    "instalador:windows": "electron-builder --win",
+    "instalador:mac": "electron-builder --mac",
+    "instalador:linux": "electron-builder --linux",
+    "instalador:todos": "electron-builder --win --mac --linux"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.mesari.app",
+    "productName": "Mesari",
+    "copyright": "Copyright © 2026 Mesari",
+    "files": ["main.cjs", "package.json"],
+    "directories": { "output": "instaladores" },
+    "win": {
+      "target": ["nsis"],
+      "publisherName": "Mesari"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "mac": {
+      "target": ["dmg"],
+      "category": "public.app-category.business"
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "category": "Office",
+      "maintainer": "Mesari"
+    }
+  }
+}
