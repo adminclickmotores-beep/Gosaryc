@@ -238,7 +238,7 @@ function MenuPage() {
       )}
 
       {unidades > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-glass-border bg-black/70 px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-xl">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-glass-border bg-white/95 px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-xl">
           <div className="mx-auto flex max-w-3xl items-center gap-3">
             {paso === "datos" && (
               <button onClick={() => setPaso("menu")} className="rounded-full border border-glass-border px-4 py-3 text-sm text-foreground">

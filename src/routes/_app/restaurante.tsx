@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { Download, ExternalLink } from "lucide-react";
 import { useNegocio } from "@/hooks/use-negocio";
+import { PasoAPaso } from "@/components/restaurante/PasoAPaso";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -108,6 +109,13 @@ function RestaurantePage() {
           </Link>
         </div>
       </div>
+
+      <PasoAPaso
+        negocio={negocio}
+        tipo={tipo}
+        onAbrirNegocio={() => setVista("negocio")}
+        onAbrirMenu={() => setVista("menu")}
+      />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
         {tipo.modulos.map(({ id, Icon, titulo, descripcion, estado, ruta }) => {
