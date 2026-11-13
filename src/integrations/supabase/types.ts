@@ -152,6 +152,7 @@ export type Database = {
           telefono_pedidos: string | null
           tipo_negocio: string | null
           updated_at: string
+          whatsapp_cocina: string | null
         }
         Insert: {
           aviso_entrega?: string | null
@@ -173,6 +174,7 @@ export type Database = {
           telefono_pedidos?: string | null
           tipo_negocio?: string | null
           updated_at?: string
+          whatsapp_cocina?: string | null
         }
         Update: {
           aviso_entrega?: string | null
@@ -194,6 +196,7 @@ export type Database = {
           telefono_pedidos?: string | null
           tipo_negocio?: string | null
           updated_at?: string
+          whatsapp_cocina?: string | null
         }
         Relationships: []
       }

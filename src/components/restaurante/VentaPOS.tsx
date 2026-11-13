@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Armchair, Bike, ChefHat, ImageOff, Minus, Plus, Search, ShoppingBag, Trash2, Wallet } from "lucide-react";
+import { Armchair, Bike, ChefHat, ImageOff, MessageCircle, Minus, Plus, Printer, Search, ShoppingBag, Trash2, Wallet, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { TARIFAS_DOMICILIO, buscarTarifa } from "@/lib/tarifas-domicilio";
+import { useNegocio } from "@/hooks/use-negocio";
 
 type Producto = Tables<"restaurante_productos">;
 type Categoria = Tables<"restaurante_categorias">;
@@ -30,8 +31,86 @@ const METODOS = [
   { clave: "tarjeta", texto: "Tarjeta" },
 ];
 
+type Recibo = {
+  id: string;
+  cliente: string;
+  telefono: string;
+  modalidad: string;
+  mesa: string;
+  direccion: string;
+  barrio: string;
+  notas: string;
+  lineas: { nombre: string; cant: number; precio: number }[];
+  envio: number;
+  total: number;
+  metodo: string;
+  cobrado: boolean;
+};
+
+const soloDigitos = (t: string) => t.replace(/\D/g, "");
+/** Deja el número listo para wa.me: si trae 10 dígitos (Colombia) le agrega el 57. */
+const numeroWa = (t: string) => {
+  const d = soloDigitos(t);
+  return d.length === 10 ? `57${d}` : d;
+};
+const enlaceWa = (tel: string, texto: string) => `https://wa.me/${numeroWa(tel)}?text=${encodeURIComponent(texto)}`;
+
+const textoComanda = (r: Recibo, nombreNegocio: string, paraCocina: boolean) => {
+  const lineas = r.lineas.map((l) => `${l.cant} x ${l.nombre}${paraCocina ? "" : ` - ${dinero(l.precio * l.cant)}`}`).join("\n");
+  const donde =
+    r.modalidad === "mesa" ? (r.mesa ? `Mesa ${r.mesa}` : "Mesa") : r.modalidad === "recoger" ? "Para llevar" : "Domicilio";
+  return [
+    `*${paraCocina ? "COMANDA" : "PEDIDO"} #${r.id.slice(0, 6).toUpperCase()}* - ${nombreNegocio}`,
+    `${donde} | ${r.cobrado ? "Cobrado" : "Pendiente de cobro"}`,
+    "",
+    lineas,
+    r.notas ? `\nNotas: ${r.notas}` : "",
+    "",
+    `Cliente: ${r.cliente}${r.telefono ? ` (${r.telefono})` : ""}`,
+    r.modalidad === "domicilio" ? `Dirección: ${r.direccion}${r.barrio ? ` - ${r.barrio}` : ""}` : "",
+    r.envio > 0 ? `Domicilio: ${dinero(r.envio)}` : "",
+    `*Total: ${dinero(r.total)}*`,
+  ]
+    .filter((x, i, a) => x !== "" || (i > 0 && a[i - 1] !== ""))
+    .join("\n");
+};
+
+const imprimirTicket = (r: Recibo, nombreNegocio: string) => {
+  const w = window.open("", "_blank", "width=380,height=640");
+  if (!w) return toast.error("El navegador bloqueó la ventana de impresión. Permite las ventanas emergentes.");
+  const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] ?? c);
+  const filas = r.lineas
+    .map((l) => `<tr><td>${l.cant} x ${esc(l.nombre)}</td><td style="text-align:right">${dinero(l.precio * l.cant)}</td></tr>`)
+    .join("");
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Ticket</title>
+<style>@page{size:80mm auto;margin:4mm}body{font-family:monospace;font-size:13px;width:72mm;margin:0}h1{font-size:16px;text-align:center;margin:0 0 4px}
+table{width:100%;border-collapse:collapse}td{padding:2px 0;vertical-align:top}hr{border:0;border-top:1px dashed #000;margin:6px 0}.c{text-align:center}</style></head><body>
+<h1>${esc(nombreNegocio)}</h1><p class="c">Pedido #${r.id.slice(0, 6).toUpperCase()}<br>${new Date().toLocaleString("es-CO")}</p><hr>
+<p>${r.modalidad === "mesa" ? (r.mesa ? `Mesa ${esc(r.mesa)}` : "Mesa") : r.modalidad === "recoger" ? "Para llevar" : "Domicilio"}<br>Cliente: ${esc(r.cliente)}${r.telefono ? `<br>Tel: ${esc(r.telefono)}` : ""}${r.modalidad === "domicilio" ? `<br>${esc(r.direccion)} ${esc(r.barrio)}` : ""}</p><hr>
+<table>${filas}${r.envio > 0 ? `<tr><td>Domicilio</td><td style="text-align:right">${dinero(r.envio)}</td></tr>` : ""}</table><hr>
+<table><tr><td><b>TOTAL</b></td><td style="text-align:right"><b>${dinero(r.total)}</b></td></tr></table>
+<p class="c">${r.cobrado ? `Pagado (${esc(r.metodo)})` : "Pendiente de cobro"}</p>${r.notas ? `<p>Notas: ${esc(r.notas)}</p>` : ""}<p class="c">¡Gracias por tu compra!</p>
+<script>window.onload=function(){window.print()}</script></body></html>`);
+  w.document.close();
+};
+
 /** Pantalla de venta: eliges productos, armas la cuenta, la envías a cocina y la cobras. */
 export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
+  const { negocio, recargar } = useNegocio();
+  const [recibo, setRecibo] = useState<Recibo | null>(null);
+  const [numCocina, setNumCocina] = useState("");
+  const nombreNegocio = negocio?.nombre ?? "Crokante";
+  useEffect(() => {
+    setNumCocina(negocio?.whatsapp_cocina ?? "");
+  }, [negocio?.whatsapp_cocina]);
+
+  const guardarNumCocina = async () => {
+    if (!negocio) return;
+    const { error } = await supabase.from("negocio_config").update({ whatsapp_cocina: numCocina.trim() || null }).eq("id", negocio.id);
+    if (error) return toast.error("No se pudo guardar el número de cocina.");
+    toast.success("Número de cocina guardado.");
+    recargar();
+  };
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [productos, setProductos] = useState<Producto[]>([]);
   const [mesas, setMesas] = useState<Mesa[]>([]);
@@ -174,6 +253,21 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
       toast.success("Pedido enviado a cocina. Cóbralo cuando el cliente pague.");
     }
     setGuardando(false);
+    setRecibo({
+      id: pedido.id,
+      cliente: nombre,
+      telefono: telefono.trim(),
+      modalidad,
+      mesa: mesa ? String(mesa.numero) : "",
+      direccion: direccion.trim(),
+      barrio: tarifa?.nombre ?? "",
+      notas: notas.trim(),
+      lineas: lineas.map((l) => ({ nombre: l.p.nombre, cant: l.cant, precio: l.p.precio })),
+      envio,
+      total,
+      metodo: METODOS.find((m) => m.clave === metodo)?.texto ?? metodo,
+      cobrado: cobrar,
+    });
     limpiar();
     onCambio?.();
   };
@@ -231,6 +325,67 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
       </div>
 
       <GlassPanel className="h-fit space-y-3 p-5 shadow-lg lg:sticky lg:top-20">
+        {recibo && (
+          <div className="space-y-2 rounded-xl border border-primary/40 bg-primary/5 p-3">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm font-medium text-foreground">
+                Pedido #{recibo.id.slice(0, 6).toUpperCase()} {recibo.cobrado ? "cobrado" : "en cocina"} · {dinero(recibo.total)}
+              </p>
+              <button aria-label="Cerrar" onClick={() => setRecibo(null)} className="text-muted-foreground">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <button
+                onClick={() => {
+                  if (soloDigitos(numCocina).length < 7) return toast.error("Escribe abajo el WhatsApp de la cocina.");
+                  window.open(enlaceWa(numCocina, textoComanda(recibo, nombreNegocio, true)), "_blank", "noopener,noreferrer");
+                }}
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-2 py-2.5 font-medium text-primary-foreground"
+              >
+                <MessageCircle className="h-4 w-4" /> Comanda a cocina
+              </button>
+              <button
+                onClick={() => imprimirTicket(recibo, nombreNegocio)}
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-glass-border px-2 py-2.5 text-foreground"
+              >
+                <Printer className="h-4 w-4" /> Imprimir
+              </button>
+              <button
+                onClick={() => {
+                  const tel = negocio?.telefono_pedidos ?? "";
+                  if (soloDigitos(tel).length < 7) return toast.error("Falta el WhatsApp del negocio en la pestaña “Mi negocio”.");
+                  window.open(enlaceWa(tel, textoComanda(recibo, nombreNegocio, false)), "_blank", "noopener,noreferrer");
+                }}
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-glass-border px-2 py-2.5 text-foreground"
+              >
+                <MessageCircle className="h-4 w-4" /> Registro al negocio
+              </button>
+              <button
+                onClick={() => {
+                  if (soloDigitos(recibo.telefono).length < 7) return toast.error("Este pedido no tiene celular del cliente.");
+                  const msg = `Hola ${recibo.cliente}, recibimos tu pedido en ${nombreNegocio}.\n\n${textoComanda(recibo, nombreNegocio, false)}\n\n¡Gracias!`;
+                  window.open(enlaceWa(recibo.telefono, msg), "_blank", "noopener,noreferrer");
+                }}
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-glass-border px-2 py-2.5 text-foreground"
+              >
+                <MessageCircle className="h-4 w-4" /> Avisar al cliente
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <input
+                className={`${campo} py-2`}
+                inputMode="tel"
+                placeholder="WhatsApp de la cocina"
+                value={numCocina}
+                onChange={(e) => setNumCocina(e.target.value)}
+              />
+              <button onClick={guardarNumCocina} className="shrink-0 rounded-lg border border-glass-border px-3 text-xs text-foreground">
+                Guardar
+              </button>
+            </div>
+          </div>
+        )}
         <h2 className="font-medium text-foreground">Cuenta actual</h2>
         <div className="grid grid-cols-3 gap-2">
           {MODALIDADES.map(({ clave, texto, Icon }) => (
