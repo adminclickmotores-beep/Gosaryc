@@ -20,6 +20,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ThumbnailRouteImport } from './routes/thumbnail'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as AppCalendarRouteImport } from './routes/_app/calendar'
+import { Route as AppCarteraFiadosRouteImport } from './routes/_app/cartera-fiados'
 import { Route as AppCombosRouteImport } from './routes/_app/combos'
 import { Route as AppConnectorsRouteImport } from './routes/_app/connectors'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
@@ -123,6 +124,11 @@ const UnsubscribeRoute = UnsubscribeRouteImport.update({
 const AppCalendarRoute = AppCalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCarteraFiadosRoute = AppCarteraFiadosRouteImport.update({
+  id: '/cartera-fiados',
+  path: '/cartera-fiados',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCombosRoute = AppCombosRouteImport.update({
@@ -393,6 +399,7 @@ export interface FileRoutesByFullPath {
   '/thumbnail': typeof ThumbnailRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/calendar': typeof AppCalendarRoute
+  '/cartera-fiados': typeof AppCarteraFiadosRoute
   '/combos': typeof AppCombosRoute
   '/connectors': typeof AppConnectorsRoute
   '/dashboard': typeof AppDashboardRoute
@@ -455,6 +462,7 @@ export interface FileRoutesByTo {
   '/thumbnail': typeof ThumbnailRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/calendar': typeof AppCalendarRoute
+  '/cartera-fiados': typeof AppCarteraFiadosRoute
   '/combos': typeof AppCombosRoute
   '/connectors': typeof AppConnectorsRoute
   '/dashboard': typeof AppDashboardRoute
@@ -519,6 +527,7 @@ export interface FileRoutesById {
   '/thumbnail': typeof ThumbnailRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/_app/calendar': typeof AppCalendarRoute
+  '/_app/cartera-fiados': typeof AppCarteraFiadosRoute
   '/_app/combos': typeof AppCombosRoute
   '/_app/connectors': typeof AppConnectorsRoute
   '/_app/dashboard': typeof AppDashboardRoute
@@ -583,6 +592,7 @@ export interface FileRouteTypes {
     | '/thumbnail'
     | '/unsubscribe'
     | '/calendar'
+    | '/cartera-fiados'
     | '/combos'
     | '/connectors'
     | '/dashboard'
@@ -645,6 +655,7 @@ export interface FileRouteTypes {
     | '/thumbnail'
     | '/unsubscribe'
     | '/calendar'
+    | '/cartera-fiados'
     | '/combos'
     | '/connectors'
     | '/dashboard'
@@ -708,6 +719,7 @@ export interface FileRouteTypes {
     | '/thumbnail'
     | '/unsubscribe'
     | '/_app/calendar'
+    | '/_app/cartera-fiados'
     | '/_app/combos'
     | '/_app/connectors'
     | '/_app/dashboard'
@@ -865,6 +877,13 @@ declare module '@tanstack/react-router' {
       path: '/calendar'
       fullPath: '/calendar'
       preLoaderRoute: typeof AppCalendarRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/cartera-fiados': {
+      id: '/_app/cartera-fiados'
+      path: '/cartera-fiados'
+      fullPath: '/cartera-fiados'
+      preLoaderRoute: typeof AppCarteraFiadosRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/combos': {
@@ -1222,6 +1241,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppCalendarRoute: typeof AppCalendarRoute
+  AppCarteraFiadosRoute: typeof AppCarteraFiadosRoute
   AppCombosRoute: typeof AppCombosRoute
   AppConnectorsRoute: typeof AppConnectorsRoute
   AppDashboardRoute: typeof AppDashboardRoute
@@ -1261,6 +1281,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppCalendarRoute: AppCalendarRoute,
+  AppCarteraFiadosRoute: AppCarteraFiadosRoute,
   AppCombosRoute: AppCombosRoute,
   AppConnectorsRoute: AppConnectorsRoute,
   AppDashboardRoute: AppDashboardRoute,
