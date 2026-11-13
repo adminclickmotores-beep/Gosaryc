@@ -200,6 +200,96 @@ export type Database = {
         }
         Relationships: []
       }
+      restaurante_insumos: {
+        Row: {
+          cantidad_compra: number
+          created_at: string
+          id: string
+          nombre: string
+          precio_compra: number
+          proveedor: string | null
+          stock: number
+          stock_minimo: number
+          unidad: string
+        }
+        Insert: {
+          cantidad_compra?: number
+          created_at?: string
+          id?: string
+          nombre: string
+          precio_compra?: number
+          proveedor?: string | null
+          stock?: number
+          stock_minimo?: number
+          unidad?: string
+        }
+        Update: {
+          cantidad_compra?: number
+          created_at?: string
+          id?: string
+          nombre?: string
+          precio_compra?: number
+          proveedor?: string | null
+          stock?: number
+          stock_minimo?: number
+          unidad?: string
+        }
+        Relationships: []
+      }
+      restaurante_recetas: {
+        Row: {
+          created_at: string
+          id: string
+          merma_pct: number
+          porciones: number
+          preparacion: string | null
+          producto_id: string
+          tiempo_min: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          merma_pct?: number
+          porciones?: number
+          preparacion?: string | null
+          producto_id: string
+          tiempo_min?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          merma_pct?: number
+          porciones?: number
+          preparacion?: string | null
+          producto_id?: string
+          tiempo_min?: number | null
+        }
+        Relationships: []
+      }
+      restaurante_receta_ingredientes: {
+        Row: {
+          cantidad: number
+          created_at: string
+          id: string
+          insumo_id: string
+          receta_id: string
+        }
+        Insert: {
+          cantidad?: number
+          created_at?: string
+          id?: string
+          insumo_id: string
+          receta_id: string
+        }
+        Update: {
+          cantidad?: number
+          created_at?: string
+          id?: string
+          insumo_id?: string
+          receta_id?: string
+        }
+        Relationships: []
+      }
       restaurante_productos: {
         Row: {
           activo: boolean
