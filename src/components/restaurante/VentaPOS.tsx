@@ -140,12 +140,24 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
       supabase.from("restaurante_mesas").select("*").order("numero"),
     ]);
     setCategorias(c.data ?? []);
-    setProductos(p.data ?? []);
+    setProductos((p.data ?? []).filter((x) => x.activo === true));
     setMesas(m.data ?? []);
   }, []);
 
   useEffect(() => {
     cargar();
+    // Mantiene el mosaico al día si ocultas o creas productos desde otra ventana.
+    const t = setInterval(cargar, 15000);
+    const alVolver = () => {
+      cargar();
+    };
+    window.addEventListener("focus", alVolver);
+    window.addEventListener("menu:cambio", alVolver);
+    return () => {
+      clearInterval(t);
+      window.removeEventListener("focus", alVolver);
+      window.removeEventListener("menu:cambio", alVolver);
+    };
   }, [cargar]);
 
   const visibles = useMemo(() => {

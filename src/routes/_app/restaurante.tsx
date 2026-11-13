@@ -387,7 +387,13 @@ function GestionMenu() {
   };
 
   const alternar = async (p: Producto) => {
-    await supabase.from("restaurante_productos").update({ activo: !p.activo }).eq("id", p.id);
+    const { data, error } = await supabase
+      .from("restaurante_productos")
+      .update({ activo: !p.activo })
+      .eq("id", p.id)
+      .select("id");
+    if (error || !data || data.length === 0) return toast.error("No se pudo cambiar el producto. Tu cuenta debe ser la del administrador.");
+    window.dispatchEvent(new Event("menu:cambio"));
     cargar();
   };
 
