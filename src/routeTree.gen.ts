@@ -32,6 +32,7 @@ import { Route as AppLeadsRouteImport } from './routes/_app/leads'
 import { Route as AppPagosDigitalesRouteImport } from './routes/_app/pagos-digitales'
 import { Route as AppPedidosRecurrentesRouteImport } from './routes/_app/pedidos-recurrentes'
 import { Route as AppPropinasRouteImport } from './routes/_app/propinas'
+import { Route as AppPuntosRecompensasRouteImport } from './routes/_app/puntos-recompensas'
 import { Route as AppRepartidoresRouteImport } from './routes/_app/repartidores'
 import { Route as AppRequestsRouteImport } from './routes/_app/requests'
 import { Route as AppRestauranteRouteImport } from './routes/_app/restaurante'
@@ -184,6 +185,11 @@ const AppPedidosRecurrentesRoute = AppPedidosRecurrentesRouteImport.update({
 const AppPropinasRoute = AppPropinasRouteImport.update({
   id: '/propinas',
   path: '/propinas',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPuntosRecompensasRoute = AppPuntosRecompensasRouteImport.update({
+  id: '/puntos-recompensas',
+  path: '/puntos-recompensas',
   getParentRoute: () => AppRoute,
 } as any)
 const AppRepartidoresRoute = AppRepartidoresRouteImport.update({
@@ -411,6 +417,7 @@ export interface FileRoutesByFullPath {
   '/pagos-digitales': typeof AppPagosDigitalesRoute
   '/pedidos-recurrentes': typeof AppPedidosRecurrentesRoute
   '/propinas': typeof AppPropinasRoute
+  '/puntos-recompensas': typeof AppPuntosRecompensasRoute
   '/repartidores': typeof AppRepartidoresRoute
   '/requests': typeof AppRequestsRoute
   '/restaurante': typeof AppRestauranteRoute
@@ -474,6 +481,7 @@ export interface FileRoutesByTo {
   '/pagos-digitales': typeof AppPagosDigitalesRoute
   '/pedidos-recurrentes': typeof AppPedidosRecurrentesRoute
   '/propinas': typeof AppPropinasRoute
+  '/puntos-recompensas': typeof AppPuntosRecompensasRoute
   '/repartidores': typeof AppRepartidoresRoute
   '/requests': typeof AppRequestsRoute
   '/restaurante': typeof AppRestauranteRoute
@@ -539,6 +547,7 @@ export interface FileRoutesById {
   '/_app/pagos-digitales': typeof AppPagosDigitalesRoute
   '/_app/pedidos-recurrentes': typeof AppPedidosRecurrentesRoute
   '/_app/propinas': typeof AppPropinasRoute
+  '/_app/puntos-recompensas': typeof AppPuntosRecompensasRoute
   '/_app/repartidores': typeof AppRepartidoresRoute
   '/_app/requests': typeof AppRequestsRoute
   '/_app/restaurante': typeof AppRestauranteRoute
@@ -604,6 +613,7 @@ export interface FileRouteTypes {
     | '/pagos-digitales'
     | '/pedidos-recurrentes'
     | '/propinas'
+    | '/puntos-recompensas'
     | '/repartidores'
     | '/requests'
     | '/restaurante'
@@ -667,6 +677,7 @@ export interface FileRouteTypes {
     | '/pagos-digitales'
     | '/pedidos-recurrentes'
     | '/propinas'
+    | '/puntos-recompensas'
     | '/repartidores'
     | '/requests'
     | '/restaurante'
@@ -731,6 +742,7 @@ export interface FileRouteTypes {
     | '/_app/pagos-digitales'
     | '/_app/pedidos-recurrentes'
     | '/_app/propinas'
+    | '/_app/puntos-recompensas'
     | '/_app/repartidores'
     | '/_app/requests'
     | '/_app/restaurante'
@@ -961,6 +973,13 @@ declare module '@tanstack/react-router' {
       path: '/propinas'
       fullPath: '/propinas'
       preLoaderRoute: typeof AppPropinasRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/puntos-recompensas': {
+      id: '/_app/puntos-recompensas'
+      path: '/puntos-recompensas'
+      fullPath: '/puntos-recompensas'
+      preLoaderRoute: typeof AppPuntosRecompensasRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/repartidores': {
@@ -1253,6 +1272,7 @@ interface AppRouteChildren {
   AppPagosDigitalesRoute: typeof AppPagosDigitalesRoute
   AppPedidosRecurrentesRoute: typeof AppPedidosRecurrentesRoute
   AppPropinasRoute: typeof AppPropinasRoute
+  AppPuntosRecompensasRoute: typeof AppPuntosRecompensasRoute
   AppRepartidoresRoute: typeof AppRepartidoresRoute
   AppRequestsRoute: typeof AppRequestsRoute
   AppRestauranteRoute: typeof AppRestauranteRoute
@@ -1293,6 +1313,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppPagosDigitalesRoute: AppPagosDigitalesRoute,
   AppPedidosRecurrentesRoute: AppPedidosRecurrentesRoute,
   AppPropinasRoute: AppPropinasRoute,
+  AppPuntosRecompensasRoute: AppPuntosRecompensasRoute,
   AppRepartidoresRoute: AppRepartidoresRoute,
   AppRequestsRoute: AppRequestsRoute,
   AppRestauranteRoute: AppRestauranteRoute,
