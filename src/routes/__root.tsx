@@ -74,7 +74,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: `${BRAND.tagline} — ${BRAND.name}` },
       { name: "description", content: BRAND.description },
-      { name: "theme-color", content: "#ffffff" },
+      { name: "theme-color", content: "#2563eb" },
+      { name: "robots", content: "index, follow" },
+      {
+        name: "keywords",
+        content:
+          "software para negocios, punto de venta, pos, inventario, facturación, pedidos en línea, menú digital, domicilios, recetario, control de costos, Gosaly",
+      },
+      { property: "og:url", content: "https://gosaly.lovable.app/" },
+      { property: "og:image", content: "https://gosaly.lovable.app/og-image.svg" },
+      { property: "og:locale", content: "es_CO" },
+      { name: "twitter:image", content: "https://gosaly.lovable.app/og-image.svg" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "mobile-web-app-capable", content: "yes" },
       { property: "og:title", content: `${BRAND.tagline} — ${BRAND.name}` },
@@ -89,6 +99,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "canonical", href: "https://gosaly.lovable.app/" },
       { rel: "icon", type: "image/svg+xml", href: "/icono-app.svg" },
       { rel: "apple-touch-icon", href: "/icono-app.svg" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -96,6 +107,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Manrope:wght@300;400;500;600;700;800&family=Urbanist:wght@300;400;500;600;700;800&family=Epilogue:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@400;500&display=swap",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          name: BRAND.name,
+          applicationCategory: "BusinessApplication",
+          operatingSystem: "Web, Windows, Android, iOS",
+          description: BRAND.description,
+          url: "https://gosaly.lovable.app/",
+          inLanguage: "es",
+        }),
       },
     ],
   }),

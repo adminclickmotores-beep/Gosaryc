@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /restaurante
+Disallow: /modulos/
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /login
+Disallow: /reset-password
+
+Sitemap: https://gosaly.lovable.app/sitemap.xml
