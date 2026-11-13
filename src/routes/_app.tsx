@@ -328,7 +328,7 @@ function AppShell() {
         {/* Sidebar (desktop) — sticky + collapsible */}
         <aside
           data-tour="sidebar"
-          className={`sticky top-0 hidden h-screen shrink-0 self-start overflow-y-auto border-r border-glass-border bg-white transition-[width] duration-200 ${completa ? "" : "md:flex md:flex-col"} ${
+          className={`sticky top-0 hidden h-screen shrink-0 self-start overflow-y-auto border-r border-glass-border bg-background/70 backdrop-blur-2xl transition-[width] duration-200 ${completa ? "" : "md:flex md:flex-col"} ${
             collapsed ? "w-16" : "w-64"
           }`}
         >
@@ -528,7 +528,7 @@ function AppShell() {
 
         <main className="flex-1 min-w-0 overflow-x-hidden pb-[calc(env(safe-area-inset-bottom)+5rem)] md:pb-0">
           {/* Mobile top bar */}
-          <header className={`sticky top-0 z-30 ${completa ? "hidden" : "flex"} items-center justify-between border-b border-glass-border bg-white/90 px-4 py-3 backdrop-blur-xl md:hidden`}>
+          <header className={`sticky top-0 z-30 ${completa ? "hidden" : "flex"} items-center justify-between border-b border-glass-border bg-background/80 px-4 py-3 backdrop-blur-xl md:hidden`}>
             <Link to="/dashboard" className="flex items-center gap-2 text-foreground">
               <BrandHexLogo size={26} />
               <span className="font-display text-base tracking-tight">{BRAND.name}</span>
@@ -658,7 +658,7 @@ function SidebarSearch({ items }: { items: NavItem[] }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.12 }}
-            className="absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-auto rounded-lg border border-glass-border bg-white p-1 shadow-lg"
+            className="absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-auto rounded-lg border border-glass-border bg-popover/95 p-1 shadow-lg backdrop-blur-xl"
           >
             {hits.length === 0 ? (
               <div className="px-3 py-2 text-xs text-muted-foreground">Sin resultados</div>
