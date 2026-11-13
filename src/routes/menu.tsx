@@ -1,6 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Minus, Plus, ShoppingBag, Star, CheckCircle2, Loader2 } from "lucide-react";
+import {
+  Minus,
+  Plus,
+  ShoppingBag,
+  Star,
+  CheckCircle2,
+  Loader2,
+  Search,
+  Clock,
+  MapPin,
+  MessageCircle,
+  UtensilsCrossed,
+  ChevronLeft,
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -27,7 +40,7 @@ const dinero = (n: number) =>
   new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
 
 const campo =
-  "w-full rounded-lg border border-glass-border bg-glass/40 px-3 py-2.5 text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary/50";
+  "w-full rounded-xl border border-glass-border bg-glass/40 px-3.5 py-3 text-base text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary/60 focus:ring-2 focus:ring-primary/20";
 
 function MenuPage() {
   const { n } = Route.useSearch();
@@ -46,6 +59,7 @@ function MenuPage() {
   const [modalidad, setModalidad] = useState<Modalidad>("domicilio");
   const [direccion, setDireccion] = useState("");
   const [notas, setNotas] = useState("");
+  const [busqueda, setBusqueda] = useState("");
 
   useEffect(() => {
     if (!dueno) {
@@ -75,6 +89,24 @@ function MenuPage() {
 
   const cambiar = (id: string, delta: number) =>
     setCarrito((c) => ({ ...c, [id]: Math.max(0, (c[id] ?? 0) + delta) }));
+
+  const termino = busqueda.trim().toLowerCase();
+  const visibles = useMemo(
+    () =>
+      termino
+        ? productos.filter(
+            (p) => p.nombre.toLowerCase().includes(termino) || (p.descripcion ?? "").toLowerCase().includes(termino),
+          )
+        : productos,
+    [productos, termino],
+  );
+  const destacados = useMemo(() => (termino ? [] : productos.filter((p) => p.destacado)), [productos, termino]);
+  const categoriasConItems = categorias.filter((c) => visibles.some((p) => p.categoria_id === c.id));
+  const sinCategoria = visibles.filter((p) => !p.categoria_id || !categorias.some((c) => c.id === p.categoria_id));
+
+  const irA = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const enviar = async () => {
     if (!nombre.trim() || !telefono.trim()) return toast.error("Escribe tu nombre y teléfono.");
@@ -111,13 +143,77 @@ function MenuPage() {
     setPaso("listo");
   };
 
+  const tarjeta = (p: Producto) => {
+    const cant = carrito[p.id] ?? 0;
+    return (
+      <GlassPanel
+        key={p.id}
+        className={`flex items-stretch gap-3 overflow-hidden p-3 transition-colors ${cant > 0 ? "ring-1 ring-primary/50" : ""}`}
+      >
+        <div className="flex min-w-0 flex-1 flex-col">
+          <p className="flex items-start gap-1.5 break-words font-medium leading-snug text-foreground">
+            <span className="min-w-0">{p.nombre}</span>
+            {p.destacado && (
+              <Star className="mt-0.5 h-3.5 w-3.5 shrink-0 fill-primary text-primary" aria-label="Recomendado" />
+            )}
+          </p>
+          {p.descripcion && (
+            <p className="mt-1 line-clamp-2 text-sm leading-snug text-muted-foreground">{p.descripcion}</p>
+          )}
+          <div className="mt-auto flex items-center justify-between gap-2 pt-3">
+            <span className="text-base font-semibold text-foreground">{dinero(p.precio)}</span>
+            {cant > 0 ? (
+              <div className="flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 p-0.5">
+                <button
+                  onClick={() => cambiar(p.id, -1)}
+                  aria-label="Quitar uno"
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-foreground hover:bg-primary/15"
+                >
+                  <Minus className="h-4 w-4" />
+                </button>
+                <span className="w-6 text-center text-sm font-medium text-foreground">{cant}</span>
+                <button
+                  onClick={() => cambiar(p.id, 1)}
+                  aria-label="Agregar uno"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => cambiar(p.id, 1)}
+                aria-label="Agregar"
+                className="flex h-9 items-center gap-1 rounded-full bg-primary px-3.5 text-sm font-medium text-primary-foreground hover:opacity-90"
+              >
+                <Plus className="h-4 w-4" /> Agregar
+              </button>
+            )}
+          </div>
+        </div>
+        {p.imagen_url && (
+          <img
+            src={p.imagen_url}
+            alt={p.nombre}
+            loading="lazy"
+            className="h-28 w-28 shrink-0 rounded-xl object-cover sm:h-32 sm:w-32"
+          />
+        )}
+      </GlassPanel>
+    );
+  };
+
   if (paso === "listo") {
     return (
       <div className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-4 px-4 text-center">
-        <CheckCircle2 className="h-14 w-14 text-primary" />
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/15">
+          <CheckCircle2 className="h-12 w-12 text-primary" />
+        </div>
         <h1 className="font-display text-3xl text-foreground">¡Pedido recibido!</h1>
         <p className="text-muted-foreground">
-          Tu código es <span className="font-mono text-foreground">{codigo}</span>. Ya lo enviamos a cocina.
+          Tu código es{" "}
+          <span className="rounded-md bg-primary/10 px-2 py-0.5 font-mono text-foreground">{codigo}</span>. Ya lo
+          enviamos a cocina.
         </p>
         <button
           onClick={() => setPaso("menu")}
@@ -130,135 +226,207 @@ function MenuPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 pb-32 pt-8">
-      <header className="mb-6 flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="break-words font-display text-3xl text-foreground">{negocio?.nombre ?? "Nuestro menú"}</h1>
-          <p className="text-sm text-muted-foreground">
-            {negocio?.eslogan ?? "Arma tu pedido y lo preparamos al momento."}
-          </p>
+    <div className="mx-auto max-w-3xl pb-32">
+      {/* Cabecera */}
+      <header className="relative overflow-hidden border-b border-glass-border bg-gradient-to-br from-primary/25 via-primary/10 to-transparent px-4 pb-6 pt-8 sm:rounded-b-3xl">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
+              <UtensilsCrossed className="h-7 w-7" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="break-words font-display text-3xl leading-tight text-foreground">
+                {negocio?.nombre ?? "Nuestro menú"}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {negocio?.eslogan ?? "Arma tu pedido y lo preparamos al momento."}
+              </p>
+            </div>
+          </div>
+          <Link to="/instalar" className="shrink-0 text-xs text-primary hover:underline">
+            Instalar app
+          </Link>
         </div>
-        <Link to="/instalar" className="shrink-0 text-xs text-primary hover:underline">Instalar app</Link>
-      </header>
 
-      {negocio && paso === "menu" && (
-        <GlassPanel className="mb-6 space-y-2 p-4 text-sm">
-          {negocio.descripcion && <p className="text-foreground">{negocio.descripcion}</p>}
-          {(negocio.ciudad || negocio.cobertura) && (
-            <p className="text-muted-foreground">
-              {[negocio.ciudad, negocio.cobertura].filter(Boolean).join(" · ")}
-            </p>
-          )}
-          {negocio.aviso_entrega && <p className="text-muted-foreground">{negocio.aviso_entrega}</p>}
-          {negocio.telefono_pedidos && (
-            <p className="text-foreground">WhatsApp: {negocio.telefono_pedidos}</p>
-          )}
-          {negocio.horarios && (
-            <details className="text-muted-foreground">
-              <summary className="cursor-pointer text-foreground">Horarios</summary>
-              <p className="mt-1 whitespace-pre-line">{negocio.horarios}</p>
-            </details>
-          )}
-        </GlassPanel>
-      )}
+        {negocio && paso === "menu" && (
+          <div className="mt-4 space-y-2 text-sm">
+            {negocio.descripcion && <p className="text-foreground">{negocio.descripcion}</p>}
+            <div className="flex flex-wrap gap-2">
+              {(negocio.ciudad || negocio.cobertura) && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-glass-border bg-glass/40 px-3 py-1 text-muted-foreground">
+                  <MapPin className="h-3.5 w-3.5 text-primary" />
+                  {[negocio.ciudad, negocio.cobertura].filter(Boolean).join(" · ")}
+                </span>
+              )}
+              {negocio.telefono_pedidos && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-glass-border bg-glass/40 px-3 py-1 text-foreground">
+                  <MessageCircle className="h-3.5 w-3.5 text-primary" />
+                  {negocio.telefono_pedidos}
+                </span>
+              )}
+            </div>
+            {negocio.aviso_entrega && <p className="text-muted-foreground">{negocio.aviso_entrega}</p>}
+            {negocio.horarios && (
+              <details className="rounded-xl border border-glass-border bg-glass/30 px-3 py-2 text-muted-foreground">
+                <summary className="flex cursor-pointer items-center gap-1.5 text-foreground">
+                  <Clock className="h-3.5 w-3.5 text-primary" /> Horarios
+                </summary>
+                <p className="mt-2 whitespace-pre-line">{negocio.horarios}</p>
+              </details>
+            )}
+          </div>
+        )}
+      </header>
 
       {paso === "menu" && (
         <>
-          {cargando && <p className="text-muted-foreground">Cargando menú…</p>}
-          {!cargando && productos.length === 0 && (
-            <p className="text-muted-foreground">El menú aún no tiene productos.</p>
-          )}
-          {categorias.map((cat) => {
-            const items = productos.filter((p) => p.categoria_id === cat.id);
-            if (items.length === 0) return null;
-            return (
-              <section key={cat.id} className="mb-8">
-                <h2 className="mb-3 font-display text-xl text-foreground">{cat.nombre}</h2>
-                <div className="space-y-3">
-                  {items.map((p) => (
-                    <GlassPanel key={p.id} className="flex items-center gap-3 p-4">
-                      <div className="min-w-0 flex-1">
-                        <p className="flex items-center gap-1.5 font-medium text-foreground">
-                          {p.nombre}
-                          {p.destacado && <Star className="h-3.5 w-3.5 fill-primary text-primary" aria-label="Recomendado" />}
-                        </p>
-                        {p.descripcion && <p className="text-sm text-muted-foreground">{p.descripcion}</p>}
-                        <p className="mt-1 text-sm text-foreground">{dinero(p.precio)}</p>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        {(carrito[p.id] ?? 0) > 0 && (
-                          <>
-                            <button onClick={() => cambiar(p.id, -1)} aria-label="Quitar uno" className="flex h-9 w-9 items-center justify-center rounded-full border border-glass-border text-foreground">
-                              <Minus className="h-4 w-4" />
-                            </button>
-                            <span className="w-5 text-center text-foreground">{carrito[p.id]}</span>
-                          </>
-                        )}
-                        <button onClick={() => cambiar(p.id, 1)} aria-label="Agregar uno" className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                          <Plus className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </GlassPanel>
-                  ))}
+          {/* Buscador y categorías pegajosos */}
+          <div className="sticky top-0 z-30 space-y-2 border-b border-glass-border bg-background/90 px-4 py-3 backdrop-blur-xl">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                className={`${campo} pl-10`}
+                placeholder="Buscar en el menú…"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+              />
+            </div>
+            {categoriasConItems.length > 1 && (
+              <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {categoriasConItems.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => irA(`cat-${c.id}`)}
+                    className="shrink-0 rounded-full border border-glass-border bg-glass/40 px-4 py-1.5 text-sm text-foreground hover:border-primary/50 hover:bg-primary/10"
+                  >
+                    {c.nombre}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="px-4 pt-5">
+            {cargando && (
+              <div className="space-y-3">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="h-28 animate-pulse rounded-2xl bg-glass/40" />
+                ))}
+              </div>
+            )}
+            {!cargando && productos.length === 0 && (
+              <p className="py-10 text-center text-muted-foreground">El menú aún no tiene productos.</p>
+            )}
+            {!cargando && productos.length > 0 && visibles.length === 0 && (
+              <p className="py-10 text-center text-muted-foreground">No encontramos “{busqueda}”.</p>
+            )}
+
+            {destacados.length > 0 && (
+              <section className="mb-8">
+                <h2 className="mb-3 flex items-center gap-2 font-display text-xl text-foreground">
+                  <Star className="h-5 w-5 fill-primary text-primary" /> Recomendados
+                </h2>
+                <div className="grid gap-3 sm:grid-cols-2">{destacados.map(tarjeta)}</div>
+              </section>
+            )}
+
+            {categoriasConItems.map((cat) => (
+              <section key={cat.id} id={`cat-${cat.id}`} className="mb-8 scroll-mt-32">
+                <h2 className="mb-3 border-l-4 border-primary pl-3 font-display text-xl text-foreground">
+                  {cat.nombre}
+                </h2>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {visibles.filter((p) => p.categoria_id === cat.id).map(tarjeta)}
                 </div>
               </section>
-            );
-          })}
+            ))}
+
+            {sinCategoria.length > 0 && (
+              <section className="mb-8">
+                <h2 className="mb-3 border-l-4 border-primary pl-3 font-display text-xl text-foreground">Otros</h2>
+                <div className="grid gap-3 sm:grid-cols-2">{sinCategoria.map(tarjeta)}</div>
+              </section>
+            )}
+          </div>
         </>
       )}
 
       {paso === "datos" && (
-        <GlassPanel className="space-y-4 p-5">
-          <h2 className="font-display text-xl text-foreground">Tus datos</h2>
-          <input className={campo} placeholder="Nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} />
-          <input className={campo} placeholder="Teléfono" inputMode="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
-          <div className="grid grid-cols-3 gap-2">
-            {([
-              ["domicilio", "Domicilio"],
-              ["recoger", "Recoger"],
-              ["mesa", "En mesa"],
-            ] as [Modalidad, string][]).map(([v, t]) => (
-              <button
-                key={v}
-                type="button"
-                onClick={() => setModalidad(v)}
-                className={`rounded-lg border px-2 py-2.5 text-sm ${modalidad === v ? "border-primary bg-primary/15 text-foreground" : "border-glass-border text-muted-foreground"}`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-          {modalidad === "domicilio" && (
-            <input className={campo} placeholder="Dirección de entrega" value={direccion} onChange={(e) => setDireccion(e.target.value)} />
-          )}
-          <textarea className={campo} rows={2} placeholder="Notas (sin cebolla, sin hielo…)" value={notas} onChange={(e) => setNotas(e.target.value)} />
-          <div className="space-y-1 border-t border-glass-border pt-3 text-sm">
-            {lineas.map((l) => (
-              <div key={l.producto.id} className="flex justify-between gap-3 text-muted-foreground">
-                <span>{l.cantidad} × {l.producto.nombre}</span>
-                <span>{dinero(l.producto.precio * l.cantidad)}</span>
-              </div>
-            ))}
-            <div className="flex justify-between pt-2 text-base font-medium text-foreground">
-              <span>Total</span>
-              <span>{dinero(total)}</span>
+        <div className="px-4 pt-5">
+          <button
+            onClick={() => setPaso("menu")}
+            className="mb-3 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ChevronLeft className="h-4 w-4" /> Seguir pidiendo
+          </button>
+          <GlassPanel className="space-y-4 p-5">
+            <h2 className="font-display text-xl text-foreground">Tus datos</h2>
+            <input className={campo} placeholder="Nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} />
+            <input
+              className={campo}
+              placeholder="Teléfono"
+              inputMode="tel"
+              value={telefono}
+              onChange={(e) => setTelefono(e.target.value)}
+            />
+            <div className="grid grid-cols-3 gap-2">
+              {(
+                [
+                  ["domicilio", "Domicilio"],
+                  ["recoger", "Recoger"],
+                  ["mesa", "En mesa"],
+                ] as [Modalidad, string][]
+              ).map(([v, t]) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setModalidad(v)}
+                  className={`rounded-xl border px-2 py-3 text-sm font-medium ${modalidad === v ? "border-primary bg-primary/15 text-foreground" : "border-glass-border text-muted-foreground"}`}
+                >
+                  {t}
+                </button>
+              ))}
             </div>
-          </div>
-        </GlassPanel>
+            {modalidad === "domicilio" && (
+              <input
+                className={campo}
+                placeholder="Dirección de entrega"
+                value={direccion}
+                onChange={(e) => setDireccion(e.target.value)}
+              />
+            )}
+            <textarea
+              className={campo}
+              rows={2}
+              placeholder="Notas (sin cebolla, sin hielo…)"
+              value={notas}
+              onChange={(e) => setNotas(e.target.value)}
+            />
+            <div className="space-y-1.5 border-t border-glass-border pt-3 text-sm">
+              {lineas.map((l) => (
+                <div key={l.producto.id} className="flex justify-between gap-3 text-muted-foreground">
+                  <span className="min-w-0 break-words">
+                    {l.cantidad} × {l.producto.nombre}
+                  </span>
+                  <span className="shrink-0">{dinero(l.producto.precio * l.cantidad)}</span>
+                </div>
+              ))}
+              <div className="flex justify-between pt-2 text-base font-semibold text-foreground">
+                <span>Total</span>
+                <span>{dinero(total)}</span>
+              </div>
+            </div>
+          </GlassPanel>
+        </div>
       )}
 
       {unidades > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-glass-border bg-white/95 px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-xl">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-glass-border bg-background/95 px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-xl">
           <div className="mx-auto flex max-w-3xl items-center gap-3">
-            {paso === "datos" && (
-              <button onClick={() => setPaso("menu")} className="rounded-full border border-glass-border px-4 py-3 text-sm text-foreground">
-                Volver
-              </button>
-            )}
             <button
               disabled={enviando}
               onClick={() => (paso === "menu" ? setPaso("datos") : enviar())}
-              className="flex flex-1 items-center justify-between gap-3 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-60"
+              className="flex flex-1 items-center justify-between gap-3 rounded-full bg-primary px-5 py-3.5 text-sm font-medium text-primary-foreground shadow-lg hover:opacity-90 disabled:opacity-60"
             >
               <span className="flex items-center gap-2">
                 {enviando ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingBag className="h-4 w-4" />}
