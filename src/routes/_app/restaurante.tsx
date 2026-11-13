@@ -5,6 +5,8 @@ import { useNegocio } from "@/hooks/use-negocio";
 import { PasoAPaso } from "@/components/restaurante/PasoAPaso";
 import { resolverTipoNegocio, TIPOS_NEGOCIO } from "@/lib/modulos-negocio";
 import { toast } from "sonner";
+import { GuiaRapida } from "@/components/app/GuiaRapida";
+import { GUIAS_NEGOCIO } from "@/lib/guia-negocio";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
@@ -108,6 +110,7 @@ function RestaurantePage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-display text-3xl text-foreground">{tipo.panel}</h1>
+          <p className="text-base italic text-primary">{GUIAS_NEGOCIO[tipo.clave].frase}</p>
           <p className="text-sm text-muted-foreground">
             {tipo.usaPedidos ? `Ventas de hoy: ${dinero(ventasHoy)}` : negocio?.nombre ?? tipo.etiqueta}
           </p>
@@ -136,6 +139,8 @@ function RestaurantePage() {
           </Link>
         </div>
       </div>
+
+      <GuiaRapida tipo={tipo.clave} />
 
       <PasoAPaso
         negocio={negocio}
