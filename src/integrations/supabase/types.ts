@@ -44,6 +44,69 @@ export type Database = {
         }
         Relationships: []
       }
+      asientos_contables: {
+        Row: {
+          asiento_id: string
+          concepto: string
+          created_at: string
+          cuenta_id: string
+          debe: number
+          fecha: string
+          haber: number
+          id: string
+          owner_id: string | null
+        }
+        Insert: {
+          asiento_id: string
+          concepto: string
+          created_at?: string
+          cuenta_id: string
+          debe?: number
+          fecha?: string
+          haber?: number
+          id?: string
+          owner_id?: string | null
+        }
+        Update: {
+          asiento_id?: string
+          concepto?: string
+          created_at?: string
+          cuenta_id?: string
+          debe?: number
+          fecha?: string
+          haber?: number
+          id?: string
+          owner_id?: string | null
+        }
+        Relationships: []
+      }
+      cuentas_contables: {
+        Row: {
+          codigo: string
+          created_at: string
+          id: string
+          nombre: string
+          owner_id: string | null
+          tipo: string
+        }
+        Insert: {
+          codigo: string
+          created_at?: string
+          id?: string
+          nombre: string
+          owner_id?: string | null
+          tipo: string
+        }
+        Update: {
+          codigo?: string
+          created_at?: string
+          id?: string
+          nombre?: string
+          owner_id?: string | null
+          tipo?: string
+        }
+        Relationships: []
+      }
       cotizaciones: {
         Row: {
           cliente: string

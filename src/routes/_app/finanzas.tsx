@@ -4,6 +4,7 @@ import { ArrowLeft, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { Contabilidad } from "@/components/restaurante/Contabilidad";
 
 export const Route = createFileRoute("/_app/finanzas")({
   head: () => ({ meta: [{ title: "Finanzas y rentabilidad" }] }),
@@ -103,6 +104,8 @@ function FinanzasPage() {
           </GlassPanel>
         </div>
       )}
+
+      <Contabilidad />
     </div>
   );
 }
