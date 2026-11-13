@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { consejosPara } from "@/lib/consejos-cocina";
+import { sugerirReceta } from "@/lib/recetas-sugerir.functions";
 
 type Insumo = Tables<"restaurante_insumos">;
 type Receta = Tables<"restaurante_recetas">;
@@ -351,6 +352,47 @@ function EditorReceta({
   const [preparacion, setPreparacion] = useState(receta.preparacion ?? "");
   const [insumoId, setInsumoId] = useState("");
   const [cantidad, setCantidad] = useState("");
+  const [acompanamiento, setAcompanamiento] = useState("");
+  const [sugiriendo, setSugiriendo] = useState(false);
+
+  const sugerir = async () => {
+    const p = Number(porciones);
+    if (!(p > 0)) return toast.error("Revisa las porciones antes de sugerir la receta.");
+    setSugiriendo(true);
+    try {
+      const r = await sugerirReceta({
+        data: {
+          platillo: producto.nombre,
+          porciones: p,
+          acompanamiento: acompanamiento.trim(),
+          insumos: insumos.map((i) => ({ nombre: i.nombre, unidad: i.unidad })),
+        },
+      });
+      setPreparacion(r.preparacion);
+      const faltan: string[] = [];
+      for (const ing of r.ingredientes) {
+        const ins = insumos.find((x) => x.nombre.trim().toLowerCase() === ing.nombre.trim().toLowerCase());
+        if (!ins) {
+          faltan.push(ing.nombre);
+          continue;
+        }
+        if (ingredientes.some((x) => x.insumo_id === ins.id)) continue;
+        if (!(ing.cantidad > 0)) continue;
+        await supabase
+          .from("restaurante_receta_ingredientes")
+          .insert({ receta_id: receta.id, insumo_id: ins.id, cantidad: ing.cantidad });
+      }
+      toast.success("Receta sugerida. Revísala y guarda los cambios.");
+      if (faltan.length > 0) {
+        toast(`Agrega a tu inventario para completarla: ${faltan.join(", ")}.`);
+      }
+      onCambio();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se pudo sugerir la receta.");
+    } finally {
+      setSugiriendo(false);
+    }
+  };
 
   const guardar = async () => {
     const p = Number(porciones);
@@ -473,6 +515,26 @@ function EditorReceta({
         <button onClick={agregar} className="w-full rounded-lg border border-glass-border px-4 py-2.5 text-sm text-foreground">
           Agregar ingrediente
         </button>
+      </div>
+
+      <div className="space-y-2 rounded-lg border border-glass-border p-3">
+        <p className="text-sm font-medium text-foreground">Sugerir receta</p>
+        <input
+          className={campo}
+          placeholder="Acompañamiento (ej. papas, ensalada)"
+          value={acompanamiento}
+          onChange={(e) => setAcompanamiento(e.target.value)}
+        />
+        <button
+          onClick={sugerir}
+          disabled={sugiriendo}
+          className="w-full rounded-lg border border-glass-border px-4 py-2.5 text-sm text-foreground disabled:opacity-60"
+        >
+          {sugiriendo ? "Generando receta…" : "Sugerir ingredientes y preparación"}
+        </button>
+        <p className="text-xs text-muted-foreground">
+          Usa las porciones de arriba. Revisa las cantidades antes de guardar.
+        </p>
       </div>
 
       <label className="block space-y-1">
