@@ -97,6 +97,7 @@ export type Database = {
           instagram: string | null
           logo_url: string | null
           moneda: string
+          owner_id: string | null
           portada_url: string | null
           nombre: string
           sitio_web: string | null
@@ -117,6 +118,7 @@ export type Database = {
           instagram?: string | null
           logo_url?: string | null
           moneda?: string
+          owner_id?: string | null
           nombre?: string
           portada_url?: string | null
           sitio_web?: string | null
@@ -137,6 +139,7 @@ export type Database = {
           instagram?: string | null
           logo_url?: string | null
           moneda?: string
+          owner_id?: string | null
           portada_url?: string | null
           nombre?: string
           sitio_web?: string | null
@@ -261,6 +264,7 @@ export type Database = {
           id: string
           nombre: string
           orden: number
+          owner_id: string | null
         }
         Insert: {
           activa?: boolean
@@ -268,6 +272,7 @@ export type Database = {
           id?: string
           nombre: string
           orden?: number
+          owner_id?: string | null
         }
         Update: {
           activa?: boolean
@@ -275,6 +280,7 @@ export type Database = {
           id?: string
           nombre?: string
           orden?: number
+          owner_id?: string | null
         }
         Relationships: []
       }
@@ -377,6 +383,7 @@ export type Database = {
           destacado: boolean
           id: string
           nombre: string
+          owner_id: string | null
           precio: number
         }
         Insert: {
@@ -387,6 +394,7 @@ export type Database = {
           destacado?: boolean
           id?: string
           nombre: string
+          owner_id?: string | null
           precio?: number
         }
         Update: {
@@ -397,6 +405,7 @@ export type Database = {
           destacado?: boolean
           id?: string
           nombre?: string
+          owner_id?: string | null
           precio?: number
         }
         Relationships: [
@@ -422,11 +431,13 @@ export type Database = {
           notas: string | null
           cliente_id: string | null
           mesa_id: string | null
+          owner_id: string | null
           repartidor_id: string | null
           total: number
         }
         Insert: {
           canal?: string
+          owner_id?: string | null
           cliente_nombre: string
           cliente_telefono: string
           created_at?: string
@@ -442,6 +453,7 @@ export type Database = {
         }
         Update: {
           canal?: string
+          owner_id?: string | null
           cliente_nombre?: string
           cliente_telefono?: string
           created_at?: string

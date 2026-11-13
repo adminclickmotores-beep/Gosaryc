@@ -44,10 +44,7 @@ import { BrandHexLogo } from "@/components/app/BrandHexLogo";
 import { BRAND } from "@/lib/brand";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
-import { resolverTipoNegocio, TIPOS_NEGOCIO } from "@/lib/modulos-negocio";
-
-/** Correos con cuenta de demostración: ven todos los módulos de todos los tipos de negocio. */
-const CORREOS_DEMO: string[] = ["jhonathan.cortes.24@gmail.com"];
+import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 
 import { AutosaveStatus } from "@/components/app/AutosaveStatus";
 import { purgeExpiredDrafts } from "@/hooks/use-draft";
@@ -154,13 +151,7 @@ function AppShell() {
   const tipoNegocio = resolverTipoNegocio(negocio?.tipo_negocio);
   const { esAdmin, puede, cargando: cargandoPermisos } = usePermisos();
   const verPanel = esAdmin || puede("pedidos") || puede("cocina");
-  // Cuenta de demostración: ve los módulos de TODOS los tipos de negocio para mostrarlos a clientes.
-  const esDemo = !!user?.email && CORREOS_DEMO.includes(user.email.toLowerCase());
-  const modulosVisibles = esDemo
-    ? TIPOS_NEGOCIO.flatMap((t) => t.modulos).filter(
-        (m, i, arr) => arr.findIndex((x) => x.id === m.id) === i,
-      )
-    : tipoNegocio.modulos;
+  const modulosVisibles = tipoNegocio.modulos;
   const navItems: NavItem[] = [
     ...(verPanel || cargandoPermisos
       ? [{ to: "/restaurante", label: tipoNegocio.panel, Icon: IconBolt } as NavItem]

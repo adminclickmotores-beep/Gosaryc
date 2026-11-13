@@ -5,20 +5,19 @@ import type { Tables } from "@/integrations/supabase/types";
 export type Negocio = Tables<"negocio_config">;
 
 /** Datos del negocio (nombre, horarios, contacto). Sirve para cualquier tipo de negocio. */
-export function useNegocio() {
+export function useNegocio(duenoId?: string | null) {
   const [negocio, setNegocio] = useState<Negocio | null>(null);
   const [cargando, setCargando] = useState(true);
 
   const recargar = useCallback(async () => {
-    const { data } = await supabase
-      .from("negocio_config")
-      .select("*")
-      .order("created_at")
-      .limit(1)
-      .maybeSingle();
+    // Con sesión, las reglas de la base solo devuelven el negocio propio.
+    // Sin sesión (menú público) se puede indicar de qué negocio se trata.
+    let consulta = supabase.from("negocio_config").select("*");
+    if (duenoId) consulta = consulta.eq("owner_id", duenoId);
+    const { data } = await consulta.order("created_at").limit(1).maybeSingle();
     setNegocio(data);
     setCargando(false);
-  }, []);
+  }, [duenoId]);
 
   useEffect(() => {
     recargar();

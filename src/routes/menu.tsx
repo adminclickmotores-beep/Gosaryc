@@ -14,6 +14,8 @@ export const Route = createFileRoute("/menu")({
       { name: "description", content: "Mira el menú, arma tu pedido y recíbelo en casa o recógelo en el local." },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>): { n?: string } =>
+    typeof s.n === "string" && s.n ? { n: s.n } : {},
   component: MenuPage,
 });
 
@@ -28,7 +30,10 @@ const campo =
   "w-full rounded-lg border border-glass-border bg-glass/40 px-3 py-2.5 text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary/50";
 
 function MenuPage() {
-  const { negocio } = useNegocio();
+  const { n } = Route.useSearch();
+  const { negocio, cargando: cargandoNegocio } = useNegocio(n);
+  // Negocio al que pertenece este menú: el del enlace (?n=) o, si no hay, el que cargó.
+  const dueno = n ?? negocio?.owner_id ?? null;
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [productos, setProductos] = useState<Producto[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -43,16 +48,20 @@ function MenuPage() {
   const [notas, setNotas] = useState("");
 
   useEffect(() => {
+    if (!dueno) {
+      if (!cargandoNegocio) setCargando(false);
+      return;
+    }
     (async () => {
       const [c, p] = await Promise.all([
-        supabase.from("restaurante_categorias").select("*").eq("activa", true).order("orden"),
-        supabase.from("restaurante_productos").select("*").eq("activo", true).order("nombre"),
+        supabase.from("restaurante_categorias").select("*").eq("owner_id", dueno).eq("activa", true).order("orden"),
+        supabase.from("restaurante_productos").select("*").eq("owner_id", dueno).eq("activo", true).order("nombre"),
       ]);
       setCategorias(c.data ?? []);
       setProductos(p.data ?? []);
       setCargando(false);
     })();
-  }, []);
+  }, [dueno, cargandoNegocio]);
 
   const lineas = useMemo(
     () =>
@@ -74,6 +83,7 @@ function MenuPage() {
     const id = crypto.randomUUID();
     const { error } = await supabase.from("restaurante_pedidos").insert({
       id,
+      owner_id: dueno,
       cliente_nombre: nombre.trim(),
       cliente_telefono: telefono.trim(),
       modalidad,

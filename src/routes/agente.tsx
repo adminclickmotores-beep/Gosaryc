@@ -4,6 +4,7 @@ import { Bot, Loader2, Send, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { useNegocio } from "@/hooks/use-negocio";
 
 export const Route = createFileRoute("/agente")({
   head: () => ({
@@ -12,6 +13,8 @@ export const Route = createFileRoute("/agente")({
       { name: "description", content: "Pide por chat: elige tus productos, la entrega y confirma tu pedido." },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>): { n?: string } =>
+    typeof s.n === "string" && s.n ? { n: s.n } : {},
   component: AgentePage,
 });
 
@@ -49,6 +52,9 @@ const campo =
   "w-full rounded-lg border border-glass-border bg-glass/40 px-3 py-2.5 text-base text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary/50";
 
 function AgentePage() {
+  const { n } = Route.useSearch();
+  const { negocio, cargando: cargandoNegocio } = useNegocio(n);
+  const dueno = n ?? negocio?.owner_id ?? null;
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [productos, setProductos] = useState<Producto[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -65,16 +71,20 @@ function AgentePage() {
   const finRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    if (!dueno) {
+      if (!cargandoNegocio) setCargando(false);
+      return;
+    }
     (async () => {
       const [c, p] = await Promise.all([
-        supabase.from("restaurante_categorias").select("*").eq("activa", true).order("orden"),
-        supabase.from("restaurante_productos").select("*").eq("activo", true).order("nombre"),
+        supabase.from("restaurante_categorias").select("*").eq("owner_id", dueno).eq("activa", true).order("orden"),
+        supabase.from("restaurante_productos").select("*").eq("owner_id", dueno).eq("activo", true).order("nombre"),
       ]);
       setCategorias(c.data ?? []);
       setProductos(p.data ?? []);
       setCargando(false);
     })();
-  }, []);
+  }, [dueno, cargandoNegocio]);
 
   // Saludo inicial, una sola vez cuando ya cargó el menú.
   useEffect(() => {
@@ -119,6 +129,7 @@ function AgentePage() {
     const id = crypto.randomUUID();
     const { error } = await supabase.from("restaurante_pedidos").insert({
       id,
+      owner_id: dueno,
       cliente_nombre: nombre,
       cliente_telefono: telefono,
       modalidad,

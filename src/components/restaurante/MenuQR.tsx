@@ -3,6 +3,7 @@ import QRCode from "qrcode";
 import { Copy, Download, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { useNegocio } from "@/hooks/use-negocio";
 
 const BASE_PUBLICA = "https://gosaly.lovable.app";
 
@@ -15,7 +16,9 @@ export function MenuQR() {
     if (!/localhost|lovableproject|id-preview/.test(host)) setOrigen(host);
   }, []);
 
-  const enlace = `${origen}/menu`;
+  const { negocio } = useNegocio();
+  // Cada negocio tiene su propio menú: el enlace lleva el identificador del negocio.
+  const enlace = negocio?.owner_id ? `${origen}/menu?n=${negocio.owner_id}` : `${origen}/menu`;
 
   useEffect(() => {
     QRCode.toDataURL(enlace, { width: 720, margin: 2, errorCorrectionLevel: "M" })
