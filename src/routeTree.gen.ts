@@ -26,6 +26,7 @@ import { Route as AppConnectorsRouteImport } from './routes/_app/connectors'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppDifusionWhatsappRouteImport } from './routes/_app/difusion-whatsapp'
 import { Route as AppDomiciliosRouteImport } from './routes/_app/domicilios'
+import { Route as AppEquipoNominaRouteImport } from './routes/_app/equipo-nomina'
 import { Route as AppFinanzasRouteImport } from './routes/_app/finanzas'
 import { Route as AppFunnelRouteImport } from './routes/_app/funnel'
 import { Route as AppIntegrationsRouteImport } from './routes/_app/integrations'
@@ -158,6 +159,11 @@ const AppDifusionWhatsappRoute = AppDifusionWhatsappRouteImport.update({
 const AppDomiciliosRoute = AppDomiciliosRouteImport.update({
   id: '/domicilios',
   path: '/domicilios',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEquipoNominaRoute = AppEquipoNominaRouteImport.update({
+  id: '/equipo-nomina',
+  path: '/equipo-nomina',
   getParentRoute: () => AppRoute,
 } as any)
 const AppFinanzasRoute = AppFinanzasRouteImport.update({
@@ -429,6 +435,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AppDashboardRoute
   '/difusion-whatsapp': typeof AppDifusionWhatsappRoute
   '/domicilios': typeof AppDomiciliosRoute
+  '/equipo-nomina': typeof AppEquipoNominaRoute
   '/finanzas': typeof AppFinanzasRoute
   '/funnel': typeof AppFunnelRoute
   '/integrations': typeof AppIntegrationsRoute
@@ -496,6 +503,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AppDashboardRoute
   '/difusion-whatsapp': typeof AppDifusionWhatsappRoute
   '/domicilios': typeof AppDomiciliosRoute
+  '/equipo-nomina': typeof AppEquipoNominaRoute
   '/finanzas': typeof AppFinanzasRoute
   '/funnel': typeof AppFunnelRoute
   '/integrations': typeof AppIntegrationsRoute
@@ -565,6 +573,7 @@ export interface FileRoutesById {
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/difusion-whatsapp': typeof AppDifusionWhatsappRoute
   '/_app/domicilios': typeof AppDomiciliosRoute
+  '/_app/equipo-nomina': typeof AppEquipoNominaRoute
   '/_app/finanzas': typeof AppFinanzasRoute
   '/_app/funnel': typeof AppFunnelRoute
   '/_app/integrations': typeof AppIntegrationsRoute
@@ -634,6 +643,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/difusion-whatsapp'
     | '/domicilios'
+    | '/equipo-nomina'
     | '/finanzas'
     | '/funnel'
     | '/integrations'
@@ -701,6 +711,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/difusion-whatsapp'
     | '/domicilios'
+    | '/equipo-nomina'
     | '/finanzas'
     | '/funnel'
     | '/integrations'
@@ -769,6 +780,7 @@ export interface FileRouteTypes {
     | '/_app/dashboard'
     | '/_app/difusion-whatsapp'
     | '/_app/domicilios'
+    | '/_app/equipo-nomina'
     | '/_app/finanzas'
     | '/_app/funnel'
     | '/_app/integrations'
@@ -967,6 +979,13 @@ declare module '@tanstack/react-router' {
       path: '/domicilios'
       fullPath: '/domicilios'
       preLoaderRoute: typeof AppDomiciliosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/equipo-nomina': {
+      id: '/_app/equipo-nomina'
+      path: '/equipo-nomina'
+      fullPath: '/equipo-nomina'
+      preLoaderRoute: typeof AppEquipoNominaRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/finanzas': {
@@ -1323,6 +1342,7 @@ interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppDifusionWhatsappRoute: typeof AppDifusionWhatsappRoute
   AppDomiciliosRoute: typeof AppDomiciliosRoute
+  AppEquipoNominaRoute: typeof AppEquipoNominaRoute
   AppFinanzasRoute: typeof AppFinanzasRoute
   AppFunnelRoute: typeof AppFunnelRoute
   AppIntegrationsRoute: typeof AppIntegrationsRoute
@@ -1367,6 +1387,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppDifusionWhatsappRoute: AppDifusionWhatsappRoute,
   AppDomiciliosRoute: AppDomiciliosRoute,
+  AppEquipoNominaRoute: AppEquipoNominaRoute,
   AppFinanzasRoute: AppFinanzasRoute,
   AppFunnelRoute: AppFunnelRoute,
   AppIntegrationsRoute: AppIntegrationsRoute,

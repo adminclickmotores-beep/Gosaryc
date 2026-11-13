@@ -126,7 +126,10 @@ const PROVEEDORES: ModuloNegocio = {
   ...m("proveedores", "Proveedores y compras", "Pedidos y deudas con proveedores.", Truck),
   ruta: "/proveedores-compras",
 };
-const EMPLEADOS = m("equipo_turnos", "Equipo, turnos y nómina", "Turnos, pagos y novedades del personal.", Briefcase);
+const EMPLEADOS: ModuloNegocio = {
+  ...m("equipo_turnos", "Equipo, turnos y nómina", "Turnos, pagos y novedades del personal.", Briefcase),
+  ruta: "/equipo-nomina",
+};
 const METAS = m("metas", "Metas y objetivos", "Metas de ventas y seguimiento semanal.", Target);
 const GARANTIAS = m("garantias", "Garantías y postventa", "Seguimiento a reclamos y garantías.", BadgeCheck);
 
