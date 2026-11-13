@@ -25,7 +25,7 @@ const LEGACY_REDIRECTS: Record<string, { to: string; search?: Record<string, str
 export const Route = createFileRoute("/$")({
   head: () => ({
     meta: [
-      { title: `Page not found — ${BRAND.name}` },
+      { title: `Página no encontrada — ${BRAND.name}` },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -48,7 +48,7 @@ function CatchAll() {
       <div className="relative z-10 mx-auto flex min-h-dvh max-w-xl flex-col items-center justify-center px-6 py-16">
         <GlassPanel className="w-full p-8 text-center">
           <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">404</p>
-          <h1 className="mt-3 font-display text-3xl tracking-tight">Page not found</h1>
+          <h1 className="mt-3 font-display text-3xl tracking-tight">Página no encontrada</h1>
           <p className="mt-3 text-sm text-muted-foreground">
             We couldn't find <span className="font-mono text-foreground/80">/{_splat}</span>.
             It may have moved or been retired.

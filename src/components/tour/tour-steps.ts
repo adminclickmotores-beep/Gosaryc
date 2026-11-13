@@ -15,7 +15,7 @@ export type TourStep = {
   openTo?: string;
   /** Preferred tooltip placement relative to target */
   placement?: "bottom" | "top" | "right" | "left" | "center";
-  /** Force the sidebar's "Marketing tools" subtree open before resolving target */
+  /** Force the sidebar's tools subtree open before resolving target */
   expandTools?: boolean;
 };
 
@@ -25,22 +25,22 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: "welcome",
     route: "/dashboard",
-    eyebrow: "2-minute tour",
-    title: "Let's walk the whole app.",
-    body: "I'll point at every menu item — top to bottom — and explain in one line what it does and when to open it. Use ← → to move, Esc to skip.",
+    eyebrow: "Recorrido de 2 minutos",
+    title: "Recorramos toda la app.",
+    body: "Te señalo cada opción del menú, de arriba abajo, y te explico en una línea para qué sirve. Usa ← → para avanzar y Esc para salir.",
     placement: "center",
   },
 
-  // ── Primary nav ───────────────────────────────────────────────
+  // ── Navegación principal ──────────────────────────────────────
   {
     id: "nav-dashboard",
     route: "/dashboard",
     target: '[data-tour="nav-/dashboard"]',
     context: SIDEBAR,
     openTo: "/dashboard",
-    eyebrow: "This week",
-    title: "Your Monday-morning screen.",
-    body: "Live campaigns, pacing toward MQL/SQO targets, and the next action that needs you. Start every day here.",
+    eyebrow: "Esta semana",
+    title: "Tu pantalla de cada día.",
+    body: "Aquí ves lo que está en curso, el avance hacia tus metas y la siguiente acción que requiere tu atención. Empieza tu día aquí.",
     placement: "right",
   },
   {
@@ -49,9 +49,9 @@ export const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="nav-/campaigns"]',
     context: SIDEBAR,
     openTo: "/campaigns",
-    eyebrow: "Campaigns",
-    title: "Where every campaign lives.",
-    body: "One row per workspace — brief, assets, checklist, results. Click \"New campaign\" to spin one up or generate one from a brief with AI.",
+    eyebrow: "Proyectos",
+    title: "Aquí vive cada proyecto.",
+    body: "Una fila por proyecto: resumen, archivos, lista de pendientes y resultados. Pulsa \"Nuevo proyecto\" para crear uno o genéralo a partir de un resumen con ayuda de la IA.",
     placement: "right",
   },
   {
@@ -60,23 +60,23 @@ export const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="nav-/tools"]',
     context: SIDEBAR,
     openTo: "/tools",
-    eyebrow: "Marketing tools",
-    title: "Your toolbelt — 3 hubs.",
-    body: "Campaign-in-a-box, Funnel, and UTM Builder. I'll open the menu so you can see each one.",
+    eyebrow: "Herramientas",
+    title: "Tus herramientas, en 3 grupos.",
+    body: "Proyecto listo para usar, Embudo y Constructor UTM. Abro el menú para que veas cada una.",
     placement: "right",
     expandTools: true,
   },
 
-  // ── Tools submenu ─────────────────────────────────────────────
+  // ── Submenú de herramientas ───────────────────────────────────
   {
     id: "tool-campaign",
     route: "/dashboard",
     target: '[data-tour="tool-campaign"]',
     context: SIDEBAR,
     openTo: "/tools?focus=campaign",
-    eyebrow: "Tools › Campaign-in-a-box",
-    title: "Launch a campaign end-to-end.",
-    body: "Draft creative, import a list, and schedule events — all from one place. Use it when you're standing up a new push.",
+    eyebrow: "Herramientas › Proyecto listo para usar",
+    title: "Lanza algo de principio a fin.",
+    body: "Redacta, importa una lista y programa eventos desde un solo lugar. Úsalo cuando empieces algo nuevo.",
     placement: "right",
     expandTools: true,
   },
@@ -86,9 +86,9 @@ export const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="tool-funnel"]',
     context: SIDEBAR,
     openTo: "/funnel",
-    eyebrow: "Tools › Funnel",
-    title: "Set targets, watch performance.",
-    body: "MQL / SQO sets your monthly goals (org-wide or per workspace). Performance shows whether you're tracking against them. Open weekly.",
+    eyebrow: "Herramientas › Embudo",
+    title: "Define metas y revisa el avance.",
+    body: "Las metas MQL / SQO fijan tus objetivos mensuales, de toda la organización o por proyecto. Desempeño muestra si vas por buen camino. Revísalo cada semana.",
     placement: "right",
     expandTools: true,
   },
@@ -98,23 +98,23 @@ export const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="tool-utm"]',
     context: SIDEBAR,
     openTo: "/tools/utm",
-    eyebrow: "Tools › UTM Builder",
-    title: "Consistent links, every time.",
-    body: "Campaign Name generates canonical names, Naming conventions enforce your taxonomy, and All UTMs shows every link the team has built.",
+    eyebrow: "Herramientas › Constructor UTM",
+    title: "Enlaces ordenados, siempre.",
+    body: "El generador de nombres crea nombres estándar, las convenciones de nombres mantienen tu forma de escribir y Todos los UTM muestra cada enlace que ha creado el equipo.",
     placement: "right",
     expandTools: true,
   },
 
-  // ── Rest of primary nav ───────────────────────────────────────
+  // ── Resto de la navegación ────────────────────────────────────
   {
     id: "nav-calendar",
     route: "/dashboard",
     target: '[data-tour="nav-/calendar"]',
     context: SIDEBAR,
     openTo: "/calendar",
-    eyebrow: "Calendar",
-    title: "Every send, event, and launch.",
-    body: "Month view of every campaign milestone, color-coded by type. Drag to reschedule. The single source of truth for \"what's going out when.\"",
+    eyebrow: "Calendario",
+    title: "Cada envío, evento y lanzamiento.",
+    body: "Vista mensual de todos los hitos, con colores por tipo. Arrastra para cambiar fechas. Es la fuente de verdad de \"qué sale y cuándo\".",
     placement: "right",
   },
   {
@@ -123,9 +123,9 @@ export const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="nav-/requests"]',
     context: SIDEBAR,
     openTo: "/requests",
-    eyebrow: "Requests",
-    title: "Intake from the rest of the company.",
-    body: "Sales, product, partners — anyone — can request a campaign via your public intake link. Triage, promote to workspace, or decline here.",
+    eyebrow: "Solicitudes",
+    title: "Pedidos de todo el equipo.",
+    body: "Cualquier persona puede pedir un proyecto desde tu enlace público. Clasifica, pasa a un proyecto o rechaza desde aquí.",
     placement: "right",
   },
   {
@@ -134,22 +134,22 @@ export const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="nav-/templates"]',
     context: SIDEBAR,
     openTo: "/templates",
-    eyebrow: "Templates",
-    title: "Reusable starting points.",
-    body: "Brief templates, email layouts, checklist presets. Save anything that worked once so the next campaign starts at 50%.",
+    eyebrow: "Plantillas",
+    title: "Puntos de partida reutilizables.",
+    body: "Plantillas de resumen, diseños de correo y listas de pendientes. Guarda lo que funcionó una vez para que el siguiente proyecto empiece más adelantado.",
     placement: "right",
   },
 
-  // ── Footer nav ────────────────────────────────────────────────
+  // ── Navegación inferior ───────────────────────────────────────
   {
     id: "nav-settings",
     route: "/dashboard",
     target: '[data-tour="nav-settings"]',
     context: SIDEBAR,
     openTo: "/settings",
-    eyebrow: "Settings",
-    title: "Org, team, taxonomy, brand.",
-    body: "Invite teammates, set roles, edit the campaign-type vocabulary, and configure your brand. Visit once during setup, then rarely.",
+    eyebrow: "Configuración",
+    title: "Organización, equipo, etiquetas y marca.",
+    body: "Invita a tu equipo, asigna roles, edita el vocabulario de tus proyectos y configura tu marca. Visítalo una vez al inicio y luego muy de vez en cuando.",
     placement: "right",
   },
   {
@@ -158,30 +158,30 @@ export const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="nav-integrations"]',
     context: SIDEBAR,
     openTo: "/integrations",
-    eyebrow: "Integrations",
-    title: "Connect your CRM, webhooks, and more.",
-    body: "Without these, demo data fills in. Connect your CRM and inbox here to make every panel live. Do this on day one.",
+    eyebrow: "Conexiones",
+    title: "Conecta tu CRM, webhooks y más.",
+    body: "Sin esto, verás datos de demostración. Conecta aquí tu CRM y tu correo para que cada panel muestre datos reales. Hazlo el primer día.",
     placement: "right",
   },
 
-  // ── Top-right pill ────────────────────────────────────────────
+  // ── Píldora superior derecha ──────────────────────────────────
   {
     id: "setup-pill",
     route: "/dashboard",
     target: '[data-tour="setup-pill"], [data-tour="onboarding-checklist"]',
-    eyebrow: "Setup checklist",
-    title: "Five 30-second wins.",
-    body: "Follow the pill at the top-right to feel the app's value fast. You can replay this tour anytime from inside it.",
+    eyebrow: "Lista de inicio",
+    title: "Cinco pasos de 30 segundos.",
+    body: "Sigue la píldora de arriba a la derecha para aprovechar la app rápido. Puedes repetir este recorrido cuando quieras desde ahí.",
     placement: "bottom",
   },
 
-  // ── Outro ─────────────────────────────────────────────────────
+  // ── Cierre ────────────────────────────────────────────────────
   {
     id: "done",
     route: "/dashboard",
-    eyebrow: "You're set",
-    title: "Go ship something.",
-    body: "Press ⌘K anywhere to jump between tools. Replay this tour from the Setup pill if you need a refresher.",
+    eyebrow: "Listo",
+    title: "Ahora a trabajar.",
+    body: "Pulsa ⌘K en cualquier momento para saltar entre herramientas. Repite este recorrido desde la píldora de inicio si lo necesitas.",
     placement: "center",
   },
 ];
