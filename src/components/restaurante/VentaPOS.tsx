@@ -48,6 +48,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
   const [recibido, setRecibido] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [zonaManual, setZonaManual] = useState("");
+  const [correo, setCorreo] = useState("");
 
   const cargar = useCallback(async () => {
     const [c, p, m] = await Promise.all([
@@ -102,14 +103,18 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
     setRecibido("");
     setMesaId("");
     setZonaManual("");
+    setCorreo("");
   };
 
   const registrar = async (cobrar: boolean) => {
     if (lineas.length === 0) return toast.error("Agrega al menos un producto a la cuenta.");
-    if (modalidad === "domicilio" && (!direccion.trim() || telefono.trim().length < 5))
-      return toast.error("Para un domicilio escribe la dirección y el teléfono del cliente.");
-    if (modalidad === "domicilio" && !tarifa)
-      return toast.error("Elige el barrio de entrega para cobrar el domicilio.");
+    if (modalidad === "domicilio") {
+      if (!cliente.trim()) return toast.error("Escribe el nombre del cliente.");
+      if (telefono.replace(/\D/g, "").length < 7) return toast.error("Escribe el celular del cliente.");
+      if (!tarifa) return toast.error("Elige el barrio de entrega para cobrar el domicilio.");
+      if (!direccion.trim()) return toast.error("Escribe la dirección de entrega.");
+      if (correo.trim() && !/^\S+@\S+\.\S+$/.test(correo.trim())) return toast.error("El correo electrónico no es válido.");
+    }
     setGuardando(true);
     const mesa = mesas.find((m) => m.id === mesaId);
     const nombre =
@@ -122,6 +127,8 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
         modalidad,
         mesa_id: modalidad === "mesa" && mesaId ? mesaId : null,
         direccion: modalidad === "domicilio" ? direccion.trim() : null,
+        barrio: modalidad === "domicilio" && tarifa ? tarifa.nombre : null,
+        cliente_email: modalidad === "domicilio" && correo.trim() ? correo.trim().slice(0, 160) : null,
         notas: notas.trim() || null,
         canal: "mostrador",
         estado: "nuevo",
@@ -244,16 +251,16 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
             ))}
           </select>
         )}
-        <input className={campo} placeholder="Nombre del cliente (opcional)" value={cliente} onChange={(e) => setCliente(e.target.value)} />
+        <input className={campo} placeholder={modalidad === "domicilio" ? "Nombre del cliente *" : "Nombre del cliente (opcional)"} value={cliente} onChange={(e) => setCliente(e.target.value)} />
         {modalidad !== "mesa" && (
-          <input className={campo} placeholder="Teléfono" inputMode="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
+          <input className={campo} placeholder={modalidad === "domicilio" ? "Celular *" : "Teléfono"} inputMode="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
         )}
         {modalidad === "domicilio" && (
           <>
-            <input className={campo} placeholder="Dirección de entrega (incluye el barrio)" value={direccion} onChange={(e) => setDireccion(e.target.value)} />
+            <input className={campo} placeholder="Dirección de entrega *" value={direccion} onChange={(e) => setDireccion(e.target.value)} />
             <select className={campo} value={zonaManual} onChange={(e) => setZonaManual(e.target.value)} aria-label="Barrio de entrega">
               <option value="">
-                {tarifaDetectada ? `Detectado: ${tarifaDetectada.nombre} (${dinero(tarifaDetectada.precio)})` : "Elegir barrio de entrega"}
+                {tarifaDetectada ? `Barrio detectado: ${tarifaDetectada.nombre} (${dinero(tarifaDetectada.precio)})` : "Barrio de entrega *"}
               </option>
               {TARIFAS_DOMICILIO.map((x) => (
                 <option key={x.nombre} value={x.nombre}>
@@ -264,6 +271,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
             {!tarifa && direccion.trim().length > 3 && (
               <p className="text-xs text-muted-foreground">No reconocí el barrio en la dirección; elígelo de la lista.</p>
             )}
+            <input className={campo} type="email" placeholder="Correo electrónico (opcional)" value={correo} onChange={(e) => setCorreo(e.target.value)} />
           </>
         )}
 
@@ -287,7 +295,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
           ))}
         </div>
 
-        <textarea className={campo} rows={2} placeholder="Notas para cocina (sin cebolla, etc.)" value={notas} onChange={(e) => setNotas(e.target.value)} />
+        <textarea className={campo} rows={2} placeholder="Notas (opcional): sin cebolla, indicaciones de entrega..." value={notas} onChange={(e) => setNotas(e.target.value)} />
 
         {tarifa && (
           <div className="space-y-1 border-t border-glass-border pt-3 text-sm">
