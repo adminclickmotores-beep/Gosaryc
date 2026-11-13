@@ -161,7 +161,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       { id: "asistente", titulo: "Asistente de pedidos", descripcion: "Atiende pedidos por chat.", Icon: MessageCircle, ruta: "/agente", estado: "Activo" },
       { ...m("repartidores", "Repartidores y liquidación", "Pago por domicilio y cuentas de cada domiciliario.", Bike), ruta: "/repartidores" },
       m("mesas", "Reservas de mesas", "Reservas y control de mesas.", Armchair),
-      m("combos", "Combos y promociones", "Combos del día, 2x1 y descuentos por horario.", Percent),
+      { ...m("combos", "Combos y promociones", "Combos del día, 2x1 y descuentos por horario.", Percent), ruta: "/combos" },
       m("insumos", "Inventario de insumos", "Ingredientes, mermas y alertas de faltantes.", Boxes),
       m("propinas", "Propinas y reparto", "Registro y reparto de propinas entre el equipo.", Coins),
       m("suscripciones", "Pedidos recurrentes", "Clientes que piden cada semana (almuerzos, corporativos).", Repeat),
