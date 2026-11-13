@@ -17,6 +17,31 @@ export const runAgenteVirtual = createServerFn({ method: "POST" })
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("El asistente todavía no está configurado.");
 
+    // Catálogo real del negocio (RLS aplica: solo lo que este usuario puede ver).
+    const [{ data: productos }, { data: categorias }] = await Promise.all([
+      context.supabase
+        .from("restaurante_productos")
+        .select("nombre,precio,categoria_id")
+        .eq("activo", true)
+        .order("nombre")
+        .limit(150),
+      context.supabase.from("restaurante_categorias").select("id,nombre").eq("activa", true).order("orden"),
+    ]);
+    const nombreCat = new Map<string, string>(
+      (categorias ?? []).map((c) => [c.id, c.nombre] as [string, string]),
+    );
+    const listaProductos = productos ?? [];
+    const catalogo =
+      listaProductos.length > 0
+        ? "Catálogo actual (usa solo estos nombres y precios):\n" +
+          listaProductos
+            .map((p) => {
+              const cat = p.categoria_id ? nombreCat.get(p.categoria_id) : undefined;
+              return `- ${p.nombre}${cat ? ` (${cat})` : ""}: ${Number(p.precio)}`;
+            })
+            .join("\n")
+        : "No hay productos cargados en el catálogo. Si preguntan por precios o productos, di que consulten con una persona del equipo.";
+
     const tipo = typeof data.tipoNegocio === "string" && data.tipoNegocio.trim()
       ? data.tipoNegocio.trim().slice(0, 80)
       : "general";
@@ -24,8 +49,10 @@ export const runAgenteVirtual = createServerFn({ method: "POST" })
     const system = `Eres el asistente virtual de un negocio (tipo: ${tipo}). Atiendes a clientes y al equipo por chat.
 Responde en español de México, con tono amable y directo, en frases cortas.
 Ayuda a: responder dudas sobre productos o servicios, explicar precios y formas de pago si se te indican, orientar al cliente para agendar, pedir o cotizar, y redactar mensajes de respuesta.
+${catalogo}
+
 Reglas:
-- No inventes precios, horarios, direcciones ni disponibilidad. Si no tienes el dato, dilo y sugiere hablar con una persona del equipo.
+- No inventes precios, horarios, direcciones ni disponibilidad. Los precios solo salen del catálogo de arriba. Si no tienes el dato, dilo y sugiere hablar con una persona del equipo.
 - Para pedidos o citas, pide solo lo necesario: qué necesita, fecha u hora si aplica, nombre y teléfono.
 - No pidas ni guardes datos sensibles como contraseñas o números de tarjeta.
 - No uses emojis salvo que el usuario los use primero.`;
