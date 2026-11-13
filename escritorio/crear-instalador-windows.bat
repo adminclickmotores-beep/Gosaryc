@@ -1,5 +1,5 @@
 @echo off
-REM Haz doble clic en este archivo para crear el instalador de Mesari para Windows.
+REM Haz doble clic en este archivo para crear el instalador de Gosaly para Windows.
 REM Funciona sin importar desde que carpeta lo abras.
 cd /d "%~dp0"
 echo Instalando dependencias (puede tardar unos minutos)...

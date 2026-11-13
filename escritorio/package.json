@@ -1,8 +1,8 @@
 {
-  "name": "mesari-escritorio",
+  "name": "gosaly-escritorio",
   "version": "1.0.0",
-  "description": "Mesari - aplicación de escritorio",
-  "author": "Mesari",
+  "description": "Gosaly - aplicación de escritorio",
+  "author": "Gosaly",
   "main": "main.cjs",
   "private": true,
   "scripts": {
@@ -17,14 +17,14 @@
     "electron-builder": "^25.1.8"
   },
   "build": {
-    "appId": "com.mesari.app",
-    "productName": "Mesari",
-    "copyright": "Copyright © 2026 Mesari",
+    "appId": "com.gosaly.app",
+    "productName": "Gosaly",
+    "copyright": "Copyright © 2026 Gosaly",
     "files": ["main.cjs", "package.json"],
     "directories": { "output": "instaladores" },
     "win": {
       "target": ["nsis"],
-      "publisherName": "Mesari"
+      "publisherName": "Gosaly"
     },
     "nsis": {
       "oneClick": false,
@@ -37,7 +37,7 @@
     "linux": {
       "target": ["AppImage", "deb"],
       "category": "Office",
-      "maintainer": "Mesari"
+      "maintainer": "Gosaly"
     }
   }
 }

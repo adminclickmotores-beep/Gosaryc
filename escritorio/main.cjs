@@ -1,9 +1,9 @@
-// Mesari - envoltorio de escritorio (Electron).
-// Abre la web publicada de Mesari dentro de una ventana propia.
-// Para apuntar a otra dirección: MESARI_URL=https://tu-dominio.com npm run iniciar
+// Gosaly - envoltorio de escritorio (Electron).
+// Abre la web publicada de Gosaly dentro de una ventana propia.
+// Para apuntar a otra dirección: GOSALY_URL=https://tu-dominio.com npm run iniciar
 const { app, BrowserWindow, shell } = require("electron");
 
-const URL_APP = process.env.MESARI_URL || "https://launch-campaign-compass.lovable.app";
+const URL_APP = process.env.GOSALY_URL || "https://mesari.lovable.app";
 
 function crearVentana() {
   const ventana = new BrowserWindow({
@@ -11,7 +11,7 @@ function crearVentana() {
     height: 820,
     minWidth: 380,
     minHeight: 600,
-    title: "Mesari",
+    title: "Gosaly",
     backgroundColor: "#ffffff",
     autoHideMenuBar: true,
     webPreferences: {
