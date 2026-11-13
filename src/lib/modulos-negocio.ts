@@ -141,7 +141,8 @@ const FINANZAS: ModuloNegocio = {
   titulo: "Finanzas y rentabilidad",
   descripcion: "Ventas, costos y utilidad.",
   Icon: Wallet,
-  estado: "Próximo",
+  ruta: "/finanzas",
+  estado: "Activo",
 };
 
 export const TIPOS_NEGOCIO: TipoNegocio[] = [
@@ -161,7 +162,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("insumos", "Inventario de insumos", "Ingredientes, mermas y alertas de faltantes.", Boxes),
       m("propinas", "Propinas y reparto", "Registro y reparto de propinas entre el equipo.", Coins),
       m("suscripciones", "Pedidos recurrentes", "Clientes que piden cada semana (almuerzos, corporativos).", Repeat),
-      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS,
+      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
