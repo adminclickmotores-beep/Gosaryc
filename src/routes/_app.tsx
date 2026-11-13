@@ -145,12 +145,16 @@ function AppShell() {
   const { session, loading, user } = useAuth();
   const loc = useLocation();
   const nav = useNavigate();
-  const completa = (loc.search as Record<string, unknown> | undefined)?.ventana === "completa";
+  const completaParam = (loc.search as Record<string, unknown> | undefined)?.ventana === "completa";
   const focusParam =((loc.search as Record<string, unknown> | undefined)?.focus as string) ?? "";
   const pathnameRef = useRef(loc.pathname);
   const { negocio } = useNegocio();
   const tipoNegocio = resolverTipoNegocio(negocio?.tipo_negocio);
   const { esAdmin, puede, cargando: cargandoPermisos } = usePermisos();
+  // Empleados (no administrador) en el panel: pantalla completa fija, sin menú lateral.
+  // El administrador conserva el menú para probar módulo por módulo.
+  const completa = completaParam || (!cargandoPermisos && !esAdmin && loc.pathname.startsWith("/restaurante"));
+  const anchoGrande = completa || loc.pathname.startsWith("/restaurante");
   const verPanel = esAdmin || puede("pedidos") || puede("cocina");
   const modulosVisibles = tipoNegocio.modulos;
   const navItems: NavItem[] = [
@@ -533,7 +537,7 @@ function AppShell() {
           </div>
           <div
             className={`mx-auto w-full pb-10 pt-6 transition-[padding,max-width] duration-200 ${completa ? "md:pt-16" : "md:pt-20"} ${
-              completa ? "max-w-full px-3 sm:px-5" : loc.pathname === "/tools" ? "max-w-full px-0" : "max-w-6xl px-4 sm:px-6"
+              anchoGrande ? "max-w-full px-3 sm:px-5" : loc.pathname === "/tools" ? "max-w-full px-0" : "max-w-6xl px-4 sm:px-6"
             }`}
           >
             <Outlet />

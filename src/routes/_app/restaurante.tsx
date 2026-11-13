@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { Download, ExternalLink, Trash2 } from "lucide-react";
 import { useNegocio } from "@/hooks/use-negocio";
+import { usePermisos } from "@/hooks/use-permisos";
 import { PasoAPaso } from "@/components/restaurante/PasoAPaso";
 import { resolverTipoNegocio, TIPOS_NEGOCIO } from "@/lib/modulos-negocio";
 import { toast } from "sonner";
@@ -65,7 +66,8 @@ function RestaurantePage() {
   const { negocio } = useNegocio();
   const tipo = resolverTipoNegocio(negocio?.tipo_negocio);
   const busqueda = Route.useSearch();
-  const completa = busqueda.ventana === "completa";
+  const { esAdmin, cargando: cargandoPermisos } = usePermisos();
+  const completa = busqueda.ventana === "completa" || (!cargandoPermisos && !esAdmin);
   const [vistaElegida, setVista] = useState<VistaClave>(
     (VISTAS_VALIDAS as readonly string[]).includes(busqueda.vista ?? "") ? (busqueda.vista as VistaClave) : "venta",
   );
@@ -364,6 +366,7 @@ function GestionMenu() {
       precio: valor,
       categoria_id: categoriaId || null,
       imagen_url: fotoNueva || null,
+      activo: true,
     });
     if (error) return toast.error("No se pudo guardar el producto.");
     setFotoNueva("");

@@ -179,18 +179,18 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
   };
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
-      <div className="min-w-0 space-y-3">
+    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(380px,26rem)]">
+      <div className="min-w-0 space-y-4">
         <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input className={`${campo} pl-9`} placeholder="Buscar producto" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+          <input className={`${campo} rounded-2xl py-3.5 pl-12 shadow-sm`} placeholder="Buscar producto" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1 text-sm">
           {[{ id: "todas", nombre: "Todos" }, ...categorias].map((c) => (
             <button
               key={c.id}
               onClick={() => setCatActiva(c.id)}
-              className={`shrink-0 rounded-full px-4 py-1.5 ${catActiva === c.id ? "bg-primary text-primary-foreground" : "border border-glass-border text-muted-foreground"}`}
+              className={`shrink-0 rounded-full px-5 py-2.5 text-sm font-medium transition ${catActiva === c.id ? "bg-primary text-primary-foreground shadow-md" : "border border-glass-border bg-white/60 text-muted-foreground hover:text-foreground"}`}
             >
               {c.nombre}
             </button>
@@ -199,28 +199,28 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
         {productos.length === 0 && (
           <p className="text-sm text-muted-foreground">Aún no tienes productos. Agrégalos en la pestaña “Menú”.</p>
         )}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 2xl:grid-cols-4">
           {visibles.map((p) => {
             const cant = cuenta[p.id] ?? 0;
             return (
               <button
                 key={p.id}
                 onClick={() => cambiarCant(p.id, 1)}
-                className={`group relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-glass-border bg-glass/40 text-left ${cant > 0 ? "ring-2 ring-primary" : ""}`}
+                className={`group relative aspect-[5/4] w-full overflow-hidden rounded-2xl border border-glass-border bg-glass/40 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] ${cant > 0 ? "ring-2 ring-primary" : ""}`}
               >
                 {p.imagen_url ? (
-                  <img src={p.imagen_url} alt={p.nombre} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform group-hover:scale-105" />
+                  <img src={p.imagen_url} alt={p.nombre} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                 ) : (
-                  <span className="absolute inset-0 flex items-center justify-center text-primary/40">
-                    <ImageOff className="h-8 w-8" />
+                  <span className="absolute inset-0 flex items-center justify-center bg-primary/5 text-primary/40">
+                    <ImageOff className="h-10 w-10" />
                   </span>
                 )}
-                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent p-2 pt-8">
-                  <span className="block break-words text-sm font-medium leading-tight text-white">{p.nombre}</span>
-                  <span className="block text-sm font-semibold text-white/90">{dinero(p.precio)}</span>
+                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent p-3 pt-10">
+                  <span className="block break-words text-base font-semibold leading-tight text-white">{p.nombre}</span>
+                  <span className="block text-base font-semibold text-white/90">{dinero(p.precio)}</span>
                 </span>
                 {cant > 0 && (
-                  <span className="absolute right-2 top-2 rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-primary-foreground shadow">
+                  <span className="absolute right-2.5 top-2.5 rounded-full bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground shadow">
                     {cant}
                   </span>
                 )}
@@ -230,7 +230,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
         </div>
       </div>
 
-      <GlassPanel className="h-fit space-y-3 p-4">
+      <GlassPanel className="h-fit space-y-3 p-5 shadow-lg lg:sticky lg:top-20">
         <h2 className="font-medium text-foreground">Cuenta actual</h2>
         <div className="grid grid-cols-3 gap-2">
           {MODALIDADES.map(({ clave, texto, Icon }) => (
