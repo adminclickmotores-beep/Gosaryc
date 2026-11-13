@@ -206,6 +206,30 @@ export type Database = {
         }
         Relationships: []
       }
+      restaurante_mesas: {
+        Row: {
+          capacidad: number
+          created_at: string
+          estado: string
+          id: string
+          numero: string
+        }
+        Insert: {
+          capacidad?: number
+          created_at?: string
+          estado?: string
+          id?: string
+          numero: string
+        }
+        Update: {
+          capacidad?: number
+          created_at?: string
+          estado?: string
+          id?: string
+          numero?: string
+        }
+        Relationships: []
+      }
       restaurante_categorias: {
         Row: {
           activa: boolean
