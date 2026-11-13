@@ -6,6 +6,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { consejosPara } from "@/lib/consejos-cocina";
 import { sugerirReceta } from "@/lib/recetas-sugerir.functions";
+import { buscarRecetaBase } from "@/data/recetas-biblioteca";
 
 type Insumo = Tables<"restaurante_insumos">;
 type Receta = Tables<"restaurante_recetas">;
@@ -360,14 +361,25 @@ function EditorReceta({
     if (!(p > 0)) return toast.error("Revisa las porciones antes de sugerir la receta.");
     setSugiriendo(true);
     try {
-      const r = await sugerirReceta({
-        data: {
-          platillo: producto.nombre,
-          porciones: p,
-          acompanamiento: acompanamiento.trim(),
-          insumos: insumos.map((i) => ({ nombre: i.nombre, unidad: i.unidad })),
-        },
-      });
+      // Primero la biblioteca de recetas base (cantidades fijas); si no hay, la IA.
+      const base = buscarRecetaBase("restaurante", producto.nombre);
+      const r = base
+        ? {
+            preparacion: base.preparacion,
+            ingredientes: base.ingredientes.map((i) => ({
+              nombre: i.nombre,
+              cantidad: Math.round(i.cantidad * (p / base.porciones) * 100) / 100,
+              unidad: i.unidad,
+            })),
+          }
+        : await sugerirReceta({
+            data: {
+              platillo: producto.nombre,
+              porciones: p,
+              acompanamiento: acompanamiento.trim(),
+              insumos: insumos.map((i) => ({ nombre: i.nombre, unidad: i.unidad })),
+            },
+          });
       setPreparacion(r.preparacion);
       const faltan: string[] = [];
       for (const ing of r.ingredientes) {
