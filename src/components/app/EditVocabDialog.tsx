@@ -280,7 +280,7 @@ export function EditVocabDialog({
             disabled={saving}
             className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-60"
           >
-            <IconCheck size={14} /> {saving ? "Saving…" : "Save"}
+            <IconCheck size={14} /> {saving ? "Guardando…" : "Guardar"}
           </button>
         </DialogFooter>
       </DialogContent>

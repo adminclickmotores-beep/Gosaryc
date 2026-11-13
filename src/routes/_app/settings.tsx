@@ -146,7 +146,7 @@ function Settings() {
         <div className="flex items-start gap-4">
           <PageHexBadge hue={88} size={26} icon={<IconSettings size={22} />} aria-label="Settings" />
           <div>
-            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Settings</div>
+            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Configuración</div>
             <h1 className="mt-1 font-display text-4xl tracking-tight">{orgName || "Organization"}</h1>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground">
               Organization, teammates, vocabulary, and your account — in one place.
@@ -421,7 +421,7 @@ function PublicUrlCard({ orgId }: { orgId: string | null }) {
             disabled={!dirty || saving || loading || !orgId}
             className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
           >
-            {saving ? "Saving…" : "Save"}
+            {saving ? "Guardando…" : "Guardar"}
           </button>
         </div>
       </div>

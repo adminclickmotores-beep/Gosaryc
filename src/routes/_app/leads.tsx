@@ -329,7 +329,7 @@ function LeadsPage() {
       <GlassPanel className="p-3">
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
           <Input
-            placeholder="Search name, email, company…"
+            placeholder="Buscar nombre, correo, empresa…"
             value={q}
             onChange={(e) => setSearch({ q: e.target.value })}
             className="h-9"
@@ -419,7 +419,7 @@ function LeadsPage() {
       ) : (
         <GlassPanel className="overflow-hidden p-0">
           <div className="grid grid-cols-[1.6fr_1.2fr_0.9fr_0.8fr_0.7fr] gap-3 border-b border-glass-border/60 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            <div>Name</div>
+            <div>Nombre</div>
             <div className="hidden sm:block">Company</div>
             <div className="hidden md:block">Source</div>
             <div>Stage</div>
@@ -512,7 +512,7 @@ function LeadsPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
                 if (!pendingDelete) return;

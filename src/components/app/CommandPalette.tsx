@@ -93,7 +93,7 @@ export function CommandPalette() {
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder="Search campaigns, tools, names, UTMs…" />
+      <CommandInput placeholder="Buscar campañas, herramientas, nombres, UTMs…" />
       <CommandList>
         <CommandEmpty>No matches.</CommandEmpty>
 

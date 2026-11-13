@@ -491,7 +491,7 @@ function AppShell() {
                 aria-label="Open command palette"
               >
                 <IconCommand size={14} />
-                <span>Search</span>
+                <span>Buscar</span>
               </button>
             </div>
           </header>

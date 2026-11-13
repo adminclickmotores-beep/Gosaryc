@@ -99,7 +99,7 @@ export function UserMenu() {
         <DropdownMenuItem asChild className="cursor-pointer">
           <Link to="/settings" className="flex items-center gap-2">
             <IconSettings size={14} />
-            <span>Settings</span>
+            <span>Configuración</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
