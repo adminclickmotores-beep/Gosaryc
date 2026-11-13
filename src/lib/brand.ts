@@ -14,7 +14,7 @@ export const BRAND = {
   tagline: "Gestión y ventas para tu negocio",
   /** Short marketing description for meta tags and onboarding. */
   description:
-    "Vende, atiende y controla todo tu negocio desde un solo lugar: pedidos, menú digital, cocina, domicilios, clientes, inventarios y finanzas. Funciona en la web y se instala en tu computador y celular.",
+    "El sistema para todo tipo de negocio: tienda, restaurante, taller, salón, servicios y más. Vende, atiende clientes, controla inventarios y finanzas desde un solo lugar, en la web o instalado en tu computador y celular.",
   /**
    * Placeholder domain used in example URLs (Commander AI input hints, etc.).
    * Keep this neutral — it should NOT match the email-sending domain.

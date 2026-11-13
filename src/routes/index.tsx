@@ -30,10 +30,10 @@ export const Route = createFileRoute("/")({
 });
 
 const MODULOS = [
-  { Icon: UtensilsCrossed, label: "Pedidos y menú digital", desc: "Tus clientes piden desde el celular y el pedido llega solo.", to: "/menu" as const },
-  { Icon: ChefHat, label: "Cocina y producción", desc: "Tablero en vivo: nuevo, en cocina, listo y entregado.", to: "/restaurante" as const },
-  { Icon: Bike, label: "Domicilios y clientes", desc: "Asigna repartidores y conoce a tus clientes frecuentes.", to: "/domicilios" as const },
-  { Icon: Boxes, label: "Inventarios y recetas", desc: "Controla insumos y costos de cada plato. Próximamente.", to: "/restaurante" as const },
+  { Icon: UtensilsCrossed, label: "Ventas y catálogo", desc: "Muestra tus productos o servicios y recibe pedidos desde el celular.", to: "/menu" as const },
+  { Icon: ChefHat, label: "Operación y producción", desc: "Tablero en vivo para seguir cada pedido de principio a fin.", to: "/restaurante" as const },
+  { Icon: Bike, label: "Entregas y clientes", desc: "Organiza entregas y conoce a tus clientes frecuentes.", to: "/domicilios" as const },
+  { Icon: Boxes, label: "Inventarios y costos", desc: "Controla existencias y costos de lo que vendes. Próximamente.", to: "/restaurante" as const },
   { Icon: Wallet, label: "Finanzas y rentabilidad", desc: "Ventas y márgenes en un vistazo. Próximamente.", to: "/restaurante" as const },
   { Icon: MessageCircle, label: "Asistente de pedidos", desc: "Atiende y toma pedidos por chat. Próximamente.", to: "/restaurante" as const },
 ];
@@ -95,7 +95,7 @@ function LandingPage() {
               to="/menu"
               className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90"
             >
-              Ver menú y pedir <ArrowRight className="h-4 w-4" />
+              Ver catálogo y pedir <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               to="/login"
@@ -113,7 +113,7 @@ function LandingPage() {
         </section>
 
         <section className="mt-16 sm:mt-24">
-          <h2 className="text-center text-xs uppercase tracking-[0.28em] text-muted-foreground">Módulos del sistema</h2>
+          <h2 className="text-center text-xs uppercase tracking-[0.28em] text-muted-foreground">Módulos para cualquier tipo de negocio</h2>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {MODULOS.map((m) => (
               <Link key={m.label} to={m.to} className="block">
