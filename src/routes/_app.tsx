@@ -420,6 +420,19 @@ function AppShell() {
 
             <div className="pt-4 space-y-1">
               <Link
+                to="/asistente-virtual"
+                preload="render"
+                title={collapsed ? "Agente virtual" : undefined}
+                className={`flex items-center ${collapsed ? "justify-center px-0" : "gap-3 px-3"} rounded-xl py-2.5 text-sm transition-colors ${
+                  loc.pathname.startsWith("/asistente-virtual")
+                    ? "bg-glass text-foreground"
+                    : "text-muted-foreground hover:bg-glass/50 hover:text-foreground"
+                }`}
+              >
+                <IconSpark size={18} />
+                {!collapsed && <span>Agente virtual</span>}
+              </Link>
+              <Link
                 to="/settings"
                 preload="render"
                 title={collapsed ? "Configuración" : undefined}
