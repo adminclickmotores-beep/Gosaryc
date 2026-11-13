@@ -171,6 +171,33 @@ function AppShell() {
     pathnameRef.current = loc.pathname;
   });
 
+  // Cada módulo se abre en una pestaña aparte, a pantalla completa, sin importar
+  // desde dónde se haga clic (menú lateral, menú inferior, tarjetas, enlaces).
+  const rutasModulosRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    rutasModulosRef.current = new Set(
+      modulosVisibles
+        .map((m) => m.ruta)
+        .filter((r): r is string => !!r && r !== "/restaurante" && !r.startsWith("/tools") && !r.startsWith("/funnel")),
+    );
+  });
+  useEffect(() => {
+    const onClickModulo = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+      if (!(e.target instanceof Element)) return;
+      const enlace = e.target.closest("a[href]");
+      if (!(enlace instanceof HTMLAnchorElement)) return;
+      if (enlace.target && enlace.target !== "_self") return;
+      if (enlace.origin !== window.location.origin) return;
+      if (!rutasModulosRef.current.has(enlace.pathname)) return;
+      if (new URLSearchParams(enlace.search).get("ventana") === "completa") return;
+      e.preventDefault();
+      window.open(`${enlace.pathname}?ventana=completa`, "_blank", "noopener,noreferrer");
+    };
+    document.addEventListener("click", onClickModulo, true);
+    return () => document.removeEventListener("click", onClickModulo, true);
+  }, []);
+
   const isToolsRoute = loc.pathname.startsWith("/tools") || loc.pathname.startsWith("/funnel");
   const [toolsOpenState, setToolsOpenState] = useState<{ manualOpen: boolean; routeCollapsedFor: string | null }>({
     manualOpen: false,
@@ -355,12 +382,6 @@ function AppShell() {
                     onClick={(e) => {
                       if (isToolsItem) return;
                       closeToolsTree();
-                      // Los menús de módulos se abren en una pestaña aparte, a pantalla completa.
-                      const esModulo = n.to !== "/restaurante" && !n.to.startsWith("/tools") && !n.to.startsWith("/funnel");
-                      if (esModulo && !e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
-                        e.preventDefault();
-                        window.open(`${n.to}?ventana=completa`, "_blank", "noopener,noreferrer");
-                      }
                     }}
                     className={`relative flex items-center ${collapsed ? "justify-center px-0" : "gap-3 px-3"} rounded-xl py-2.5 text-sm transition-colors duration-150 ${
                       active
