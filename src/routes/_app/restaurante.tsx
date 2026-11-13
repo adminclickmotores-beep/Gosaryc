@@ -16,6 +16,7 @@ import { MenuQR } from "@/components/restaurante/MenuQR";
 import { Reportes } from "@/components/restaurante/Reportes";
 import { MesasPanel } from "@/components/restaurante/MesasPanel";
 import { CajaPanel } from "@/components/restaurante/CajaPanel";
+import { VentaPOS } from "@/components/restaurante/VentaPOS";
 
 export const Route = createFileRoute("/_app/restaurante")({
   head: () => ({ meta: [{ title: "Panel de tu negocio" }] }),
@@ -55,10 +56,10 @@ const campo =
 function RestaurantePage() {
   const { negocio } = useNegocio();
   const tipo = resolverTipoNegocio(negocio?.tipo_negocio);
-  const [vistaElegida, setVista] = useState<"pedidos" | "menu" | "qr" | "mesas" | "caja" | "reportes" | "recetario" | "negocio">("pedidos");
+  const [vistaElegida, setVista] = useState<"venta" | "pedidos" | "menu" | "qr" | "mesas" | "caja" | "reportes" | "recetario" | "negocio">("venta");
   const vista = tipo.usaPedidos ? vistaElegida : "negocio";
   const vistas = tipo.usaPedidos
-    ? (["pedidos", "menu", "qr", "mesas", "caja", "reportes", "recetario", "negocio"] as const)
+    ? (["venta", "pedidos", "menu", "qr", "mesas", "caja", "reportes", "recetario", "negocio"] as const)
     : (["negocio"] as const);
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [items, setItems] = useState<Item[]>([]);
@@ -94,6 +95,18 @@ function RestaurantePage() {
   const mover = async (p: Pedido, estado: string) => {
     const { error } = await supabase.from("restaurante_pedidos").update({ estado }).eq("id", p.id);
     if (error) return toast.error("No se pudo actualizar el pedido.");
+    cargar();
+  };
+
+  const cobrar = async (p: Pedido) => {
+    const { error } = await supabase.from("restaurante_pedidos").update({ estado: "entregado" }).eq("id", p.id);
+    if (error) return toast.error("No se pudo cobrar el pedido.");
+    await supabase.from("restaurante_movimientos_caja").insert({
+      tipo: "ingreso",
+      concepto: `Venta #${p.id.slice(0, 6).toUpperCase()}`,
+      monto: p.total,
+    });
+    toast.success(`Cobrado ${dinero(p.total)}.`);
     cargar();
   };
 
@@ -192,12 +205,14 @@ function RestaurantePage() {
             onClick={() => setVista(v)}
             className={`rounded-full px-5 py-2 text-sm ${vista === v ? "bg-primary text-primary-foreground" : "border border-glass-border text-muted-foreground"}`}
           >
-            {v === "pedidos" ? "Pedidos y cocina" : v === "menu" ? "Menú" : v === "qr" ? "QR del menú" : v === "mesas" ? "Mesas" : v === "caja" ? "Caja" : v === "reportes" ? "Reportes" : v === "recetario" ? "Recetario e inventario" : "Mi negocio"}
+            {v === "venta" ? "Vender y cobrar" : v === "pedidos" ? "Pedidos y cocina" : v === "menu" ? "Menú" : v === "qr" ? "QR del menú" : v === "mesas" ? "Mesas" : v === "caja" ? "Caja" : v === "reportes" ? "Reportes" : v === "recetario" ? "Recetario e inventario" : "Mi negocio"}
           </button>
         ))}
       </div>
 
-      {vista === "pedidos" ? (
+      {vista === "venta" ? (
+        <VentaPOS onCambio={cargar} />
+      ) : vista === "pedidos" ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           {ESTADOS.map((col) => {
             const lista = pedidos.filter((p) => p.estado === col.clave);
@@ -240,6 +255,11 @@ function RestaurantePage() {
                         {sig && (
                           <button onClick={() => mover(p, sig.estado)} className="flex-1 rounded-lg bg-primary px-3 py-2 text-xs font-medium text-primary-foreground hover:opacity-90">
                             {sig.texto}
+                          </button>
+                        )}
+                        {p.estado !== "entregado" && p.estado !== "cancelado" && (
+                          <button onClick={() => cobrar(p)} className="rounded-lg border border-primary px-3 py-2 text-xs text-primary">
+                            Cobrar
                           </button>
                         )}
                         {p.estado !== "entregado" && p.estado !== "cancelado" && (
