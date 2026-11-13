@@ -37,6 +37,7 @@ import { CommanderOrb } from "@/components/app/CommanderOrb";
 const COMMANDER_ENABLED = import.meta.env.VITE_COMMANDER_ENABLED === "true";
 import { BottomNav } from "@/components/app/BottomNav";
 import { UserMenu } from "@/components/app/UserMenu";
+import { InstructivoPagina } from "@/components/app/InstructivoPagina";
 import { OnboardingChecklist } from "@/components/app/OnboardingChecklist";
 import { GuidedTour } from "@/components/tour/GuidedTour";
 import { RouteProgressBar } from "@/components/app/RouteProgressBar";
@@ -540,6 +541,7 @@ function AppShell() {
               anchoGrande ? "max-w-full px-3 sm:px-5" : loc.pathname === "/tools" ? "max-w-full px-0" : "max-w-6xl px-4 sm:px-6"
             }`}
           >
+            <InstructivoPagina />
             <Outlet />
           </div>
         </main>
