@@ -119,7 +119,7 @@ export function UtmBuilderContent({ hideHeader = false }: { hideHeader?: boolean
 
   const save = async () => {
     if (!orgId || !user || !finalUrl || !form.label) {
-      toast.error("Label and a valid URL are required");
+      toast.error("Se requiere un nombre y una URL válida");
       return;
     }
     setSaving(true);
@@ -158,7 +158,7 @@ export function UtmBuilderContent({ hideHeader = false }: { hideHeader?: boolean
       }),
 
     ]);
-    toast.success("URL saved");
+    toast.success("URL guardada");
     // record persisted — clear the local draft for label/term/content so
     // they reset for the next entry. Keep source/medium/campaign as sticky defaults.
     setForm((f) => ({ ...f, label: "", utm_term: "", utm_content: "", base_url: "" }));
@@ -201,7 +201,7 @@ export function UtmBuilderContent({ hideHeader = false }: { hideHeader?: boolean
     const rows = validRows.map((r) => ({
       org_id: orgId,
       created_by: user.id,
-      label: `Bulk · ${new URL(r.raw).hostname}`,
+      label: `Lote · ${new URL(r.raw).hostname}`,
       base_url: r.raw,
       utm_source: bulkSource,
       utm_medium: bulkMedium,
@@ -212,7 +212,7 @@ export function UtmBuilderContent({ hideHeader = false }: { hideHeader?: boolean
     setBulkSaving(false);
     if (error) toast.error(error.message);
     else {
-      toast.success(`Saved ${rows.length} URLs`);
+      toast.success(`Se guardaron ${rows.length} URLs`);
       setBulkUrls("");
       clearBulkUrlsDraft();
     }
@@ -298,7 +298,7 @@ export function UtmBuilderContent({ hideHeader = false }: { hideHeader?: boolean
                 setBulkSource(vals["utm:source"] ?? bulkSource);
                 setBulkMedium(vals["utm:medium"] ?? bulkMedium);
                 setBulkCampaign(vals["utm:campaign"] ?? bulkCampaign);
-                toast.success("Filled with your last values");
+                toast.success("Se llenó con tus últimos valores");
               }}
             />
             <div className="inline-flex rounded-full border border-glass-border bg-glass/30 p-0.5">
@@ -310,7 +310,7 @@ export function UtmBuilderContent({ hideHeader = false }: { hideHeader?: boolean
                     mode === m ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {m}
+                  {m === "single" ? "Uno por uno" : "En lote"}
                 </button>
               ))}
             </div>
@@ -320,13 +320,13 @@ export function UtmBuilderContent({ hideHeader = false }: { hideHeader?: boolean
           <div className="flex flex-wrap items-center justify-end gap-2">{actions}</div>
         ) : (
           <ToolHeader
-            eyebrow="UTMs · tagged links"
+            eyebrow="UTM · enlaces etiquetados"
             title="UTM"
-            accent="builder."
+            accent="constructor."
             hue={275}
             icon={<IconUtm size={24} />}
-            ariaLabel="UTM builder"
-            description="Compose tagged URLs in one place — single or bulk. Templates, history, QR, and validation built in."
+            ariaLabel="Constructor UTM"
+            description="Arma enlaces etiquetados en un solo lugar, uno por uno o en lote. Incluye plantillas, historial, QR y validación."
             actions={actions}
           />
         );
@@ -337,34 +337,34 @@ export function UtmBuilderContent({ hideHeader = false }: { hideHeader?: boolean
           <GlassPanel tier="strong" glow className="p-6 md:p-8">
             <div className="grid gap-6 md:grid-cols-[1fr_auto]">
               <div className="min-w-0">
-                <div className="text-sm font-medium text-foreground/85">Composed URL</div>
+                <div className="text-sm font-medium text-foreground/85">URL generada</div>
                 <div className="mt-3 break-all font-mono text-sm text-foreground md:text-base tick-in" key={finalUrl}>
-                  {finalUrl || "Add a base URL to compose"}
+                  {finalUrl || "Agrega una URL base para componer"}
                 </div>
                 <div className="mt-5 flex flex-wrap gap-2">
                   <button
                     disabled={!finalUrl}
                     onClick={() => {
                       copyToClipboard(finalUrl);
-                      toast.success("Copied");
+                      toast.success("Copiado");
                     }}
                     className="inline-flex items-center gap-2 rounded-full glass border border-glass-border px-4 py-2 text-sm hover:bg-glass-strong disabled:opacity-50"
                   >
-                    <IconCopy size={14} /> Copy
+                    <IconCopy size={14} /> Copiar
                   </button>
                   <button
                     onClick={save}
                     disabled={saving}
                     className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
                   >
-                    <IconCheck size={14} /> {saving ? "Saving…" : "Save link"}
+                    <IconCheck size={14} /> {saving ? "Guardando…" : "Guardar enlace"}
                   </button>
                   {qrDataUrl && (
                     <button
                       onClick={downloadQR}
                       className="inline-flex items-center gap-2 rounded-full glass border border-glass-border px-4 py-2 text-sm hover:bg-glass-strong"
                     >
-                      Download QR
+                      Descargar QR
                     </button>
                   )}
                 </div>
@@ -373,41 +373,41 @@ export function UtmBuilderContent({ hideHeader = false }: { hideHeader?: boolean
                 <div className="flex shrink-0 flex-col items-center gap-2">
                   <img
                     src={qrDataUrl}
-                    alt="QR code"
+                    alt="Código QR"
                     className="size-32 rounded-xl border border-glass-border bg-white p-2"
                   />
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Scan to test</span>
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Escanea para probar</span>
                 </div>
               )}
             </div>
           </GlassPanel>
 
           <div className="grid gap-5 md:grid-cols-2">
-            <Field label="Name this link" hint="For your reference only" tip="A friendly name so you can find this link again later in your history. Not added to the URL.">
+            <Field label="Nombre del enlace" hint="Solo para tu referencia" tip="Un nombre para encontrar este enlace después en tu historial. No se agrega a la URL.">
               <input
                 value={form.label}
                 onChange={(e) => setForm({ ...form, label: e.target.value })}
-                placeholder="Spring product launch"
+                placeholder="Lanzamiento de primavera"
                 className="input"
               />
             </Field>
-            <Field label="Destination URL" hint="Where the link sends people" tip="The page someone lands on after clicking. Paste the full URL, e.g. https://yoursite.com/pricing.">
+            <Field label="URL de destino" hint="A dónde llega la gente" tip="La página a la que llega la persona al hacer clic. Pega la URL completa, por ejemplo https://tusitio.com/precios.">
               <input value={form.base_url} onChange={(e) => setForm({ ...form, base_url: e.target.value })} placeholder="https://example.com/landing" className="input" />
             </Field>
-            <Field label="Traffic source" hint="Where the click came from" tip="Where the click is coming from — the specific site, platform, or list. Examples: google, facebook, weekly-newsletter. (Sets utm_source)" action={<EditVocabDialog table="utm_settings" column="sources" orgId={orgId} label="Sources" help="utm_source values that show up in the dropdown." values={s.sources} defaults={UTM_DEFAULTS.sources} onSaved={(v) => setS({ ...s, sources: v })} />}>
+            <Field label="Fuente de tráfico" hint="De dónde viene el clic" tip="De dónde viene el clic: el sitio, plataforma o lista específica. Ejemplos: google, facebook, boletin-semanal. (Define utm_source)" action={<EditVocabDialog table="utm_settings" column="sources" orgId={orgId} label="Sources" help="utm_source values that show up in the dropdown." values={s.sources} defaults={UTM_DEFAULTS.sources} onSaved={(v) => setS({ ...s, sources: v })} />}>
               <ThemedSelect value={form.utm_source} onChange={(v) => setForm({ ...form, utm_source: v })} options={s.sources} />
             </Field>
-            <Field label="Marketing channel" hint="Type of marketing" tip="The type of marketing this link belongs to. Examples: cpc (paid ads), email, social, organic, referral. (Sets utm_medium)" action={<EditVocabDialog table="utm_settings" column="mediums" orgId={orgId} label="Mediums" help="utm_medium values that show up in the dropdown." values={s.mediums} defaults={UTM_DEFAULTS.mediums} onSaved={(v) => setS({ ...s, mediums: v })} />}>
+            <Field label="Canal de marketing" hint="Tipo de marketing" tip="El tipo de marketing al que pertenece el enlace. Ejemplos: cpc (anuncios pagados), email, social, organico, referido. (Define utm_medium)" action={<EditVocabDialog table="utm_settings" column="mediums" orgId={orgId} label="Mediums" help="utm_medium values that show up in the dropdown." values={s.mediums} defaults={UTM_DEFAULTS.mediums} onSaved={(v) => setS({ ...s, mediums: v })} />}>
               <ThemedSelect value={form.utm_medium} onChange={(v) => setForm({ ...form, utm_medium: v })} options={s.mediums} />
             </Field>
-            <Field label="Campaign" hint="Which campaign this belongs to" tip="The specific promotion or initiative driving the click. Examples: spring-launch, black-friday-2026, webinar-may. (Sets utm_campaign)" action={<EditVocabDialog table="utm_settings" column="campaigns" orgId={orgId} label="Campaigns" help="utm_campaign values you reuse often." values={s.campaigns} defaults={UTM_DEFAULTS.campaigns} onSaved={(v) => setS({ ...s, campaigns: v })} />}>
+            <Field label="Campaña" hint="A qué campaña pertenece" tip="La promoción o iniciativa específica que genera el clic. Ejemplos: lanzamiento-primavera, buen-fin-2026, webinar-mayo. (Define utm_campaign)" action={<EditVocabDialog table="utm_settings" column="campaigns" orgId={orgId} label="Campaigns" help="utm_campaign values you reuse often." values={s.campaigns} defaults={UTM_DEFAULTS.campaigns} onSaved={(v) => setS({ ...s, campaigns: v })} />}>
               <ThemedSelect value={form.utm_campaign} onChange={(v) => setForm({ ...form, utm_campaign: v })} options={s.campaigns} />
             </Field>
-            <Field label="Keyword" hint="Optional · for paid search" tip="Optional. The paid-search keyword you bid on, e.g. marketing-automation. Leave blank if this isn't a paid-search link. (Sets utm_term)">
-              <input value={form.utm_term} onChange={(e) => setForm({ ...form, utm_term: e.target.value })} placeholder="optional" className="input" />
+            <Field label="Palabra clave" hint="Opcional · para búsqueda pagada" tip="Opcional. La palabra clave de búsqueda pagada por la que pujas, por ejemplo automatizacion-marketing. Déjala vacía si no es un enlace de búsqueda pagada. (Define utm_term)">
+              <input value={form.utm_term} onChange={(e) => setForm({ ...form, utm_term: e.target.value })} placeholder="opcional" className="input" />
             </Field>
-            <Field label="Ad variant" hint="Optional · A/B test label" tip="Optional. Use this to A/B test or tell similar links apart, e.g. hero-button vs footer-link, or blue-cta vs green-cta. (Sets utm_content)">
-              <input value={form.utm_content} onChange={(e) => setForm({ ...form, utm_content: e.target.value })} placeholder="optional" className="input" />
+            <Field label="Variante del anuncio" hint="Opcional · etiqueta de prueba A/B" tip="Opcional. Sirve para hacer pruebas A/B o distinguir enlaces parecidos, por ejemplo boton-principal vs enlace-pie, o cta-azul vs cta-verde. (Define utm_content)">
+              <input value={form.utm_content} onChange={(e) => setForm({ ...form, utm_content: e.target.value })} placeholder="opcional" className="input" />
             </Field>
           </div>
           <UtmLint form={form} />
@@ -415,9 +415,9 @@ export function UtmBuilderContent({ hideHeader = false }: { hideHeader?: boolean
       ) : (
         <>
           <GlassPanel tier="strong" className="p-6 md:p-8">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/70">Bulk URLs</div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/70">URLs en lote</div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Paste one URL per line (or comma-separated). We'll tag every URL with the parameters below and save them as one batch.
+              Pega una URL por línea (o separadas por comas). Etiquetaremos cada URL con los parámetros de abajo y las guardaremos como un solo lote.
             </p>
             <textarea
               value={bulkUrls}
@@ -443,17 +443,17 @@ export function UtmBuilderContent({ hideHeader = false }: { hideHeader?: boolean
                 disabled={bulkSaving || validRows.length === 0}
                 className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
               >
-                <IconCheck size={14} /> {bulkSaving ? "Saving…" : `Save ${validRows.length} URLs`}
+                <IconCheck size={14} /> {bulkSaving ? "Guardando…" : `Guardar ${validRows.length} URLs`}
               </button>
               <button
                 onClick={exportCsv}
                 disabled={validRows.length === 0}
                 className="inline-flex items-center gap-2 rounded-full glass border border-glass-border px-4 py-2 text-sm hover:bg-glass-strong disabled:opacity-50"
               >
-                Export CSV
+                Exportar CSV
               </button>
               <span className="ml-auto self-center text-xs text-muted-foreground">
-                {validRows.length} valid · {bulkRows.length - validRows.length} invalid
+                {validRows.length} válidas · {bulkRows.length - validRows.length} inválidas
               </span>
             </div>
           </GlassPanel>
@@ -466,12 +466,12 @@ export function UtmBuilderContent({ hideHeader = false }: { hideHeader?: boolean
                     className={`size-1.5 shrink-0 rounded-full ${r.ok ? "bg-primary" : "bg-destructive"}`}
                   />
                   <span className="min-w-0 flex-1 truncate text-muted-foreground">{r.raw}</span>
-                  <span className="hidden md:inline min-w-0 flex-1 truncate text-foreground">{r.final || "invalid URL"}</span>
+                  <span className="hidden md:inline min-w-0 flex-1 truncate text-foreground">{r.final || "URL inválida"}</span>
                   {r.ok && (
                     <button
                       onClick={() => {
                         copyToClipboard(r.final);
-                        toast.success("Copied");
+                        toast.success("Copiado");
                       }}
                       className="shrink-0 text-muted-foreground hover:text-foreground"
                     >
@@ -534,7 +534,7 @@ function UtmLint({ form }: { form: { utm_source: string; utm_medium: string; utm
   if (!warnings.length) return null;
   return (
     <GlassPanel className="p-4">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/70">Lint</div>
+      <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/70">Revisión</div>
       <ul className="mt-2 space-y-1 text-sm">
         {warnings.map((w, i) => (
           <li key={i} className="flex items-start gap-2">

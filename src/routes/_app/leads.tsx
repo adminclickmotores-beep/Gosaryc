@@ -72,8 +72,8 @@ const STAGES: { id: string; label: string; hex: string }[] = [
   { id: "lead", label: "Leads", hex: "oklch(0.78 0.15 200)" },
   { id: "mql", label: "MQL", hex: "oklch(0.74 0.17 250)" },
   { id: "sql", label: "SQL", hex: "oklch(0.7 0.2 290)" },
-  { id: "opp", label: "Opps", hex: "oklch(0.7 0.2 330)" },
-  { id: "won", label: "Won", hex: "oklch(0.78 0.18 145)" },
+  { id: "opp", label: "Oportunidad", hex: "oklch(0.7 0.2 330)" },
+  { id: "won", label: "Ganado", hex: "oklch(0.78 0.18 145)" },
 ];
 
 const STAGE_BY_ID = Object.fromEntries(STAGES.map((s) => [s.id, s]));
@@ -282,14 +282,13 @@ function LeadsPage() {
         <div className="flex items-start gap-4">
           <PageHexBadge hue={200} size={26} icon={<IconFunnel size={22} />} aria-label="Leads" />
           <div>
-            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Pipeline</div>
+            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Flujo de ventas</div>
             <h1 className="mt-1 font-display text-4xl tracking-tight">
-              Leads &amp; contacts
+              Leads y contactos
 
             </h1>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-              Every person flowing through your funnel — sort, filter, and open
-              a record.
+              Cada persona que pasa por tu embudo: ordénala, fíltrala y abre su ficha.
             </p>
           </div>
         </div>
@@ -298,13 +297,13 @@ function LeadsPage() {
             to="/funnel"
             className="inline-flex items-center gap-1.5 rounded-lg border border-glass-border bg-glass/30 px-2.5 py-1.5 text-xs text-foreground/80 hover:text-foreground"
           >
-            ← Back to funnel
+            ← Volver al embudo
           </Link>
           <button
             onClick={() => setCreating(true)}
             className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90"
           >
-            <IconPlus size={14} /> New lead
+            <IconPlus size={14} /> Nuevo lead
           </button>
         </div>
       </div>
@@ -312,7 +311,7 @@ function LeadsPage() {
       {(allRows ?? []).some((r) => r.is_sample) && (
         <DemoDataBanner
           storageKey="leads-sample"
-          label="Sample data — these contacts were seeded so the funnel isn't empty. Replace them with your own or clear them in Settings."
+          label="Datos de muestra: estos contactos se crearon para que el embudo no esté vacío. Reemplázalos con los tuyos o bórralos en Configuración."
           ctaHref="#"
         />
       )}
@@ -339,10 +338,10 @@ function LeadsPage() {
             onValueChange={(v) => setSearch({ source: v })}
           >
             <SelectTrigger className="h-9">
-              <SelectValue placeholder="Source" />
+              <SelectValue placeholder="Fuente" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__all__">All sources</SelectItem>
+              <SelectItem value="__all__">Todas las fuentes</SelectItem>
               {sources.map((s) => (
                 <SelectItem key={s} value={s}>
                   {s}
@@ -355,10 +354,10 @@ function LeadsPage() {
             onValueChange={(v) => setSearch({ channel: v })}
           >
             <SelectTrigger className="h-9">
-              <SelectValue placeholder="Channel" />
+              <SelectValue placeholder="Canal" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__all__">All channels</SelectItem>
+              <SelectItem value="__all__">Todos los canales</SelectItem>
               {channels.map((c) => (
                 <SelectItem key={c} value={c}>
                   {c}
@@ -371,22 +370,21 @@ function LeadsPage() {
             onValueChange={(v) => setSearch({ sort: v as SortKey })}
           >
             <SelectTrigger className="h-9">
-              <SelectValue placeholder="Sort" />
+              <SelectValue placeholder="Ordenar" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="activity_desc">Newest activity</SelectItem>
-              <SelectItem value="activity_asc">Oldest activity</SelectItem>
-              <SelectItem value="name_asc">Name A→Z</SelectItem>
-              <SelectItem value="name_desc">Name Z→A</SelectItem>
-              <SelectItem value="stage_asc">Grouped by stage</SelectItem>
+              <SelectItem value="activity_desc">Actividad más reciente</SelectItem>
+              <SelectItem value="activity_asc">Actividad más antigua</SelectItem>
+              <SelectItem value="name_asc">Nombre A→Z</SelectItem>
+              <SelectItem value="name_desc">Nombre Z→A</SelectItem>
+              <SelectItem value="stage_asc">Agrupado por etapa</SelectItem>
             </SelectContent>
           </Select>
         </div>
         {hasFilter && (
           <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
             <span>
-              {rows?.length ?? 0} contact{(rows?.length ?? 0) === 1 ? "" : "s"}{" "}
-              match{(rows?.length ?? 0) === 1 ? "es" : ""}
+              {rows?.length ?? 0} {(rows?.length ?? 0) === 1 ? "contacto coincide" : "contactos coinciden"}
             </span>
             <button
               onClick={() =>
@@ -394,7 +392,7 @@ function LeadsPage() {
               }
               className="inline-flex items-center gap-1 hover:text-foreground"
             >
-              <IconClose className="h-3 w-3" /> Reset filters
+              <IconClose className="h-3 w-3" /> Quitar filtros
             </button>
           </div>
         )}
@@ -420,10 +418,10 @@ function LeadsPage() {
         <GlassPanel className="overflow-hidden p-0">
           <div className="grid grid-cols-[1.6fr_1.2fr_0.9fr_0.8fr_0.7fr] gap-3 border-b border-glass-border/60 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             <div>Nombre</div>
-            <div className="hidden sm:block">Company</div>
-            <div className="hidden md:block">Source</div>
-            <div>Stage</div>
-            <div className="text-right">Activity</div>
+            <div className="hidden sm:block">Empresa</div>
+            <div className="hidden md:block">Fuente</div>
+            <div>Etapa</div>
+            <div className="text-right">Actividad</div>
           </div>
           <ul className="divide-y divide-glass-border/40">
             {rows.map((c) => {
@@ -505,10 +503,9 @@ function LeadsPage() {
       >
         <AlertDialogContent className="border-glass-border bg-background/95 backdrop-blur-xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this lead?</AlertDialogTitle>
+            <AlertDialogTitle>¿Borrar este lead?</AlertDialogTitle>
             <AlertDialogDescription>
-              {pendingDelete?.full_name} will be removed from your contacts. This
-              can't be undone.
+              {pendingDelete?.full_name} se borrará de tus contactos. Esta acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -524,13 +521,13 @@ function LeadsPage() {
                   toast.error(error.message);
                   return;
                 }
-                toast.success("Lead deleted");
+                toast.success("Lead borrado");
                 setPendingDelete(null);
                 reload();
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              Borrar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -546,10 +543,10 @@ function formatActivityShort(iso: string | null | undefined) {
   const diffMs = Date.now() - d.getTime();
   const day = 86_400_000;
   const days = Math.floor(diffMs / day);
-  if (days <= 0) return "today";
-  if (days === 1) return "yesterday";
-  if (days < 7) return `${days}d ago`;
-  if (days < 30) return `${Math.floor(days / 7)}w ago`;
+  if (days <= 0) return "hoy";
+  if (days === 1) return "ayer";
+  if (days < 7) return `hace ${days} d`;
+  if (days < 30) return `hace ${Math.floor(days / 7)} sem`;
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
@@ -645,7 +642,7 @@ function ContactDetailDialog({
                   <DialogDescription className="mt-1 truncate text-xs">
                     {[contact.title, contact.company]
                       .filter(Boolean)
-                      .join(" · ") || "No company on file"}
+                      .join(" · ") || "Sin empresa registrada"}
                   </DialogDescription>
                 </div>
               </div>
@@ -657,17 +654,17 @@ function ContactDetailDialog({
               </DialogHeader>
 
               <dl className="divide-y divide-glass-border/40 border-y border-glass-border/40">
-                <DetailRow label="Email" value={contact.email} mono />
-                <DetailRow label="Company" value={contact.company} />
-                <DetailRow label="Title" value={contact.title} />
-                <DetailRow label="Source" value={contact.source} />
-                <DetailRow label="Channel" value={contact.channel} />
+                <DetailRow label="Correo" value={contact.email} mono />
+                <DetailRow label="Empresa" value={contact.company} />
+                <DetailRow label="Cargo" value={contact.title} />
+                <DetailRow label="Fuente" value={contact.source} />
+                <DetailRow label="Canal" value={contact.channel} />
                 <DetailRow
-                  label="Last activity"
+                  label="Última actividad"
                   value={formatDateLong(contact.last_activity_on)}
                 />
                 <DetailRow
-                  label="Added"
+                  label="Agregado"
                   value={formatDateLong(contact.created_at)}
                 />
               </dl>
@@ -675,7 +672,7 @@ function ContactDetailDialog({
               {contact.notes && (
                 <div className="mt-4 rounded-lg border border-glass-border bg-glass/30 p-3 text-sm text-foreground/80">
                   <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                    Notes
+                    Notas
                   </div>
                   <p className="whitespace-pre-wrap leading-relaxed">
                     {contact.notes}
@@ -688,20 +685,20 @@ function ContactDetailDialog({
                   onClick={() => onDelete(contact)}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-glass-border bg-glass/30 px-3 py-1.5 text-xs text-destructive transition-colors hover:bg-destructive/10"
                 >
-                  <IconTrash size={12} /> Delete
+                  <IconTrash size={12} /> Borrar
                 </button>
                 <button
                   onClick={() => onEdit(contact)}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-glass-border bg-glass/30 px-3 py-1.5 text-xs text-foreground/85 transition-colors hover:text-foreground"
                 >
-                  <IconEdit size={12} /> Edit
+                  <IconEdit size={12} /> Editar
                 </button>
                 {contact.email && (
                   <a
                     href={`mailto:${contact.email}`}
                     className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90"
                   >
-                    Email <IconArrowRight className="h-3 w-3" />
+                    Correo <IconArrowRight className="h-3 w-3" />
                   </a>
                 )}
               </div>
@@ -749,7 +746,7 @@ function StageTabBar({
 }) {
   const total = STAGES.reduce((sum, s) => sum + (counts[s.id] ?? 0), 0);
   const tabs: { id: string; label: string; hex?: string; count: number }[] = [
-    { id: "__all__", label: "All", count: total },
+    { id: "__all__", label: "Todos", count: total },
     ...STAGES.map((s) => ({
       id: s.id,
       label: s.label,
@@ -822,12 +819,12 @@ function EmptyLeadsState({
     <GlassPanel className="relative overflow-hidden p-10 text-center">
       <div className="mx-auto max-w-md space-y-3">
         <h2 className="font-display text-xl">
-          {hasFilter ? "No matching contacts" : "No contacts yet"}
+          {hasFilter ? "No hay contactos que coincidan" : "Aún no hay contactos"}
         </h2>
         <p className="text-sm text-muted-foreground">
           {hasFilter
-            ? "Try widening the filters above — your data is just hiding behind a narrow view."
-            : "Once leads start flowing through your funnel, every person will show up here."}
+            ? "Prueba ampliando los filtros de arriba: tus datos están ocultos detrás de una vista muy estrecha."
+            : "Cuando los leads empiecen a pasar por tu embudo, cada persona aparecerá aquí."}
         </p>
         <div className="flex justify-center gap-2 pt-1">
           {hasFilter && (
@@ -835,14 +832,14 @@ function EmptyLeadsState({
               onClick={onReset}
               className="inline-flex items-center gap-1 rounded-lg border border-glass-border bg-glass/30 px-3 py-1.5 text-xs hover:bg-glass/50"
             >
-              <IconClose className="h-3 w-3" /> Reset filters
+              <IconClose className="h-3 w-3" /> Quitar filtros
             </button>
           )}
           <Link
             to="/funnel"
             className="inline-flex items-center gap-1 rounded-lg border border-glass-border bg-glass/30 px-3 py-1.5 text-xs hover:bg-glass/50"
           >
-            Open funnel <IconArrowRight className="h-3 w-3" />
+            Abrir embudo <IconArrowRight className="h-3 w-3" />
           </Link>
         </div>
       </div>
@@ -908,11 +905,11 @@ function ContactFormDialog({
 
   const submit = async () => {
     if (!form.full_name.trim()) {
-      toast.error("Name is required");
+      toast.error("El nombre es obligatorio");
       return;
     }
     if (!orgId || !userId) {
-      toast.error("Workspace not ready");
+      toast.error("Aún no está lista tu cuenta");
       return;
     }
     setSaving(true);
@@ -937,7 +934,7 @@ function ContactFormDialog({
       toast.error(error.message);
       return;
     }
-    toast.success(isEdit ? "Lead updated" : "Lead added");
+    toast.success(isEdit ? "Lead actualizado" : "Lead agregado");
     onSaved();
   };
 
@@ -946,24 +943,24 @@ function ContactFormDialog({
       <DialogContent className="max-w-lg border-glass-border bg-background/95 backdrop-blur-xl">
         <DialogHeader>
           <DialogTitle className="font-display text-lg">
-            {isEdit ? "Edit lead" : "New lead"}
+            {isEdit ? "Editar lead" : "Nuevo lead"}
           </DialogTitle>
           <DialogDescription className="text-xs">
             {isEdit
-              ? "Update this contact's information."
-              : "Add a contact to your funnel."}
+              ? "Actualiza los datos de este contacto."
+              : "Agrega un contacto a tu embudo."}
           </DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2 space-y-1">
-            <Label className="text-xs text-muted-foreground">Full name *</Label>
+            <Label className="text-xs text-muted-foreground">Nombre completo *</Label>
             <Input
               value={form.full_name}
               onChange={(e) => set("full_name")(e.target.value)}
             />
           </div>
           <div className="col-span-2 space-y-1">
-            <Label className="text-xs text-muted-foreground">Email</Label>
+            <Label className="text-xs text-muted-foreground">Correo</Label>
             <Input
               type="email"
               value={form.email}
@@ -971,21 +968,21 @@ function ContactFormDialog({
             />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Company</Label>
+            <Label className="text-xs text-muted-foreground">Empresa</Label>
             <Input
               value={form.company}
               onChange={(e) => set("company")(e.target.value)}
             />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Title</Label>
+            <Label className="text-xs text-muted-foreground">Cargo</Label>
             <Input
               value={form.title}
               onChange={(e) => set("title")(e.target.value)}
             />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Stage</Label>
+            <Label className="text-xs text-muted-foreground">Etapa</Label>
             <Select
               value={form.stage}
               onValueChange={(v) => set("stage")(v)}
@@ -1003,7 +1000,7 @@ function ContactFormDialog({
             </Select>
           </div>
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Last activity</Label>
+            <Label className="text-xs text-muted-foreground">Última actividad</Label>
             <Input
               type="date"
               value={form.last_activity_on}
@@ -1011,23 +1008,23 @@ function ContactFormDialog({
             />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Source</Label>
+            <Label className="text-xs text-muted-foreground">Fuente</Label>
             <Input
               value={form.source}
               onChange={(e) => set("source")(e.target.value)}
-              placeholder="google, partner, event…"
+              placeholder="google, socio, evento…"
             />
           </div>
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Channel</Label>
+            <Label className="text-xs text-muted-foreground">Canal</Label>
             <Input
               value={form.channel}
               onChange={(e) => set("channel")(e.target.value)}
-              placeholder="email, paid-social…"
+              placeholder="correo, social-pagado…"
             />
           </div>
           <div className="col-span-2 space-y-1">
-            <Label className="text-xs text-muted-foreground">Notes</Label>
+            <Label className="text-xs text-muted-foreground">Notas</Label>
             <Textarea
               rows={3}
               value={form.notes}
@@ -1040,14 +1037,14 @@ function ContactFormDialog({
             onClick={onClose}
             className="rounded-lg border border-glass-border bg-glass/30 px-3 py-1.5 text-xs hover:bg-glass/50"
           >
-            Cancel
+            Cancelar
           </button>
           <button
             onClick={submit}
             disabled={saving}
             className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
           >
-            {saving ? "Saving…" : isEdit ? "Save changes" : "Add lead"}
+            {saving ? "Guardando…" : isEdit ? "Guardar cambios" : "Agregar lead"}
           </button>
         </DialogFooter>
       </DialogContent>
@@ -1068,7 +1065,7 @@ function InlineStagePicker({
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          aria-label={`Change stage (currently ${s?.label ?? contact.stage})`}
+          aria-label={`Cambiar etapa (actual: ${s?.label ?? contact.stage})`}
           className="group inline-flex items-center gap-2 rounded-md px-1.5 py-1 -ml-1.5 transition-colors hover:bg-foreground/[0.06] focus-visible:outline-none focus-visible:bg-foreground/[0.06]"
         >
           <span
@@ -1112,7 +1109,7 @@ function InlineStagePicker({
                 {opt.label}
               </span>
               {active && (
-                <span className="ml-auto text-[10px] text-muted-foreground">current</span>
+                <span className="ml-auto text-[10px] text-muted-foreground">actual</span>
               )}
             </DropdownMenuItem>
           );

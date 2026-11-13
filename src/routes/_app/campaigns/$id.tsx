@@ -78,6 +78,16 @@ type Activity = {
 
 type StageOpt = { key: string; label: string; color: string; position: number };
 
+const CAMPAIGN_TYPE_LABELS: Record<string, string> = {
+  product_launch: "Lanzamiento de producto",
+  webinar: "Webinar",
+  newsletter: "Boletín",
+  paid_acquisition: "Adquisición pagada",
+  event: "Evento",
+  content: "Contenido",
+  other: "Otro",
+};
+
 
 type Tab = "plan" | "flow" | "assets" | "variants" | "results" | "settings";
 
@@ -240,7 +250,7 @@ function WorkspaceDetail() {
       ws.status === "planning" &&
       pendingApprovals > 0
     ) {
-      toast.error(`${pendingApprovals} asset(s) still need approval before going live.`);
+      toast.error(`${pendingApprovals} recurso(s) aún necesitan aprobación antes de publicarse.`);
       return;
     }
     const prevStatus = ws.status;
@@ -282,7 +292,7 @@ function WorkspaceDetail() {
     onSave: async (v) => {
       const { error } = await supabase
         .from("workspaces")
-        .update({ name: v.trim() || "Untitled campaign" })
+        .update({ name: v.trim() || "Campaña sin nombre" })
         .eq("id", ws!.id);
       if (error) throw new Error(error.message);
     },
@@ -364,9 +374,9 @@ function WorkspaceDetail() {
           created_by: user.id,
         })),
       );
-      toast.success(`Added ${items.length} checklist items`);
+      toast.success(`Se agregaron ${items.length} tareas a la lista`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "AI failed");
+      toast.error(e instanceof Error ? e.message : "Falló la IA");
     } finally {
       setAiBusy(false);
     }
@@ -390,16 +400,16 @@ function WorkspaceDetail() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Export failed");
+      toast.error(e instanceof Error ? e.message : "No se pudo exportar");
     } finally {
       setExportBusy(false);
     }
   };
 
   const handoffs = [
-    { focus: "campaign-creator", label: "Name Generator", Icon: IconCampaign, n: counts.campaigns },
-    { focus: "campaign-import", label: "List import", Icon: IconImport, n: counts.lists },
-    { focus: "utm", label: "UTM links", Icon: IconUtm, n: counts.utm },
+    { focus: "campaign-creator", label: "Generador de nombres", Icon: IconCampaign, n: counts.campaigns },
+    { focus: "campaign-import", label: "Importar lista", Icon: IconImport, n: counts.lists },
+    { focus: "utm", label: "Enlaces UTM", Icon: IconUtm, n: counts.utm },
   ] as const;
 
   if (!ws) {
@@ -433,12 +443,12 @@ function WorkspaceDetail() {
           </span>
           <div className="min-w-0 flex-1">
             <Link to="/campaigns" className="block text-xs uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground">
-              Campaigns
+              Campañas
             </Link>
             {ws.is_sample && (
               <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-2.5 py-0.5 text-[10px] uppercase tracking-wider text-accent-foreground">
                 <span className="inline-block size-1.5 rounded-full bg-accent" />
-                Sample · safe to delete
+                Muestra · puedes borrarla sin riesgo
               </div>
             )}
             <div
@@ -450,7 +460,7 @@ function WorkspaceDetail() {
                 value={editName}
                 rows={1}
                 onChange={(e) => setEditName(e.target.value)}
-                onBlur={() => editName !== ws.name && save({ name: editName.trim() || "Untitled campaign" })}
+                onBlur={() => editName !== ws.name && save({ name: editName.trim() || "Campaña sin nombre" })}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
@@ -461,7 +471,7 @@ function WorkspaceDetail() {
                     (e.currentTarget as HTMLTextAreaElement).blur();
                   }
                 }}
-                placeholder="Name your campaign…"
+                placeholder="Ponle nombre a tu campaña…"
                 style={{ fieldSizing: "content" } as React.CSSProperties}
                 className="min-w-0 flex-1 resize-none overflow-hidden bg-transparent font-display text-2xl sm:text-3xl leading-tight text-foreground placeholder:text-muted-foreground/60 outline-none"
               />
@@ -477,9 +487,9 @@ function WorkspaceDetail() {
             onClick={exportPack}
             disabled={exportBusy}
             className="inline-flex items-center gap-1.5 rounded-full border border-glass-border bg-glass/40 px-3 py-1.5 text-xs text-foreground hover:bg-glass disabled:opacity-50"
-            title="Download handoff pack (.zip)"
+            title="Descargar paquete (.zip)"
           >
-            <IconDownload size={12} /> {exportBusy ? "Building…" : "Export"}
+            <IconDownload size={12} /> {exportBusy ? "Preparando…" : "Exportar"}
           </button>
           <Select
             value={ws.status}
@@ -504,11 +514,11 @@ function WorkspaceDetail() {
         {(
           [
             { id: "plan", label: "Plan" },
-            { id: "flow", label: "Flow" },
-            { id: "assets", label: `Assets${pendingApprovals > 0 ? ` (${pendingApprovals})` : ""}` },
-            { id: "variants", label: "Variants" },
-            { id: "results", label: "Results" },
-            { id: "settings", label: "Settings" },
+            { id: "flow", label: "Flujo" },
+            { id: "assets", label: `Recursos${pendingApprovals > 0 ? ` (${pendingApprovals})` : ""}` },
+            { id: "variants", label: "Variantes" },
+            { id: "results", label: "Resultados" },
+            { id: "settings", label: "Configuración" },
           ] as const
         ).map((t) => (
           <button
@@ -529,12 +539,12 @@ function WorkspaceDetail() {
       {tab === "plan" && (
         <>
           <div>
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">Goal</div>
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">Meta</div>
             <textarea
               value={editGoal}
               onChange={(e) => setEditGoal(e.target.value)}
               onBlur={() => editGoal !== (ws.goal ?? "") && save({ goal: editGoal || null })}
-              placeholder="What does this campaign need to achieve?"
+              placeholder="¿Qué debe lograr esta campaña?"
               rows={2}
               className="field-glass mt-2 w-full resize-none rounded-lg px-3 py-2 text-base text-foreground placeholder:text-muted-foreground"
             />
@@ -542,7 +552,7 @@ function WorkspaceDetail() {
 
           <div className="grid gap-5 md:grid-cols-3">
             <div>
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Dates</div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Fechas</div>
               <div className="mt-2 flex items-center gap-2">
                 <input
                   type="date"
@@ -560,24 +570,24 @@ function WorkspaceDetail() {
               </div>
             </div>
             <div>
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Campaign type</div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Tipo de campaña</div>
               <select
                 value={ws.campaign_type}
                 onChange={(e) => save({ campaign_type: e.target.value as Workspace["campaign_type"] })}
                 className="field-glass mt-2 w-full rounded-md px-2 py-1.5 text-xs capitalize"
               >
                 {["product_launch", "webinar", "newsletter", "paid_acquisition", "event", "content", "other"].map((t) => (
-                  <option key={t} value={t}>{t.replace(/_/g, " ")}</option>
+                  <option key={t} value={t}>{CAMPAIGN_TYPE_LABELS[t]}</option>
                 ))}
               </select>
             </div>
             <div>
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Primary KPI</div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">KPI principal</div>
               <div className="mt-2 flex items-center gap-2">
                 <input
                   value={kpiLabel}
                   onChange={(e) => setKpiLabel(e.target.value)}
-                  placeholder="e.g. Signups"
+                  placeholder="Ej. Registros"
                   className="field-glass min-w-0 flex-1 rounded-md px-2 py-1.5 text-xs"
                 />
                 <input
@@ -605,7 +615,7 @@ function WorkspaceDetail() {
               disabled={aiBusy}
               className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs text-primary hover:bg-primary/15 disabled:opacity-50"
             >
-              <IconSpark size={12} /> {aiBusy ? "Thinking…" : "AI suggest checklist"}
+              <IconSpark size={12} /> {aiBusy ? "Pensando…" : "Sugerir lista con IA"}
             </button>
           </div>
 
@@ -637,7 +647,7 @@ function WorkspaceDetail() {
                       </span>
                       <div>
                         <div className="font-display text-base">{t.label}</div>
-                        <div className="text-xs text-muted-foreground">{t.n} saved</div>
+                        <div className="text-xs text-muted-foreground">{t.n} guardados</div>
                       </div>
                     </div>
                     <IconArrowRight size={16} className="text-muted-foreground transition group-hover:translate-x-1" />
@@ -653,7 +663,7 @@ function WorkspaceDetail() {
             <h2 className="font-display text-xl">Actividad</h2>
             <GlassPanel className="mt-3 divide-y divide-glass-border">
               {activity.length === 0 ? (
-                <div className="p-5 text-sm text-muted-foreground">No activity yet.</div>
+                <div className="p-5 text-sm text-muted-foreground">Aún no hay actividad.</div>
               ) : (
                 activity.map((a) => (
                   <div key={a.id} className="flex items-start gap-3 p-4">
@@ -705,15 +715,15 @@ function WorkspaceDetail() {
           <div className="pt-4 text-right">
             <button
               onClick={async () => {
-                if (!confirm("Delete this workspace? Tool records will detach but be preserved.")) return;
+                if (!confirm("¿Borrar este proyecto? Los registros de las herramientas se desligarán pero se conservarán.")) return;
                 const { error } = await supabase.from("workspaces").delete().eq("id", ws.id);
                 if (error) { toast.error(error.message); return; }
-                toast.success("Workspace deleted");
+                toast.success("Proyecto borrado");
                 nav({ to: "/campaigns" });
               }}
               className="text-xs text-muted-foreground hover:text-destructive"
             >
-              Delete workspace
+              Borrar proyecto
             </button>
           </div>
         </div>

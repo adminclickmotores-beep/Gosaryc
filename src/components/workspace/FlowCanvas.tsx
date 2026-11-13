@@ -57,12 +57,20 @@ type NodeData = { label: string; kind: NodeKind; config?: NodeConfig };
 type FlowState = { nodes: Node<NodeData>[]; edges: Edge[] };
 
 const NODE_PRESETS: { kind: NodeKind; label: string; color: string }[] = [
-  { kind: "trigger", label: "Trigger", color: "oklch(0.84 0.18 158)" },
-  { kind: "email", label: "Email", color: "#60a5fa" },
-  { kind: "wait", label: "Wait", color: "#f59e0b" },
-  { kind: "condition", label: "Condition", color: "#a78bfa" },
-  { kind: "action", label: "Action", color: "#34d399" },
+  { kind: "trigger", label: "Disparador", color: "oklch(0.84 0.18 158)" },
+  { kind: "email", label: "Correo", color: "#60a5fa" },
+  { kind: "wait", label: "Espera", color: "#f59e0b" },
+  { kind: "condition", label: "Condición", color: "#a78bfa" },
+  { kind: "action", label: "Acción", color: "#34d399" },
 ];
+
+const KIND_LABEL: Record<NodeKind, string> = {
+  trigger: "Disparador",
+  email: "Correo",
+  wait: "Espera",
+  condition: "Condición",
+  action: "Acción",
+};
 
 type Audience = { id: string; name: string };
 type Variant = { id: string; label: string; channel: string };
@@ -171,20 +179,23 @@ export function FlowCanvas({ workspaceId, orgId }: { workspaceId: string; orgId:
     if (error) toast.error(error.message);
     else {
       setDirty(false);
-      toast.success("Flow saved");
+      toast.success("Flujo guardado");
     }
   }
 
-  const selected = useMemo(() => nodes.find((n) => n.id === selectedId) ?? null, [nodes, selectedId]);
+  const selected = useMemo<Node<NodeData> | null>(
+    () => nodes.find((n: Node<NodeData>) => n.id === selectedId) ?? null,
+    [nodes, selectedId],
+  );
 
   if (loading) {
-    return <GlassPanel className="p-6 text-sm text-muted-foreground">Loading flow…</GlassPanel>;
+    return <GlassPanel className="p-6 text-sm text-muted-foreground">Cargando flujo…</GlassPanel>;
   }
 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs text-muted-foreground mr-2">Add node:</span>
+        <span className="text-xs text-muted-foreground mr-2">Agregar nodo:</span>
         {NODE_PRESETS.map((p) => (
           <button
             key={p.kind}
@@ -196,19 +207,19 @@ export function FlowCanvas({ workspaceId, orgId }: { workspaceId: string; orgId:
           </button>
         ))}
         <div className="ml-auto flex items-center gap-2">
-          {dirty && <span className="text-[11px] text-muted-foreground">Unsaved changes</span>}
+          {dirty && <span className="text-[11px] text-muted-foreground">Cambios sin guardar</span>}
           <button
             onClick={() => setShowTutorial(true)}
             className="inline-flex items-center gap-1.5 rounded-full border border-glass-border bg-background/40 px-3 py-1.5 text-xs text-muted-foreground hover:border-primary/40 hover:text-foreground"
           >
-            <HelpCircle size={12} /> How it works
+            <HelpCircle size={12} /> Cómo funciona
           </button>
           <button
             onClick={save}
             disabled={saving || !dirty}
             className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs text-primary hover:bg-primary/15 disabled:opacity-50"
           >
-            <IconSpark size={12} /> {saving ? "Saving…" : "Save flow"}
+            <IconSpark size={12} /> {saving ? "Guardando…" : "Guardar flujo"}
           </button>
         </div>
       </div>
@@ -219,7 +230,7 @@ export function FlowCanvas({ workspaceId, orgId }: { workspaceId: string; orgId:
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
-          onNodeClick={(_, n) => setSelectedId(n.id)}
+          onNodeClick={(_: unknown, n: Node<NodeData>) => setSelectedId(n.id)}
           fitView
           proOptions={{ hideAttribution: true }}
         >
@@ -231,7 +242,7 @@ export function FlowCanvas({ workspaceId, orgId }: { workspaceId: string; orgId:
         {showTutorial && <TutorialOverlay onDismiss={dismissTutorial} />}
       </GlassPanel>
       <p className="text-xs text-muted-foreground">
-        Click a node to configure it. Drag from a node's edge handle to connect. Press Backspace to delete a selected node or edge.
+        Haz clic en un nodo para configurarlo. Arrastra desde el borde de un nodo para conectarlo. Presiona Retroceso para borrar el nodo o la conexión seleccionada.
       </p>
 
       <Sheet open={!!selected} onOpenChange={(o) => !o && setSelectedId(null)}>
@@ -239,12 +250,12 @@ export function FlowCanvas({ workspaceId, orgId }: { workspaceId: string; orgId:
           {selected && (
             <>
               <SheetHeader>
-                <SheetTitle className="capitalize">{selected.data.kind} node</SheetTitle>
-                <SheetDescription>Configure how this step behaves at runtime.</SheetDescription>
+                <SheetTitle>{KIND_LABEL[selected.data.kind as NodeKind]}</SheetTitle>
+                <SheetDescription>Configura cómo se comporta este paso al ejecutarse.</SheetDescription>
               </SheetHeader>
               <div className="mt-6 space-y-4">
                 <div className="space-y-1.5">
-                  <Label>Label</Label>
+                  <Label>Etiqueta</Label>
                   <Input
                     value={selected.data.label}
                     onChange={(e) => updateSelectedConfig({}, e.target.value)}
@@ -258,20 +269,20 @@ export function FlowCanvas({ workspaceId, orgId }: { workspaceId: string; orgId:
                   onChange={(patch) => updateSelectedConfig(patch)}
                 />
                 <div className="space-y-1.5">
-                  <Label>Notes</Label>
+                  <Label>Notas</Label>
                   <Textarea
                     rows={3}
                     value={selected.data.config?.description ?? ""}
                     onChange={(e) => updateSelectedConfig({ description: e.target.value })}
-                    placeholder="Anything teammates should know about this step"
+                    placeholder="Algo que el equipo debe saber sobre este paso"
                   />
                 </div>
                 <div className="flex justify-end gap-2 pt-2">
                   <Button variant="ghost" onClick={() => setSelectedId(null)}>
-                    Done
+                    Listo
                   </Button>
                   <Button onClick={save} disabled={saving}>
-                    {saving ? "Saving…" : "Save flow"}
+                    {saving ? "Guardando…" : "Guardar flujo"}
                   </Button>
                 </div>
               </div>
@@ -312,26 +323,26 @@ function NodeConfigForm({
     return (
       <>
         <div className="space-y-1.5">
-          <Label>Trigger event</Label>
+          <Label>Evento disparador</Label>
           <Select
             value={config.triggerEvent ?? ""}
             onValueChange={(v) => onChange({ triggerEvent: v })}
           >
-            <SelectTrigger><SelectValue placeholder="Select event" /></SelectTrigger>
+            <SelectTrigger><SelectValue placeholder="Elige un evento" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="workspace.scheduled">Workspace scheduled</SelectItem>
-              <SelectItem value="workspace.live">Workspace live</SelectItem>
-              <SelectItem value="list.created">List created</SelectItem>
+              <SelectItem value="workspace.scheduled">Proyecto programado</SelectItem>
+              <SelectItem value="workspace.live">Proyecto publicado</SelectItem>
+              <SelectItem value="list.created">Lista creada</SelectItem>
               <SelectItem value="manual">Manual</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-1.5">
-          <Label>Audience</Label>
+          <Label>Audiencia</Label>
           <Select value={config.audienceId ?? ""} onValueChange={(v) => onChange({ audienceId: v })}>
-            <SelectTrigger><SelectValue placeholder="Pick audience" /></SelectTrigger>
+            <SelectTrigger><SelectValue placeholder="Elige una audiencia" /></SelectTrigger>
             <SelectContent>
-              {audiences.length === 0 && <SelectItem value="__none" disabled>No audiences yet</SelectItem>}
+              {audiences.length === 0 && <SelectItem value="__none" disabled>Aún no hay audiencias</SelectItem>}
               {audiences.map((a) => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
             </SelectContent>
           </Select>
@@ -343,23 +354,23 @@ function NodeConfigForm({
     return (
       <>
         <div className="space-y-1.5">
-          <Label>Channel</Label>
+          <Label>Canal</Label>
           <Select value={config.channel ?? "email"} onValueChange={(v) => onChange({ channel: v })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="email">Email</SelectItem>
+              <SelectItem value="email">Correo</SelectItem>
               <SelectItem value="sms">SMS</SelectItem>
               <SelectItem value="push">Push</SelectItem>
-              <SelectItem value="in_app">In-app</SelectItem>
+              <SelectItem value="in_app">En la app</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-1.5">
-          <Label>Variant</Label>
+          <Label>Variante</Label>
           <Select value={config.variantId ?? ""} onValueChange={(v) => onChange({ variantId: v })}>
-            <SelectTrigger><SelectValue placeholder="Pick variant" /></SelectTrigger>
+            <SelectTrigger><SelectValue placeholder="Elige una variante" /></SelectTrigger>
             <SelectContent>
-              {variants.length === 0 && <SelectItem value="__none" disabled>No variants yet</SelectItem>}
+              {variants.length === 0 && <SelectItem value="__none" disabled>Aún no hay variantes</SelectItem>}
               {variants.map((v) => (
                 <SelectItem key={v.id} value={v.id}>{v.label} · {v.channel}</SelectItem>
               ))}
@@ -367,7 +378,7 @@ function NodeConfigForm({
           </Select>
         </div>
         <div className="space-y-1.5">
-          <Label>Send at</Label>
+          <Label>Fecha de envío</Label>
           <Input
             type="datetime-local"
             value={config.scheduleAt ?? ""}
@@ -380,7 +391,7 @@ function NodeConfigForm({
   if (kind === "wait") {
     return (
       <div className="space-y-1.5">
-        <Label>Wait (days)</Label>
+        <Label>Espera (días)</Label>
         <Input
           type="number"
           min={0}
@@ -393,12 +404,12 @@ function NodeConfigForm({
   if (kind === "condition") {
     return (
       <div className="space-y-1.5">
-        <Label>Condition</Label>
+        <Label>Condición</Label>
         <Textarea
           rows={3}
           value={config.conditionExpr ?? ""}
           onChange={(e) => onChange({ conditionExpr: e.target.value })}
-          placeholder="e.g. opened_email == true && clicked == false"
+          placeholder="Ej. abrió_correo == true && clic == false"
         />
       </div>
     );
@@ -407,7 +418,7 @@ function NodeConfigForm({
   return (
     <>
       <div className="space-y-1.5">
-        <Label>Action URL / webhook</Label>
+        <Label>URL de acción / webhook</Label>
         <Input
           value={config.actionUrl ?? ""}
           onChange={(e) => onChange({ actionUrl: e.target.value })}
@@ -415,12 +426,12 @@ function NodeConfigForm({
         />
       </div>
       <div className="space-y-1.5">
-        <Label>Handoff note</Label>
+        <Label>Nota de traspaso</Label>
         <Textarea
           rows={2}
           value={config.handoffNote ?? ""}
           onChange={(e) => onChange({ handoffNote: e.target.value })}
-          placeholder="Context for the receiving system or teammate"
+          placeholder="Contexto para el sistema o compañero que lo recibe"
         />
       </div>
     </>
@@ -430,23 +441,23 @@ function NodeConfigForm({
 const TUTORIAL_STEPS = [
   {
     Icon: MousePointerClick,
-    title: "Add a step",
-    body: "Tap any chip above — Trigger, Email, Wait, Condition or Action — to drop it on the canvas.",
+    title: "Agrega un paso",
+    body: "Toca cualquier botón de arriba (Disparador, Correo, Espera, Condición o Acción) para colocarlo en el lienzo.",
   },
   {
     Icon: Link2,
-    title: "Connect them",
-    body: "Drag from the small dot on a node's edge to another node to wire the order of events.",
+    title: "Conéctalos",
+    body: "Arrastra desde el punto pequeño del borde de un nodo hasta otro nodo para definir el orden de los eventos.",
   },
   {
     Icon: Settings2,
-    title: "Configure each step",
-    body: "Click a node to open its settings panel — pick an audience, variant, wait time, or webhook.",
+    title: "Configura cada paso",
+    body: "Haz clic en un nodo para abrir su panel de configuración: elige audiencia, variante, tiempo de espera o webhook.",
   },
   {
     Icon: Save,
-    title: "Save your flow",
-    body: "Hit Save flow when you're happy. Backspace removes a selected node or connection.",
+    title: "Guarda tu flujo",
+    body: "Pulsa Guardar flujo cuando termines. Retroceso elimina el nodo o la conexión seleccionada.",
   },
 ];
 
@@ -457,15 +468,15 @@ function TutorialOverlay({ onDismiss }: { onDismiss: () => void }) {
         <button
           onClick={onDismiss}
           className="absolute right-3 top-3 rounded-full p-1.5 text-muted-foreground hover:bg-glass/50 hover:text-foreground"
-          aria-label="Close tutorial"
+          aria-label="Cerrar tutorial"
         >
           <X size={14} />
         </button>
         <div className="mb-5">
-          <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Quick start</div>
-          <h3 className="mt-1 font-display text-2xl">Build your flow in 4 steps</h3>
+          <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Inicio rápido</div>
+          <h3 className="mt-1 font-display text-2xl">Arma tu flujo en 4 pasos</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            A flow is the order things happen — who gets what, when, and what triggers next.
+            Un flujo es el orden de lo que pasa: quién recibe qué, cuándo y qué dispara el siguiente paso.
           </p>
         </div>
         <ol className="grid gap-3 sm:grid-cols-2">
@@ -491,14 +502,14 @@ function TutorialOverlay({ onDismiss }: { onDismiss: () => void }) {
         </ol>
         <div className="mt-6 flex items-center justify-between">
           <span className="text-[11px] text-muted-foreground">
-            Tip: start with a <span className="text-foreground">Trigger</span>, then add an{" "}
-            <span className="text-foreground">Email</span>.
+            Consejo: empieza con un <span className="text-foreground">Disparador</span>, y luego agrega un{" "}
+            <span className="text-foreground">Correo</span>.
           </span>
           <button
             onClick={onDismiss}
             className="inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-medium text-primary-foreground hover:opacity-90"
           >
-            Got it — let's build
+            Entendido, a construir
           </button>
         </div>
       </div>

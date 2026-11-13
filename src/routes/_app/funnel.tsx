@@ -64,7 +64,7 @@ const STAGES: StageDef[] = [
     hex: "#a78bfa",
     tint: "bg-violet-500/10",
     blurb:
-      "Anyone who has shown interest — form fills, ad clicks, event sign-ups.",
+      "Cualquier persona que mostró interés: formularios, clics en anuncios, registros a eventos.",
   },
   {
     id: "mql",
@@ -72,7 +72,7 @@ const STAGES: StageDef[] = [
     hex: "#818cf8",
     tint: "bg-indigo-500/10",
     blurb:
-      "Marketing Qualified Lead — a lead that has met your marketing engagement threshold and is ready to hand off to sales.",
+      "Lead calificado por marketing: alcanzó el nivel de interacción definido y está listo para pasar a ventas.",
   },
   {
     id: "sql",
@@ -80,22 +80,22 @@ const STAGES: StageDef[] = [
     hex: "#60a5fa",
     tint: "bg-blue-500/10",
     blurb:
-      "Sales Qualified Lead — a lead the sales team has reviewed and accepted as worth actively pursuing.",
+      "Lead calificado por ventas: el equipo de ventas lo revisó y decidió darle seguimiento activo.",
   },
   {
     id: "opp",
-    label: "Opportunity",
+    label: "Oportunidad",
     hex: "#2dd4bf",
     tint: "bg-teal-500/10",
     blurb:
-      "A qualified prospect with a potential deal — has a defined need, budget, and timeline.",
+      "Prospecto calificado con una posible venta: tiene necesidad, presupuesto y fecha definidos.",
   },
   {
     id: "won",
-    label: "Won",
+    label: "Ganado",
     hex: "#34d399",
     tint: "bg-emerald-500/10",
-    blurb: "A closed deal. A new customer.",
+    blurb: "Una venta cerrada. Un cliente nuevo.",
   },
 ];
 
@@ -285,20 +285,20 @@ export function FunnelPageContent({ hideHeader = false }: { hideHeader?: boolean
         {!hideHeader && (
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="flex items-start gap-4">
-              <PageHexBadge hue={275} size={26} icon={<IconFunnel size={22} />} aria-label="Funnel" />
+              <PageHexBadge hue={275} size={26} icon={<IconFunnel size={22} />} aria-label="Embudo" />
               <div>
                 <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                  Pipeline view
+                  Vista del embudo
                 </div>
                 <h1 className="mt-1 font-display text-4xl tracking-tight">
-                  Funnel
+                  Embudo
                 </h1>
                 <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-                  Lead → Won pipeline, filtered by period, channel and source.{" "}
+                  Del lead a ganado, filtrado por periodo, canal y fuente.{" "}
                   <Link to="/integrations" className="text-primary hover:opacity-80">
-                    Connect your CRM or analytics source
+                    Conecta tu CRM o tu fuente de analítica
                   </Link>{" "}
-                  to stream events automatically.
+                  para recibir eventos automáticamente.
                 </p>
               </div>
             </div>
@@ -308,13 +308,13 @@ export function FunnelPageContent({ hideHeader = false }: { hideHeader?: boolean
                 search={{ focus: "funnel-targets" }}
                 className="inline-flex items-center gap-2 rounded-xl border border-glass-border bg-glass/40 px-3.5 py-2 text-sm text-foreground transition hover:bg-glass-strong"
               >
-                Set targets <IconArrowRight size={12} />
+                Definir metas <IconArrowRight size={12} />
               </Link>
               <button
                 onClick={() => setAdding(true)}
                 className="btn-keystone inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-accent px-4 py-2 text-sm font-medium text-primary-foreground shadow-[0_8px_32px_-8px_oklch(0.72_0.2_275_/_0.4)] hover:opacity-90"
               >
-                <IconPlus size={14} /> Log event
+                <IconPlus size={14} /> Registrar evento
               </button>
             </div>
           </div>
@@ -323,7 +323,7 @@ export function FunnelPageContent({ hideHeader = false }: { hideHeader?: boolean
         {optionsEvents.some((e) => e.is_sample) && (
           <DemoDataBanner
             storageKey="funnel-sample"
-            label="Sample data — these funnel events were seeded so the pipeline isn't empty. Replace them with your own or clear them in Settings."
+            label="Datos de muestra: estos eventos se crearon para que el embudo no esté vacío. Reemplázalos con los tuyos o bórralos en Configuración."
             ctaHref="#"
           />
         )}
@@ -346,7 +346,7 @@ export function FunnelPageContent({ hideHeader = false }: { hideHeader?: boolean
           </>
         ) : optionsError ? (
           <PanelError
-            message="Couldn't load funnel"
+            message="No se pudo cargar el embudo"
             onRetry={() => {
               setOptionsReloadKey((k) => k + 1);
               setScopedReloadKey((k) => k + 1);
@@ -364,7 +364,7 @@ export function FunnelPageContent({ hideHeader = false }: { hideHeader?: boolean
           </>
         ) : scopedError ? (
           <PanelError
-            message="Couldn't load funnel events for this slice"
+            message="No se pudieron cargar los eventos de esta vista"
             onRetry={() => setScopedReloadKey((k) => k + 1)}
           />
         ) : current.length === 0 && !scopedLoading ? (
@@ -466,10 +466,10 @@ function FiltersBar(props: {
   setSourceFilter: (v: string) => void;
 }) {
   const periodOptions: { id: Period; label: string }[] = [
-    { id: "this_week", label: "This week" },
-    { id: "this_month", label: "This month" },
-    { id: "this_quarter", label: "This quarter" },
-    { id: "all_time", label: "All time" },
+    { id: "this_week", label: "Esta semana" },
+    { id: "this_month", label: "Este mes" },
+    { id: "this_quarter", label: "Este trimestre" },
+    { id: "all_time", label: "Todo el tiempo" },
   ];
   return (
     <GlassPanel className="flex flex-wrap items-center gap-3 p-2">
@@ -498,13 +498,13 @@ function FiltersBar(props: {
       </div>
       <div className="ml-auto flex flex-wrap items-center gap-2">
         <FilterSelect
-          label="Channel"
+          label="Canal"
           value={props.channelFilter}
           onChange={props.setChannelFilter}
           options={["email", "paid-social", "organic", "partner", "event", ...props.channels.filter(c => !["email","paid-social","organic","partner","event"].includes(c))]}
         />
         <FilterSelect
-          label="Source"
+          label="Fuente"
           value={props.sourceFilter}
           onChange={props.setSourceFilter}
           options={props.sources}
@@ -533,7 +533,7 @@ function FilterSelect({
         onChange={(e) => onChange(e.target.value)}
         className="field-glass rounded-lg px-2.5 py-1.5 text-xs"
       >
-        <option value="__all__">All</option>
+        <option value="__all__">Todos</option>
         {options.map((o) => (
           <option key={o} value={o}>
             {o}
@@ -549,7 +549,7 @@ function FilterSelect({
 function DeltaBadge({ cur, prev }: { cur: number; prev: number }) {
   if (cur === 0 && prev === 0) return <span className="text-muted-foreground/60">—</span>;
   if (prev === 0) {
-    return <span className="text-muted-foreground/70">— no prior data</span>;
+    return <span className="text-muted-foreground/70">— sin datos previos</span>;
   }
   const delta = ((cur - prev) / prev) * 100;
   const up = delta >= 0;
@@ -616,10 +616,10 @@ function SummaryRow({
           <div className="relative flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                Overall pipeline conversion
+                Conversión total del embudo
               </div>
               <InfoDot>
-                The share of Leads in this period that became Won customers. Calculated as Won ÷ Leads.
+                Porcentaje de leads del periodo que se convirtieron en clientes ganados. Se calcula como ganados ÷ leads.
               </InfoDot>
             </div>
             <div className="hidden h-1.5 max-w-md flex-1 overflow-hidden rounded-full bg-black/30 sm:block">
@@ -805,7 +805,7 @@ function FunnelChart({
     const cur = values[i];
     return prev > 0 ? (cur / prev) * 100 : null;
   });
-  // Biggest drop (smallest conversion %)
+  // Mayor caída (smallest conversion %)
   let biggestDropIdx = -1;
   let smallest = Infinity;
   convs.forEach((c, i) => {
@@ -821,13 +821,13 @@ function FunnelChart({
         <div>
           <h2 className="font-display text-lg leading-tight">Embudo de ventas</h2>
           <p className="text-xs text-muted-foreground">
-            Click a stage for details · widths proportional to volume
+            Haz clic en una etapa para ver detalles · el ancho es proporcional al volumen
           </p>
         </div>
         <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-          Conversion %
+          Conversión %
           <InfoDot>
-            The share of the previous stage that progressed here. Higher is better.
+            Porcentaje de la etapa anterior que avanzó hasta aquí. Mientras más alto, mejor.
           </InfoDot>
         </div>
       </div>
@@ -1108,7 +1108,7 @@ function FunnelChart({
                         <div className="flex items-end justify-between gap-3 border-t border-glass-border/60 pt-2.5">
                           <div>
                             <div className="text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                              In period
+                              En el periodo
                             </div>
                             <div className="mt-0.5 font-display text-xl tabular-nums">
                               {(values[i] || 0).toLocaleString()}
@@ -1116,7 +1116,7 @@ function FunnelChart({
                           </div>
                           <div className="text-right">
                             <div className="text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                              {i === 0 ? "Top of funnel" : `From ${STAGES[i - 1].label}`}
+                              {i === 0 ? "Inicio del embudo" : `Desde ${STAGES[i - 1].label}`}
                             </div>
                             <div className="mt-0.5 font-display text-xl tabular-nums">
                               {convs[i] !== null ? `${convs[i]!.toFixed(1)}%` : "—"}
@@ -1214,10 +1214,10 @@ function ConversionPill({
         style={{ background: biggestDrop ? "oklch(0.86 0.14 88)" : hue }}
       />
       <span>→ {label}</span>
-      <span className="text-[10px] font-medium text-muted-foreground">from {from}</span>
+      <span className="text-[10px] font-medium text-muted-foreground">desde {from}</span>
       {biggestDrop && (
         <span className="ml-1 text-[9px] font-bold uppercase tracking-wider text-amber-200/95">
-          Biggest drop
+          Mayor caída
         </span>
       )}
     </div>
@@ -1320,15 +1320,15 @@ function GettingStartedHint() {
         style={{ boxShadow: "0 0 8px oklch(0.72 0.2 275)" }}
       />
       <span>
-        Just getting started — log events or{" "}
+        Recién empiezas: registra eventos o{" "}
         <Link
           to="/tools"
           search={{ focus: "campaign-import" }}
           className="text-primary underline-offset-2 hover:underline"
         >
-          import a list
+          importa una lista
         </Link>{" "}
-        and the funnel fills in.
+        y el embudo se llenará.
       </span>
       <button
         type="button"
@@ -1339,7 +1339,7 @@ function GettingStartedHint() {
           setDismissed(true);
         }}
         className="ml-auto rounded-md p-1 text-muted-foreground/70 transition hover:bg-glass-strong hover:text-foreground"
-        aria-label="Dismiss hint"
+        aria-label="Ocultar sugerencia"
       >
         <IconClose size={12} />
       </button>
@@ -1376,22 +1376,22 @@ function SparseFunnelGhost({
           <div className="mx-auto inline-flex size-10 items-center justify-center rounded-xl border border-glass-border bg-glass/60 text-primary">
             <IconFunnel size={18} />
           </div>
-          <h3 className="mt-3 font-display text-lg">Your funnel fills in as events are logged.</h3>
+          <h3 className="mt-3 font-display text-lg">Tu embudo se llena conforme registras eventos.</h3>
           <p className="mt-1 text-xs text-muted-foreground">
-            Log a stage manually or connect your CRM to stream conversions automatically.
+            Registra una etapa manualmente o conecta tu CRM para recibir conversiones automáticamente.
           </p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             <button
               onClick={onLog}
               className="btn-keystone inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-accent px-3.5 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
             >
-              <IconPlus size={14} /> Log an event
+              <IconPlus size={14} /> Registrar un evento
             </button>
             <Link
               to="/connectors"
               className="inline-flex items-center gap-2 rounded-xl border border-glass-border bg-glass/40 px-3.5 py-2 text-sm transition hover:bg-glass-strong"
             >
-              Connect your CRM <IconArrowRight size={12} />
+              Conecta tu CRM <IconArrowRight size={12} />
             </Link>
           </div>
         </motion.div>
@@ -1420,7 +1420,7 @@ function StageDetail({
   const topSources = useMemo(() => {
     const map = new Map<string, number>();
     for (const e of stageEvents) {
-      const k = e.source ?? "direct";
+      const k = e.source ?? "directo";
       map.set(k, (map.get(k) ?? 0) + e.value_count);
     }
     return Array.from(map.entries())
@@ -1477,7 +1477,7 @@ function StageDetail({
           <div className="flex items-center gap-2.5">
             <span className="h-2.5 w-2.5 rounded-full" style={{ background: stage.hex }} />
             <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-              Stage detail
+              Detalle de etapa
             </div>
           </div>
           <SheetTitle className="font-display text-2xl">
@@ -1489,18 +1489,18 @@ function StageDetail({
         <div className="mt-5 grid grid-cols-2 gap-3">
           <GlassPanel className={`p-4 ${stage.tint}`}>
             <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              In period
+              En el periodo
             </div>
             <div className="mt-1 font-display text-2xl tabular-nums">{total.toLocaleString()}</div>
           </GlassPanel>
           <GlassPanel className="p-4">
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                From {prevStage?.label ?? "—"}
+                Desde {prevStage?.label ??"—"}
               </span>
               {prevStage && (
                 <InfoDot>
-                  The percentage of {prevStage.label} that progressed to {stage.label}.
+                  Porcentaje de {prevStage.label} que avanzó a {stage.label}.
                 </InfoDot>
               )}
             </div>
@@ -1515,10 +1515,10 @@ function StageDetail({
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-6 pt-5" data-lenis-prevent>
         <div>
           <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            Top sources
+            Principales fuentes
           </div>
           {topSources.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No entries in period.</div>
+            <div className="text-sm text-muted-foreground">Sin registros en el periodo.</div>
           ) : (
             <div className="space-y-2">
               {topSources.map(([src, v]) => {
@@ -1546,7 +1546,7 @@ function StageDetail({
 
         <div className="mt-6">
           <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            30-day trend
+            Tendencia de 30 días
           </div>
           <GlassPanel className="p-3">
             <svg viewBox={`0 0 ${sparkW} ${sparkH}`} className="h-16 w-full">
@@ -1576,14 +1576,14 @@ function StageDetail({
         <div className="mt-6">
           <div className="mb-2 flex items-baseline justify-between">
             <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              All entries
+              Todos los registros
             </div>
             <div className="text-[10px] tabular-nums text-muted-foreground/70">
               {allStageEntries.length}
             </div>
           </div>
           {allStageEntries.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No entries in period.</div>
+            <div className="text-sm text-muted-foreground">Sin registros en el periodo.</div>
           ) : (
             <div className="space-y-1.5 text-xs">
               {allStageEntries.map((e) => (
@@ -1595,7 +1595,7 @@ function StageDetail({
                     {e.occurred_on}
                   </span>
                   <span className="truncate text-foreground/90">
-                    {e.source ?? "direct"}
+                    {e.source ?? "directo"}
                   </span>
                   <span className="truncate text-muted-foreground">
                     {e.channel ? `/ ${e.channel}` : ""}
@@ -1665,18 +1665,18 @@ function StageContacts({ stage }: { stage: StageDef }) {
     <div className="mt-6">
       <div className="mb-2 flex items-baseline justify-between">
         <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          Contacts in this stage
+          Contactos en esta etapa
         </div>
         <Link
           to="/leads"
           search={{ stage: stage.id }}
           className="text-[11px] text-foreground/70 underline-offset-2 hover:text-foreground hover:underline"
         >
-          View all{total ? ` (${total})` : ""} →
+          Ver todos{total ? ` (${total})` : ""} →
         </Link>
       </div>
       {error ? (
-        <div className="text-sm text-rose-300/80">Couldn't load contacts.</div>
+        <div className="text-sm text-rose-300/80">No se pudieron cargar los contactos.</div>
       ) : rows === null ? (
         <div className="space-y-1.5">
           <GlassSkeleton className="h-9 w-full" />
@@ -1685,7 +1685,7 @@ function StageContacts({ stage }: { stage: StageDef }) {
         </div>
       ) : rows.length === 0 ? (
         <div className="text-sm text-muted-foreground">
-          No contacts at this stage yet.
+          Aún no hay contactos en esta etapa.
         </div>
       ) : (
         <div className="space-y-1.5 text-xs">
@@ -1739,14 +1739,14 @@ function FilteredEmptyState({
   onLog: () => void;
 }) {
   const periodLabel: Record<Period, string> = {
-    this_week: "this week",
-    this_month: "this month",
-    this_quarter: "this quarter",
-    all_time: "all time",
+    this_week: "esta semana",
+    this_month: "este mes",
+    this_quarter: "este trimestre",
+    all_time: "todo el tiempo",
   };
   const bits: string[] = [periodLabel[period]];
-  if (channelFilter !== "__all__") bits.push(`channel ${channelFilter}`);
-  if (sourceFilter !== "__all__") bits.push(`source ${sourceFilter}`);
+  if (channelFilter !== "__all__") bits.push(`canal ${channelFilter}`);
+  if (sourceFilter !== "__all__") bits.push(`fuente ${sourceFilter}`);
   return (
     <GlassPanel className="relative overflow-hidden p-10 text-center">
       <div
@@ -1761,23 +1761,23 @@ function FilteredEmptyState({
           <IconFunnel size={18} />
         </div>
         <h3 className="mt-4 font-display text-lg">
-          No funnel events for <span className="font-serif italic">{bits.join(" · ")}</span>
+          No hay eventos del embudo para <span className="font-serif italic">{bits.join(" · ")}</span>
         </h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          You have data in other periods. Try widening the period or clearing filters.
+          Tienes datos en otros periodos. Prueba ampliar el periodo o quitar los filtros.
         </p>
         <div className="mt-4 flex flex-wrap justify-center gap-2">
           <button
             onClick={onReset}
             className="inline-flex items-center gap-2 rounded-xl border border-glass-border bg-glass/40 px-3.5 py-2 text-sm transition hover:bg-glass-strong"
           >
-            Reset filters
+            Quitar filtros
           </button>
           <button
             onClick={onLog}
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-accent px-3.5 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
           >
-            <IconPlus size={14} /> Log event
+            <IconPlus size={14} /> Registrar evento
           </button>
         </div>
       </div>
@@ -1832,11 +1832,11 @@ function AddEventModal({
       .single();
     setSaving(false);
     if (error || !data) {
-      toast.error(error?.message ?? "Could not save");
+      toast.error(error?.message ?? "No se pudo guardar");
       return;
     }
     onAdded(data as FunnelEvent);
-    toast.success("Logged");
+    toast.success("Registrado");
     onClose();
   };
 
@@ -1856,10 +1856,10 @@ function AddEventModal({
           <div className="flex items-center justify-between">
             <div>
               <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                Pipeline
+                Embudo
               </div>
               <h3 className="mt-0.5 font-display text-xl text-foreground">
-                Log funnel event
+                Registrar evento del embudo
               </h3>
             </div>
             <button
@@ -1874,7 +1874,7 @@ function AddEventModal({
             {/* Stage as segmented pills */}
             <div>
               <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/80">
-                Stage
+                Etapa
               </label>
               <div className="mt-2 grid grid-cols-5 gap-1.5 rounded-xl border border-glass-border bg-glass/30 p-1">
                 {STAGES.map((s) => {
@@ -1911,30 +1911,30 @@ function AddEventModal({
 
             <div className="grid grid-cols-2 gap-3">
               <ModalField
-                label="Source"
+                label="Fuente"
                 value={source}
                 onChange={setSource}
-                placeholder="google, partner…"
+                placeholder="google, socio…"
               />
               <ModalField
-                label="Channel"
+                label="Canal"
                 value={channel}
                 onChange={setChannel}
-                placeholder="email, paid-social…"
+                placeholder="correo, social-pagado…"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/80">
-                  Count
+                  Cantidad
                 </label>
                 <div className="mt-1.5 flex items-stretch overflow-hidden rounded-lg border border-glass-border bg-glass/30">
                   <button
                     type="button"
                     onClick={() => setValue((v) => Math.max(1, v - 1))}
                     className="px-3 text-lg text-muted-foreground transition hover:bg-glass/60 hover:text-foreground"
-                    aria-label="Decrease"
+                    aria-label="Disminuir"
                   >
                     −
                   </button>
@@ -1951,7 +1951,7 @@ function AddEventModal({
                     type="button"
                     onClick={() => setValue((v) => v + 1)}
                     className="px-3 text-lg text-muted-foreground transition hover:bg-glass/60 hover:text-foreground"
-                    aria-label="Increase"
+                    aria-label="Aumentar"
                   >
                     +
                   </button>
@@ -1959,7 +1959,7 @@ function AddEventModal({
               </div>
               <div>
                 <label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/80">
-                  Date
+                  Fecha
                 </label>
                 <input
                   type="date"
@@ -1977,7 +1977,7 @@ function AddEventModal({
               disabled={saving}
               className="btn-keystone w-full rounded-xl bg-gradient-to-r from-primary to-accent px-4 py-3 text-sm font-semibold text-primary-foreground shadow-[0_8px_32px_-8px_oklch(0.72_0.2_275_/_0.45)] transition hover:opacity-90 disabled:opacity-50"
             >
-              {saving ? "Saving…" : "Log event"}
+              {saving ? "Guardando…" : "Registrar evento"}
             </button>
           </div>
         </motion.div>
@@ -2099,7 +2099,7 @@ function WeeklyCohortPanel({
         <div>
           <h2 className="font-display text-xl">Semana contra meta</h2>
           <p className="text-sm text-muted-foreground">
-            Last 8 weeks · MQL + SQO pacing (prorated by days-in-month)
+            Últimas 8 semanas · ritmo MQL + SQO (prorrateado por días del mes)
           </p>
         </div>
         <Link
@@ -2107,18 +2107,18 @@ function WeeklyCohortPanel({
           search={{ focus: "funnel-targets" }}
           className="text-xs text-primary hover:opacity-80"
         >
-          {hasTargets ? "Edit targets →" : "Set targets →"}
+          {hasTargets ? "Editar metas →" : "Definir metas →"}
         </Link>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
             <tr>
-              <th className="px-2 py-2 text-left font-medium">Week of</th>
+              <th className="px-2 py-2 text-left font-medium">Semana del</th>
               <th className="px-2 py-2 text-right font-medium">MQL</th>
-              <th className="px-2 py-2 text-right font-medium">MQL target</th>
+              <th className="px-2 py-2 text-right font-medium">Meta MQL</th>
               <th className="px-2 py-2 text-right font-medium">SQO</th>
-              <th className="px-2 py-2 text-right font-medium">SQO target</th>
+              <th className="px-2 py-2 text-right font-medium">Meta SQO</th>
               <th className="px-2 py-2 text-right font-medium">MQL→SQO</th>
             </tr>
           </thead>
