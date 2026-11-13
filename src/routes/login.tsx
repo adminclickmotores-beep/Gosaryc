@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 
 import { BRAND } from "@/lib/brand";
 import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   validateSearch: (
@@ -31,18 +32,42 @@ function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [pendingConfirm, setPendingConfirm] = useState<string | null>(null);
   const [resendBusy, setResendBusy] = useState(false);
+  const [recordar, setRecordar] = useState(true);
 
   useEffect(() => {
     if (!loading && session) {
-      nav({ to: (search.redirect ?? "/dashboard") as "/dashboard", replace: true });
+      nav({ to: (search.redirect && search.redirect !== "/" ? search.redirect : "/restaurante") as "/restaurante", replace: true });
     }
   }, [session, loading, nav, search.redirect]);
+
+  // "Recordarme": si no está marcado, la sesión se cierra al cerrar el navegador.
+  const guardarPreferenciaSesion = () => {
+    try {
+      localStorage.setItem("gosaly:recordarme", recordar ? "1" : "0");
+      sessionStorage.setItem("gosaly:sesion_activa", "1");
+    } catch {
+      /* almacenamiento bloqueado */
+    }
+  };
+
+  const traducirError = (msg: string) => {
+    const m = msg.toLowerCase();
+    if (m.includes("invalid login credentials")) return "Correo o contraseña incorrectos.";
+    if (m.includes("already registered") || m.includes("already been registered")) return "Ese correo ya tiene una cuenta. Inicia sesión.";
+    if (m.includes("email not confirmed")) return "Debes confirmar tu correo antes de entrar. Revisa tu bandeja y el spam.";
+    if (m.includes("signups not allowed") || m.includes("signup is disabled") || m.includes("signups are disabled"))
+      return "El registro de cuentas nuevas está desactivado en este momento.";
+    if (m.includes("rate limit")) return "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.";
+    if (m.includes("at least 6")) return "La contraseña debe tener mínimo 6 caracteres.";
+    return msg;
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     try {
       if (mode === "signup") {
+        guardarPreferenciaSesion();
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -50,24 +75,25 @@ function LoginPage() {
         });
         if (error) throw error;
         if (!data.session) {
-          // Email confirmation required — surface the check-your-inbox state.
+          // Si el proyecto exige confirmar el correo, se muestra el aviso de revisar la bandeja.
           setPendingConfirm(email);
         } else {
-          toast.success("Account created. Welcome.");
+          toast.success("Cuenta creada. ¡Bienvenido!");
         }
       } else if (mode === "forgot") {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/reset-password`,
         });
         if (error) throw error;
-        toast.success("Check your inbox for a reset link.");
+        toast.success("Te enviamos un enlace para cambiar tu contraseña. Revisa tu correo y el spam.");
         setMode("signin");
       } else {
+        guardarPreferenciaSesion();
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Something went wrong");
+      toast.error(err instanceof Error ? traducirError(err.message) : "Algo salió mal. Inténtalo de nuevo.");
     } finally {
       setBusy(false);
     }
@@ -83,9 +109,9 @@ function LoginPage() {
         options: { emailRedirectTo: `${window.location.origin}/welcome` },
       });
       if (error) throw error;
-      toast.success("Confirmation email resent");
+      toast.success("Correo de confirmación reenviado");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not resend");
+      toast.error(err instanceof Error ? err.message : "No se pudo reenviar");
     } finally {
       setResendBusy(false);
     }
@@ -93,8 +119,9 @@ function LoginPage() {
 
   const google = async () => {
     setBusy(true);
+    guardarPreferenciaSesion();
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}${search.redirect ?? "/dashboard"}`,
+      redirect_uri: `${window.location.origin}${search.redirect ?? "/restaurante"}`,
     });
     if (result.error) {
       toast.error(result.error.message);
@@ -231,9 +258,9 @@ function LoginPage() {
                       <path d="m3 7 9 6 9-6" />
                     </svg>
                   </div>
-                  <h2 className="font-display text-2xl tracking-tight">Check your email</h2>
+                  <h2 className="font-display text-2xl tracking-tight">Revisa tu correo</h2>
                   <p className="text-sm text-muted-foreground">
-                    We sent a confirmation link to <span className="text-foreground">{pendingConfirm}</span>. Click it to finish signing up.
+                    Enviamos un enlace de confirmación a <span className="text-foreground">{pendingConfirm}</span>. Ábrelo para terminar el registro (revisa también el spam).
                   </p>
                   <div className="flex flex-col items-center gap-2 pt-2">
                     <button
@@ -242,7 +269,7 @@ function LoginPage() {
                       disabled={resendBusy}
                       className="rounded-full border border-glass-border bg-glass/40 px-4 py-2 text-xs text-foreground transition hover:bg-glass-strong disabled:opacity-50"
                     >
-                      {resendBusy ? "Sending…" : "Resend email"}
+                      {resendBusy ? "Enviando…" : "Reenviar correo"}
                     </button>
                     <button
                       type="button"
@@ -252,7 +279,7 @@ function LoginPage() {
                       }}
                       className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
                     >
-                      ← Back to sign in
+                      ← Volver a iniciar sesión
                     </button>
                   </div>
                 </div>
@@ -282,12 +309,12 @@ function LoginPage() {
                       }}
                     />
                     <GoogleMark />
-                    <span className="relative">Continue with Google</span>
+                    <span className="relative">Continuar con Google</span>
                   </button>
 
                   <div className="my-6 flex items-center gap-3 text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">
                     <span className="h-px flex-1 bg-gradient-to-r from-transparent via-glass-border to-glass-border" />
-                    or with email
+                    o con tu correo
                     <span className="h-px flex-1 bg-gradient-to-l from-transparent via-glass-border to-glass-border" />
                   </div>
                 </>
@@ -298,7 +325,7 @@ function LoginPage() {
                 className={mode === "forgot" ? "mt-7 space-y-4" : "space-y-4"}
               >
                 <GlassField
-                  label="Email"
+                  label="Correo"
                   type="email"
                   value={email}
                   onChange={setEmail}
@@ -307,7 +334,7 @@ function LoginPage() {
                 />
                 {mode !== "forgot" && (
                   <GlassField
-                    label="Password"
+                    label="Contraseña"
                     type="password"
                     value={password}
                     onChange={setPassword}
@@ -321,11 +348,22 @@ function LoginPage() {
                           onClick={() => setMode("forgot")}
                           className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/80 transition hover:text-primary"
                         >
-                          Forgot
+                          ¿La olvidaste?
                         </button>
                       ) : null
                     }
                   />
+                )}
+                {mode !== "forgot" && (
+                  <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+                    <input
+                      type="checkbox"
+                      checked={recordar}
+                      onChange={(e) => setRecordar(e.target.checked)}
+                      className="h-4 w-4 accent-primary"
+                    />
+                    Recordarme en este dispositivo
+                  </label>
                 )}
 
                 <div className="group relative isolate rounded-full p-px shadow-[0_8px_24px_-6px_oklch(0.72_0.2_275/0.4)] transition-transform duration-300 ease-out hover:scale-105">
@@ -361,10 +399,10 @@ function LoginPage() {
                       {busy
                         ? "…"
                         : mode === "signin"
-                          ? "Sign in"
+                          ? "Iniciar sesión"
                           : mode === "signup"
-                            ? "Create account"
-                            : "Send reset link"}
+                            ? "Crear cuenta"
+                            : "Enviar enlace"}
                     </span>
                   </Button>
                 </div>
@@ -383,24 +421,24 @@ function LoginPage() {
               <div className="mt-6 text-center text-sm text-muted-foreground">
                 {mode === "signin" ? (
                   <>
-                    New here?{" "}
+                    ¿Eres nuevo?{" "}
                     <button
                       onClick={() => setMode("signup")}
                       className="text-primary transition hover:text-primary/80"
                       type="button"
                     >
-                      Create an account
+                      Crea tu cuenta
                     </button>
                   </>
                 ) : mode === "signup" ? (
                   <>
-                    Already have one?{" "}
+                    ¿Ya tienes cuenta?{" "}
                     <button
                       onClick={() => setMode("signin")}
                       className="text-primary transition hover:text-primary/80"
                       type="button"
                     >
-                      Sign in
+                      Inicia sesión
                     </button>
                   </>
                 ) : (
@@ -409,7 +447,7 @@ function LoginPage() {
                     className="text-muted-foreground transition hover:text-foreground"
                     type="button"
                   >
-                    ← Back to sign in
+                    ← Volver a iniciar sesión
                   </button>
                 )}
               </div>
@@ -420,7 +458,7 @@ function LoginPage() {
         </div>
 
         <p className="mt-6 text-center text-[10px] uppercase tracking-[0.3em] text-muted-foreground/50">
-          Secured · Encrypted · Yours
+          Seguro · Cifrado · Tuyo
         </p>
       </div>
     </div>
@@ -446,6 +484,8 @@ function GlassField({
   autoComplete?: string;
   trailing?: React.ReactNode;
 }) {
+  const [mostrar, setMostrar] = useState(false);
+  const esClave = type === "password";
   return (
     <label className="block">
       <div className="mb-1.5 flex items-center justify-between">
@@ -463,14 +503,24 @@ function GlassField({
         }}
       >
         <input
-          type={type}
+          type={esClave && mostrar ? "text" : type}
           required={required}
           minLength={minLength}
           autoComplete={autoComplete}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full bg-transparent px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
+          className={`w-full bg-transparent py-2.5 text-base text-foreground placeholder:text-muted-foreground/50 focus:outline-none ${esClave ? "pl-3.5 pr-11" : "px-3.5"}`}
         />
+        {esClave && (
+          <button
+            type="button"
+            onClick={() => setMostrar((v) => !v)}
+            aria-label={mostrar ? "Ocultar contraseña" : "Mostrar contraseña"}
+            className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted-foreground transition hover:text-foreground"
+          >
+            {mostrar ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        )}
       </div>
     </label>
   );

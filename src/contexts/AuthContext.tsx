@@ -54,7 +54,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, s) => apply(s));
 
-    supabase.auth.getSession().then(({ data }) => apply(data.session));
+    (async () => {
+      // "Recordarme" desmarcado: al abrir el navegador de nuevo se cierra la sesión anterior.
+      try {
+        if (
+          localStorage.getItem("gosaly:recordarme") === "0" &&
+          !sessionStorage.getItem("gosaly:sesion_activa")
+        ) {
+          await supabase.auth.signOut();
+          localStorage.removeItem("gosaly:recordarme");
+        }
+      } catch {
+        /* almacenamiento bloqueado */
+      }
+      const { data } = await supabase.auth.getSession();
+      apply(data.session);
+    })();
 
     return () => subscription.unsubscribe();
   }, []);

@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
@@ -17,18 +18,16 @@ function ResetPasswordPage() {
   const [ready, setReady] = useState(false);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [mostrar, setMostrar] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  // Supabase recovery places a hashed session in the URL; once auth picks it up,
-  // we're authenticated for the duration of this page and can call updateUser.
+  // El enlace del correo trae una sesión temporal en la URL; con ella se puede cambiar la contraseña.
   useEffect(() => {
     const hash = typeof window !== "undefined" ? window.location.hash : "";
     if (!hash.includes("type=recovery")) {
-      // Allow directly opening this page only if you already have an active session
-      // (e.g. you arrived via the email link and Supabase has set the session).
       supabase.auth.getSession().then(({ data }) => {
         if (!data.session) {
-          toast.error("This reset link is invalid or expired.");
+          toast.error("El enlace no es válido o ya venció. Pide uno nuevo.");
           nav({ to: "/login", replace: true });
         } else {
           setReady(true);
@@ -39,7 +38,6 @@ function ResetPasswordPage() {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") setReady(true);
     });
-    // In case the event already fired
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) setReady(true);
     });
@@ -48,12 +46,12 @@ function ResetPasswordPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 8) {
-      toast.error("Use at least 8 characters.");
+    if (password.length < 6) {
+      toast.error("La contraseña debe tener mínimo 6 caracteres.");
       return;
     }
     if (password !== confirm) {
-      toast.error("Passwords don't match.");
+      toast.error("Las contraseñas no coinciden.");
       return;
     }
     setBusy(true);
@@ -63,9 +61,13 @@ function ResetPasswordPage() {
       toast.error(error.message);
       return;
     }
-    toast.success("Password updated. You're signed in.");
-    nav({ to: "/dashboard", replace: true });
+    toast.success("Contraseña actualizada. Ya iniciaste sesión.");
+    nav({ to: "/restaurante", replace: true });
   };
+
+  const tipo = mostrar ? "text" : "password";
+  const clase =
+    "mt-1.5 w-full rounded-xl border border-glass-border bg-transparent py-2 pl-3 pr-11 text-base focus:border-primary/60 focus:outline-none disabled:opacity-50";
 
   return (
     <div className="relative flex min-h-dvh items-center justify-center px-4">
@@ -77,50 +79,56 @@ function ResetPasswordPage() {
         </Link>
 
         <GlassPanel tier="strong" className="p-6 md:p-8">
-          <h1 className="font-display text-2xl">Set a new password</h1>
+          <h1 className="font-display text-2xl">Crea una contraseña nueva</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Choose something strong. You'll be signed in afterwards.
+            Cuando la guardes, entrarás a tu cuenta automáticamente.
           </p>
 
           <form onSubmit={submit} className="mt-6 space-y-3">
             <div>
-              <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                New password
-              </label>
-              <input
-                type="password"
-                required
-                minLength={8}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="new-password"
-                disabled={!ready}
-                className="mt-1.5 w-full rounded-xl border border-glass-border bg-transparent px-3 py-2 text-sm focus:border-primary/60 focus:outline-none disabled:opacity-50"
-              />
+              <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Nueva contraseña</label>
+              <div className="relative">
+                <input
+                  type={tipo}
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="new-password"
+                  disabled={!ready}
+                  className={clase}
+                />
+                <button
+                  type="button"
+                  onClick={() => setMostrar((v) => !v)}
+                  aria-label={mostrar ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  className="absolute inset-y-0 right-0 mt-1.5 flex w-11 items-center justify-center text-muted-foreground hover:text-foreground"
+                >
+                  {mostrar ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
             <div>
-              <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                Confirm password
-              </label>
+              <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Confirma la contraseña</label>
               <input
-                type="password"
+                type={tipo}
                 required
-                minLength={8}
+                minLength={6}
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 autoComplete="new-password"
                 disabled={!ready}
-                className="mt-1.5 w-full rounded-xl border border-glass-border bg-transparent px-3 py-2 text-sm focus:border-primary/60 focus:outline-none disabled:opacity-50"
+                className={clase}
               />
             </div>
             <Button type="submit" disabled={busy || !ready} className="w-full">
-              {!ready ? "Verifying link…" : busy ? "Updating…" : "Update password"}
+              {!ready ? "Verificando enlace…" : busy ? "Guardando…" : "Guardar contraseña"}
             </Button>
           </form>
 
           <div className="mt-5 text-center text-sm">
             <Link to="/login" className="text-muted-foreground hover:text-foreground">
-              Back to sign in
+              Volver a iniciar sesión
             </Link>
           </div>
         </GlassPanel>

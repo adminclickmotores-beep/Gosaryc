@@ -114,11 +114,12 @@ export function NegocioConfig() {
       color_principal: /^#[0-9a-f]{6}$/i.test(form.color_principal) ? form.color_principal : null,
       updated_at: new Date().toISOString(),
     };
-    const { error } = negocio
-      ? await supabase.from("negocio_config").update(datos).eq("id", negocio.id)
-      : await supabase.from("negocio_config").insert(datos);
+    const { data: guardado, error } = negocio
+      ? await supabase.from("negocio_config").update(datos).eq("id", negocio.id).select("id")
+      : await supabase.from("negocio_config").insert(datos).select("id");
     setGuardando(false);
-    if (error) return toast.error("No se pudieron guardar los datos.");
+    if (error || !guardado || guardado.length === 0)
+      return toast.error("No se pudieron guardar los datos. Tu cuenta debe ser la del administrador del negocio.");
     toast.success("Datos del negocio guardados.");
     recargar();
   };
