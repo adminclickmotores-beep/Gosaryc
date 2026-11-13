@@ -15,6 +15,7 @@ import { RecetarioInventario } from "@/components/restaurante/RecetarioInventari
 import { MenuQR } from "@/components/restaurante/MenuQR";
 import { Reportes } from "@/components/restaurante/Reportes";
 import { MesasPanel } from "@/components/restaurante/MesasPanel";
+import { CajaPanel } from "@/components/restaurante/CajaPanel";
 
 export const Route = createFileRoute("/_app/restaurante")({
   head: () => ({ meta: [{ title: "Panel de tu negocio" }] }),
@@ -54,10 +55,10 @@ const campo =
 function RestaurantePage() {
   const { negocio } = useNegocio();
   const tipo = resolverTipoNegocio(negocio?.tipo_negocio);
-  const [vistaElegida, setVista] = useState<"pedidos" | "menu" | "qr" | "mesas" | "reportes" | "recetario" | "negocio">("pedidos");
+  const [vistaElegida, setVista] = useState<"pedidos" | "menu" | "qr" | "mesas" | "caja" | "reportes" | "recetario" | "negocio">("pedidos");
   const vista = tipo.usaPedidos ? vistaElegida : "negocio";
   const vistas = tipo.usaPedidos
-    ? (["pedidos", "menu", "qr", "mesas", "reportes", "recetario", "negocio"] as const)
+    ? (["pedidos", "menu", "qr", "mesas", "caja", "reportes", "recetario", "negocio"] as const)
     : (["negocio"] as const);
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [items, setItems] = useState<Item[]>([]);
@@ -182,7 +183,7 @@ function RestaurantePage() {
             onClick={() => setVista(v)}
             className={`rounded-full px-5 py-2 text-sm ${vista === v ? "bg-primary text-primary-foreground" : "border border-glass-border text-muted-foreground"}`}
           >
-            {v === "pedidos" ? "Pedidos y cocina" : v === "menu" ? "Menú" : v === "qr" ? "QR del menú" : v === "mesas" ? "Mesas" : v === "reportes" ? "Reportes" : v === "recetario" ? "Recetario e inventario" : "Mi negocio"}
+            {v === "pedidos" ? "Pedidos y cocina" : v === "menu" ? "Menú" : v === "qr" ? "QR del menú" : v === "mesas" ? "Mesas" : v === "caja" ? "Caja" : v === "reportes" ? "Reportes" : v === "recetario" ? "Recetario e inventario" : "Mi negocio"}
           </button>
         ))}
       </div>
@@ -239,6 +240,8 @@ function RestaurantePage() {
         <MenuQR />
       ) : vista === "mesas" ? (
         <MesasPanel />
+      ) : vista === "caja" ? (
+        <CajaPanel />
       ) : vista === "reportes" ? (
         <Reportes />
       ) : vista === "recetario" ? (

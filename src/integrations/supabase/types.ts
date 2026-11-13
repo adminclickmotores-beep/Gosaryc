@@ -230,6 +230,30 @@ export type Database = {
         }
         Relationships: []
       }
+      restaurante_movimientos_caja: {
+        Row: {
+          concepto: string
+          created_at: string
+          id: string
+          monto: number
+          tipo: string
+        }
+        Insert: {
+          concepto: string
+          created_at?: string
+          id?: string
+          monto?: number
+          tipo: string
+        }
+        Update: {
+          concepto?: string
+          created_at?: string
+          id?: string
+          monto?: number
+          tipo?: string
+        }
+        Relationships: []
+      }
       restaurante_categorias: {
         Row: {
           activa: boolean
