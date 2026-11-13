@@ -9,12 +9,12 @@ export function AutosaveStatus({ className = "" }: { className?: string }) {
 
   const label =
     status === "saving"
-      ? "Saving…"
+      ? "Guardando…"
       : status === "saved"
-        ? "All changes saved"
+        ? "Cambios guardados"
         : status === "local"
-          ? "Saved locally"
-          : message || "Save failed";
+          ? "Guardado en este dispositivo"
+          : message || "No se pudo guardar";
 
   const Icon = status === "saved" ? IconCheck : status === "saving" ? IconSpark : IconClock;
 

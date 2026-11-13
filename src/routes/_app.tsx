@@ -277,7 +277,7 @@ function AppShell() {
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
             </span>
             <span className="font-display tracking-wide">
-              {loading ? `Booting ${BRAND.name}` : "Redirecting to sign in"}
+              {loading ? `Iniciando ${BRAND.name}` : "Redirigiendo al inicio de sesión"}
             </span>
           </div>
         </motion.div>
@@ -304,7 +304,7 @@ function AppShell() {
             {!collapsed && (
               <button
                 onClick={() => setCollapsed(true)}
-                aria-label="Collapse sidebar"
+                aria-label="Contraer menú lateral"
                 className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition hover:bg-glass/60 hover:text-foreground"
               >
                 <IconChevronLeft size={16} />
@@ -315,7 +315,7 @@ function AppShell() {
             <div className="px-2 pb-2">
               <button
                 onClick={() => setCollapsed(false)}
-                aria-label="Expand sidebar"
+                aria-label="Expandir menú lateral"
                 className="inline-flex h-7 w-full items-center justify-center rounded-md text-muted-foreground transition hover:bg-glass/60 hover:text-foreground"
               >
                 <IconChevronRight size={16} />

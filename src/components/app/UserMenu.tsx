@@ -64,7 +64,7 @@ export function UserMenu() {
   if (!user) return null;
 
   // Derive a stable initial display from the email so we never flash "?".
-  const emailFallbackName = user.email?.split("@")[0] ?? "Account";
+  const emailFallbackName = user.email?.split("@")[0] ?? "Cuenta";
   const initials = initialsFor(fullName, user.email);
   const displayName = fullName || emailFallbackName;
 
@@ -72,7 +72,7 @@ export function UserMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          aria-label="Account menu"
+          aria-label="Menú de la cuenta"
           className="group inline-flex items-center gap-2 rounded-full border border-glass-border bg-glass/50 py-1 pl-1 pr-3 text-xs text-muted-foreground backdrop-blur-xl transition hover:border-primary/30 hover:text-foreground"
         >
           <span
@@ -112,7 +112,7 @@ export function UserMenu() {
           className="cursor-pointer text-destructive focus:text-destructive"
         >
           <IconLogout size={14} />
-          <span>Sign out</span>
+          <span>Cerrar sesión</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

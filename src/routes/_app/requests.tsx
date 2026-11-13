@@ -102,7 +102,7 @@ function RequestsPage() {
   };
 
   const reject = async (r: Req) => {
-    if (!confirm("Reject this request?")) return;
+    if (!confirm("¿Rechazar esta solicitud?")) return;
     await supabase.from("campaign_requests").update({ status: "declined" }).eq("id", r.id);
   };
 
@@ -110,24 +110,24 @@ function RequestsPage() {
     <div className="space-y-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="flex items-start gap-4">
-          <PageHexBadge hue={340} size={26} icon={<IconClock size={22} />} aria-label="Campaign requests" />
+          <PageHexBadge hue={340} size={26} icon={<IconClock size={22} />} aria-label="Solicitudes" />
           <div>
-            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Inbox</div>
-            <h1 className="mt-1 font-display text-4xl tracking-tight">Campaign requests</h1>
+            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Bandeja</div>
+            <h1 className="mt-1 font-display text-4xl tracking-tight">Solicitudes</h1>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-              Briefs submitted via your public request form. Accept to spawn a workspace pre-filled from the chosen template.
+              Solicitudes enviadas desde tu formulario público. Acepta una para crear un espacio de trabajo con los datos ya llenos.
             </p>
           </div>
         </div>
         {publicUrl ? (
           <div className="flex items-center gap-2 rounded-full border border-glass-border bg-glass/40 px-3 py-1.5 text-xs">
             <span className="font-mono text-muted-foreground">{publicUrl}</span>
-            <button onClick={copyUrl} className="rounded-full bg-primary/20 px-2 py-0.5 text-primary hover:bg-primary/30">Copy</button>
+            <button onClick={copyUrl} className="rounded-full bg-primary/20 px-2 py-0.5 text-primary hover:bg-primary/30">Copiar</button>
           </div>
         ) : !publicOriginLoading && !publicUrlIsSet ? (
           <div className="flex max-w-sm items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
             <span>
-              Set your <Link to="/settings" className="underline">Public App URL</Link> in Settings to generate a shareable request link.
+              Define la <Link to="/settings" className="underline">URL pública de la app</Link> en Configuración para generar un enlace de solicitudes que puedas compartir.
             </span>
           </div>
         ) : null}
@@ -144,11 +144,11 @@ function RequestsPage() {
               <IconPlus size={16} />
             </span>
             <div>
-              <div className="font-display text-base">New request</div>
-              <div className="text-xs text-muted-foreground">Add a brief on behalf of a teammate or partner.</div>
+              <div className="font-display text-base">Nueva solicitud</div>
+              <div className="text-xs text-muted-foreground">Agrega una solicitud en nombre de un compañero o aliado.</div>
             </div>
           </div>
-          <span className="text-xs text-muted-foreground">{showNew ? "Hide" : "Open"}</span>
+          <span className="text-xs text-muted-foreground">{showNew ? "Ocultar" : "Abrir"}</span>
         </button>
         {showNew && orgId && (
           <div className="border-t border-glass-border p-5">
@@ -156,9 +156,9 @@ function RequestsPage() {
               orgId={orgId}
               draftKey="requests:new:form"
               initialEmail={user?.email ?? undefined}
-              submitLabel="Add request"
+              submitLabel="Agregar solicitud"
               onSubmitted={() => {
-                toast.success("Request added");
+                toast.success("Solicitud agregada");
                 setShowNew(false);
                 setReloadKey((k) => k + 1);
               }}
@@ -168,13 +168,13 @@ function RequestsPage() {
       </GlassPanel>
 
       {loadError ? (
-        <PanelError message="Couldn't load requests" onRetry={() => setReloadKey((k) => k + 1)} />
+        <PanelError message="No se pudieron cargar las solicitudes" onRetry={() => setReloadKey((k) => k + 1)} />
       ) : items === null ? (
-        <div className="text-muted-foreground">Loading…</div>
+        <div className="text-muted-foreground">Cargando…</div>
 
       ) : items.length === 0 ? (
         <GlassPanel className="p-10 text-center text-sm text-muted-foreground">
-          No requests yet. Share your public request URL with anyone who needs marketing help.
+          Aún no hay solicitudes. Comparte tu enlace público de solicitudes con quien lo necesite.
         </GlassPanel>
       ) : (
         <div className="space-y-3">

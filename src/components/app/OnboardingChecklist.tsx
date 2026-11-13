@@ -22,10 +22,10 @@ type TaskId =
   | "mint_utm";
 
 const TASKS: { id: TaskId; label: string; to: string; focus?: string; hint: string }[] = [
-  { id: "create_workspace", label: "Create your first campaign", to: "/campaigns", hint: "30 sec — name, goal, channel" },
-  { id: "save_campaign_name", label: "Generate a campaign name", to: "/tools", focus: "utm-campaign-name", hint: "AI codenames + tracking tag" },
-  { id: "mint_utm", label: "Mint a UTM link", to: "/tools", focus: "utm", hint: "Copy-ready URL with QR code" },
-  { id: "import_list", label: "Import a contact list", to: "/tools", focus: "campaign-import", hint: "CSV → ready to push to ESP" },
+  { id: "create_workspace", label: "Crea tu primera campaña", to: "/campaigns", hint: "30 seg: nombre, objetivo y canal" },
+  { id: "save_campaign_name", label: "Genera un nombre de campaña", to: "/tools", focus: "utm-campaign-name", hint: "Nombres con IA y etiqueta de seguimiento" },
+  { id: "mint_utm", label: "Crea un enlace UTM", to: "/tools", focus: "utm", hint: "Enlace listo para copiar, con código QR" },
+  { id: "import_list", label: "Importa una lista de contactos", to: "/tools", focus: "campaign-import", hint: "CSV listo para enviar a tu correo masivo" },
 ];
 
 export function OnboardingChecklist({ variant = "auto" }: { variant?: "auto" | "pill" | "full" } = {}) {
