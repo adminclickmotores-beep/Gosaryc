@@ -148,6 +148,91 @@ const PRESETS: Record<string, Partial<ConfigModulo>> = {
     etiquetaFecha: "Fecha de pago",
     resumen: "Por pagar",
   },
+  socio: {
+    estados: [
+      { clave: "pendiente", texto: "Al día" },
+      { clave: "por_vencer", texto: "Por vencer" },
+      { clave: "vencido", texto: "Vencido" },
+    ],
+    cerrados: ["pendiente"],
+    placeholderTitulo: "Nombre del socio",
+    placeholderDetalle: "Plan, horario preferido y observaciones",
+    etiquetaContacto: "Contacto de emergencia",
+    etiquetaMonto: "Valor del plan (COP)",
+    etiquetaFecha: "Vencimiento del plan",
+    resumen: "Por renovar",
+    exigeFecha: true,
+  },
+  paciente: {
+    estados: [
+      { clave: "pendiente", texto: "En espera" },
+      { clave: "en_proceso", texto: "En tratamiento" },
+      { clave: "hecho", texto: "Dado de alta" },
+    ],
+    cerrados: ["hecho"],
+    placeholderTitulo: "Nombre del paciente",
+    placeholderDetalle: "Motivo de consulta, alergias y notas",
+    etiquetaContacto: "Acudiente o responsable",
+    etiquetaMonto: "Valor de la consulta (COP)",
+    etiquetaFecha: "Fecha de atención",
+    resumen: "En tratamiento",
+  },
+  estudiante: {
+    estados: [
+      { clave: "pendiente", texto: "Inscrito" },
+      { clave: "en_proceso", texto: "Cursando" },
+      { clave: "hecho", texto: "Finalizado" },
+    ],
+    cerrados: ["hecho"],
+    placeholderTitulo: "Nombre del estudiante",
+    placeholderDetalle: "Curso, grado y observaciones",
+    etiquetaContacto: "Acudiente o padre/madre",
+    etiquetaMonto: "Valor de la matrícula (COP)",
+    etiquetaFecha: "Fecha de inscripción",
+    resumen: "Por cerrar",
+  },
+  huesped: {
+    estados: [
+      { clave: "pendiente", texto: "Reservado" },
+      { clave: "en_proceso", texto: "Hospedado" },
+      { clave: "hecho", texto: "Salió" },
+    ],
+    cerrados: ["hecho"],
+    placeholderTitulo: "Nombre del huésped",
+    placeholderDetalle: "Documento, preferencias y notas",
+    etiquetaContacto: "Acompañante o empresa",
+    etiquetaMonto: "Valor de la estadía (COP)",
+    etiquetaFecha: "Fecha de llegada",
+    resumen: "Por cobrar",
+  },
+  mascota: {
+    estados: [
+      { clave: "pendiente", texto: "En espera" },
+      { clave: "en_proceso", texto: "En atención" },
+      { clave: "hecho", texto: "Atendida" },
+    ],
+    cerrados: ["hecho"],
+    placeholderTitulo: "Nombre de la mascota",
+    placeholderDetalle: "Especie, raza y observaciones",
+    etiquetaContacto: "Dueño o responsable",
+    etiquetaMonto: "Valor (COP)",
+    etiquetaFecha: "Fecha de atención",
+    resumen: "En atención",
+  },
+  inmueble: {
+    estados: [
+      { clave: "pendiente", texto: "Disponible" },
+      { clave: "en_proceso", texto: "En negociación" },
+      { clave: "hecho", texto: "Cerrado" },
+    ],
+    cerrados: ["hecho"],
+    placeholderTitulo: "Dirección o nombre del inmueble",
+    placeholderDetalle: "Área, habitaciones y características",
+    etiquetaContacto: "Propietario o interesado",
+    etiquetaMonto: "Precio o canon (COP)",
+    etiquetaFecha: "Fecha de disponibilidad",
+    resumen: "En negociación",
+  },
 };
 
 const POR_MODULO: Record<string, keyof typeof PRESETS> = {
@@ -168,6 +253,8 @@ const POR_MODULO: Record<string, keyof typeof PRESETS> = {
   pagos_digitales: "pago", facturas: "pago", propinas: "pago", comisiones: "pago", repartidores: "pago",
   conductores: "pago", combustible: "pago", costos_veh: "pago", equipo_turnos: "pago", caja_diaria: "pago",
   proveedores: "pago", proveedores_veh: "pago",
+  socios: "socio", pacientes: "paciente", historia_clinica: "paciente", estudiantes: "estudiante",
+  huespedes: "huesped", mascotas_reg: "mascota", inmuebles: "inmueble",
 };
 
 export function configModulo(id: string): ConfigModulo {
