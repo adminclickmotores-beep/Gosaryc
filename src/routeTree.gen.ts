@@ -28,6 +28,7 @@ import { Route as AppFunnelRouteImport } from './routes/_app/funnel'
 import { Route as AppIntegrationsRouteImport } from './routes/_app/integrations'
 import { Route as AppLeadsRouteImport } from './routes/_app/leads'
 import { Route as AppPagosDigitalesRouteImport } from './routes/_app/pagos-digitales'
+import { Route as AppRepartidoresRouteImport } from './routes/_app/repartidores'
 import { Route as AppRequestsRouteImport } from './routes/_app/requests'
 import { Route as AppRestauranteRouteImport } from './routes/_app/restaurante'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
@@ -159,6 +160,11 @@ const AppLeadsRoute = AppLeadsRouteImport.update({
 const AppPagosDigitalesRoute = AppPagosDigitalesRouteImport.update({
   id: '/pagos-digitales',
   path: '/pagos-digitales',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRepartidoresRoute = AppRepartidoresRouteImport.update({
+  id: '/repartidores',
+  path: '/repartidores',
   getParentRoute: () => AppRoute,
 } as any)
 const AppRequestsRoute = AppRequestsRouteImport.update({
@@ -377,6 +383,7 @@ export interface FileRoutesByFullPath {
   '/integrations': typeof AppIntegrationsRoute
   '/leads': typeof AppLeadsRoute
   '/pagos-digitales': typeof AppPagosDigitalesRoute
+  '/repartidores': typeof AppRepartidoresRoute
   '/requests': typeof AppRequestsRoute
   '/restaurante': typeof AppRestauranteRoute
   '/settings': typeof AppSettingsRoute
@@ -435,6 +442,7 @@ export interface FileRoutesByTo {
   '/integrations': typeof AppIntegrationsRoute
   '/leads': typeof AppLeadsRoute
   '/pagos-digitales': typeof AppPagosDigitalesRoute
+  '/repartidores': typeof AppRepartidoresRoute
   '/requests': typeof AppRequestsRoute
   '/restaurante': typeof AppRestauranteRoute
   '/settings': typeof AppSettingsRoute
@@ -495,6 +503,7 @@ export interface FileRoutesById {
   '/_app/integrations': typeof AppIntegrationsRoute
   '/_app/leads': typeof AppLeadsRoute
   '/_app/pagos-digitales': typeof AppPagosDigitalesRoute
+  '/_app/repartidores': typeof AppRepartidoresRoute
   '/_app/requests': typeof AppRequestsRoute
   '/_app/restaurante': typeof AppRestauranteRoute
   '/_app/settings': typeof AppSettingsRoute
@@ -555,6 +564,7 @@ export interface FileRouteTypes {
     | '/integrations'
     | '/leads'
     | '/pagos-digitales'
+    | '/repartidores'
     | '/requests'
     | '/restaurante'
     | '/settings'
@@ -613,6 +623,7 @@ export interface FileRouteTypes {
     | '/integrations'
     | '/leads'
     | '/pagos-digitales'
+    | '/repartidores'
     | '/requests'
     | '/restaurante'
     | '/settings'
@@ -672,6 +683,7 @@ export interface FileRouteTypes {
     | '/_app/integrations'
     | '/_app/leads'
     | '/_app/pagos-digitales'
+    | '/_app/repartidores'
     | '/_app/requests'
     | '/_app/restaurante'
     | '/_app/settings'
@@ -873,6 +885,13 @@ declare module '@tanstack/react-router' {
       path: '/pagos-digitales'
       fullPath: '/pagos-digitales'
       preLoaderRoute: typeof AppPagosDigitalesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/repartidores': {
+      id: '/_app/repartidores'
+      path: '/repartidores'
+      fullPath: '/repartidores'
+      preLoaderRoute: typeof AppRepartidoresRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/requests': {
@@ -1154,6 +1173,7 @@ interface AppRouteChildren {
   AppIntegrationsRoute: typeof AppIntegrationsRoute
   AppLeadsRoute: typeof AppLeadsRoute
   AppPagosDigitalesRoute: typeof AppPagosDigitalesRoute
+  AppRepartidoresRoute: typeof AppRepartidoresRoute
   AppRequestsRoute: typeof AppRequestsRoute
   AppRestauranteRoute: typeof AppRestauranteRoute
   AppSettingsRoute: typeof AppSettingsRoute
@@ -1189,6 +1209,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppIntegrationsRoute: AppIntegrationsRoute,
   AppLeadsRoute: AppLeadsRoute,
   AppPagosDigitalesRoute: AppPagosDigitalesRoute,
+  AppRepartidoresRoute: AppRepartidoresRoute,
   AppRequestsRoute: AppRequestsRoute,
   AppRestauranteRoute: AppRestauranteRoute,
   AppSettingsRoute: AppSettingsRoute,

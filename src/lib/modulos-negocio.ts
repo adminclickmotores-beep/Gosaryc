@@ -159,7 +159,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       { id: "cocina", titulo: "Cocina y producción", descripcion: "Tablero de preparación.", Icon: ChefHat, ruta: "/restaurante", estado: "Activo" },
       { id: "domicilios", titulo: "Domicilios y clientes", descripcion: "Entregas y base de clientes.", Icon: Bike, ruta: "/domicilios", estado: "Activo" },
       { id: "asistente", titulo: "Asistente de pedidos", descripcion: "Atiende pedidos por chat.", Icon: MessageCircle, ruta: "/agente", estado: "Activo" },
-      m("repartidores", "Repartidores y liquidación", "Pago por domicilio y cuentas de cada domiciliario.", Bike),
+      { ...m("repartidores", "Repartidores y liquidación", "Pago por domicilio y cuentas de cada domiciliario.", Bike), ruta: "/repartidores" },
       m("mesas", "Reservas de mesas", "Reservas y control de mesas.", Armchair),
       m("combos", "Combos y promociones", "Combos del día, 2x1 y descuentos por horario.", Percent),
       m("insumos", "Inventario de insumos", "Ingredientes, mermas y alertas de faltantes.", Boxes),
