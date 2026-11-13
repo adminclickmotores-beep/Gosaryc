@@ -77,7 +77,7 @@ export function BrandHexLogo({ size = 42, className }: BrandHexLogoProps) {
           </linearGradient>
         </defs>
         <path
-          d="M4 19V6.5c0-.5.6-.8 1-.5L12 11l7-5c.4-.3 1 0 1 .5V19"
+          d="M19 8a8 8 0 1 0 1 4h-8"
           fill="none"
           stroke="url(#brand-hex-m-grad)"
           strokeWidth="2"
