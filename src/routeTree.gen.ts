@@ -27,6 +27,7 @@ import { Route as AppFinanzasRouteImport } from './routes/_app/finanzas'
 import { Route as AppFunnelRouteImport } from './routes/_app/funnel'
 import { Route as AppIntegrationsRouteImport } from './routes/_app/integrations'
 import { Route as AppLeadsRouteImport } from './routes/_app/leads'
+import { Route as AppPagosDigitalesRouteImport } from './routes/_app/pagos-digitales'
 import { Route as AppRequestsRouteImport } from './routes/_app/requests'
 import { Route as AppRestauranteRouteImport } from './routes/_app/restaurante'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
@@ -153,6 +154,11 @@ const AppIntegrationsRoute = AppIntegrationsRouteImport.update({
 const AppLeadsRoute = AppLeadsRouteImport.update({
   id: '/leads',
   path: '/leads',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPagosDigitalesRoute = AppPagosDigitalesRouteImport.update({
+  id: '/pagos-digitales',
+  path: '/pagos-digitales',
   getParentRoute: () => AppRoute,
 } as any)
 const AppRequestsRoute = AppRequestsRouteImport.update({
@@ -370,6 +376,7 @@ export interface FileRoutesByFullPath {
   '/funnel': typeof AppFunnelRoute
   '/integrations': typeof AppIntegrationsRoute
   '/leads': typeof AppLeadsRoute
+  '/pagos-digitales': typeof AppPagosDigitalesRoute
   '/requests': typeof AppRequestsRoute
   '/restaurante': typeof AppRestauranteRoute
   '/settings': typeof AppSettingsRoute
@@ -427,6 +434,7 @@ export interface FileRoutesByTo {
   '/funnel': typeof AppFunnelRoute
   '/integrations': typeof AppIntegrationsRoute
   '/leads': typeof AppLeadsRoute
+  '/pagos-digitales': typeof AppPagosDigitalesRoute
   '/requests': typeof AppRequestsRoute
   '/restaurante': typeof AppRestauranteRoute
   '/settings': typeof AppSettingsRoute
@@ -486,6 +494,7 @@ export interface FileRoutesById {
   '/_app/funnel': typeof AppFunnelRoute
   '/_app/integrations': typeof AppIntegrationsRoute
   '/_app/leads': typeof AppLeadsRoute
+  '/_app/pagos-digitales': typeof AppPagosDigitalesRoute
   '/_app/requests': typeof AppRequestsRoute
   '/_app/restaurante': typeof AppRestauranteRoute
   '/_app/settings': typeof AppSettingsRoute
@@ -545,6 +554,7 @@ export interface FileRouteTypes {
     | '/funnel'
     | '/integrations'
     | '/leads'
+    | '/pagos-digitales'
     | '/requests'
     | '/restaurante'
     | '/settings'
@@ -602,6 +612,7 @@ export interface FileRouteTypes {
     | '/funnel'
     | '/integrations'
     | '/leads'
+    | '/pagos-digitales'
     | '/requests'
     | '/restaurante'
     | '/settings'
@@ -660,6 +671,7 @@ export interface FileRouteTypes {
     | '/_app/funnel'
     | '/_app/integrations'
     | '/_app/leads'
+    | '/_app/pagos-digitales'
     | '/_app/requests'
     | '/_app/restaurante'
     | '/_app/settings'
@@ -854,6 +866,13 @@ declare module '@tanstack/react-router' {
       path: '/leads'
       fullPath: '/leads'
       preLoaderRoute: typeof AppLeadsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/pagos-digitales': {
+      id: '/_app/pagos-digitales'
+      path: '/pagos-digitales'
+      fullPath: '/pagos-digitales'
+      preLoaderRoute: typeof AppPagosDigitalesRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/requests': {
@@ -1134,6 +1153,7 @@ interface AppRouteChildren {
   AppFunnelRoute: typeof AppFunnelRoute
   AppIntegrationsRoute: typeof AppIntegrationsRoute
   AppLeadsRoute: typeof AppLeadsRoute
+  AppPagosDigitalesRoute: typeof AppPagosDigitalesRoute
   AppRequestsRoute: typeof AppRequestsRoute
   AppRestauranteRoute: typeof AppRestauranteRoute
   AppSettingsRoute: typeof AppSettingsRoute
@@ -1168,6 +1188,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFunnelRoute: AppFunnelRoute,
   AppIntegrationsRoute: AppIntegrationsRoute,
   AppLeadsRoute: AppLeadsRoute,
+  AppPagosDigitalesRoute: AppPagosDigitalesRoute,
   AppRequestsRoute: AppRequestsRoute,
   AppRestauranteRoute: AppRestauranteRoute,
   AppSettingsRoute: AppSettingsRoute,

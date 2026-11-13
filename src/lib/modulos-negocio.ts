@@ -102,7 +102,10 @@ const m = (id: string, titulo: string, descripcion: string, Icon: LucideIcon): M
 // ---- Módulos transversales pensados para negocios colombianos ----
 const FIADOS = m("fiados", "Cartera y fiados", "Quién te debe, cuánto y cuándo prometió pagar.", Coins);
 const FACTURAS = m("facturas", "Facturación DIAN", "Control de facturas electrónicas y documentos soporte.", Receipt);
-const PAGOS = m("pagos_digitales", "Nequi, Daviplata y Bre-B", "Concilia pagos por transferencia contra tus ventas.", Smartphone);
+const PAGOS: ModuloNegocio = {
+  ...m("pagos_digitales", "Nequi, Daviplata y Bre-B", "Concilia pagos por transferencia contra tus ventas.", Smartphone),
+  ruta: "/pagos-digitales",
+};
 const FIDELIZACION = m("fidelizacion", "Puntos y recompensas", "Premia a tus clientes frecuentes.", Gift);
 const RESENAS = m("resenas", "Reseñas y PQRS", "Quejas, reclamos y opiniones con seguimiento.", Star);
 const DIFUSION = m("difusion", "Difusión por WhatsApp", "Promociones y recordatorios para tus contactos.", Megaphone);
