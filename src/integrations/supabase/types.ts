@@ -44,6 +44,54 @@ export type Database = {
         }
         Relationships: []
       }
+      cotizaciones: {
+        Row: {
+          cliente: string
+          contacto: string | null
+          created_at: string
+          descuento: number
+          estado: string
+          id: string
+          items: Json
+          notas: string | null
+          numero: number
+          owner_id: string | null
+          telefono: string | null
+          total: number
+          vigente_hasta: string | null
+        }
+        Insert: {
+          cliente: string
+          contacto?: string | null
+          created_at?: string
+          descuento?: number
+          estado?: string
+          id?: string
+          items?: Json
+          notas?: string | null
+          numero?: number
+          owner_id?: string | null
+          telefono?: string | null
+          total?: number
+          vigente_hasta?: string | null
+        }
+        Update: {
+          cliente?: string
+          contacto?: string | null
+          created_at?: string
+          descuento?: number
+          estado?: string
+          id?: string
+          items?: Json
+          notas?: string | null
+          numero?: number
+          owner_id?: string | null
+          telefono?: string | null
+          total?: number
+          vigente_hasta?: string | null
+        }
+        Relationships: []
+      }
       modulo_registros: {
         Row: {
           contacto: string | null

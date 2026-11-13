@@ -160,6 +160,10 @@ const SOLICITUDES: ModuloNegocio = {
   ruta: "/requests",
   estado: "Activo",
 };
+const COTIZACIONES: ModuloNegocio = {
+  ...m("cotizaciones", "Cotizaciones", "Arma propuestas con productos o servicios, envíalas por WhatsApp y sigue su cierre.", FileText),
+  ruta: "/cotizaciones",
+};
 const FINANZAS: ModuloNegocio = {
   id: "finanzas",
   titulo: "Finanzas y rentabilidad",
@@ -400,6 +404,13 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
     ],
   },
 ];
+
+// Casi todo negocio cotiza: se agrega el módulo de cotizaciones a los tipos que no tienen uno propio.
+for (const t of TIPOS_NEGOCIO) {
+  if (t.modulos.some((x) => x.id === COTIZACIONES.id || x.id.startsWith("cotizaciones_"))) continue;
+  const pos = t.modulos.findIndex((x) => x.id === "facturas");
+  t.modulos.splice(pos >= 0 ? pos : t.modulos.length, 0, COTIZACIONES);
+}
 
 /** Busca un módulo por id en todos los tipos de negocio. */
 export function buscarModulo(id: string): ModuloNegocio | undefined {
