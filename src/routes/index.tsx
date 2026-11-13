@@ -63,7 +63,7 @@ function LandingPage() {
 
       <header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-5 sm:px-8">
         <Link to="/" className="inline-flex min-w-0 items-center gap-2 text-sm font-medium">
-          <img src="/icono-app.svg" alt="" className="h-7 w-7 rounded-md" />
+          <img src={negocio?.logo_url ?? "/icono-app.svg"} alt="" className="h-7 w-7 rounded-md object-cover" />
           <span className="truncate font-display text-lg">{negocio?.nombre ?? BRAND.name}</span>
         </Link>
         <Link
@@ -110,6 +110,13 @@ function LandingPage() {
               <Download className="h-4 w-4" /> Instalar app
             </Link>
           </div>
+          {negocio?.portada_url ? (
+            <img
+              src={negocio.portada_url}
+              alt={negocio.nombre}
+              className="mx-auto mt-10 max-h-72 w-full rounded-2xl object-cover"
+            />
+          ) : null}
         </section>
 
         <section className="mt-16 sm:mt-24">

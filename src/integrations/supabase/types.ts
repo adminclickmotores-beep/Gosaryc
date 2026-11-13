@@ -58,13 +58,16 @@ export type Database = {
           aviso_entrega: string | null
           ciudad: string | null
           cobertura: string | null
+          color_principal: string | null
           created_at: string
           descripcion: string | null
           eslogan: string | null
           horarios: string | null
           id: string
           instagram: string | null
+          logo_url: string | null
           moneda: string
+          portada_url: string | null
           nombre: string
           sitio_web: string | null
           telefono_pedidos: string | null
@@ -75,14 +78,17 @@ export type Database = {
           aviso_entrega?: string | null
           ciudad?: string | null
           cobertura?: string | null
+          color_principal?: string | null
           created_at?: string
           descripcion?: string | null
           eslogan?: string | null
           horarios?: string | null
           id?: string
           instagram?: string | null
+          logo_url?: string | null
           moneda?: string
           nombre?: string
+          portada_url?: string | null
           sitio_web?: string | null
           telefono_pedidos?: string | null
           tipo_negocio?: string | null
@@ -92,13 +98,16 @@ export type Database = {
           aviso_entrega?: string | null
           ciudad?: string | null
           cobertura?: string | null
+          color_principal?: string | null
           created_at?: string
           descripcion?: string | null
           eslogan?: string | null
           horarios?: string | null
           id?: string
           instagram?: string | null
+          logo_url?: string | null
           moneda?: string
+          portada_url?: string | null
           nombre?: string
           sitio_web?: string | null
           telefono_pedidos?: string | null

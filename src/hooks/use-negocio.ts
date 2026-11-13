@@ -24,5 +24,18 @@ export function useNegocio() {
     recargar();
   }, [recargar]);
 
+  // Aplica el color principal elegido por el negocio a toda la app.
+  useEffect(() => {
+    const color = negocio?.color_principal;
+    const raiz = document.documentElement;
+    if (color && /^#[0-9a-f]{6}$/i.test(color)) {
+      raiz.style.setProperty("--primary", color);
+      raiz.style.setProperty("--ring", color);
+    } else {
+      raiz.style.removeProperty("--primary");
+      raiz.style.removeProperty("--ring");
+    }
+  }, [negocio?.color_principal]);
+
   return { negocio, cargando, recargar };
 }

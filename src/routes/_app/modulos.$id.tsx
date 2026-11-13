@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { buscarModulo } from "@/lib/modulos-negocio";
+import { configModulo } from "@/lib/modulos-config";
 
 export const Route = createFileRoute("/_app/modulos/$id")({
   head: () => ({ meta: [{ title: "Módulo del negocio" }] }),
@@ -13,12 +14,6 @@ export const Route = createFileRoute("/_app/modulos/$id")({
 });
 
 type Registro = Tables<"modulo_registros">;
-
-const ESTADOS = [
-  { clave: "pendiente", texto: "Pendiente" },
-  { clave: "en_proceso", texto: "En proceso" },
-  { clave: "hecho", texto: "Hecho / pagado" },
-];
 
 const dinero = (n: number) =>
   new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
@@ -29,6 +24,7 @@ const campo =
 function ModuloPage() {
   const { id } = Route.useParams();
   const modulo = buscarModulo(id);
+  const cfg = configModulo(id);
   const [lista, setLista] = useState<Registro[]>([]);
   const [filtro, setFiltro] = useState("todos");
   const [titulo, setTitulo] = useState("");
@@ -55,8 +51,10 @@ function ModuloPage() {
   const agregar = async () => {
     const valor = monto.trim() ? Number(monto) : 0;
     if (!titulo.trim() || !Number.isFinite(valor) || valor < 0) return toast.error("Escribe un título y un valor válido.");
+    if (cfg.exigeFecha && !fecha) return toast.error(`Indica la fecha: ${cfg.etiquetaFecha.toLowerCase()}.`);
     const { error } = await supabase.from("modulo_registros").insert({
       modulo: id,
+      estado: cfg.estados[0].clave,
       titulo: titulo.trim(),
       detalle: detalle.trim() || null,
       contacto: contacto.trim() || null,
@@ -96,7 +94,7 @@ function ModuloPage() {
   }
 
   const visibles = filtro === "todos" ? lista : lista.filter((r) => r.estado === filtro);
-  const pendiente = lista.filter((r) => r.estado !== "hecho").reduce((s, r) => s + r.monto, 0);
+  const pendiente = lista.filter((r) => !cfg.cerrados.includes(r.estado)).reduce((s, r) => s + r.monto, 0);
   const total = lista.reduce((s, r) => s + r.monto, 0);
 
   return (
@@ -117,7 +115,7 @@ function ModuloPage() {
           <p className="text-lg font-medium text-foreground">{lista.length}</p>
         </GlassPanel>
         <GlassPanel className="p-4">
-          <p className="text-xs text-muted-foreground">Por cerrar</p>
+          <p className="text-xs text-muted-foreground">{cfg.resumen}</p>
           <p className="truncate text-lg font-medium text-foreground">{dinero(pendiente)}</p>
         </GlassPanel>
         <GlassPanel className="p-4">
@@ -129,12 +127,15 @@ function ModuloPage() {
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
         <GlassPanel className="h-fit space-y-3 p-5">
           <h2 className="font-medium text-foreground">Nuevo registro</h2>
-          <input className={campo} placeholder="Título (ej. nombre o referencia)" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
-          <textarea className={campo} rows={2} placeholder="Detalle / notas" value={detalle} onChange={(e) => setDetalle(e.target.value)} />
-          <input className={campo} placeholder="Cliente o contacto" value={contacto} onChange={(e) => setContacto(e.target.value)} />
+          <input className={campo} placeholder={cfg.placeholderTitulo} value={titulo} onChange={(e) => setTitulo(e.target.value)} />
+          <textarea className={campo} rows={2} placeholder={cfg.placeholderDetalle} value={detalle} onChange={(e) => setDetalle(e.target.value)} />
+          <input className={campo} placeholder={cfg.etiquetaContacto} value={contacto} onChange={(e) => setContacto(e.target.value)} />
           <input className={campo} placeholder="Teléfono" inputMode="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
-          <input className={campo} placeholder="Valor (COP)" inputMode="decimal" value={monto} onChange={(e) => setMonto(e.target.value)} />
-          <input className={campo} type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
+          <input className={campo} placeholder={cfg.etiquetaMonto} inputMode="decimal" value={monto} onChange={(e) => setMonto(e.target.value)} />
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">{cfg.etiquetaFecha}{cfg.exigeFecha ? " *" : ""}</span>
+            <input className={campo} type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
+          </label>
           <button onClick={agregar} className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90">
             Guardar registro
           </button>
@@ -142,7 +143,7 @@ function ModuloPage() {
 
         <div className="min-w-0 space-y-3">
           <div className="flex flex-wrap gap-2 text-sm">
-            {[{ clave: "todos", texto: "Todos" }, ...ESTADOS].map((e) => (
+            {[{ clave: "todos", texto: "Todos" }, ...cfg.estados].map((e) => (
               <button
                 key={e.clave}
                 onClick={() => setFiltro(e.clave)}
@@ -172,7 +173,7 @@ function ModuloPage() {
                   value={r.estado}
                   onChange={(e) => cambiarEstado(r, e.target.value)}
                 >
-                  {ESTADOS.map((e) => (
+                  {cfg.estados.map((e) => (
                     <option key={e.clave} value={e.clave}>{e.texto}</option>
                   ))}
                 </select>
