@@ -95,6 +95,58 @@ export const RECETAS_BIBLIOTECA: Record<string, RecetaBase[]> = {
       preparacion:
         "1. Lava y desinfecta las verduras, luego sécalas.\n2. Corta la lechuga en trozos, el tomate en gajos y la cebolla en juliana fina.\n3. Mezcla con aceite, limón y sal justo antes de servir.",
     },
+    {
+      platillo: "Carne asada",
+      claves: ["carne asada", "bistec", "arrachera"],
+      porciones: 1,
+      ingredientes: [
+        { nombre: "Carne de res", cantidad: 250, unidad: "g" },
+        { nombre: "Sal", cantidad: 3, unidad: "g" },
+        { nombre: "Ajo", cantidad: 5, unidad: "g" },
+        { nombre: "Limón", cantidad: 0.5, unidad: "und" },
+        { nombre: "Aceite", cantidad: 10, unidad: "ml" },
+      ],
+      preparacion:
+        "1. Marina la carne con limón, ajo picado, sal y aceite de 1 a 2 horas.\n2. Saca la carne del refrigerador 15 minutos antes de cocinar.\n3. Asa a fuego alto 2 a 3 minutos por lado para dorar por fuera.\n4. Deja reposar 3 minutos y corta en contra de la fibra.",
+    },
+    {
+      platillo: "Frijoles de la olla",
+      claves: ["frijoles", "frijoles de la olla", "frijol"],
+      porciones: 1,
+      ingredientes: [
+        { nombre: "Frijol", cantidad: 80, unidad: "g" },
+        { nombre: "Agua", cantidad: 300, unidad: "ml" },
+        { nombre: "Cebolla", cantidad: 20, unidad: "g" },
+        { nombre: "Ajo", cantidad: 3, unidad: "g" },
+        { nombre: "Sal", cantidad: 2, unidad: "g" },
+      ],
+      preparacion:
+        "1. Lava el frijol y déjalo remojar toda la noche.\n2. Escúrrelo, ponlo en olla con agua, cebolla y ajo.\n3. Cocina a fuego medio-bajo de 1 hora y media a 2 horas, hasta que estén suaves.\n4. Agrega la sal al final y sirve caliente.",
+    },
+    {
+      platillo: "Limonada natural",
+      claves: ["limonada", "limonada natural"],
+      porciones: 1,
+      ingredientes: [
+        { nombre: "Limón", cantidad: 1, unidad: "und" },
+        { nombre: "Azúcar", cantidad: 20, unidad: "g" },
+        { nombre: "Agua", cantidad: 300, unidad: "ml" },
+      ],
+      preparacion:
+        "1. Exprime el limón y cuela el jugo.\n2. Disuelve el azúcar en un poco de agua tibia.\n3. Mezcla el jugo, el jarabe y el resto del agua.\n4. Sirve con hielo y ajusta el dulce al gusto.",
+    },
+    {
+      platillo: "Quesadilla de queso",
+      claves: ["quesadilla", "quesadilla de queso"],
+      porciones: 1,
+      ingredientes: [
+        { nombre: "Tortilla de maíz", cantidad: 2, unidad: "und" },
+        { nombre: "Queso", cantidad: 60, unidad: "g" },
+        { nombre: "Aceite", cantidad: 5, unidad: "ml" },
+      ],
+      preparacion:
+        "1. Calienta la tortilla en comal o plancha sin aceite, unos segundos por lado.\n2. Coloca el queso sobre una mitad y dobla.\n3. Dora 1 a 2 minutos por lado con un poco de aceite hasta que el queso se derrita.\n4. Corta en triángulos y sirve.",
+    },
   ],
 };
 
