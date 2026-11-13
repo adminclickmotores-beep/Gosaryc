@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { Download, ExternalLink } from "lucide-react";
+import { Download, ExternalLink, Trash2 } from "lucide-react";
 import { useNegocio } from "@/hooks/use-negocio";
 import { PasoAPaso } from "@/components/restaurante/PasoAPaso";
 import { resolverTipoNegocio, TIPOS_NEGOCIO } from "@/lib/modulos-negocio";
@@ -370,6 +370,22 @@ function GestionMenu() {
     cargar();
   };
 
+  const eliminar = async (p: Producto) => {
+    if (!window.confirm(`¿Eliminar "${p.nombre}" del menú? Esta acción no se puede deshacer.`)) return;
+    const { error } = await supabase.from("restaurante_productos").delete().eq("id", p.id);
+    if (error) return toast.error("No se pudo eliminar el producto.");
+    toast.success("Producto eliminado.");
+    cargar();
+  };
+
+  const eliminarCategoria = async (c: Categoria) => {
+    if (!window.confirm(`¿Eliminar la categoría "${c.nombre}"? Sus productos quedarán sin categoría.`)) return;
+    const { error } = await supabase.from("restaurante_categorias").delete().eq("id", c.id);
+    if (error) return toast.error("No se pudo eliminar la categoría.");
+    toast.success("Categoría eliminada.");
+    cargar();
+  };
+
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
       <div className="space-y-4">
@@ -399,6 +415,18 @@ function GestionMenu() {
           <button onClick={agregarCategoria} className="w-full rounded-lg border border-glass-border px-4 py-2.5 text-sm text-foreground">
             Crear categoría
           </button>
+          {categorias.length > 0 && (
+            <div className="space-y-1 border-t border-glass-border pt-3">
+              {categorias.map((c) => (
+                <div key={c.id} className="flex items-center justify-between gap-2 text-sm text-foreground">
+                  <span className="min-w-0 truncate">{c.nombre}</span>
+                  <button aria-label={`Eliminar categoría ${c.nombre}`} onClick={() => eliminarCategoria(c)} className="shrink-0 p-1 text-muted-foreground hover:text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </GlassPanel>
       </div>
 
@@ -420,6 +448,9 @@ function GestionMenu() {
             </div>
             <button onClick={() => alternar(p)} className="shrink-0 rounded-full border border-glass-border px-3 py-1.5 text-xs text-foreground">
               {p.activo ? "Ocultar" : "Mostrar"}
+            </button>
+            <button aria-label={`Eliminar ${p.nombre}`} onClick={() => eliminar(p)} className="shrink-0 p-1 text-muted-foreground hover:text-destructive">
+              <Trash2 className="h-4 w-4" />
             </button>
           </GlassPanel>
         ))}
