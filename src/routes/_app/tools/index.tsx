@@ -35,7 +35,7 @@ export const Route = createFileRoute("/_app/tools/")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: `Marketing tools — ${BRAND.name}` },
+      { title: `Herramientas — ${BRAND.name}` },
       {
         name: "description",
         content:
@@ -108,7 +108,7 @@ function ToolsHub() {
         <div className="mt-3 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
           {!tool && (
             <div className="flex items-start gap-4">
-              <PageHexBadge hue={88} size={26} icon={<IconBolt size={22} />} aria-label="Marketing tools" />
+              <PageHexBadge hue={88} size={26} icon={<IconBolt size={22} />} aria-label="Herramientas" />
               <div>
                 <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
                   {BRAND.name} · Tools
@@ -237,7 +237,7 @@ function ToolsHub() {
             onClick={handleClose}
             className="mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground/70 transition hover:text-foreground"
           >
-            <span aria-hidden="true">←</span> Marketing Tools
+            <span aria-hidden="true">←</span> Herramientas
           </button>
         )}
       </header>
