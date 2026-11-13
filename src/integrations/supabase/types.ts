@@ -430,6 +430,7 @@ export type Database = {
           descripcion: string | null
           destacado: boolean
           id: string
+          imagen_url: string | null
           nombre: string
           owner_id: string | null
           precio: number
@@ -441,6 +442,7 @@ export type Database = {
           descripcion?: string | null
           destacado?: boolean
           id?: string
+          imagen_url?: string | null
           nombre: string
           owner_id?: string | null
           precio?: number
@@ -452,6 +454,7 @@ export type Database = {
           descripcion?: string | null
           destacado?: boolean
           id?: string
+          imagen_url?: string | null
           nombre?: string
           owner_id?: string | null
           precio?: number

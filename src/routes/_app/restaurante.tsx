@@ -303,6 +303,7 @@ function GestionMenu() {
   const [precio, setPrecio] = useState("");
   const [categoriaId, setCategoriaId] = useState("");
   const [nuevaCategoria, setNuevaCategoria] = useState("");
+  const [fotoNueva, setFotoNueva] = useState("");
 
   const cargar = useCallback(async () => {
     const [c, p] = await Promise.all([
@@ -317,6 +318,25 @@ function GestionMenu() {
     cargar();
   }, [cargar]);
 
+  const subirFoto = async (archivo: File | undefined, destino: "nuevo" | Producto) => {
+    if (!archivo) return;
+    if (!archivo.type.startsWith("image/")) return toast.error("Elige un archivo de imagen.");
+    if (archivo.size > 3 * 1024 * 1024) return toast.error("La foto debe pesar menos de 3 MB.");
+    const ext = (archivo.name.split(".").pop() ?? "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+    const ruta = `producto-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("negocios").upload(ruta, archivo, { upsert: true });
+    if (error) return toast.error("No se pudo subir la foto.");
+    const url = supabase.storage.from("negocios").getPublicUrl(ruta).data.publicUrl;
+    if (destino === "nuevo") {
+      setFotoNueva(url);
+      return;
+    }
+    const { error: e2 } = await supabase.from("restaurante_productos").update({ imagen_url: url }).eq("id", destino.id);
+    if (e2) return toast.error("No se pudo guardar la foto.");
+    toast.success("Foto actualizada.");
+    cargar();
+  };
+
   const agregar = async () => {
     const valor = Number(precio);
     if (!nombre.trim() || !Number.isFinite(valor) || valor < 0) return toast.error("Escribe nombre y precio válidos.");
@@ -325,8 +345,10 @@ function GestionMenu() {
       descripcion: descripcion.trim() || null,
       precio: valor,
       categoria_id: categoriaId || null,
+      imagen_url: fotoNueva || null,
     });
     if (error) return toast.error("No se pudo guardar el producto.");
+    setFotoNueva("");
     setNombre("");
     setDescripcion("");
     setPrecio("");
@@ -362,6 +384,11 @@ function GestionMenu() {
               <option key={c.id} value={c.id}>{c.nombre}</option>
             ))}
           </select>
+          <div className="space-y-1">
+            <span className="text-xs text-muted-foreground">Foto del producto (opcional)</span>
+            {fotoNueva ? <img src={fotoNueva} alt="Foto nueva" className="h-20 w-28 rounded-lg object-cover" /> : null}
+            <input type="file" accept="image/*" className={campo} onChange={(e) => subirFoto(e.target.files?.[0], "nuevo")} />
+          </div>
           <button onClick={agregar} className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90">
             Agregar al menú
           </button>
@@ -378,6 +405,13 @@ function GestionMenu() {
       <div className="space-y-2">
         {productos.map((p) => (
           <GlassPanel key={p.id} className="flex items-center gap-3 p-4">
+            {p.imagen_url ? (
+              <img src={p.imagen_url} alt={p.nombre} className="h-12 w-12 shrink-0 rounded-lg object-cover" />
+            ) : null}
+            <label className="shrink-0 cursor-pointer rounded-full border border-glass-border px-3 py-1.5 text-xs text-foreground">
+              {p.imagen_url ? "Cambiar foto" : "Subir foto"}
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => subirFoto(e.target.files?.[0], p)} />
+            </label>
             <div className="min-w-0 flex-1">
               <p className={`truncate text-sm font-medium ${p.activo ? "text-foreground" : "text-muted-foreground line-through"}`}>{p.nombre}</p>
               <p className="text-xs text-muted-foreground">

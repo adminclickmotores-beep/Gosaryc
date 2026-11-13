@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Armchair, Bike, ChefHat, Minus, Plus, Search, ShoppingBag, Trash2, Wallet } from "lucide-react";
+import { Armchair, Bike, ChefHat, ImageOff, Minus, Plus, Search, ShoppingBag, Trash2, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -170,20 +170,31 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
         {productos.length === 0 && (
           <p className="text-sm text-muted-foreground">Aún no tienes productos. Agrégalos en la pestaña “Menú”.</p>
         )}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
           {visibles.map((p) => {
             const cant = cuenta[p.id] ?? 0;
             return (
-              <button key={p.id} onClick={() => cambiarCant(p.id, 1)} className="text-left">
-                <GlassPanel className={`relative flex h-full flex-col justify-between gap-2 p-3 ${cant > 0 ? "ring-2 ring-primary" : ""}`}>
-                  {cant > 0 && (
-                    <span className="absolute right-2 top-2 rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">
-                      {cant}
-                    </span>
-                  )}
-                  <p className="break-words pr-6 text-sm font-medium text-foreground">{p.nombre}</p>
-                  <p className="text-sm text-primary">{dinero(p.precio)}</p>
-                </GlassPanel>
+              <button
+                key={p.id}
+                onClick={() => cambiarCant(p.id, 1)}
+                className={`group relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-glass-border bg-glass/40 text-left ${cant > 0 ? "ring-2 ring-primary" : ""}`}
+              >
+                {p.imagen_url ? (
+                  <img src={p.imagen_url} alt={p.nombre} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform group-hover:scale-105" />
+                ) : (
+                  <span className="absolute inset-0 flex items-center justify-center text-primary/40">
+                    <ImageOff className="h-8 w-8" />
+                  </span>
+                )}
+                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent p-2 pt-8">
+                  <span className="block break-words text-sm font-medium leading-tight text-white">{p.nombre}</span>
+                  <span className="block text-sm font-semibold text-white/90">{dinero(p.precio)}</span>
+                </span>
+                {cant > 0 && (
+                  <span className="absolute right-2 top-2 rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-primary-foreground shadow">
+                    {cant}
+                  </span>
+                )}
               </button>
             );
           })}
