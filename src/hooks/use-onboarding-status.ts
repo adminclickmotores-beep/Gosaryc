@@ -29,8 +29,13 @@ export async function getCachedOnboardedAt(userId: string) {
   // request so initial navigation doesn't paint once per consumer.
   cache.promise = Promise.resolve(
     supabase.from("profiles").select("onboarded_at").eq("id", userId).maybeSingle(),
-  ).then(({ data }) => {
+  ).then(({ data, error }) => {
     if (cache.userId !== userId) return null;
+    if (error) {
+      // No se pudo consultar: no mandar al usuario a /welcome por un fallo temporal.
+      cache.promise = null;
+      return "unknown";
+    }
     cache.onboardedAt = data?.onboarded_at ?? null;
     cache.loaded = true;
     cache.promise = null;

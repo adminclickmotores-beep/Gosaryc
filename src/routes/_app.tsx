@@ -228,6 +228,8 @@ function AppShell() {
   // don't kick off duplicate profile fetches and re-render the shell.
   useEffect(() => {
     if (!user) return;
+    // En ventana completa (nueva pestaña) nunca redirigir a /welcome.
+    if (new URLSearchParams(window.location.search).get("ventana") === "completa") return;
     let cancelled = false;
     (async () => {
       const onboardedAt = await getCachedOnboardedAt(user.id);
