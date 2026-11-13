@@ -12,6 +12,8 @@ import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { NegocioConfig } from "@/components/restaurante/NegocioConfig";
 import { RecetarioInventario } from "@/components/restaurante/RecetarioInventario";
+import { MenuQR } from "@/components/restaurante/MenuQR";
+import { Reportes } from "@/components/restaurante/Reportes";
 
 export const Route = createFileRoute("/_app/restaurante")({
   head: () => ({ meta: [{ title: "Panel de tu negocio" }] }),
@@ -51,9 +53,11 @@ const campo =
 function RestaurantePage() {
   const { negocio } = useNegocio();
   const tipo = resolverTipoNegocio(negocio?.tipo_negocio);
-  const [vistaElegida, setVista] = useState<"pedidos" | "menu" | "recetario" | "negocio">("pedidos");
+  const [vistaElegida, setVista] = useState<"pedidos" | "menu" | "qr" | "reportes" | "recetario" | "negocio">("pedidos");
   const vista = tipo.usaPedidos ? vistaElegida : "negocio";
-  const vistas = tipo.usaPedidos ? (["pedidos", "menu", "recetario", "negocio"] as const) : (["negocio"] as const);
+  const vistas = tipo.usaPedidos
+    ? (["pedidos", "menu", "qr", "reportes", "recetario", "negocio"] as const)
+    : (["negocio"] as const);
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [items, setItems] = useState<Item[]>([]);
 
@@ -170,14 +174,14 @@ function RestaurantePage() {
         })}
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {vistas.map((v) => (
           <button
             key={v}
             onClick={() => setVista(v)}
             className={`rounded-full px-5 py-2 text-sm ${vista === v ? "bg-primary text-primary-foreground" : "border border-glass-border text-muted-foreground"}`}
           >
-            {v === "pedidos" ? "Pedidos y cocina" : v === "menu" ? "Menú" : v === "recetario" ? "Recetario e inventario" : "Mi negocio"}
+            {v === "pedidos" ? "Pedidos y cocina" : v === "menu" ? "Menú" : v === "qr" ? "QR del menú" : v === "reportes" ? "Reportes" : v === "recetario" ? "Recetario e inventario" : "Mi negocio"}
           </button>
         ))}
       </div>
@@ -230,6 +234,10 @@ function RestaurantePage() {
         </div>
       ) : vista === "menu" ? (
         <GestionMenu />
+      ) : vista === "qr" ? (
+        <MenuQR />
+      ) : vista === "reportes" ? (
+        <Reportes />
       ) : vista === "recetario" ? (
         <RecetarioInventario />
       ) : (
