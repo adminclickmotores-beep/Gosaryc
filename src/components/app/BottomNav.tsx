@@ -1,9 +1,10 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { IconHome, IconBolt, IconAudience, IconWorkspace, IconCommand } from "@/components/ui-custom/CustomIcon";
+import { IconHome, IconBolt, IconAudience, IconWorkspace, IconCommand, IconSpark } from "@/components/ui-custom/CustomIcon";
 
 const items = [
   { to: "/restaurante", label: "Pedidos", Icon: IconBolt },
   { to: "/domicilios", label: "Domicilios", Icon: IconAudience },
+  { to: "/asistente-virtual", label: "Agente", Icon: IconSpark },
   { to: "/settings", label: "Ajustes", Icon: IconWorkspace },
   { to: "/welcome", label: "Inicio", Icon: IconHome },
 ] as const;
@@ -12,7 +13,7 @@ export function BottomNav() {
   const loc = useLocation();
   return (
     <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-glass-border bg-white/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
-      <div className="grid grid-cols-5">
+      <div className="grid grid-cols-6">
         {items.map((it) => {
           const active = loc.pathname.startsWith(it.to);
           return (
