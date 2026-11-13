@@ -51,6 +51,14 @@ import {
   Building2,
   PawPrint,
   Laptop,
+  Cake,
+  Coffee,
+  Sandwich,
+  Pill,
+  Sparkles,
+  PartyPopper,
+  Shirt,
+  Scale,
   type LucideIcon,
 } from "lucide-react";
 
@@ -69,6 +77,16 @@ export type TipoNegocioClave =
   | "mascotas"
   | "tecnologia"
   | "transporte"
+  | "panaderia"
+  | "cafeteria"
+  | "comida_rapida"
+  | "catering"
+  | "belleza"
+  | "taller"
+  | "farmacia"
+  | "eventos"
+  | "profesional"
+  | "lavanderia"
   | "otro";
 
 export type ModuloNegocio = {
@@ -405,9 +423,134 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
   },
 ];
 
+// ---- Más tipos de negocio ----
+// Los negocios de comida comparten los módulos del restaurante (menú, pedidos, cocina, insumos, recetas)
+// y agregan los suyos propios.
+const comida = (
+  clave: TipoNegocioClave,
+  etiqueta: string,
+  panel: string,
+  extras: ModuloNegocio[],
+): TipoNegocio => {
+  const base = TIPOS_NEGOCIO.find((x) => x.clave === "restaurante") as TipoNegocio;
+  const mods = [...base.modulos];
+  mods.splice(2, 0, ...extras);
+  return { clave, etiqueta, panel, usaPedidos: true, modulos: mods };
+};
+
+TIPOS_NEGOCIO.push(
+  comida("panaderia", "Panadería / pastelería / repostería", "Panadería", [
+    m("encargos_tortas", "Encargos de tortas y pasteles", "Pedidos por fecha: sabor, tamaño, decoración y anticipo.", Cake),
+    m("produccion_dia", "Producción del día", "Qué hornear hoy y cuántas unidades por producto.", ChefHat),
+  ]),
+  comida("cafeteria", "Cafetería / bar / heladería", "Cafetería", [
+    m("insumos_barra", "Barra y bebidas", "Control de botellas, tragos, café y mermas de la barra.", Coffee),
+  ]),
+  comida("comida_rapida", "Comida rápida / food truck / asadero", "Comida rápida", [
+    m("puntos_venta", "Puntos de venta y turnos", "Ventas por local, carro o ubicación del día.", Sandwich),
+  ]),
+  comida("catering", "Catering / banquetes / cocina por encargo", "Catering", [
+    m("eventos_catering", "Eventos y banquetes", "Fecha, invitados, menú, anticipo y saldo de cada evento.", PartyPopper),
+  ]),
+  {
+    clave: "belleza",
+    etiqueta: "Belleza / peluquería / spa / uñas",
+    panel: "Salón",
+    usaPedidos: false,
+    modulos: [
+      m("catalogo_servicios", "Catálogo de servicios", "Cortes, tintes, manicure, masajes: duración y precio.", Scissors),
+      AGENDA,
+      m("paquetes", "Paquetes y membresías", "Bonos de sesiones y planes mensuales.", Gift),
+      m("historial", "Historial del cliente", "Fórmulas, alergias y trabajos realizados.", ClipboardList),
+      m("lista_espera", "Lista de espera", "Clientes por atender cuando se libere un cupo.", Bell),
+      m("comisiones", "Comisiones del personal", "Pago por servicio realizado.", Percent),
+      m("productos_belleza", "Productos y cosméticos", "Inventario y venta de productos.", Sparkles),
+      CLIENTES, SOLICITUDES,
+      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "taller",
+    etiqueta: "Taller mecánico / latonería / lubricentro",
+    panel: "Taller",
+    usaPedidos: false,
+    modulos: [
+      m("ordenes_servicio", "Órdenes de servicio", "Vehículo, falla, trabajos, repuestos y estado de cada orden.", Wrench),
+      m("vehiculos_clientes", "Vehículos de clientes", "Placa, marca, kilometraje e historial de cada vehículo.", Car),
+      m("cotizaciones_taller", "Presupuestos de reparación", "Valor de mano de obra y repuestos antes de aprobar.", FileText),
+      m("repuestos_taller", "Repuestos e inventario", "Existencias, costos y alertas de faltantes.", Cog),
+      m("recordatorio_mant", "Mantenimientos próximos", "Aviso de cambio de aceite, revisiones y vencimientos.", CalendarClock),
+      AGENDA, CLIENTES, GARANTIAS,
+      FIADOS, FACTURAS, PAGOS, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "farmacia",
+    etiqueta: "Farmacia / droguería / minimercado",
+    panel: "Droguería",
+    usaPedidos: false,
+    modulos: [
+      m("productos_farm", "Productos y medicamentos", "Catálogo con precio y presentación.", Pill),
+      m("inventario_farm", "Inventario y reposición", "Existencias y alertas de bajo stock.", Package),
+      m("vencimientos_farm", "Lotes y vencimientos", "Fechas de vencimiento por lote para rotar a tiempo.", CalendarClock),
+      m("formulas", "Fórmulas y domicilios", "Pedidos con fórmula y entregas a domicilio.", ClipboardList),
+      CLIENTES,
+      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "eventos",
+    etiqueta: "Eventos / salón social / fotografía",
+    panel: "Eventos",
+    usaPedidos: false,
+    modulos: [
+      m("eventos_reg", "Eventos y reservas", "Fecha, cliente, lugar, anticipo y saldo.", PartyPopper),
+      AGENDA,
+      m("paquetes_evento", "Paquetes y servicios", "Paquetes con su precio y lo que incluyen.", Gift),
+      m("entregas_evento", "Entregas y pendientes", "Álbumes, archivos o materiales por entregar.", PackageCheck),
+      CLIENTES, SOLICITUDES,
+      FIADOS, FACTURAS, PAGOS, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "profesional",
+    etiqueta: "Servicios profesionales (abogados, contadores, consultores)",
+    panel: "Despacho",
+    usaPedidos: false,
+    modulos: [
+      m("casos", "Casos y expedientes", "Cada caso o cliente con su estado y responsable.", Briefcase),
+      m("honorarios", "Honorarios y cobros", "Valores pactados, abonos y saldos.", Scale),
+      m("plazos", "Plazos y vencimientos", "Términos legales, declaraciones y entregas.", CalendarClock),
+      m("documentos_prof", "Documentos por cliente", "Contratos y archivos importantes.", FolderOpen),
+      AGENDA, CLIENTES, SOLICITUDES,
+      FACTURAS, PAGOS, RESENAS, CAJA, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "lavanderia",
+    etiqueta: "Lavandería / tintorería / autolavado",
+    panel: "Lavandería",
+    usaPedidos: false,
+    modulos: [
+      m("ordenes_lavado", "Órdenes de servicio", "Recibido, en proceso, listo y entregado.", Shirt),
+      m("tarifas_lavado", "Tarifas por servicio", "Precio por prenda, kilo o tipo de lavado.", Tag),
+      m("entregas_lav", "Recogida y entrega", "Rutas de recogida y entrega a domicilio.", Bike),
+      m("insumos_lav", "Insumos", "Jabones, químicos y consumibles.", Boxes),
+      CLIENTES, AGENDA,
+      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+);
+
+// "Negocio general" siempre al final de la lista.
+{
+  const i = TIPOS_NEGOCIO.findIndex((x) => x.clave === "otro");
+  if (i >= 0) TIPOS_NEGOCIO.push(...TIPOS_NEGOCIO.splice(i, 1));
+}
+
 // Se agrega el módulo de cotizaciones a los tipos que cotizan y no tienen uno propio.
-// Salud (presupuestos de tratamiento), educación, hospedaje, gimnasio, mascotas y agro no cotizan así.
-const SIN_COTIZACIONES: TipoNegocioClave[] = ["salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro"];
+// Salud (presupuestos de tratamiento), educación, hospedaje, gimnasio, mascotas, agro, farmacia y lavandería no cotizan así.
+const SIN_COTIZACIONES: TipoNegocioClave[] = ["salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro", "farmacia", "lavanderia", "belleza"];
 for (const t of TIPOS_NEGOCIO) {
   if (SIN_COTIZACIONES.includes(t.clave)) continue;
   if (t.modulos.some((x) => x.id === COTIZACIONES.id || x.id.startsWith("cotizaciones_"))) continue;
@@ -433,6 +576,10 @@ export function resolverTipoNegocio(valor: string | null | undefined): TipoNegoc
   if (!t) return por("otro");
   const directo = TIPOS_NEGOCIO.find((x) => x.clave === t);
   if (directo) return directo;
+  if (/farmac|drogueri|minimercado|supermercado/.test(t)) return por("farmacia");
+  if (/belleza|peluquer|barberia|manicur|unas|spa\b|estetica|maquillaje|salon de belleza/.test(t)) return por("belleza");
+  if (/evento|fotograf|boda|salon social|matrimonio|quince/.test(t)) return por("eventos");
+  if (/abogad|juridic|legal|contab|consultor|notari|despacho|asesor/.test(t)) return por("profesional");
   if (/salud|clinic|consultorio|odont|dental|medic|fisio|psicolog|laborator/.test(t)) return por("salud");
   if (/educa|academ|colegio|curso|escuela|jardin|capacit/.test(t)) return por("educacion");
   if (/hotel|hostal|hospeda|turism|cabana|glamping/.test(t)) return por("hospedaje");
@@ -443,8 +590,14 @@ export function resolverTipoNegocio(valor: string | null | undefined): TipoNegoc
   if (/veterin|mascota|petshop|pet\b/.test(t)) return por("mascotas");
   if (/software|tecnolog|agencia|sistemas|marketing|diseno/.test(t)) return por("tecnologia");
   if (/transport|logistic|mensajer|flete|taxi|carga/.test(t)) return por("transporte");
+  if (/lavander|tintorer|autolavado|lavadero/.test(t)) return por("lavanderia");
+  if (/taller|mecanic|latoner|lubricent|llantas|alineacion/.test(t)) return por("taller");
   if (/vehic|carro|auto|moto|concesion/.test(t)) return por("concesionario");
-  if (/comida|restaur|cafe|pizz|panader|bar\b|hamburg|pollo|chuleta/.test(t)) return por("restaurante");
+  if (/catering|banquete|cocina por encargo|almuerzos corporativ/.test(t)) return por("catering");
+  if (/panader|pastel|reposter|postre|torta|boller/.test(t)) return por("panaderia");
+  if (/comida rapida|food truck|fast food|pizz|hamburg|perro caliente|salchipap|empanad|taquer|asadero|broaster/.test(t)) return por("comida_rapida");
+  if (/cafe|bar\b|heladeri|helado|licor|cerveza|coctel|discoteca|pub\b/.test(t)) return por("cafeteria");
+  if (/comida|restaur|pollo|chuleta/.test(t)) return por("restaurante");
   if (/tienda|comercio|repuesto|retail|ropa|boutique/.test(t)) return por("tienda");
   if (/servicio|cita|salon|belleza|barber|clinic|dental|spa|taller/.test(t)) return por("servicios");
   return por("otro");

@@ -148,6 +148,121 @@ export const RECETAS_BIBLIOTECA: Record<string, RecetaBase[]> = {
         "1. Calienta la tortilla en comal o plancha sin aceite, unos segundos por lado.\n2. Coloca el queso sobre una mitad y dobla.\n3. Dora 1 a 2 minutos por lado con un poco de aceite hasta que el queso se derrita.\n4. Corta en triángulos y sirve.",
     },
   ],
+  panaderia: [
+    {
+      platillo: "Pan francés",
+      claves: ["pan frances", "pan blanco", "pan de sal", "baguette"],
+      porciones: 10,
+      ingredientes: [
+        { nombre: "Harina", cantidad: 500, unidad: "g" },
+        { nombre: "Agua", cantidad: 300, unidad: "ml" },
+        { nombre: "Sal", cantidad: 10, unidad: "g" },
+        { nombre: "Levadura", cantidad: 10, unidad: "g" },
+        { nombre: "Azúcar", cantidad: 15, unidad: "g" },
+      ],
+      preparacion:
+        "1. Mezcla harina, sal, azúcar y levadura; agrega el agua.\n2. Amasa 10 minutos hasta que la masa esté lisa.\n3. Deja reposar tapada 1 hora hasta que duplique su tamaño.\n4. Divide en 10 piezas y dales forma.\n5. Reposa 30 minutos y hornea a 220 °C unos 20 minutos, hasta dorar.",
+    },
+    {
+      platillo: "Torta de vainilla",
+      claves: ["torta de vainilla", "bizcocho", "torta", "ponque"],
+      porciones: 12,
+      ingredientes: [
+        { nombre: "Harina", cantidad: 300, unidad: "g" },
+        { nombre: "Azúcar", cantidad: 250, unidad: "g" },
+        { nombre: "Mantequilla", cantidad: 200, unidad: "g" },
+        { nombre: "Huevo", cantidad: 4, unidad: "und" },
+        { nombre: "Leche", cantidad: 120, unidad: "ml" },
+        { nombre: "Polvo de hornear", cantidad: 10, unidad: "g" },
+      ],
+      preparacion:
+        "1. Bate la mantequilla con el azúcar hasta que esté cremosa.\n2. Agrega los huevos uno a uno.\n3. Incorpora la harina con el polvo de hornear, alternando con la leche.\n4. Vierte en molde engrasado.\n5. Hornea a 175 °C de 40 a 45 minutos; un palillo debe salir limpio.\n6. Deja enfriar antes de desmoldar.",
+    },
+    {
+      platillo: "Galletas de mantequilla",
+      claves: ["galleta", "galletas"],
+      porciones: 20,
+      ingredientes: [
+        { nombre: "Harina", cantidad: 250, unidad: "g" },
+        { nombre: "Mantequilla", cantidad: 150, unidad: "g" },
+        { nombre: "Azúcar", cantidad: 100, unidad: "g" },
+        { nombre: "Huevo", cantidad: 1, unidad: "und" },
+      ],
+      preparacion:
+        "1. Mezcla la mantequilla con el azúcar.\n2. Agrega el huevo y luego la harina hasta formar una masa.\n3. Refrigera 30 minutos.\n4. Estira, corta y hornea a 180 °C de 10 a 12 minutos.",
+    },
+  ],
+  cafeteria: [
+    {
+      platillo: "Café americano",
+      claves: ["americano", "cafe americano", "tinto", "cafe negro"],
+      porciones: 1,
+      ingredientes: [
+        { nombre: "Café molido", cantidad: 15, unidad: "g" },
+        { nombre: "Agua", cantidad: 250, unidad: "ml" },
+      ],
+      preparacion:
+        "1. Calienta el agua a 92-96 °C, sin hervir.\n2. Prepara el café con el molido.\n3. Sirve de inmediato en taza precalentada.",
+    },
+    {
+      platillo: "Capuchino",
+      claves: ["capuchino", "cappuccino", "latte"],
+      porciones: 1,
+      ingredientes: [
+        { nombre: "Café molido", cantidad: 18, unidad: "g" },
+        { nombre: "Agua", cantidad: 50, unidad: "ml" },
+        { nombre: "Leche", cantidad: 150, unidad: "ml" },
+      ],
+      preparacion:
+        "1. Extrae un espresso con el café y el agua.\n2. Calienta y espuma la leche a unos 65 °C.\n3. Vierte la leche sobre el espresso y sirve.",
+    },
+    {
+      platillo: "Jugo de naranja",
+      claves: ["jugo de naranja", "naranjada"],
+      porciones: 1,
+      ingredientes: [{ nombre: "Naranja", cantidad: 4, unidad: "und" }],
+      preparacion: "1. Lava y parte las naranjas.\n2. Exprime y cuela el jugo.\n3. Sirve frío y consume el mismo día.",
+    },
+    {
+      platillo: "Malteada de vainilla",
+      claves: ["malteada", "batido", "milkshake"],
+      porciones: 1,
+      ingredientes: [
+        { nombre: "Helado de vainilla", cantidad: 200, unidad: "g" },
+        { nombre: "Leche", cantidad: 150, unidad: "ml" },
+      ],
+      preparacion: "1. Licúa el helado con la leche 20 a 30 segundos.\n2. Sirve de inmediato en vaso frío.",
+    },
+  ],
+  comida_rapida: [
+    {
+      platillo: "Perro caliente",
+      claves: ["perro caliente", "hot dog", "perro"],
+      porciones: 1,
+      ingredientes: [
+        { nombre: "Salchicha", cantidad: 1, unidad: "und" },
+        { nombre: "Pan de perro", cantidad: 1, unidad: "und" },
+        { nombre: "Queso", cantidad: 20, unidad: "g" },
+      ],
+      preparacion:
+        "1. Cocina la salchicha en plancha hasta dorar.\n2. Tuesta ligeramente el pan.\n3. Arma con la salchicha, el queso y tus salsas.",
+    },
+    {
+      platillo: "Pizza personal",
+      claves: ["pizza personal", "pizza"],
+      porciones: 1,
+      ingredientes: [
+        { nombre: "Harina", cantidad: 120, unidad: "g" },
+        { nombre: "Agua", cantidad: 70, unidad: "ml" },
+        { nombre: "Levadura", cantidad: 2, unidad: "g" },
+        { nombre: "Salsa de tomate", cantidad: 50, unidad: "g" },
+        { nombre: "Queso mozzarella", cantidad: 80, unidad: "g" },
+        { nombre: "Aceite", cantidad: 5, unidad: "ml" },
+      ],
+      preparacion:
+        "1. Amasa harina, agua, levadura y aceite; reposa 1 hora.\n2. Estira la masa en forma de disco.\n3. Agrega salsa y queso.\n4. Hornea a 250 °C de 8 a 10 minutos.",
+    },
+  ],
 };
 
 const sinAcentos = (s: string) =>
@@ -159,9 +274,9 @@ const sinAcentos = (s: string) =>
 
 /** Busca una receta base por el nombre del platillo. Devuelve la primera que coincida. */
 export function buscarRecetaBase(tipo: string, platillo: string): RecetaBase | null {
-  const lista = RECETAS_BIBLIOTECA[tipo] ?? [];
   const nombre = sinAcentos(platillo);
-  return (
-    lista.find((r) => r.claves.some((c) => nombre.includes(sinAcentos(c)))) ?? null
-  );
+  const buscar = (lista: RecetaBase[]) =>
+    lista.find((r) => r.claves.some((c) => nombre.includes(sinAcentos(c)))) ?? null;
+  // Primero las recetas del tipo de negocio; si no hay, las generales de restaurante (comida en general).
+  return buscar(RECETAS_BIBLIOTECA[tipo] ?? []) ?? buscar(RECETAS_BIBLIOTECA.restaurante ?? []);
 }

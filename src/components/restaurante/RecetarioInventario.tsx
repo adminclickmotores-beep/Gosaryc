@@ -7,6 +7,8 @@ import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { consejosPara } from "@/lib/consejos-cocina";
 import { sugerirReceta } from "@/lib/recetas-sugerir.functions";
 import { buscarRecetaBase } from "@/data/recetas-biblioteca";
+import { useNegocio } from "@/hooks/use-negocio";
+import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 
 type Insumo = Tables<"restaurante_insumos">;
 type Receta = Tables<"restaurante_recetas">;
@@ -25,6 +27,8 @@ const COSTO_OBJETIVO = 0.35;
 const costoUnidad = (i: Insumo) => (i.cantidad_compra > 0 ? i.precio_compra / i.cantidad_compra : 0);
 
 export function RecetarioInventario() {
+  const { negocio } = useNegocio();
+  const tipoClave = resolverTipoNegocio(negocio?.tipo_negocio).clave;
   const [insumos, setInsumos] = useState<Insumo[]>([]);
   const [recetas, setRecetas] = useState<Receta[]>([]);
   const [ingredientes, setIngredientes] = useState<Ingrediente[]>([]);
@@ -347,6 +351,8 @@ function EditorReceta({
   pesoCaro: number;
   onCambio: () => void;
 }) {
+  const { negocio } = useNegocio();
+  const tipoClave = resolverTipoNegocio(negocio?.tipo_negocio).clave;
   const [porciones, setPorciones] = useState(String(receta.porciones));
   const [merma, setMerma] = useState(String(receta.merma_pct));
   const [tiempo, setTiempo] = useState(receta.tiempo_min ? String(receta.tiempo_min) : "");
@@ -362,7 +368,7 @@ function EditorReceta({
     setSugiriendo(true);
     try {
       // Primero la biblioteca de recetas base (cantidades fijas); si no hay, la IA.
-      const base = buscarRecetaBase("restaurante", producto.nombre);
+      const base = buscarRecetaBase(tipoClave, producto.nombre);
       const r = base
         ? {
             preparacion: base.preparacion,
