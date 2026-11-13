@@ -10,10 +10,10 @@ export const Route = createFileRoute("/request/status/$token")({
   component: StatusPage,
   head: () => ({
     meta: [
-      { title: `Request status | ${BRAND.name}` },
-      { name: "description", content: "Track the status of a campaign request you submitted." },
-      { property: "og:title", content: `Request status | ${BRAND.name}` },
-      { property: "og:description", content: "Track the status of a campaign request you submitted." },
+      { title: `Estado de la solicitud | ${BRAND.name}` },
+      { name: "description", content: "Consulta el estado de una solicitud de campaña que enviaste." },
+      { property: "og:title", content: `Estado de la solicitud | ${BRAND.name}` },
+      { property: "og:description", content: "Consulta el estado de una solicitud de campaña que enviaste." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -55,12 +55,12 @@ function StatusPage() {
 
         <GlassPanel tier="strong" className="mt-8 p-8">
           {loading ? (
-            <div className="text-muted-foreground">Loading…</div>
+            <div className="text-muted-foreground">Cargando…</div>
           ) : !s ? (
             <div>
-              <h1 className="font-display text-2xl">Request not found</h1>
+              <h1 className="font-display text-2xl">Solicitud no encontrada</h1>
               <p className="mt-2 text-sm text-muted-foreground">
-                This status link is invalid or has expired. Status links stay live for 30 days.
+                Este enlace de seguimiento no es válido o ya venció. Los enlaces duran 30 días.
               </p>
             </div>
           ) : (
@@ -78,20 +78,20 @@ function StatusPage() {
                   {done ? <IconCheck size={18} /> : <IconClock size={18} />}
                 </span>
                 <h1 className="font-display text-2xl capitalize">
-                  {s.status === "new" ? "Awaiting triage" : s.status}
+                  {({ new: "Pendiente de revisión", accepted: "Aceptada", declined: "Rechazada", converted: "Convertida en campaña" } as const)[s.status]}
                 </h1>
               </div>
               <div>
-                <div className="text-xs uppercase tracking-wider text-muted-foreground">Submitted</div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground">Enviada</div>
                 <div className="text-sm">{new Date(s.created_at).toLocaleString()}</div>
               </div>
               <div>
-                <div className="text-xs uppercase tracking-wider text-muted-foreground">Brief</div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground">Resumen</div>
                 <div className="mt-1 text-sm">{s.brief}</div>
               </div>
               {s.status === "converted" && (
                 <div className="rounded-md border border-primary/20 bg-primary/5 p-3 text-xs">
-                  This request became a working campaign. Reach out to the team for the workspace link.
+                  Esta solicitud se convirtió en una campaña de trabajo. Escribe al equipo para recibir el enlace del espacio.
                 </div>
               )}
             </div>
