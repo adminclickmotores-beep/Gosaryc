@@ -145,7 +145,8 @@ function AppShell() {
   const { session, loading, user } = useAuth();
   const loc = useLocation();
   const nav = useNavigate();
-  const focusParam = ((loc.search as Record<string, unknown> | undefined)?.focus as string) ?? "";
+  const completa = (loc.search as Record<string, unknown> | undefined)?.ventana === "completa";
+  const focusParam =((loc.search as Record<string, unknown> | undefined)?.focus as string) ?? "";
   const pathnameRef = useRef(loc.pathname);
   const { negocio } = useNegocio();
   const tipoNegocio = resolverTipoNegocio(negocio?.tipo_negocio);
@@ -293,7 +294,7 @@ function AppShell() {
         {/* Sidebar (desktop) — sticky + collapsible */}
         <aside
           data-tour="sidebar"
-          className={`sticky top-0 hidden h-screen shrink-0 self-start overflow-y-auto border-r border-glass-border bg-white transition-[width] duration-200 md:flex md:flex-col ${
+          className={`sticky top-0 hidden h-screen shrink-0 self-start overflow-y-auto border-r border-glass-border bg-white transition-[width] duration-200 ${completa ? "" : "md:flex md:flex-col"} ${
             collapsed ? "w-16" : "w-64"
           }`}
         >
@@ -490,7 +491,7 @@ function AppShell() {
 
         <main className="flex-1 min-w-0 overflow-x-hidden pb-[calc(env(safe-area-inset-bottom)+5rem)] md:pb-0">
           {/* Mobile top bar */}
-          <header className="sticky top-0 z-30 flex items-center justify-between border-b border-glass-border bg-white/90 px-4 py-3 backdrop-blur-xl md:hidden">
+          <header className={`sticky top-0 z-30 ${completa ? "hidden" : "flex"} items-center justify-between border-b border-glass-border bg-white/90 px-4 py-3 backdrop-blur-xl md:hidden`}>
             <Link to="/dashboard" className="flex items-center gap-2 text-foreground">
               <BrandHexLogo size={26} />
               <span className="font-display text-base tracking-tight">{BRAND.name}</span>
@@ -529,8 +530,8 @@ function AppShell() {
             <AutosaveStatus />
           </div>
           <div
-            className={`mx-auto w-full pb-10 pt-6 transition-[padding,max-width] duration-200 md:pt-20 ${
-              loc.pathname === "/tools" ? "max-w-full px-0" : "max-w-6xl px-4 sm:px-6"
+            className={`mx-auto w-full pb-10 pt-6 transition-[padding,max-width] duration-200 ${completa ? "md:pt-16" : "md:pt-20"} ${
+              completa ? "max-w-full px-3 sm:px-5" : loc.pathname === "/tools" ? "max-w-full px-0" : "max-w-6xl px-4 sm:px-6"
             }`}
           >
             <Outlet />
@@ -538,7 +539,7 @@ function AppShell() {
         </main>
       </div>
 
-      <BottomNav />
+      {!completa && <BottomNav />}
       <RouteProgressBar />
       <GuidedTour />
     </div>

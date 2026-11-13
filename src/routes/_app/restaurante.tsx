@@ -17,8 +17,16 @@ import { Reportes } from "@/components/restaurante/Reportes";
 import { MesasPanel } from "@/components/restaurante/MesasPanel";
 import { CajaPanel } from "@/components/restaurante/CajaPanel";
 import { VentaPOS } from "@/components/restaurante/VentaPOS";
+import { BotonVentanaCompleta } from "@/components/app/BotonVentanaCompleta";
+
+const VISTAS_VALIDAS = ["venta", "pedidos", "menu", "qr", "mesas", "caja", "reportes", "recetario", "negocio"] as const;
+type VistaClave = (typeof VISTAS_VALIDAS)[number];
 
 export const Route = createFileRoute("/_app/restaurante")({
+  validateSearch: (s: Record<string, unknown>): { vista?: string; ventana?: string } => ({
+    vista: typeof s.vista === "string" ? s.vista : undefined,
+    ventana: typeof s.ventana === "string" ? s.ventana : undefined,
+  }),
   head: () => ({ meta: [{ title: "Panel de tu negocio" }] }),
   component: RestaurantePage,
 });
@@ -56,7 +64,11 @@ const campo =
 function RestaurantePage() {
   const { negocio } = useNegocio();
   const tipo = resolverTipoNegocio(negocio?.tipo_negocio);
-  const [vistaElegida, setVista] = useState<"venta" | "pedidos" | "menu" | "qr" | "mesas" | "caja" | "reportes" | "recetario" | "negocio">("venta");
+  const busqueda = Route.useSearch();
+  const completa = busqueda.ventana === "completa";
+  const [vistaElegida, setVista] = useState<VistaClave>(
+    (VISTAS_VALIDAS as readonly string[]).includes(busqueda.vista ?? "") ? (busqueda.vista as VistaClave) : "venta",
+  );
   const vista = tipo.usaPedidos ? vistaElegida : "negocio";
   const vistas = tipo.usaPedidos
     ? (["venta", "pedidos", "menu", "qr", "mesas", "caja", "reportes", "recetario", "negocio"] as const)
@@ -135,6 +147,8 @@ function RestaurantePage() {
 
   return (
     <div className="space-y-6">
+      {!completa && (
+      <>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-display text-3xl text-foreground">{tipo.panel}</h1>
@@ -197,16 +211,20 @@ function RestaurantePage() {
           );
         })}
       </div>
+      </>
+      )}
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {vistas.map((v) => (
-          <button
+          <span
             key={v}
-            onClick={() => setVista(v)}
-            className={`rounded-full px-5 py-2 text-sm ${vista === v ? "bg-primary text-primary-foreground" : "border border-glass-border text-muted-foreground"}`}
+            className={`inline-flex items-center overflow-hidden rounded-full text-sm ${vista === v ? "bg-primary text-primary-foreground" : "border border-glass-border text-muted-foreground"}`}
           >
-            {v === "venta" ? "Vender y cobrar" : v === "pedidos" ? "Pedidos y cocina" : v === "menu" ? "Menú" : v === "qr" ? "QR del menú" : v === "mesas" ? "Mesas" : v === "caja" ? "Caja" : v === "reportes" ? "Reportes" : v === "recetario" ? "Recetario e inventario" : "Mi negocio"}
-          </button>
+            <button onClick={() => setVista(v)} className={`py-2 pl-5 ${completa ? "pr-5" : "pr-2"}`}>
+              {v === "venta" ? "Vender y cobrar" : v === "pedidos" ? "Pedidos y cocina" : v === "menu" ? "Menú" : v === "qr" ? "QR del menú" : v === "mesas" ? "Mesas" : v === "caja" ? "Caja" : v === "reportes" ? "Reportes" : v === "recetario" ? "Recetario e inventario" : "Mi negocio"}
+            </button>
+            {!completa && <BotonVentanaCompleta vista={v} className="py-2 pl-1 pr-3 opacity-80 hover:opacity-100" />}
+          </span>
         ))}
       </div>
 
