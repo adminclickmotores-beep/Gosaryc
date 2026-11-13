@@ -32,7 +32,6 @@ import { GradientMesh } from "@/components/ui-custom/GradientMesh";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useAuth } from "@/contexts/AuthContext";
 import { BRAND } from "@/lib/brand";
-import { useNegocio } from "@/hooks/use-negocio";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -89,7 +88,6 @@ const PASOS = [
 function LandingPage() {
   const { session, loading } = useAuth();
   const navigate = useNavigate();
-  const { negocio } = useNegocio();
 
   useEffect(() => {
     if (!loading && session) {
@@ -111,8 +109,8 @@ function LandingPage() {
 
       <header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-5 sm:px-8">
         <Link to="/" className="inline-flex min-w-0 items-center gap-2 text-sm font-medium">
-          <img src={negocio?.logo_url ?? "/icono-app.svg"} alt={`Logo de ${negocio?.nombre ?? BRAND.name}`} className="h-9 w-9 rounded-xl object-cover shadow-sm" />
-          <span className="truncate font-display text-xl">{negocio?.nombre ?? BRAND.name}</span>
+          <img src="/icono-app.svg" alt={`Logo de ${BRAND.name}`} className="h-9 w-9 rounded-xl object-cover shadow-sm" />
+          <span className="truncate font-display text-xl">{BRAND.name}</span>
         </Link>
         <Link
           to="/login"
@@ -128,14 +126,11 @@ function LandingPage() {
             <Sparkles className="h-3.5 w-3.5 text-primary" /> {BRAND.name} · {BRAND.tagline}
           </p>
           <h1 className="mt-5 break-words font-display text-4xl leading-tight tracking-tight sm:text-6xl">
-            {negocio?.nombre ?? "Todo tu negocio, en un solo lugar"}
+            Todo tu negocio, en un solo lugar
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
-            {negocio?.eslogan ?? BRAND.description}
+            {BRAND.description}
           </p>
-          {negocio?.eslogan ? (
-            <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground/80">{BRAND.description}</p>
-          ) : null}
           <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
             <Link
               to="/menu"
@@ -156,13 +151,6 @@ function LandingPage() {
               <Download className="h-4 w-4" /> Instalar app
             </Link>
           </div>
-          {negocio?.portada_url ? (
-            <img
-              src={negocio.portada_url}
-              alt={negocio.nombre}
-              className="mx-auto mt-10 max-h-72 w-full rounded-2xl object-cover shadow-lg"
-            />
-          ) : null}
         </section>
 
         <section className="mt-16 sm:mt-24" aria-labelledby="para-quien">
