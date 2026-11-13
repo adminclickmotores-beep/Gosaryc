@@ -53,7 +53,11 @@ const numeroWa = (t: string) => {
   const d = soloDigitos(t);
   return d.length === 10 ? `57${d}` : d;
 };
-const enlaceWa = (tel: string, texto: string) => `https://wa.me/${numeroWa(tel)}?text=${encodeURIComponent(texto)}`;
+const WA_COCINA = "3122325027";
+const WA_NEGOCIO = "3052095232";
+/** Abre WhatsApp Web siempre en la misma pestaña, para dejarlo abierto mientras se trabaja. */
+const abrirWa = (tel: string, texto: string) =>
+  window.open(`https://web.whatsapp.com/send?phone=${numeroWa(tel)}&text=${encodeURIComponent(texto)}`, "whatsapp_web");
 
 const textoComanda = (r: Recibo, nombreNegocio: string, paraCocina: boolean) => {
   const lineas = r.lineas.map((l) => `${l.cant} x ${l.nombre}${paraCocina ? "" : ` - ${dinero(l.precio * l.cant)}`}`).join("\n");
@@ -101,7 +105,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
   const [numCocina, setNumCocina] = useState("");
   const nombreNegocio = negocio?.nombre ?? "Crokante";
   useEffect(() => {
-    setNumCocina(negocio?.whatsapp_cocina ?? "");
+    setNumCocina(negocio?.whatsapp_cocina || WA_COCINA);
   }, [negocio?.whatsapp_cocina]);
 
   const guardarNumCocina = async () => {
@@ -339,7 +343,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
               <button
                 onClick={() => {
                   if (soloDigitos(numCocina).length < 7) return toast.error("Escribe abajo el WhatsApp de la cocina.");
-                  window.open(enlaceWa(numCocina, textoComanda(recibo, nombreNegocio, true)), "_blank", "noopener,noreferrer");
+                  abrirWa(numCocina, textoComanda(recibo, nombreNegocio, true));
                 }}
                 className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-2 py-2.5 font-medium text-primary-foreground"
               >
@@ -353,9 +357,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
               </button>
               <button
                 onClick={() => {
-                  const tel = negocio?.telefono_pedidos ?? "";
-                  if (soloDigitos(tel).length < 7) return toast.error("Falta el WhatsApp del negocio en la pestaña “Mi negocio”.");
-                  window.open(enlaceWa(tel, textoComanda(recibo, nombreNegocio, false)), "_blank", "noopener,noreferrer");
+                  abrirWa(WA_NEGOCIO, textoComanda(recibo, nombreNegocio, false));
                 }}
                 className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-glass-border px-2 py-2.5 text-foreground"
               >
@@ -364,12 +366,21 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
               <button
                 onClick={() => {
                   if (soloDigitos(recibo.telefono).length < 7) return toast.error("Este pedido no tiene celular del cliente.");
-                  const msg = `Hola ${recibo.cliente}, recibimos tu pedido en ${nombreNegocio}.\n\n${textoComanda(recibo, nombreNegocio, false)}\n\n¡Gracias!`;
-                  window.open(enlaceWa(recibo.telefono, msg), "_blank", "noopener,noreferrer");
+                  const msg = `Hola ${recibo.cliente}, tomamos tu pedido en ${nombreNegocio}.\n\n${textoComanda(recibo, nombreNegocio, false)}\n\n¡Gracias por elegirnos!`;
+                  abrirWa(recibo.telefono, msg);
                 }}
                 className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-glass-border px-2 py-2.5 text-foreground"
               >
-                <MessageCircle className="h-4 w-4" /> Avisar al cliente
+                <MessageCircle className="h-4 w-4" /> Cliente: pedido tomado
+              </button>
+              <button
+                onClick={() => {
+                  if (soloDigitos(recibo.telefono).length < 7) return toast.error("Este pedido no tiene celular del cliente.");
+                  abrirWa(recibo.telefono, `Hola ${recibo.cliente}, tu pedido #${recibo.id.slice(0, 6).toUpperCase()} ya entró a cocina y lo estamos preparando. Te avisamos cuando esté listo.`);
+                }}
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-glass-border px-2 py-2.5 text-foreground"
+              >
+                <ChefHat className="h-4 w-4" /> Cliente: en cocina
               </button>
             </div>
             <div className="flex gap-2">
