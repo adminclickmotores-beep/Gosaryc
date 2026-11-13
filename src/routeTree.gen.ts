@@ -29,6 +29,7 @@ import { Route as AppFunnelRouteImport } from './routes/_app/funnel'
 import { Route as AppIntegrationsRouteImport } from './routes/_app/integrations'
 import { Route as AppLeadsRouteImport } from './routes/_app/leads'
 import { Route as AppPagosDigitalesRouteImport } from './routes/_app/pagos-digitales'
+import { Route as AppPedidosRecurrentesRouteImport } from './routes/_app/pedidos-recurrentes'
 import { Route as AppPropinasRouteImport } from './routes/_app/propinas'
 import { Route as AppRepartidoresRouteImport } from './routes/_app/repartidores'
 import { Route as AppRequestsRouteImport } from './routes/_app/requests'
@@ -167,6 +168,11 @@ const AppLeadsRoute = AppLeadsRouteImport.update({
 const AppPagosDigitalesRoute = AppPagosDigitalesRouteImport.update({
   id: '/pagos-digitales',
   path: '/pagos-digitales',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPedidosRecurrentesRoute = AppPedidosRecurrentesRouteImport.update({
+  id: '/pedidos-recurrentes',
+  path: '/pedidos-recurrentes',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPropinasRoute = AppPropinasRouteImport.update({
@@ -396,6 +402,7 @@ export interface FileRoutesByFullPath {
   '/integrations': typeof AppIntegrationsRoute
   '/leads': typeof AppLeadsRoute
   '/pagos-digitales': typeof AppPagosDigitalesRoute
+  '/pedidos-recurrentes': typeof AppPedidosRecurrentesRoute
   '/propinas': typeof AppPropinasRoute
   '/repartidores': typeof AppRepartidoresRoute
   '/requests': typeof AppRequestsRoute
@@ -457,6 +464,7 @@ export interface FileRoutesByTo {
   '/integrations': typeof AppIntegrationsRoute
   '/leads': typeof AppLeadsRoute
   '/pagos-digitales': typeof AppPagosDigitalesRoute
+  '/pedidos-recurrentes': typeof AppPedidosRecurrentesRoute
   '/propinas': typeof AppPropinasRoute
   '/repartidores': typeof AppRepartidoresRoute
   '/requests': typeof AppRequestsRoute
@@ -520,6 +528,7 @@ export interface FileRoutesById {
   '/_app/integrations': typeof AppIntegrationsRoute
   '/_app/leads': typeof AppLeadsRoute
   '/_app/pagos-digitales': typeof AppPagosDigitalesRoute
+  '/_app/pedidos-recurrentes': typeof AppPedidosRecurrentesRoute
   '/_app/propinas': typeof AppPropinasRoute
   '/_app/repartidores': typeof AppRepartidoresRoute
   '/_app/requests': typeof AppRequestsRoute
@@ -583,6 +592,7 @@ export interface FileRouteTypes {
     | '/integrations'
     | '/leads'
     | '/pagos-digitales'
+    | '/pedidos-recurrentes'
     | '/propinas'
     | '/repartidores'
     | '/requests'
@@ -644,6 +654,7 @@ export interface FileRouteTypes {
     | '/integrations'
     | '/leads'
     | '/pagos-digitales'
+    | '/pedidos-recurrentes'
     | '/propinas'
     | '/repartidores'
     | '/requests'
@@ -706,6 +717,7 @@ export interface FileRouteTypes {
     | '/_app/integrations'
     | '/_app/leads'
     | '/_app/pagos-digitales'
+    | '/_app/pedidos-recurrentes'
     | '/_app/propinas'
     | '/_app/repartidores'
     | '/_app/requests'
@@ -916,6 +928,13 @@ declare module '@tanstack/react-router' {
       path: '/pagos-digitales'
       fullPath: '/pagos-digitales'
       preLoaderRoute: typeof AppPagosDigitalesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/pedidos-recurrentes': {
+      id: '/_app/pedidos-recurrentes'
+      path: '/pedidos-recurrentes'
+      fullPath: '/pedidos-recurrentes'
+      preLoaderRoute: typeof AppPedidosRecurrentesRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/propinas': {
@@ -1212,6 +1231,7 @@ interface AppRouteChildren {
   AppIntegrationsRoute: typeof AppIntegrationsRoute
   AppLeadsRoute: typeof AppLeadsRoute
   AppPagosDigitalesRoute: typeof AppPagosDigitalesRoute
+  AppPedidosRecurrentesRoute: typeof AppPedidosRecurrentesRoute
   AppPropinasRoute: typeof AppPropinasRoute
   AppRepartidoresRoute: typeof AppRepartidoresRoute
   AppRequestsRoute: typeof AppRequestsRoute
@@ -1250,6 +1270,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppIntegrationsRoute: AppIntegrationsRoute,
   AppLeadsRoute: AppLeadsRoute,
   AppPagosDigitalesRoute: AppPagosDigitalesRoute,
+  AppPedidosRecurrentesRoute: AppPedidosRecurrentesRoute,
   AppPropinasRoute: AppPropinasRoute,
   AppRepartidoresRoute: AppRepartidoresRoute,
   AppRequestsRoute: AppRequestsRoute,
