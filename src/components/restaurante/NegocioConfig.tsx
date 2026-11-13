@@ -139,7 +139,23 @@ export function NegocioConfig() {
           <select
             className={campo}
             value={tipoActual.clave}
-            onChange={(e) => setForm({ ...form, tipo_negocio: e.target.value })}
+            onChange={(e) => {
+              const nuevo = e.target.value;
+              const tipoPrevio = resolverTipoNegocio(negocio?.tipo_negocio ?? "").clave;
+              if (negocio && nuevo !== tipoPrevio) {
+                // Otro tipo de negocio: se limpian los datos del negocio anterior para empezar de cero.
+                const etiqueta = resolverTipoNegocio(nuevo).etiqueta;
+                setForm({
+                  ...VACIO,
+                  tipo_negocio: nuevo,
+                  nombre: `Mi ${etiqueta.toLowerCase()}`,
+                  color_principal: form.color_principal,
+                });
+                toast.info("Cambiaste el tipo de negocio: se limpiaron los datos anteriores. Completa los tuyos y guarda.");
+              } else {
+                setForm({ ...form, tipo_negocio: nuevo });
+              }
+            }}
           >
             {TIPOS_NEGOCIO.map((t) => (
               <option key={t.clave} value={t.clave}>
