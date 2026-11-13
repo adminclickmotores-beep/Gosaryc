@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Download, ExternalLink } from "lucide-react";
 import { useNegocio } from "@/hooks/use-negocio";
 import { PasoAPaso } from "@/components/restaurante/PasoAPaso";
-import { resolverTipoNegocio } from "@/lib/modulos-negocio";
+import { resolverTipoNegocio, TIPOS_NEGOCIO } from "@/lib/modulos-negocio";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -86,6 +86,19 @@ function RestaurantePage() {
     cargar();
   };
 
+  const cambiarTipo = async (clave: string) => {
+    if (!negocio) return;
+    const { data, error } = await supabase
+      .from("negocio_config")
+      .update({ tipo_negocio: clave, updated_at: new Date().toISOString() })
+      .eq("id", negocio.id)
+      .select("id");
+    if (error || !data || data.length === 0)
+      return toast.error("No se pudo cambiar el tipo de negocio. Tu cuenta debe ser la del administrador.");
+    toast.success("Tipo de negocio actualizado.");
+    window.dispatchEvent(new Event("negocio:cambio"));
+  };
+
   const ventasHoy = pedidos
     .filter((p) => p.estado !== "cancelado" && new Date(p.created_at).toDateString() === new Date().toDateString())
     .reduce((s, p) => s + p.total, 0);
@@ -99,7 +112,20 @@ function RestaurantePage() {
             {tipo.usaPedidos ? `Ventas de hoy: ${dinero(ventasHoy)}` : negocio?.nombre ?? tipo.etiqueta}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2 text-sm">
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <select
+            aria-label="Tipo de negocio"
+            value={tipo.clave}
+            disabled={!negocio}
+            onChange={(e) => cambiarTipo(e.target.value)}
+            className="rounded-full border border-glass-border bg-glass/40 px-4 py-2 text-base text-foreground outline-none focus:border-primary/50"
+          >
+            {TIPOS_NEGOCIO.map((t) => (
+              <option key={t.clave} value={t.clave}>
+                {t.etiqueta}
+              </option>
+            ))}
+          </select>
           {tipo.usaPedidos && (
             <Link to="/menu" target="_blank" className="inline-flex items-center gap-1.5 rounded-full border border-glass-border px-4 py-2 text-foreground">
               <ExternalLink className="h-4 w-4" /> Menú público

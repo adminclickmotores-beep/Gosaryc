@@ -4,8 +4,8 @@ import { IconHome, IconBolt, IconAudience, IconWorkspace, IconCommand } from "@/
 const items = [
   { to: "/restaurante", label: "Pedidos", Icon: IconBolt },
   { to: "/domicilios", label: "Domicilios", Icon: IconAudience },
-  { to: "/campaigns", label: "Campañas", Icon: IconWorkspace },
-  { to: "/dashboard", label: "Inicio", Icon: IconHome },
+  { to: "/settings", label: "Ajustes", Icon: IconWorkspace },
+  { to: "/welcome", label: "Inicio", Icon: IconHome },
 ] as const;
 
 export function BottomNav() {

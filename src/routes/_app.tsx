@@ -53,17 +53,11 @@ export const Route = createFileRoute("/_app")({
   component: AppShell,
 });
 
-const PRIMARY_NAV = [
-  { to: "/restaurante", label: "Restaurante", Icon: IconBolt },
-  { to: "/domicilios", label: "Domicilios y clientes", Icon: IconAudience },
-  { to: "/dashboard", label: "This week", Icon: IconHome },
-  { to: "/campaigns", label: "Campaigns", Icon: IconWorkspace },
-  { to: "/leads", label: "Leads", Icon: IconAudience },
-  { to: "/tools", label: "Marketing tools", Icon: IconCampaign },
-  { to: "/calendar", label: "Calendar", Icon: IconCalendar },
-  { to: "/requests", label: "Requests", Icon: IconClock },
-  { to: "/templates", label: "Templates", Icon: IconTemplate },
-] as const;
+type NavItem = {
+  to: string;
+  label: string;
+  Icon: React.ComponentType<{ size?: number; className?: string }>;
+};
 
 type ToolChild = { to: string; label: string; Icon: typeof IconCampaign; search?: Record<string, string> };
 type ToolItem = ToolChild & { id: string; children?: ToolChild[] };
@@ -154,9 +148,12 @@ function AppShell() {
   const pathnameRef = useRef(loc.pathname);
   const { negocio } = useNegocio();
   const tipoNegocio = resolverTipoNegocio(negocio?.tipo_negocio);
-  const navItems = PRIMARY_NAV.filter(
-    (n) => n.to !== "/domicilios" || tipoNegocio.modulos.some((m) => m.id === "domicilios"),
-  ).map((n) => (n.to === "/restaurante" ? { ...n, label: tipoNegocio.panel } : n));
+  const navItems: NavItem[] = [
+    { to: "/restaurante", label: tipoNegocio.panel, Icon: IconBolt },
+    ...tipoNegocio.modulos
+      .filter((m) => m.ruta && m.ruta !== "/restaurante")
+      .map((m) => ({ to: m.ruta as string, label: m.titulo, Icon: m.Icon })),
+  ].filter((n, i, arr) => arr.findIndex((x) => x.to === n.to) === i);
 
   useEffect(() => {
     pathnameRef.current = loc.pathname;
@@ -323,7 +320,7 @@ function AppShell() {
 
           {!collapsed && (
             <div className="px-3 pb-2">
-              <SidebarSearch />
+              <SidebarSearch items={navItems} />
             </div>
           )}
 
@@ -337,7 +334,7 @@ function AppShell() {
               return (
                 <div key={n.to}>
                   <Link
-                    to={n.to}
+                    to={n.to as never}
                     preload="render"
                     title={collapsed ? n.label : undefined}
                     data-tour={`nav-${n.to}`}
@@ -420,7 +417,7 @@ function AppShell() {
               <Link
                 to="/settings"
                 preload="render"
-                title={collapsed ? "Settings" : undefined}
+                title={collapsed ? "Configuración" : undefined}
                 data-tour="nav-settings"
                 className={`flex items-center ${collapsed ? "justify-center px-0" : "gap-3 px-3"} rounded-xl py-2.5 text-sm transition-colors ${
                   loc.pathname.startsWith("/settings")
@@ -429,12 +426,12 @@ function AppShell() {
                 }`}
               >
                 <IconSettings size={18} />
-                {!collapsed && <span>Settings</span>}
+                {!collapsed && <span>Configuración</span>}
               </Link>
               <Link
                 to="/integrations"
                 preload="render"
-                title={collapsed ? "Integrations" : undefined}
+                title={collapsed ? "Integraciones" : undefined}
                 data-tour="nav-integrations"
                 className={`flex items-center ${collapsed ? "justify-center px-0" : "gap-3 px-3"} rounded-xl py-2.5 text-sm transition-colors ${
                   loc.pathname.startsWith("/integrations") || loc.pathname.startsWith("/connectors")
@@ -443,7 +440,7 @@ function AppShell() {
                 }`}
               >
                 <IconBolt size={18} />
-                {!collapsed && <span>Integrations</span>}
+                {!collapsed && <span>Integraciones</span>}
               </Link>
             </div>
           </nav>
@@ -531,24 +528,21 @@ function AppShell() {
 
 /** Smart sidebar search — fuzzy filter over tools; Enter jumps to the top hit.
  *  ⌘K opens the full command palette for deeper search. */
-function SidebarSearch() {
+function SidebarSearch({ items }: { items: NavItem[] }) {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
 
   const flat = useMemo(
     () =>
-      MARKETING_TOOLS.flatMap((t) => [
-        { label: t.label, to: t.to, search: t.search, Icon: t.Icon, parent: null as string | null },
-        ...(t.children ?? []).map((c) => ({
-          label: c.label,
-          to: c.to,
-          search: c.search,
-          Icon: c.Icon,
-          parent: t.label,
-        })),
-      ]),
-    [],
+      items.map((t) => ({
+        label: t.label,
+        to: t.to,
+        search: undefined as Record<string, string> | undefined,
+        Icon: t.Icon,
+        parent: null as string | null,
+      })),
+    [items],
   );
 
   const ql = q.trim().toLowerCase();
@@ -592,7 +586,7 @@ function SidebarSearch() {
               (e.target as HTMLInputElement).blur();
             }
           }}
-          placeholder="Search tools…"
+          placeholder="Buscar herramienta…"
           className="w-full bg-transparent outline-none placeholder:text-muted-foreground/60"
         />
         <kbd className="hidden rounded bg-muted px-1 py-0.5 font-mono text-[10px] text-muted-foreground/70 md:inline">
@@ -609,7 +603,7 @@ function SidebarSearch() {
             className="absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-auto rounded-lg border border-glass-border bg-white p-1 shadow-lg"
           >
             {hits.length === 0 ? (
-              <div className="px-3 py-2 text-xs text-muted-foreground">No matches</div>
+              <div className="px-3 py-2 text-xs text-muted-foreground">Sin resultados</div>
             ) : (
               hits.map((h, i) => (
                 <button

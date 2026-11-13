@@ -122,6 +122,7 @@ export function NegocioConfig() {
       return toast.error("No se pudieron guardar los datos. Tu cuenta debe ser la del administrador del negocio.");
     toast.success("Datos del negocio guardados.");
     recargar();
+    window.dispatchEvent(new Event("negocio:cambio"));
   };
 
   return (

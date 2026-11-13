@@ -22,6 +22,12 @@ export function useNegocio() {
 
   useEffect(() => {
     recargar();
+    // Mantiene sincronizados todos los componentes (menú lateral, panel) cuando cambia el negocio.
+    const alCambiar = () => {
+      recargar();
+    };
+    window.addEventListener("negocio:cambio", alCambiar);
+    return () => window.removeEventListener("negocio:cambio", alCambiar);
   }, [recargar]);
 
   // Aplica el color principal elegido por el negocio a toda la app.
