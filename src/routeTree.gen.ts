@@ -31,6 +31,7 @@ import { Route as AppFinanzasRouteImport } from './routes/_app/finanzas'
 import { Route as AppFunnelRouteImport } from './routes/_app/funnel'
 import { Route as AppIntegrationsRouteImport } from './routes/_app/integrations'
 import { Route as AppLeadsRouteImport } from './routes/_app/leads'
+import { Route as AppMetasRouteImport } from './routes/_app/metas'
 import { Route as AppPagosDigitalesRouteImport } from './routes/_app/pagos-digitales'
 import { Route as AppPedidosRecurrentesRouteImport } from './routes/_app/pedidos-recurrentes'
 import { Route as AppPropinasRouteImport } from './routes/_app/propinas'
@@ -184,6 +185,11 @@ const AppIntegrationsRoute = AppIntegrationsRouteImport.update({
 const AppLeadsRoute = AppLeadsRouteImport.update({
   id: '/leads',
   path: '/leads',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMetasRoute = AppMetasRouteImport.update({
+  id: '/metas',
+  path: '/metas',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPagosDigitalesRoute = AppPagosDigitalesRouteImport.update({
@@ -440,6 +446,7 @@ export interface FileRoutesByFullPath {
   '/funnel': typeof AppFunnelRoute
   '/integrations': typeof AppIntegrationsRoute
   '/leads': typeof AppLeadsRoute
+  '/metas': typeof AppMetasRoute
   '/pagos-digitales': typeof AppPagosDigitalesRoute
   '/pedidos-recurrentes': typeof AppPedidosRecurrentesRoute
   '/propinas': typeof AppPropinasRoute
@@ -508,6 +515,7 @@ export interface FileRoutesByTo {
   '/funnel': typeof AppFunnelRoute
   '/integrations': typeof AppIntegrationsRoute
   '/leads': typeof AppLeadsRoute
+  '/metas': typeof AppMetasRoute
   '/pagos-digitales': typeof AppPagosDigitalesRoute
   '/pedidos-recurrentes': typeof AppPedidosRecurrentesRoute
   '/propinas': typeof AppPropinasRoute
@@ -578,6 +586,7 @@ export interface FileRoutesById {
   '/_app/funnel': typeof AppFunnelRoute
   '/_app/integrations': typeof AppIntegrationsRoute
   '/_app/leads': typeof AppLeadsRoute
+  '/_app/metas': typeof AppMetasRoute
   '/_app/pagos-digitales': typeof AppPagosDigitalesRoute
   '/_app/pedidos-recurrentes': typeof AppPedidosRecurrentesRoute
   '/_app/propinas': typeof AppPropinasRoute
@@ -648,6 +657,7 @@ export interface FileRouteTypes {
     | '/funnel'
     | '/integrations'
     | '/leads'
+    | '/metas'
     | '/pagos-digitales'
     | '/pedidos-recurrentes'
     | '/propinas'
@@ -716,6 +726,7 @@ export interface FileRouteTypes {
     | '/funnel'
     | '/integrations'
     | '/leads'
+    | '/metas'
     | '/pagos-digitales'
     | '/pedidos-recurrentes'
     | '/propinas'
@@ -785,6 +796,7 @@ export interface FileRouteTypes {
     | '/_app/funnel'
     | '/_app/integrations'
     | '/_app/leads'
+    | '/_app/metas'
     | '/_app/pagos-digitales'
     | '/_app/pedidos-recurrentes'
     | '/_app/propinas'
@@ -1014,6 +1026,13 @@ declare module '@tanstack/react-router' {
       path: '/leads'
       fullPath: '/leads'
       preLoaderRoute: typeof AppLeadsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/metas': {
+      id: '/_app/metas'
+      path: '/metas'
+      fullPath: '/metas'
+      preLoaderRoute: typeof AppMetasRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/pagos-digitales': {
@@ -1347,6 +1366,7 @@ interface AppRouteChildren {
   AppFunnelRoute: typeof AppFunnelRoute
   AppIntegrationsRoute: typeof AppIntegrationsRoute
   AppLeadsRoute: typeof AppLeadsRoute
+  AppMetasRoute: typeof AppMetasRoute
   AppPagosDigitalesRoute: typeof AppPagosDigitalesRoute
   AppPedidosRecurrentesRoute: typeof AppPedidosRecurrentesRoute
   AppPropinasRoute: typeof AppPropinasRoute
@@ -1392,6 +1412,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFunnelRoute: AppFunnelRoute,
   AppIntegrationsRoute: AppIntegrationsRoute,
   AppLeadsRoute: AppLeadsRoute,
+  AppMetasRoute: AppMetasRoute,
   AppPagosDigitalesRoute: AppPagosDigitalesRoute,
   AppPedidosRecurrentesRoute: AppPedidosRecurrentesRoute,
   AppPropinasRoute: AppPropinasRoute,
