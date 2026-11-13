@@ -352,7 +352,16 @@ function AppShell() {
                     preload="render"
                     title={collapsed ? n.label : undefined}
                     data-tour={`nav-${n.to}`}
-                    onClick={isToolsItem ? undefined : closeToolsTree}
+                    onClick={(e) => {
+                      if (isToolsItem) return;
+                      closeToolsTree();
+                      // Los menús de módulos se abren en una pestaña aparte, a pantalla completa.
+                      const esModulo = n.to !== "/restaurante" && !n.to.startsWith("/tools") && !n.to.startsWith("/funnel");
+                      if (esModulo && !e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
+                        e.preventDefault();
+                        window.open(`${n.to}?ventana=completa`, "_blank", "noopener,noreferrer");
+                      }
+                    }}
                     className={`relative flex items-center ${collapsed ? "justify-center px-0" : "gap-3 px-3"} rounded-xl py-2.5 text-sm transition-colors duration-150 ${
                       active
                         ? "text-foreground"
