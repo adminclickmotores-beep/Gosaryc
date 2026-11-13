@@ -125,8 +125,9 @@ export const GUIAS_NEGOCIO: Record<TipoNegocioClave, GuiaNegocio> = {
   otro: {
     frase: "Tu negocio, ordenado y creciendo.",
     pasos: [
-      { titulo: "Crea tu catálogo", texto: "En “Catálogo” agrega lo que ofreces a tus clientes." },
-      { titulo: "Registra a tus clientes", texto: "Guarda sus datos en “Clientes y contactos”." },
+      { titulo: "Crea tu catálogo", texto: "En “Productos y servicios” agrega lo que ofreces a tus clientes con su precio." },
+      { titulo: "Registra ventas y clientes", texto: "Anota cada venta en “Ventas y pedidos” y guarda los datos en “Clientes y contactos”." },
+      { titulo: "Organiza tu día", texto: "Usa “Agenda y calendario”, “Trabajos y proyectos” e “Inventario” según lo que necesites." },
       { titulo: "Cuida tu dinero", texto: "Usa caja diaria, fiados y facturación para llevar tus cuentas." },
     ],
   },
