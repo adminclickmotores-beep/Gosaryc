@@ -24,6 +24,7 @@ import { Route as AppCarteraFiadosRouteImport } from './routes/_app/cartera-fiad
 import { Route as AppCombosRouteImport } from './routes/_app/combos'
 import { Route as AppConnectorsRouteImport } from './routes/_app/connectors'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppDifusionWhatsappRouteImport } from './routes/_app/difusion-whatsapp'
 import { Route as AppDomiciliosRouteImport } from './routes/_app/domicilios'
 import { Route as AppFinanzasRouteImport } from './routes/_app/finanzas'
 import { Route as AppFunnelRouteImport } from './routes/_app/funnel'
@@ -146,6 +147,11 @@ const AppConnectorsRoute = AppConnectorsRouteImport.update({
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDifusionWhatsappRoute = AppDifusionWhatsappRouteImport.update({
+  id: '/difusion-whatsapp',
+  path: '/difusion-whatsapp',
   getParentRoute: () => AppRoute,
 } as any)
 const AppDomiciliosRoute = AppDomiciliosRouteImport.update({
@@ -415,6 +421,7 @@ export interface FileRoutesByFullPath {
   '/combos': typeof AppCombosRoute
   '/connectors': typeof AppConnectorsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/difusion-whatsapp': typeof AppDifusionWhatsappRoute
   '/domicilios': typeof AppDomiciliosRoute
   '/finanzas': typeof AppFinanzasRoute
   '/funnel': typeof AppFunnelRoute
@@ -480,6 +487,7 @@ export interface FileRoutesByTo {
   '/combos': typeof AppCombosRoute
   '/connectors': typeof AppConnectorsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/difusion-whatsapp': typeof AppDifusionWhatsappRoute
   '/domicilios': typeof AppDomiciliosRoute
   '/finanzas': typeof AppFinanzasRoute
   '/funnel': typeof AppFunnelRoute
@@ -547,6 +555,7 @@ export interface FileRoutesById {
   '/_app/combos': typeof AppCombosRoute
   '/_app/connectors': typeof AppConnectorsRoute
   '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/difusion-whatsapp': typeof AppDifusionWhatsappRoute
   '/_app/domicilios': typeof AppDomiciliosRoute
   '/_app/finanzas': typeof AppFinanzasRoute
   '/_app/funnel': typeof AppFunnelRoute
@@ -614,6 +623,7 @@ export interface FileRouteTypes {
     | '/combos'
     | '/connectors'
     | '/dashboard'
+    | '/difusion-whatsapp'
     | '/domicilios'
     | '/finanzas'
     | '/funnel'
@@ -679,6 +689,7 @@ export interface FileRouteTypes {
     | '/combos'
     | '/connectors'
     | '/dashboard'
+    | '/difusion-whatsapp'
     | '/domicilios'
     | '/finanzas'
     | '/funnel'
@@ -745,6 +756,7 @@ export interface FileRouteTypes {
     | '/_app/combos'
     | '/_app/connectors'
     | '/_app/dashboard'
+    | '/_app/difusion-whatsapp'
     | '/_app/domicilios'
     | '/_app/finanzas'
     | '/_app/funnel'
@@ -929,6 +941,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/difusion-whatsapp': {
+      id: '/_app/difusion-whatsapp'
+      path: '/difusion-whatsapp'
+      fullPath: '/difusion-whatsapp'
+      preLoaderRoute: typeof AppDifusionWhatsappRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/domicilios': {
@@ -1283,6 +1302,7 @@ interface AppRouteChildren {
   AppCombosRoute: typeof AppCombosRoute
   AppConnectorsRoute: typeof AppConnectorsRoute
   AppDashboardRoute: typeof AppDashboardRoute
+  AppDifusionWhatsappRoute: typeof AppDifusionWhatsappRoute
   AppDomiciliosRoute: typeof AppDomiciliosRoute
   AppFinanzasRoute: typeof AppFinanzasRoute
   AppFunnelRoute: typeof AppFunnelRoute
@@ -1325,6 +1345,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCombosRoute: AppCombosRoute,
   AppConnectorsRoute: AppConnectorsRoute,
   AppDashboardRoute: AppDashboardRoute,
+  AppDifusionWhatsappRoute: AppDifusionWhatsappRoute,
   AppDomiciliosRoute: AppDomiciliosRoute,
   AppFinanzasRoute: AppFinanzasRoute,
   AppFunnelRoute: AppFunnelRoute,
