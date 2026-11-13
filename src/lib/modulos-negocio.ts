@@ -122,7 +122,10 @@ const DIFUSION: ModuloNegocio = {
   ruta: "/difusion-whatsapp",
 };
 const CAJA = m("caja_diaria", "Caja y gastos diarios", "Apertura, cierre de caja y gastos del día.", Banknote);
-const PROVEEDORES = m("proveedores", "Proveedores y compras", "Pedidos y deudas con proveedores.", Truck);
+const PROVEEDORES: ModuloNegocio = {
+  ...m("proveedores", "Proveedores y compras", "Pedidos y deudas con proveedores.", Truck),
+  ruta: "/proveedores-compras",
+};
 const EMPLEADOS = m("equipo_turnos", "Equipo, turnos y nómina", "Turnos, pagos y novedades del personal.", Briefcase);
 const METAS = m("metas", "Metas y objetivos", "Metas de ventas y seguimiento semanal.", Target);
 const GARANTIAS = m("garantias", "Garantías y postventa", "Seguimiento a reclamos y garantías.", BadgeCheck);
