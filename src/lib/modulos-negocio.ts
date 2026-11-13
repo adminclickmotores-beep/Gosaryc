@@ -167,7 +167,7 @@ const COTIZACIONES: ModuloNegocio = {
 const FINANZAS: ModuloNegocio = {
   id: "finanzas",
   titulo: "Finanzas y rentabilidad",
-  descripcion: "Ventas, costos y utilidad.",
+  descripcion: "Ventas, costos, utilidad y registro contable.",
   Icon: Wallet,
   ruta: "/finanzas",
   estado: "Activo",
@@ -220,7 +220,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("cartera_veh", "Cartera y cuotas de clientes", "Saldos y cuotas pendientes de pago.", Coins),
       m("proveedores_veh", "Proveedores y gestores", "Gestores de trámites, talleres externos y proveedores.", Truck),
       m("comisiones", "Comisiones de asesores", "Comisión por venta de cada asesor.", Percent),
-      FACTURAS, GARANTIAS, FIDELIZACION, RESENAS, DIFUSION, CAJA, EMPLEADOS, METAS, FINANZAS,
+      FACTURAS, GARANTIAS, RESENAS, DIFUSION, CAJA, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -234,7 +234,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("apartados", "Apartados (plan separe)", "Abonos y entrega de productos separados.", Tag),
       m("catalogo_whatsapp", "Catálogo para WhatsApp", "Comparte tu catálogo con un enlace.", QrCode),
       m("devoluciones", "Cambios y devoluciones", "Control de cambios y notas crédito.", Repeat),
-      CLIENTES, SOLICITUDES,
+      CLIENTES, SOLICITUDES, GARANTIAS,
       FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
@@ -294,7 +294,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("huespedes", "Huéspedes", "Registro y preferencias de tus huéspedes.", Users),
       m("servicios_extra", "Servicios adicionales", "Desayunos, tours, lavandería y otros cargos.", Tag),
       m("limpieza", "Limpieza y mantenimiento", "Tareas por habitación y estado.", Wrench),
-      FACTURAS, PAGOS, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -307,7 +307,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("clases", "Clases y cupos", "Horarios de clases con cupos y asistentes.", CalendarDays),
       m("control_acceso", "Control de ingreso", "Registro de asistencia de los socios.", QrCode),
       m("planes_entreno", "Rutinas y seguimiento", "Planes y medidas de cada socio.", ClipboardList),
-      CLIENTES, FACTURAS, PAGOS, FIDELIZACION, DIFUSION, CAJA, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES, FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -320,7 +320,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("cotizaciones_obra", "Cotizaciones", "Propuestas y seguimiento hasta el cierre.", FileText),
       m("materiales", "Materiales y herramientas", "Inventario y consumo por obra.", Package),
       m("contratistas", "Contratistas y pagos", "Cuentas por pagar a maestros y subcontratistas.", Handshake),
-      AGENDA, CLIENTES, FACTURAS, PAGOS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      AGENDA, CLIENTES, GARANTIAS, FIADOS, FACTURAS, PAGOS, RESENAS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -359,7 +359,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       AGENDA,
       m("vacunacion", "Vacunas y desparasitación", "Próximas dosis y recordatorios.", ShieldCheck),
       m("productos_vet", "Productos y alimentos", "Inventario y ventas.", ShoppingBag),
-      CLIENTES, FACTURAS, PAGOS, FIDELIZACION, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES, FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -385,7 +385,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("viajes", "Viajes y despachos", "Rutas, cargas y estado de cada envío.", Package),
       m("conductores", "Conductores y pagos", "Liquidación por viaje.", Briefcase),
       m("combustible", "Combustible y gastos de ruta", "Control de gastos por vehículo.", Banknote),
-      CLIENTES, AGENDA, FACTURAS, PAGOS, CAJA, PROVEEDORES, METAS, FINANZAS,
+      CLIENTES, AGENDA, FIADOS, FACTURAS, PAGOS, RESENAS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -405,8 +405,11 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
   },
 ];
 
-// Casi todo negocio cotiza: se agrega el módulo de cotizaciones a los tipos que no tienen uno propio.
+// Se agrega el módulo de cotizaciones a los tipos que cotizan y no tienen uno propio.
+// Salud (presupuestos de tratamiento), educación, hospedaje, gimnasio, mascotas y agro no cotizan así.
+const SIN_COTIZACIONES: TipoNegocioClave[] = ["salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro"];
 for (const t of TIPOS_NEGOCIO) {
+  if (SIN_COTIZACIONES.includes(t.clave)) continue;
   if (t.modulos.some((x) => x.id === COTIZACIONES.id || x.id.startsWith("cotizaciones_"))) continue;
   const pos = t.modulos.findIndex((x) => x.id === "facturas");
   t.modulos.splice(pos >= 0 ? pos : t.modulos.length, 0, COTIZACIONES);

@@ -4,6 +4,8 @@ import { ArrowLeft, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { useNegocio } from "@/hooks/use-negocio";
+import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 import { Contabilidad } from "@/components/restaurante/Contabilidad";
 
 export const Route = createFileRoute("/_app/finanzas")({
@@ -17,6 +19,8 @@ const dinero = (n: number) =>
   new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
 
 function FinanzasPage() {
+  const { negocio } = useNegocio();
+  const usaPedidos = resolverTipoNegocio(negocio?.tipo_negocio).usaPedidos;
   const [periodo, setPeriodo] = useState<Periodo>("hoy");
   const [ventas, setVentas] = useState(0);
   const [pedidos, setPedidos] = useState(0);
@@ -83,7 +87,7 @@ function FinanzasPage() {
 
       {cargando && <p className="text-sm text-muted-foreground">Calculando…</p>}
 
-      {!cargando && (
+      {!cargando && usaPedidos && (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <GlassPanel className="p-4">
             <p className="text-xs text-muted-foreground">Ventas entregadas</p>
