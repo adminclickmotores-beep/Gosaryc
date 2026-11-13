@@ -235,13 +235,15 @@
 
 /* ===== Glass utilities ===== */
 @utility glass {
-  background: oklch(1 0 0);
+  background: oklch(1 0 0 / 0.72);
+  backdrop-filter: blur(14px) saturate(1.1);
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-glass);
 }
 
 @utility glass-strong {
-  background: oklch(1 0 0);
+  background: oklch(1 0 0 / 0.85);
+  backdrop-filter: blur(18px) saturate(1.1);
   border: 1px solid var(--glass-border);
   box-shadow: 0 12px 32px -12px oklch(0.2 0.02 255 / 0.18);
 }
