@@ -77,7 +77,7 @@ function LandingPage() {
       <main className="relative z-10 mx-auto max-w-6xl px-5 pb-24 pt-8 sm:px-8 sm:pt-16">
         <section className="mx-auto max-w-3xl text-center">
           <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-            {negocio?.tipo_negocio ?? BRAND.tagline}
+            {BRAND.name} · {BRAND.tagline}
           </p>
           <h1 className="mt-4 break-words font-display text-4xl leading-tight tracking-tight sm:text-6xl">
             {negocio?.nombre ?? "Todo tu negocio, conectado"}
@@ -85,6 +85,11 @@ function LandingPage() {
           <p className="mx-auto mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
             {negocio?.eslogan ?? BRAND.description}
           </p>
+          {negocio?.eslogan ? (
+            <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground/80">
+              {BRAND.description}
+            </p>
+          ) : null}
           <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
             <Link
               to="/menu"

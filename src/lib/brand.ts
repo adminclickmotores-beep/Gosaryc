@@ -11,10 +11,10 @@ export const BRAND = {
   /** Short label for tight spaces (mobile nav, collapsed sidebar tooltips). */
   shortName: "GSL",
   /** One-line tagline used in headers and email footers. */
-  tagline: "Sistema integral para restaurantes",
+  tagline: "Gestión y ventas para tu negocio",
   /** Short marketing description for meta tags and onboarding. */
   description:
-    "Pedidos, menú digital, cocina, domicilios, clientes, inventarios y finanzas en una sola app que se instala en tu computador y celular.",
+    "Vende, atiende y controla todo tu negocio desde un solo lugar: pedidos, menú digital, cocina, domicilios, clientes, inventarios y finanzas. Funciona en la web y se instala en tu computador y celular.",
   /**
    * Placeholder domain used in example URLs (Commander AI input hints, etc.).
    * Keep this neutral — it should NOT match the email-sending domain.
