@@ -11,7 +11,7 @@ import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { NegocioConfig } from "@/components/restaurante/NegocioConfig";
 
 export const Route = createFileRoute("/_app/restaurante")({
-  head: () => ({ meta: [{ title: "Panel del restaurante" }] }),
+  head: () => ({ meta: [{ title: "Panel de tu negocio" }] }),
   component: RestaurantePage,
 });
 

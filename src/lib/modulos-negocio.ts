@@ -42,10 +42,34 @@ import {
   TrendingUp,
   Cog,
   Handshake,
+  Stethoscope,
+  GraduationCap,
+  BedDouble,
+  Dumbbell,
+  Hammer,
+  Sprout,
+  Building2,
+  PawPrint,
+  Laptop,
   type LucideIcon,
 } from "lucide-react";
 
-export type TipoNegocioClave = "restaurante" | "concesionario" | "tienda" | "servicios" | "otro";
+export type TipoNegocioClave =
+  | "restaurante"
+  | "concesionario"
+  | "tienda"
+  | "servicios"
+  | "salud"
+  | "educacion"
+  | "hospedaje"
+  | "gimnasio"
+  | "construccion"
+  | "agro"
+  | "inmobiliaria"
+  | "mascotas"
+  | "tecnologia"
+  | "transporte"
+  | "otro";
 
 export type ModuloNegocio = {
   id: string;
@@ -202,6 +226,140 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
     ],
   },
   {
+    clave: "salud",
+    etiqueta: "Salud / consultorio / clínica",
+    panel: "Consultorio",
+    usaPedidos: false,
+    modulos: [
+      m("pacientes", "Pacientes y fichas", "Datos de contacto y antecedentes de cada paciente.", Stethoscope),
+      AGENDA,
+      m("historia_clinica", "Historias y evoluciones", "Notas de cada consulta o tratamiento.", ClipboardList),
+      m("tratamientos", "Tratamientos y presupuestos", "Planes de tratamiento con su valor y avance.", FileText),
+      m("insumos_salud", "Insumos y medicamentos", "Existencias y alertas de faltantes.", Package),
+      m("autorizaciones", "Autorizaciones y EPS", "Seguimiento de autorizaciones y cobros a aseguradoras.", Landmark),
+      CLIENTES, FACTURAS, PAGOS, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "educacion",
+    etiqueta: "Educación / academia / cursos",
+    panel: "Academia",
+    usaPedidos: false,
+    modulos: [
+      m("estudiantes", "Estudiantes y matrículas", "Inscripciones y datos de cada estudiante.", GraduationCap),
+      m("cursos", "Cursos y grupos", "Cursos, horarios, cupos y docentes.", ClipboardList),
+      AGENDA,
+      m("mensualidades", "Pensiones y mensualidades", "Pagos pendientes y recordatorios de cobro.", Coins),
+      m("asistencia", "Asistencia y notas", "Seguimiento del avance de cada estudiante.", BadgeCheck),
+      CLIENTES, FACTURAS, PAGOS, RESENAS, DIFUSION, CAJA, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "hospedaje",
+    etiqueta: "Hotel / hospedaje / turismo",
+    panel: "Hospedaje",
+    usaPedidos: false,
+    modulos: [
+      m("habitaciones", "Habitaciones y disponibilidad", "Estado y tarifa de cada habitación o espacio.", BedDouble),
+      m("reservas_hosp", "Reservas", "Entradas, salidas y anticipos de huéspedes.", CalendarClock),
+      m("huespedes", "Huéspedes", "Registro y preferencias de tus huéspedes.", Users),
+      m("servicios_extra", "Servicios adicionales", "Desayunos, tours, lavandería y otros cargos.", Tag),
+      m("limpieza", "Limpieza y mantenimiento", "Tareas por habitación y estado.", Wrench),
+      FACTURAS, PAGOS, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "gimnasio",
+    etiqueta: "Gimnasio / deporte / bienestar",
+    panel: "Gimnasio",
+    usaPedidos: false,
+    modulos: [
+      m("socios", "Socios y membresías", "Planes, vencimientos y estado de cada socio.", Dumbbell),
+      m("clases", "Clases y cupos", "Horarios de clases con cupos y asistentes.", CalendarDays),
+      m("control_acceso", "Control de ingreso", "Registro de asistencia de los socios.", QrCode),
+      m("planes_entreno", "Rutinas y seguimiento", "Planes y medidas de cada socio.", ClipboardList),
+      CLIENTES, FACTURAS, PAGOS, FIDELIZACION, DIFUSION, CAJA, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "construccion",
+    etiqueta: "Construcción / ferretería / oficios",
+    panel: "Obras y oficios",
+    usaPedidos: false,
+    modulos: [
+      m("proyectos_obra", "Proyectos y obras", "Avance, presupuesto y responsables de cada obra.", Hammer),
+      m("cotizaciones_obra", "Cotizaciones", "Propuestas y seguimiento hasta el cierre.", FileText),
+      m("materiales", "Materiales y herramientas", "Inventario y consumo por obra.", Package),
+      m("contratistas", "Contratistas y pagos", "Cuentas por pagar a maestros y subcontratistas.", Handshake),
+      AGENDA, CLIENTES, FACTURAS, PAGOS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "agro",
+    etiqueta: "Agro / campo / producción",
+    panel: "Producción",
+    usaPedidos: false,
+    modulos: [
+      m("cultivos", "Cultivos y lotes", "Siembras, lotes y ciclos de producción.", Sprout),
+      m("cosechas", "Cosechas y ventas", "Producción recogida y a quién se vendió.", PackageCheck),
+      m("insumos_agro", "Insumos y fertilizantes", "Compras y consumo por lote.", Boxes),
+      m("animales", "Animales y sanidad", "Control de ganado, vacunas y tratamientos.", Shield),
+      CLIENTES, FACTURAS, PAGOS, FIADOS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "inmobiliaria",
+    etiqueta: "Inmobiliaria / arriendos",
+    panel: "Inmobiliaria",
+    usaPedidos: false,
+    modulos: [
+      m("inmuebles", "Inmuebles", "Propiedades en venta o arriendo con su estado.", Building2),
+      m("arrendatarios", "Arrendatarios y contratos", "Contratos, canon y vencimientos.", FileText),
+      m("cobro_canon", "Cobro de arriendos", "Cartera mensual y recordatorios.", Coins),
+      m("visitas", "Visitas a inmuebles", "Agenda de visitas con seguimiento.", KeyRound),
+      CLIENTES, AGENDA, FACTURAS, PAGOS, DIFUSION, CAJA, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "mascotas",
+    etiqueta: "Veterinaria / mascotas",
+    panel: "Veterinaria",
+    usaPedidos: false,
+    modulos: [
+      m("mascotas_reg", "Mascotas y dueños", "Ficha de cada mascota y su responsable.", PawPrint),
+      AGENDA,
+      m("vacunacion", "Vacunas y desparasitación", "Próximas dosis y recordatorios.", ShieldCheck),
+      m("productos_vet", "Productos y alimentos", "Inventario y ventas.", ShoppingBag),
+      CLIENTES, FACTURAS, PAGOS, FIDELIZACION, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "tecnologia",
+    etiqueta: "Tecnología / software / agencia",
+    panel: "Agencia",
+    usaPedidos: false,
+    modulos: [
+      m("proyectos_tec", "Proyectos y entregables", "Estado, responsables y fechas de entrega.", Laptop),
+      m("tickets", "Soporte y tickets", "Solicitudes de clientes con seguimiento.", ClipboardList),
+      m("suscripciones_tec", "Planes y suscripciones", "Cobros recurrentes de tus clientes.", Repeat),
+      m("horas", "Horas y facturación", "Horas dedicadas a cada cliente.", CalendarClock),
+      CLIENTES, SOLICITUDES, FACTURAS, PAGOS, CAJA, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "transporte",
+    etiqueta: "Transporte / logística",
+    panel: "Logística",
+    usaPedidos: false,
+    modulos: [
+      m("flota", "Flota y vehículos", "Vehículos, documentos y mantenimiento.", Truck),
+      m("viajes", "Viajes y despachos", "Rutas, cargas y estado de cada envío.", Package),
+      m("conductores", "Conductores y pagos", "Liquidación por viaje.", Briefcase),
+      m("combustible", "Combustible y gastos de ruta", "Control de gastos por vehículo.", Banknote),
+      CLIENTES, AGENDA, FACTURAS, PAGOS, CAJA, PROVEEDORES, METAS, FINANZAS,
+    ],
+  },
+  {
     clave: "otro",
     etiqueta: "Otro tipo de negocio",
     panel: "Mi negocio",
@@ -229,9 +387,19 @@ const sinAcentos = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toL
 export function resolverTipoNegocio(valor: string | null | undefined): TipoNegocio {
   const t = sinAcentos((valor ?? "").trim());
   const por = (c: TipoNegocioClave) => TIPOS_NEGOCIO.find((x) => x.clave === c) as TipoNegocio;
-  if (!t) return por("restaurante");
+  if (!t) return por("otro");
   const directo = TIPOS_NEGOCIO.find((x) => x.clave === t);
   if (directo) return directo;
+  if (/salud|clinic|consultorio|odont|dental|medic|fisio|psicolog|laborator/.test(t)) return por("salud");
+  if (/educa|academ|colegio|curso|escuela|jardin|capacit/.test(t)) return por("educacion");
+  if (/hotel|hostal|hospeda|turism|cabana|glamping/.test(t)) return por("hospedaje");
+  if (/gimnas|gym|deporte|yoga|crossfit|bienestar/.test(t)) return por("gimnasio");
+  if (/construc|ferreter|obra|electric|plomer|arquitect/.test(t)) return por("construccion");
+  if (/inmobil|arriendo|propiedad|finca raiz/.test(t)) return por("inmobiliaria");
+  if (/agro|campo|finca|cultivo|ganad|granja/.test(t)) return por("agro");
+  if (/veterin|mascota|petshop|pet\b/.test(t)) return por("mascotas");
+  if (/software|tecnolog|agencia|sistemas|marketing|diseno/.test(t)) return por("tecnologia");
+  if (/transport|logistic|mensajer|flete|taxi|carga/.test(t)) return por("transporte");
   if (/vehic|carro|auto|moto|concesion/.test(t)) return por("concesionario");
   if (/comida|restaur|cafe|pizz|panader|bar\b|hamburg|pollo|chuleta/.test(t)) return por("restaurante");
   if (/tienda|comercio|repuesto|retail|ropa|boutique/.test(t)) return por("tienda");
