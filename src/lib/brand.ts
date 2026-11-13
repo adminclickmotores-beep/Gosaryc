@@ -14,7 +14,7 @@ export const BRAND = {
   tagline: "Gestión y ventas para tu negocio",
   /** Short marketing description for meta tags and onboarding. */
   description:
-    "El sistema para todo tipo de negocio: tienda, restaurante, taller, salón, servicios y más. Vende, atiende clientes, controla inventarios y finanzas desde un solo lugar, en la web o instalado en tu computador y celular.",
+    "Gosaly es el sistema todo en uno para administrar tu negocio: vende, recibe pedidos, controla inventario, caja, fiados, equipo y finanzas, y atiende a tus clientes con un agente virtual de IA. Sirve para tiendas, restaurantes, talleres, salones y servicios, y funciona en la web o instalado en tu celular y computador.",
   /**
    * Placeholder domain used in example URLs (Commander AI input hints, etc.).
    * Keep this neutral — it should NOT match the email-sending domain.

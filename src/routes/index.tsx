@@ -27,6 +27,13 @@ import {
   ShieldCheck,
   Sparkles,
   Check,
+  Users,
+  Receipt,
+  BarChart3,
+  Layers,
+  Clock,
+  TrendingUp,
+  Bot,
 } from "lucide-react";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
@@ -52,7 +59,26 @@ const MODULOS = [
   { Icon: Bike, label: "Entregas y clientes", desc: "Organiza entregas y conoce a tus clientes frecuentes.", to: "/domicilios" as const },
   { Icon: Boxes, label: "Inventarios y recetas", desc: "Controla existencias, costos y márgenes de lo que vendes.", to: "/restaurante" as const },
   { Icon: Wallet, label: "Finanzas y rentabilidad", desc: "Caja, cartera y utilidad en un vistazo.", to: "/restaurante" as const },
-  { Icon: MessageCircle, label: "Asistente de pedidos", desc: "Atiende y toma pedidos por chat.", to: "/agente" as const },
+  { Icon: MessageCircle, label: "Agente virtual con IA", desc: "Un asistente que responde dudas y toma pedidos o citas, adaptado a tu tipo de negocio.", to: "/agente" as const },
+  { Icon: Users, label: "Equipo y nómina", desc: "Organiza a tu equipo, sus permisos y sus pagos.", to: "/login" as const },
+  { Icon: Receipt, label: "Caja, fiados y cobros", desc: "Controla lo que entra, lo que sale y lo que te deben.", to: "/login" as const },
+  { Icon: BarChart3, label: "Reportes y metas", desc: "Mira cómo va tu negocio y fija metas de ventas.", to: "/login" as const },
+];
+
+const POR_QUE = [
+  { Icon: Layers, titulo: "Todo en un solo lugar", desc: "Deja de usar cuadernos, hojas de cálculo y varias apps: ventas, inventario, clientes y finanzas juntos." },
+  { Icon: Clock, titulo: "Ahorra tiempo cada día", desc: "Automatiza pedidos, cobros y reportes para que te dediques a hacer crecer tu negocio." },
+  { Icon: TrendingUp, titulo: "Decide con datos", desc: "Conoce tus costos, márgenes y utilidad reales para vender más y mejor." },
+  { Icon: Bot, titulo: "Atención con IA", desc: "Un agente virtual responde a tus clientes y te ayuda a tomar pedidos." },
+];
+
+const PARA_QUE_SIRVE = [
+  "Vender y recibir pedidos desde el celular",
+  "Controlar inventario, costos y márgenes",
+  "Llevar caja, fiados y finanzas al día",
+  "Conocer y fidelizar a tus clientes",
+  "Organizar a tu equipo y sus permisos",
+  "Atender dudas con un agente virtual de IA",
 ];
 
 const NEGOCIOS = [
@@ -153,6 +179,24 @@ function LandingPage() {
           </div>
         </section>
 
+        <section className="mt-16 sm:mt-24" aria-labelledby="para-que">
+          <h2 id="para-que" className="text-center font-display text-2xl sm:text-3xl">
+            ¿Para qué sirve {BRAND.name}?
+          </h2>
+          <p className="mx-auto mt-2 max-w-xl text-center text-sm text-muted-foreground">
+            Es el panel con el que administras tu negocio completo, desde el celular o el computador.
+          </p>
+          <ul className="mx-auto mt-8 grid max-w-3xl gap-3 sm:grid-cols-2">
+            {PARA_QUE_SIRVE.map((t) => (
+              <li key={t}>
+                <GlassPanel className="flex items-center gap-3 p-4 text-sm text-foreground">
+                  <Check className="h-4 w-4 shrink-0 text-primary" /> {t}
+                </GlassPanel>
+              </li>
+            ))}
+          </ul>
+        </section>
+
         <section className="mt-16 sm:mt-24" aria-labelledby="para-quien">
           <h2 id="para-quien" className="text-center font-display text-2xl sm:text-3xl">
             Hecho para todo tipo de negocio
@@ -189,6 +233,25 @@ function LandingPage() {
                   <p className="mt-1 text-sm text-muted-foreground">{m.desc}</p>
                 </GlassPanel>
               </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-16 sm:mt-24" aria-labelledby="por-que">
+          <h2 id="por-que" className="text-center font-display text-2xl sm:text-3xl">
+            ¿Por qué usar {BRAND.name}?
+          </h2>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+            {POR_QUE.map(({ Icon, titulo, desc }) => (
+              <GlassPanel key={titulo} className="flex items-start gap-4 p-5">
+                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  <h3 className="font-medium text-foreground">{titulo}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
+                </div>
+              </GlassPanel>
             ))}
           </div>
         </section>
