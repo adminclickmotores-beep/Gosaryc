@@ -113,7 +113,10 @@ const FIDELIZACION: ModuloNegocio = {
   ...m("fidelizacion", "Puntos y recompensas", "Premia a tus clientes frecuentes.", Gift),
   ruta: "/puntos-recompensas",
 };
-const RESENAS = m("resenas", "Reseñas y PQRS", "Quejas, reclamos y opiniones con seguimiento.", Star);
+const RESENAS: ModuloNegocio = {
+  ...m("resenas", "Reseñas y PQRS", "Quejas, reclamos y opiniones con seguimiento.", Star),
+  ruta: "/resenas-pqrs",
+};
 const DIFUSION = m("difusion", "Difusión por WhatsApp", "Promociones y recordatorios para tus contactos.", Megaphone);
 const CAJA = m("caja_diaria", "Caja y gastos diarios", "Apertura, cierre de caja y gastos del día.", Banknote);
 const PROVEEDORES = m("proveedores", "Proveedores y compras", "Pedidos y deudas con proveedores.", Truck);

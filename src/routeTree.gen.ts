@@ -35,6 +35,7 @@ import { Route as AppPropinasRouteImport } from './routes/_app/propinas'
 import { Route as AppPuntosRecompensasRouteImport } from './routes/_app/puntos-recompensas'
 import { Route as AppRepartidoresRouteImport } from './routes/_app/repartidores'
 import { Route as AppRequestsRouteImport } from './routes/_app/requests'
+import { Route as AppResenasPqrsRouteImport } from './routes/_app/resenas-pqrs'
 import { Route as AppRestauranteRouteImport } from './routes/_app/restaurante'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppTemplatesRouteImport } from './routes/_app/templates'
@@ -200,6 +201,11 @@ const AppRepartidoresRoute = AppRepartidoresRouteImport.update({
 const AppRequestsRoute = AppRequestsRouteImport.update({
   id: '/requests',
   path: '/requests',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppResenasPqrsRoute = AppResenasPqrsRouteImport.update({
+  id: '/resenas-pqrs',
+  path: '/resenas-pqrs',
   getParentRoute: () => AppRoute,
 } as any)
 const AppRestauranteRoute = AppRestauranteRouteImport.update({
@@ -420,6 +426,7 @@ export interface FileRoutesByFullPath {
   '/puntos-recompensas': typeof AppPuntosRecompensasRoute
   '/repartidores': typeof AppRepartidoresRoute
   '/requests': typeof AppRequestsRoute
+  '/resenas-pqrs': typeof AppResenasPqrsRoute
   '/restaurante': typeof AppRestauranteRoute
   '/settings': typeof AppSettingsRoute
   '/templates': typeof AppTemplatesRoute
@@ -484,6 +491,7 @@ export interface FileRoutesByTo {
   '/puntos-recompensas': typeof AppPuntosRecompensasRoute
   '/repartidores': typeof AppRepartidoresRoute
   '/requests': typeof AppRequestsRoute
+  '/resenas-pqrs': typeof AppResenasPqrsRoute
   '/restaurante': typeof AppRestauranteRoute
   '/settings': typeof AppSettingsRoute
   '/templates': typeof AppTemplatesRoute
@@ -550,6 +558,7 @@ export interface FileRoutesById {
   '/_app/puntos-recompensas': typeof AppPuntosRecompensasRoute
   '/_app/repartidores': typeof AppRepartidoresRoute
   '/_app/requests': typeof AppRequestsRoute
+  '/_app/resenas-pqrs': typeof AppResenasPqrsRoute
   '/_app/restaurante': typeof AppRestauranteRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/templates': typeof AppTemplatesRoute
@@ -616,6 +625,7 @@ export interface FileRouteTypes {
     | '/puntos-recompensas'
     | '/repartidores'
     | '/requests'
+    | '/resenas-pqrs'
     | '/restaurante'
     | '/settings'
     | '/templates'
@@ -680,6 +690,7 @@ export interface FileRouteTypes {
     | '/puntos-recompensas'
     | '/repartidores'
     | '/requests'
+    | '/resenas-pqrs'
     | '/restaurante'
     | '/settings'
     | '/templates'
@@ -745,6 +756,7 @@ export interface FileRouteTypes {
     | '/_app/puntos-recompensas'
     | '/_app/repartidores'
     | '/_app/requests'
+    | '/_app/resenas-pqrs'
     | '/_app/restaurante'
     | '/_app/settings'
     | '/_app/templates'
@@ -994,6 +1006,13 @@ declare module '@tanstack/react-router' {
       path: '/requests'
       fullPath: '/requests'
       preLoaderRoute: typeof AppRequestsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/resenas-pqrs': {
+      id: '/_app/resenas-pqrs'
+      path: '/resenas-pqrs'
+      fullPath: '/resenas-pqrs'
+      preLoaderRoute: typeof AppResenasPqrsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/restaurante': {
@@ -1275,6 +1294,7 @@ interface AppRouteChildren {
   AppPuntosRecompensasRoute: typeof AppPuntosRecompensasRoute
   AppRepartidoresRoute: typeof AppRepartidoresRoute
   AppRequestsRoute: typeof AppRequestsRoute
+  AppResenasPqrsRoute: typeof AppResenasPqrsRoute
   AppRestauranteRoute: typeof AppRestauranteRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppTemplatesRoute: typeof AppTemplatesRoute
@@ -1316,6 +1336,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppPuntosRecompensasRoute: AppPuntosRecompensasRoute,
   AppRepartidoresRoute: AppRepartidoresRoute,
   AppRequestsRoute: AppRequestsRoute,
+  AppResenasPqrsRoute: AppResenasPqrsRoute,
   AppRestauranteRoute: AppRestauranteRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppTemplatesRoute: AppTemplatesRoute,
