@@ -96,7 +96,7 @@ function TemplatesPage() {
         <PageHexBadge hue={88} size={26} icon={<IconTemplate size={22} />} aria-label="Templates" />
         <div>
           <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Templates</div>
-          <h1 className="mt-1 font-display text-4xl tracking-tight">Start from a playbook</h1>
+          <h1 className="mt-1 font-display text-4xl tracking-tight">Empieza con una plantilla</h1>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">
             Skip the blank page. Each template creates a workspace with a goal, suggested channel, starter checklist, and KPI so you can dive straight in. Edit anything once you're inside.
           </p>

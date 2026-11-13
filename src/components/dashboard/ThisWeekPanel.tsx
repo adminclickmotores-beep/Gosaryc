@@ -183,7 +183,7 @@ export function ThisWeekPanel() {
   return (
     <div>
       <div className="flex items-end justify-between">
-        <h2 className="font-display text-2xl">This week</h2>
+        <h2 className="font-display text-2xl">Esta semana</h2>
         <Link to="/calendar" className="text-xs text-muted-foreground hover:text-foreground">
           See calendar →
         </Link>

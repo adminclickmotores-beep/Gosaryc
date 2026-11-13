@@ -219,7 +219,7 @@ export function NeedsYouPanel() {
   return (
     <div>
       <div className="flex items-end justify-between">
-        <h2 className="font-display text-2xl">Needs you</h2>
+        <h2 className="font-display text-2xl">Requiere tu atención</h2>
         {items && items.length > 0 && (
           <span className="text-xs text-muted-foreground">{items.length} item{items.length === 1 ? "" : "s"}</span>
         )}

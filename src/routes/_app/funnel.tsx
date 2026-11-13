@@ -819,7 +819,7 @@ function FunnelChart({
     <GlassPanel className="p-4 sm:p-5">
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
         <div>
-          <h2 className="font-display text-lg leading-tight">Pipeline funnel</h2>
+          <h2 className="font-display text-lg leading-tight">Embudo de ventas</h2>
           <p className="text-xs text-muted-foreground">
             Click a stage for details · widths proportional to volume
           </p>
@@ -2097,7 +2097,7 @@ function WeeklyCohortPanel({
     <GlassPanel className="p-6">
       <div className="mb-4 flex items-baseline justify-between">
         <div>
-          <h2 className="font-display text-xl">Weekly cohort vs target</h2>
+          <h2 className="font-display text-xl">Semana contra meta</h2>
           <p className="text-sm text-muted-foreground">
             Last 8 weeks · MQL + SQO pacing (prorated by days-in-month)
           </p>

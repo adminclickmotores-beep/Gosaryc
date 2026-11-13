@@ -269,7 +269,7 @@ function WorkspacesList() {
           <PageHexBadge hue={150} size={26} icon={<IconCampaign size={22} />} aria-label="Campaigns" />
           <div>
             <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Campaigns</div>
-            <h1 className="mt-1 font-display text-4xl tracking-tight">Every initiative, one place.</h1>
+            <h1 className="mt-1 font-display text-4xl tracking-tight">Todos tus proyectos, en un solo lugar.</h1>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground">
               A campaign bundles its name, audience, list, UTM links, and checklist under one roof — share saved audiences
               and lists across campaigns from your workspace settings.
@@ -306,7 +306,7 @@ function WorkspacesList() {
             </button>
             <div className="flex items-center gap-2">
               <IconSpark size={16} className="text-primary" />
-              <h2 className="font-display text-xl">Draft this campaign for me</h2>
+              <h2 className="font-display text-xl">Redactar este proyecto por mí</h2>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
               Paste a 1–3 paragraph brief. AI will name it, set the goal, KPI, channel, checklist, and 2–4 variants.
@@ -358,7 +358,7 @@ function WorkspacesList() {
             <span className="inline-flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <IconWorkspace size={24} />
             </span>
-            <h2 className="font-display text-2xl">Start your first campaign</h2>
+            <h2 className="font-display text-2xl">Empieza tu primer proyecto</h2>
             <p className="max-w-md text-sm text-muted-foreground">
               A campaign is one initiative — a launch, webinar, or nurture. Name it, build the audience, import the list, and mint tracked links. All four stay wired together.
             </p>
@@ -788,7 +788,7 @@ function ManageStagesDialog({
         </button>
         <div className="flex items-center gap-2">
           <Settings size={16} className="text-primary" />
-          <h2 className="font-display text-xl">Manage Stages</h2>
+          <h2 className="font-display text-xl">Administrar etapas</h2>
         </div>
         <p className="mt-1 text-xs text-muted-foreground">
           Rename, recolor, reorder, or add custom stages. System stages can be edited but not deleted.

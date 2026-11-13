@@ -619,7 +619,7 @@ function WorkspaceDetail() {
           />
 
           <div>
-            <h2 className="font-display text-xl">Tools in this campaign</h2>
+            <h2 className="font-display text-xl">Herramientas de este proyecto</h2>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               {handoffs.map((t) => (
                 <Link
@@ -650,7 +650,7 @@ function WorkspaceDetail() {
           <CommentsSection workspaceId={ws.id} orgId={ws.org_id} />
 
           <div>
-            <h2 className="font-display text-xl">Activity</h2>
+            <h2 className="font-display text-xl">Actividad</h2>
             <GlassPanel className="mt-3 divide-y divide-glass-border">
               {activity.length === 0 ? (
                 <div className="p-5 text-sm text-muted-foreground">No activity yet.</div>

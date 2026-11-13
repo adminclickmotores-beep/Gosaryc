@@ -242,7 +242,7 @@ function Dashboard() {
 
       <div>
         <div className="flex items-end justify-between">
-          <h2 className="font-display text-2xl">In flight</h2>
+          <h2 className="font-display text-2xl">En curso</h2>
           <Link to="/campaigns" className="text-xs text-muted-foreground hover:text-foreground">
             All campaigns →
           </Link>
@@ -293,7 +293,7 @@ function Dashboard() {
 
       {/* Activity — trimmed + grouped */}
       <div>
-        <h2 className="font-display text-2xl">Recent activity</h2>
+        <h2 className="font-display text-2xl">Actividad reciente</h2>
         {actError ? (
           <PanelError className="mt-4" onRetry={() => setReloadKey((k) => k + 1)} />
         ) : recentActivity === null ? (

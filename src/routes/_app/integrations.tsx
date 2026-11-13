@@ -132,7 +132,7 @@ function IntegrationsPage() {
           <PageHexBadge hue={200} size={26} icon={<IconBolt size={22} />} aria-label="Integrations" />
           <div>
             <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Bring your stack</div>
-            <h1 className="mt-1 font-display text-4xl tracking-tight">Integrations</h1>
+            <h1 className="mt-1 font-display text-4xl tracking-tight">Conexiones</h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
               {BRAND.name} is a template — every team's stack is different. Pick a setup method below; each tile gives you
               a copy-paste prompt tuned for that path so Lovable wires it into your remix correctly.
