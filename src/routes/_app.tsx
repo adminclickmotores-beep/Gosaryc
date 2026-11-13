@@ -43,6 +43,7 @@ import { RouteProgressBar } from "@/components/app/RouteProgressBar";
 import { BrandHexLogo } from "@/components/app/BrandHexLogo";
 import { BRAND } from "@/lib/brand";
 import { useNegocio } from "@/hooks/use-negocio";
+import { usePermisos } from "@/hooks/use-permisos";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 
 import { AutosaveStatus } from "@/components/app/AutosaveStatus";
@@ -148,10 +149,14 @@ function AppShell() {
   const pathnameRef = useRef(loc.pathname);
   const { negocio } = useNegocio();
   const tipoNegocio = resolverTipoNegocio(negocio?.tipo_negocio);
+  const { esAdmin, puede, cargando: cargandoPermisos } = usePermisos();
+  const verPanel = esAdmin || puede("pedidos") || puede("cocina");
   const navItems: NavItem[] = [
-    { to: "/restaurante", label: tipoNegocio.panel, Icon: IconBolt },
+    ...(verPanel || cargandoPermisos
+      ? [{ to: "/restaurante", label: tipoNegocio.panel, Icon: IconBolt } as NavItem]
+      : []),
     ...tipoNegocio.modulos
-      .filter((m) => m.ruta && m.ruta !== "/restaurante")
+      .filter((m) => m.ruta && m.ruta !== "/restaurante" && (cargandoPermisos || puede(m.id)))
       .map((m) => ({ to: m.ruta as string, label: m.titulo, Icon: m.Icon })),
   ].filter((n, i, arr) => arr.findIndex((x) => x.to === n.to) === i);
 

@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      equipo_negocio: {
+        Row: {
+          activo: boolean
+          created_at: string
+          email: string
+          id: string
+          modulos: string[]
+          nombre: string | null
+          user_id: string | null
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string
+          email: string
+          id?: string
+          modulos?: string[]
+          nombre?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string
+          email?: string
+          id?: string
+          modulos?: string[]
+          nombre?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       modulo_registros: {
         Row: {
           contacto: string | null
@@ -2681,6 +2711,8 @@ export type Database = {
     }
     Functions: {
       accept_org_invite: { Args: { _token: string }; Returns: string }
+      mi_acceso: { Args: never; Returns: Json }
+      reclamar_acceso: { Args: never; Returns: undefined }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean

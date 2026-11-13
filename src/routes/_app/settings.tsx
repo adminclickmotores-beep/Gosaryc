@@ -18,7 +18,7 @@ import {
 import { PageHexBadge } from "@/components/app/PageHexBadge";
 import { ArrowRight, Layers } from "lucide-react";
 import { Users as IconUsers } from "lucide-react";
-import { TeamSection } from "@/components/settings/TeamSection";
+import { EquipoPermisos } from "@/components/settings/EquipoPermisos";
 import { ThemeToggle } from "@/components/ui-custom/ThemeToggle";
 import { BRAND } from "@/lib/brand";
 
@@ -166,7 +166,7 @@ function Settings() {
       <div className="flex flex-wrap gap-1 rounded-2xl border border-glass-border bg-glass/40 p-1">
         {[
           { id: "organization", label: "Organization", Icon: IconSettings },
-          { id: "team", label: "Team", Icon: IconUsers },
+          { id: "team", label: "Equipo y permisos", Icon: IconUsers },
           { id: "account", label: "Account", Icon: IconLogout },
         ].map(({ id, label, Icon }) => {
           const active = tab === id;
@@ -192,7 +192,7 @@ function Settings() {
         <OrganizationTab summary={summary} orgId={orgId} />
 
       ) : tab === "team" ? (
-        <TeamSection orgId={orgId} />
+        <EquipoPermisos />
       ) : (
         <AccountTab email={user?.email ?? ""} fullName={fullName} orgName={orgName} signOut={signOut} />
       )}
