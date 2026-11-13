@@ -62,6 +62,7 @@ function RestaurantePage() {
     : (["negocio"] as const);
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [items, setItems] = useState<Item[]>([]);
+  const [mesas, setMesas] = useState<Tables<"restaurante_mesas">[]>([]);
 
   const cargar = useCallback(async () => {
     const { data } = await supabase
@@ -71,6 +72,8 @@ function RestaurantePage() {
       .limit(100);
     const lista = data ?? [];
     setPedidos(lista);
+    const { data: mesasData } = await supabase.from("restaurante_mesas").select("*").order("numero");
+    setMesas(mesasData ?? []);
     if (lista.length > 0) {
       const { data: its } = await supabase
         .from("restaurante_pedido_items")
@@ -91,6 +94,12 @@ function RestaurantePage() {
   const mover = async (p: Pedido, estado: string) => {
     const { error } = await supabase.from("restaurante_pedidos").update({ estado }).eq("id", p.id);
     if (error) return toast.error("No se pudo actualizar el pedido.");
+    cargar();
+  };
+
+  const asignarMesa = async (p: Pedido, mesaId: string) => {
+    const { error } = await supabase.from("restaurante_pedidos").update({ mesa_id: mesaId || null }).eq("id", p.id);
+    if (error) return toast.error("No se pudo asignar la mesa.");
     cargar();
   };
 
@@ -206,6 +215,19 @@ function RestaurantePage() {
                         <span className="text-xs capitalize text-muted-foreground">{p.modalidad}</span>
                       </div>
                       <p className="break-words text-sm text-foreground">{p.cliente_nombre} · {p.cliente_telefono}</p>
+                      {p.modalidad === "mesa" && (
+                        <select
+                          aria-label="Mesa del pedido"
+                          value={p.mesa_id ?? ""}
+                          onChange={(e) => asignarMesa(p, e.target.value)}
+                          className="w-full rounded-lg border border-glass-border bg-glass/40 px-3 py-2 text-base text-foreground outline-none focus:border-primary/50"
+                        >
+                          <option value="">Sin mesa</option>
+                          {mesas.map((m) => (
+                            <option key={m.id} value={m.id}>Mesa {m.numero}</option>
+                          ))}
+                        </select>
+                      )}
                       {p.direccion && <p className="break-words text-xs text-muted-foreground">{p.direccion}</p>}
                       <ul className="text-sm text-muted-foreground">
                         {items.filter((i) => i.pedido_id === p.id).map((i) => (

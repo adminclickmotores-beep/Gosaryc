@@ -17,6 +17,7 @@ const ETIQUETAS: Record<string, string> = { apertura: "Apertura de caja", ingres
 export function CajaPanel() {
   const [movimientos, setMovimientos] = useState<Movimiento[]>([]);
   const [cargando, setCargando] = useState(true);
+  const [ventasHoy, setVentasHoy] = useState(0);
   const [tipo, setTipo] = useState<"ingreso" | "gasto" | "apertura">("gasto");
   const [concepto, setConcepto] = useState("");
   const [monto, setMonto] = useState("");
@@ -30,6 +31,12 @@ export function CajaPanel() {
       .gte("created_at", inicio.toISOString())
       .order("created_at", { ascending: false });
     if (error) toast.error("No se pudo cargar la caja.");
+    const { data: pedidosHoy } = await supabase
+      .from("restaurante_pedidos")
+      .select("total")
+      .eq("estado", "entregado")
+      .gte("created_at", inicio.toISOString());
+    setVentasHoy((pedidosHoy ?? []).reduce((s, p) => s + p.total, 0));
     setMovimientos(data ?? []);
     setCargando(false);
   }, []);
@@ -42,8 +49,9 @@ export function CajaPanel() {
     const apertura = movimientos.filter((m) => m.tipo === "apertura").reduce((s, m) => s + m.monto, 0);
     const ingresos = movimientos.filter((m) => m.tipo === "ingreso").reduce((s, m) => s + m.monto, 0);
     const gastos = movimientos.filter((m) => m.tipo === "gasto").reduce((s, m) => s + m.monto, 0);
-    return { apertura, ingresos, gastos, saldo: apertura + ingresos - gastos };
-  }, [movimientos]);
+    const ingresosTotales = ingresos + ventasHoy;
+    return { apertura, ingresos: ingresosTotales, gastos, saldo: apertura + ingresosTotales - gastos };
+  }, [movimientos, ventasHoy]);
 
   const agregar = async () => {
     const valor = Number(monto);
@@ -74,7 +82,7 @@ export function CajaPanel() {
           <p className="font-display text-xl text-foreground">{dinero(resumen.apertura)}</p>
         </GlassPanel>
         <GlassPanel className="p-4">
-          <p className="text-xs text-muted-foreground">Ingresos</p>
+          <p className="text-xs text-muted-foreground">Ingresos y ventas</p>
           <p className="font-display text-xl text-foreground">{dinero(resumen.ingresos)}</p>
         </GlassPanel>
         <GlassPanel className="p-4">

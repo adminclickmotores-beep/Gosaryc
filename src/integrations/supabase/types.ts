@@ -421,6 +421,7 @@ export type Database = {
           modalidad: string
           notas: string | null
           cliente_id: string | null
+          mesa_id: string | null
           repartidor_id: string | null
           total: number
         }
@@ -435,6 +436,7 @@ export type Database = {
           modalidad?: string
           notas?: string | null
           cliente_id?: string | null
+          mesa_id?: string | null
           repartidor_id?: string | null
           total?: number
         }
@@ -449,6 +451,7 @@ export type Database = {
           modalidad?: string
           notas?: string | null
           cliente_id?: string | null
+          mesa_id?: string | null
           repartidor_id?: string | null
           total?: number
         }
@@ -458,6 +461,13 @@ export type Database = {
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "restaurante_clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurante_pedidos_mesa_id_fkey"
+            columns: ["mesa_id"]
+            isOneToOne: false
+            referencedRelation: "restaurante_mesas"
             referencedColumns: ["id"]
           },
           {
