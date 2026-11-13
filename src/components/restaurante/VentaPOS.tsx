@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { TARIFAS_DOMICILIO, buscarTarifa } from "@/lib/tarifas-domicilio";
 
 type Producto = Tables<"restaurante_productos">;
 type Categoria = Tables<"restaurante_categorias">;
@@ -46,6 +47,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
   const [metodo, setMetodo] = useState("efectivo");
   const [recibido, setRecibido] = useState("");
   const [guardando, setGuardando] = useState(false);
+  const [zonaManual, setZonaManual] = useState("");
 
   const cargar = useCallback(async () => {
     const [c, p, m] = await Promise.all([
@@ -70,7 +72,16 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
   }, [productos, catActiva, busqueda]);
 
   const lineas = productos.filter((p) => (cuenta[p.id] ?? 0) > 0).map((p) => ({ p, cant: cuenta[p.id] }));
-  const total = lineas.reduce((s, l) => s + l.p.precio * l.cant, 0);
+  const subtotal = lineas.reduce((s, l) => s + l.p.precio * l.cant, 0);
+  const tarifaDetectada = useMemo(() => buscarTarifa(direccion), [direccion]);
+  const tarifa =
+    modalidad !== "domicilio"
+      ? null
+      : zonaManual
+        ? (TARIFAS_DOMICILIO.find((x) => x.nombre === zonaManual) ?? null)
+        : tarifaDetectada;
+  const envio = tarifa ? tarifa.precio : 0;
+  const total = subtotal + envio;
   const cambio = Number(recibido) > total ? Number(recibido) - total : 0;
 
   const cambiarCant = (id: string, delta: number) =>
@@ -90,12 +101,15 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
     setNotas("");
     setRecibido("");
     setMesaId("");
+    setZonaManual("");
   };
 
   const registrar = async (cobrar: boolean) => {
     if (lineas.length === 0) return toast.error("Agrega al menos un producto a la cuenta.");
     if (modalidad === "domicilio" && (!direccion.trim() || telefono.trim().length < 5))
       return toast.error("Para un domicilio escribe la dirección y el teléfono del cliente.");
+    if (modalidad === "domicilio" && !tarifa)
+      return toast.error("Elige el barrio de entrega para cobrar el domicilio.");
     setGuardando(true);
     const mesa = mesas.find((m) => m.id === mesaId);
     const nombre =
@@ -119,15 +133,23 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
       setGuardando(false);
       return toast.error("No se pudo registrar el pedido.");
     }
-    const { error: errItems } = await supabase.from("restaurante_pedido_items").insert(
-      lineas.map((l) => ({
+    const itemsPedido = lineas.map((l) => ({
+      pedido_id: pedido.id,
+      producto_id: l.p.id as string | null,
+      nombre: l.p.nombre,
+      cantidad: l.cant,
+      precio_unitario: l.p.precio,
+    }));
+    if (tarifa) {
+      itemsPedido.push({
         pedido_id: pedido.id,
-        producto_id: l.p.id,
-        nombre: l.p.nombre,
-        cantidad: l.cant,
-        precio_unitario: l.p.precio,
-      })),
-    );
+        producto_id: null,
+        nombre: `Domicilio - ${tarifa.nombre}`,
+        cantidad: 1,
+        precio_unitario: tarifa.precio,
+      });
+    }
+    const { error: errItems } = await supabase.from("restaurante_pedido_items").insert(itemsPedido);
     if (errItems) {
       setGuardando(false);
       return toast.error("El pedido se creó pero no se pudieron guardar los productos.");
@@ -227,7 +249,22 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
           <input className={campo} placeholder="Teléfono" inputMode="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
         )}
         {modalidad === "domicilio" && (
-          <input className={campo} placeholder="Dirección de entrega" value={direccion} onChange={(e) => setDireccion(e.target.value)} />
+          <>
+            <input className={campo} placeholder="Dirección de entrega (incluye el barrio)" value={direccion} onChange={(e) => setDireccion(e.target.value)} />
+            <select className={campo} value={zonaManual} onChange={(e) => setZonaManual(e.target.value)} aria-label="Barrio de entrega">
+              <option value="">
+                {tarifaDetectada ? `Detectado: ${tarifaDetectada.nombre} (${dinero(tarifaDetectada.precio)})` : "Elegir barrio de entrega"}
+              </option>
+              {TARIFAS_DOMICILIO.map((x) => (
+                <option key={x.nombre} value={x.nombre}>
+                  {x.nombre}{x.detalle ? ` (${x.detalle})` : ""} - {dinero(x.precio)}
+                </option>
+              ))}
+            </select>
+            {!tarifa && direccion.trim().length > 3 && (
+              <p className="text-xs text-muted-foreground">No reconocí el barrio en la dirección; elígelo de la lista.</p>
+            )}
+          </>
         )}
 
         <div className="space-y-2">
@@ -252,6 +289,12 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
 
         <textarea className={campo} rows={2} placeholder="Notas para cocina (sin cebolla, etc.)" value={notas} onChange={(e) => setNotas(e.target.value)} />
 
+        {tarifa && (
+          <div className="space-y-1 border-t border-glass-border pt-3 text-sm">
+            <div className="flex justify-between text-muted-foreground"><span>Productos</span><span>{dinero(subtotal)}</span></div>
+            <div className="flex justify-between text-foreground"><span>Domicilio · {tarifa.nombre}</span><span>{dinero(envio)}</span></div>
+          </div>
+        )}
         <div className="flex items-center justify-between border-t border-glass-border pt-3">
           <span className="text-sm text-muted-foreground">Total</span>
           <span className="text-xl font-medium text-foreground">{dinero(total)}</span>

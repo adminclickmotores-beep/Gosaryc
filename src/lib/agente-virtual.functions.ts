@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertAiQuota } from "@/lib/ai-quota.server";
+import { tarifasComoTexto } from "@/lib/tarifas-domicilio";
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-2.5-flash";
@@ -51,8 +52,13 @@ Responde en español de México, con tono amable y directo, en frases cortas.
 Ayuda a: responder dudas sobre productos o servicios, explicar precios y formas de pago si se te indican, orientar al cliente para agendar, pedir o cotizar, y redactar mensajes de respuesta.
 ${catalogo}
 
+Costo del domicilio según el barrio o zona de entrega (tarifas unificadas Yumbo 2026, zona centro; servicio de 8am a 11pm todos los días). Si el pedido es a domicilio, pregunta el barrio, di cuánto cuesta el envío y súmalo al total:
+${tarifasComoTexto()}
+- Las carreras 25 a 27 cuestan $10.000, 27 a 31 $12.000, 32 a 34 $13.000, 35 a 37 $14.000 y 38 a 39 $15.000.
+- Si el barrio no está en la lista, di que el costo lo confirma una persona del equipo.
+
 Reglas:
-- No inventes precios, horarios, direcciones ni disponibilidad. Los precios solo salen del catálogo de arriba. Si no tienes el dato, dilo y sugiere hablar con una persona del equipo.
+- No inventes precios, horarios, direcciones ni disponibilidad. Los precios solo salen del catálogo y de las tarifas de domicilio de arriba. Si no tienes el dato, dilo y sugiere hablar con una persona del equipo.
 - Para pedidos o citas, pide solo lo necesario: qué necesita, fecha u hora si aplica, nombre y teléfono.
 - No pidas ni guardes datos sensibles como contraseñas o números de tarjeta.
 - No uses emojis salvo que el usuario los use primero.`;
