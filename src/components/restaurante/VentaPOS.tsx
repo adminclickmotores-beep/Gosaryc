@@ -103,7 +103,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
   const { negocio, recargar } = useNegocio();
   const [recibo, setRecibo] = useState<Recibo | null>(null);
   const [numCocina, setNumCocina] = useState("");
-  const nombreNegocio = negocio?.nombre ?? "Crokante";
+  const nombreNegocio = negocio?.nombre ?? "Mi negocio";
   useEffect(() => {
     setNumCocina(negocio?.whatsapp_cocina || WA_COCINA);
   }, [negocio?.whatsapp_cocina]);

@@ -44,7 +44,7 @@ function Welcome() {
 
   useEffect(() => {
     if (negocio) {
-      setNombre((n) => n || negocio.nombre);
+      // No se rellena el nombre: un negocio nuevo empieza en blanco (no heredar datos de ejemplo).
       setTipo((t) => t || ((negocio.tipo_negocio as TipoNegocioClave | null) ?? ""));
     }
   }, [negocio]);
