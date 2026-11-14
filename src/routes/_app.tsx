@@ -24,6 +24,7 @@ import { OnboardingChecklist } from "@/components/app/OnboardingChecklist";
 import { GuidedTour } from "@/components/tour/GuidedTour";
 import { RouteProgressBar } from "@/components/app/RouteProgressBar";
 import { BrandHexLogo } from "@/components/app/BrandHexLogo";
+import { EstadoSinConexion } from "@/components/app/EstadoSinConexion";
 import { BRAND } from "@/lib/brand";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
@@ -445,6 +446,7 @@ function AppShell() {
 
       {!completaFinal && <BottomNav />}
       <RouteProgressBar />
+      <EstadoSinConexion />
       <GuidedTour />
     </div>
   );
