@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, CheckCircle2, Handshake, Pencil, Trash2, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, FileText, Handshake, Pencil, Trash2, Upload, X, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -55,6 +55,7 @@ export function RetomasVehiculos() {
   const [editando, setEditando] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [fResultado, setFResultado] = useState("todos");
+  const [subiendoId, setSubiendoId] = useState<string | null>(null);
 
   const cargar = useCallback(async () => {
     const { data, error } = await supabase
@@ -155,6 +156,57 @@ export function RetomasVehiculos() {
       .eq("id", r.id);
     if (e2) return toast.error("El vehículo entró al inventario, pero no se pudo actualizar el registro.");
     toast.success("Vehículo retomado y agregado al inventario.");
+    cargar();
+  };
+
+  const subirPeritaje = async (r: Retoma, archivos: FileList | null) => {
+    if (!archivos || archivos.length === 0) return;
+    setSubiendoId(r.id);
+    const { data: negocioId, error: errId } = await supabase.rpc("mi_negocio_id");
+    if (errId || !negocioId) {
+      setSubiendoId(null);
+      return toast.error("No se pudo identificar tu negocio.");
+    }
+    const nuevas: string[] = [];
+    for (const archivo of Array.from(archivos)) {
+      if (!(archivo.type.startsWith("image/") || archivo.type === "application/pdf")) { toast.error("Sube solo imágenes o PDF."); continue; }
+      if (archivo.size > 10 * 1024 * 1024) { toast.error(`${archivo.name} pesa más de 10 MB.`); continue; }
+      const ext = (archivo.name.split(".").pop() ?? "pdf").toLowerCase().replace(/[^a-z0-9]/g, "") || "pdf";
+      const ruta = `${negocioId}/peritaje-${r.id}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error } = await supabase.storage.from("creditos_docs").upload(ruta, archivo);
+      if (error) { toast.error(`No se pudo subir ${archivo.name}.`); continue; }
+      nuevas.push(ruta);
+    }
+    if (nuevas.length) {
+      const { error } = await supabase
+        .from("retomas_vehiculos")
+        .update({ peritaje_archivos: [...(r.peritaje_archivos ?? []), ...nuevas] })
+        .eq("id", r.id);
+      if (error) {
+        await supabase.storage.from("creditos_docs").remove(nuevas);
+        toast.error("No se pudo guardar el peritaje.");
+      } else {
+        toast.success("Peritaje guardado en la nube.");
+      }
+    }
+    setSubiendoId(null);
+    cargar();
+  };
+
+  const abrirPeritaje = async (ruta: string) => {
+    const { data, error } = await supabase.storage.from("creditos_docs").createSignedUrl(ruta, 300);
+    if (error || !data) return toast.error("No se pudo abrir el archivo.");
+    window.open(data.signedUrl, "_blank", "noopener");
+  };
+
+  const quitarPeritaje = async (r: Retoma, ruta: string) => {
+    if (!window.confirm("¿Quitar este archivo del peritaje?")) return;
+    const { error } = await supabase
+      .from("retomas_vehiculos")
+      .update({ peritaje_archivos: (r.peritaje_archivos ?? []).filter((x) => x !== ruta) })
+      .eq("id", r.id);
+    if (error) return toast.error("No se pudo quitar.");
+    await supabase.storage.from("creditos_docs").remove([ruta]);
     cargar();
   };
 
@@ -275,6 +327,19 @@ export function RetomasVehiculos() {
                 {r.precio_venta !== null && <span className="text-muted-foreground">Venta: <span className="text-foreground">{dinero(r.precio_venta)}</span></span>}
               </div>
               {r.peritaje_notas && <p className="break-words text-xs text-muted-foreground">Peritaje{r.peritaje_fecha ? ` (${r.peritaje_fecha})` : ""}: {r.peritaje_notas}</p>}
+              <div className="flex flex-wrap items-center gap-2">
+                {(r.peritaje_archivos ?? []).map((ruta, i) => (
+                  <span key={ruta} className="inline-flex items-center gap-1 rounded-full border border-glass-border px-2 py-1 text-xs">
+                    <button onClick={() => abrirPeritaje(ruta)} className="inline-flex items-center gap-1 text-primary"><FileText className="h-3 w-3" /> Peritaje {i + 1}</button>
+                    <button onClick={() => quitarPeritaje(r, ruta)} aria-label="Quitar archivo" className="text-muted-foreground"><X className="h-3 w-3" /></button>
+                  </span>
+                ))}
+                <label className="inline-flex cursor-pointer items-center gap-1 text-xs text-primary">
+                  <Upload className="h-3 w-3" /> {subiendoId === r.id ? "Subiendo…" : "Subir peritaje"}
+                  <input type="file" accept="image/*,application/pdf" multiple className="hidden" disabled={subiendoId === r.id}
+                    onChange={(e) => { subirPeritaje(r, e.target.files); e.target.value = ""; }} />
+                </label>
+              </div>
               {r.motivo_resultado && <p className="break-words text-xs text-muted-foreground">{r.motivo_resultado}</p>}
               {r.resultado === "retomado" && r.vehiculo_id && (
                 <p className="inline-flex items-center gap-1 text-xs text-primary"><CheckCircle2 className="h-3 w-3" /> Ya está en el inventario</p>

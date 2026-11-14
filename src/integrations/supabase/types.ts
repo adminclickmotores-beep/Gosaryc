@@ -249,6 +249,7 @@ export type Database = {
           observaciones: string | null
           operacion: string
           owner_id: string | null
+          peritaje_archivos: string[]
           peritaje_fecha: string | null
           peritaje_notas: string | null
           placa: string | null
@@ -275,6 +276,7 @@ export type Database = {
           observaciones?: string | null
           operacion?: string
           owner_id?: string | null
+          peritaje_archivos?: string[]
           peritaje_fecha?: string | null
           peritaje_notas?: string | null
           placa?: string | null
@@ -301,6 +303,7 @@ export type Database = {
           observaciones?: string | null
           operacion?: string
           owner_id?: string | null
+          peritaje_archivos?: string[]
           peritaje_fecha?: string | null
           peritaje_notas?: string | null
           placa?: string | null
