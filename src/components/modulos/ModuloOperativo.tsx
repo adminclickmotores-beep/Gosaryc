@@ -13,7 +13,7 @@ import { configModulo } from "@/lib/modulos-config";
 
 type Registro = Tables<"modulo_registros">;
 type Entrada = { f: string; t: string };
-type Panel = { id: string; accion: "abono" | "renovar" | "anular" | "stock" } | null;
+type Panel = { id: string; accion: "abono" | "renovar" | "anular" | "stock" | "seguimiento" } | null;
 
 const dinero = (n: number) =>
   new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
@@ -257,6 +257,25 @@ export function ModuloOperativo({ id }: { id: string }) {
     );
     if (ok) {
       toast.success("Renovado con la nueva fecha.");
+      limpiarPanel();
+    }
+  };
+
+  const registrarSeguimiento = async (r: Registro) => {
+    const hayFecha = Boolean(valor);
+    if (!hayFecha && nota.trim().length < 3) return toast.error("Escribe una nota o elige una nueva fecha.");
+    if (tipo === "cita" && !hayFecha) return toast.error("Elige la nueva fecha de la cita.");
+    const cambios: TablesUpdate<"modulo_registros"> = {};
+    let texto = tipo === "cita" ? "Cita reprogramada" : "Seguimiento";
+    if (hayFecha) {
+      cambios.fecha = valor;
+      texto += `: ${r.fecha ?? "sin fecha"} → ${valor}`;
+      if (tipo === "cita") cambios.estado = cfg.estados[0].clave;
+    }
+    if (nota.trim()) texto += ` · ${nota.trim()}`;
+    const ok = await guardar(r, cambios, texto);
+    if (ok) {
+      toast.success(tipo === "cita" ? "Cita reprogramada." : "Seguimiento guardado.");
       limpiarPanel();
     }
   };
@@ -534,6 +553,11 @@ export function ModuloOperativo({ id }: { id: string }) {
                         <RefreshCw className="h-3.5 w-3.5" /> Renovar
                       </button>
                     )}
+                    {!conStock && !renovable && (
+                      <button onClick={() => { limpiarPanel(); setPanel({ id: r.id, accion: "seguimiento" }); }} className={botonSec}>
+                        <CalendarClock className="h-3.5 w-3.5" /> {tipo === "cita" ? "Reprogramar" : "Seguimiento"}
+                      </button>
+                    )}
                     {r.telefono && (
                       <button onClick={() => whatsapp(r)} className={botonSec}>
                         <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
@@ -580,6 +604,21 @@ export function ModuloOperativo({ id }: { id: string }) {
                         <input className={campo} placeholder="Nota (opcional)" value={nota} onChange={(e) => setNota(e.target.value)} />
                         <div className="flex gap-2">
                           <button onClick={() => renovar(r)} className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground">Renovar</button>
+                          <button onClick={limpiarPanel} className={botonSec}>Cancelar</button>
+                        </div>
+                      </>
+                    )}
+                    {panel.accion === "seguimiento" && (
+                      <>
+                        <label className="block space-y-1">
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <CalendarClock className="h-3.5 w-3.5" /> {tipo === "cita" ? "Nueva fecha de la cita" : "Próxima fecha (opcional)"}
+                          </span>
+                          <input className={campo} type="date" value={valor} onChange={(e) => setValor(e.target.value)} />
+                        </label>
+                        <input className={campo} placeholder={tipo === "cita" ? "Motivo del cambio (opcional)" : "Nota de seguimiento"} value={nota} onChange={(e) => setNota(e.target.value)} />
+                        <div className="flex gap-2">
+                          <button onClick={() => registrarSeguimiento(r)} className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground">Guardar</button>
                           <button onClick={limpiarPanel} className={botonSec}>Cancelar</button>
                         </div>
                       </>
