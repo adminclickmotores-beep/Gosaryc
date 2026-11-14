@@ -175,6 +175,17 @@
     0 20px 50px -20px oklch(0.2 0.03 270 / 0.2);
 }
 
+/* Iconos con colores oscuros fijos (gris/negro) se volvian invisibles sobre el fondo oscuro:
+   se aclaran al color de texto del tema. Los iconos con color de marca (text-primary) no se tocan. */
+svg[class*="text-slate-"]:not([class*="text-slate-5"]):not([class*="text-slate-4"]):not([class*="text-slate-3"]),
+svg[class*="text-gray-"]:not([class*="text-gray-5"]):not([class*="text-gray-4"]):not([class*="text-gray-3"]),
+svg[class*="text-zinc-"]:not([class*="text-zinc-5"]):not([class*="text-zinc-4"]):not([class*="text-zinc-3"]),
+svg[class*="text-neutral-"]:not([class*="text-neutral-5"]):not([class*="text-neutral-4"]):not([class*="text-neutral-3"]),
+svg.text-black,
+svg.text-slate-950 {
+  color: var(--color-foreground);
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
