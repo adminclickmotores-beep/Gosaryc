@@ -246,11 +246,10 @@ const POR_MODULO: Record<string, keyof typeof PRESETS> = {
   documentos_veh: "vencimiento", arrendatarios: "vencimiento", autorizaciones: "vencimiento",
   insumos: "stock", inventario: "stock", materiales: "stock", productos: "stock", repuestos: "stock",
   insumos_salud: "stock", insumos_agro: "stock", productos_vet: "stock",
-  vehiculos: "stock", vehiculos_usados: "stock", combos: "stock", catalogo: "stock", catalogo_servicios: "stock",
-  catalogo_whatsapp: "stock",
+  vehiculos: "stock", vehiculos_usados: "stock", combos: "stock", inventario_general: "stock",
   proyectos_obra: "proyecto", proyectos_tec: "proyecto", tickets: "proyecto", viajes: "proyecto",
   taller: "proyecto", alistamiento: "proyecto", limpieza: "proyecto", cultivos: "proyecto", cursos: "proyecto",
-  tratamientos: "proyecto", cosechas: "proyecto", flota: "proyecto",
+  tratamientos: "proyecto", cosechas: "proyecto",
   cotizaciones_veh: "venta", cotizaciones_obra: "venta", ventas_veh: "venta", seguimiento_leads: "venta",
   permutas: "venta", creditos_veh: "venta", suscripciones: "venta", suscripciones_tec: "venta",
   pagos_digitales: "pago", facturas: "pago", propinas: "pago", comisiones: "pago", repartidores: "pago",
@@ -265,6 +264,7 @@ const POR_MODULO: Record<string, keyof typeof PRESETS> = {
   insumos_barra: "stock", productos_belleza: "stock", repuestos_taller: "stock", inventario_farm: "stock",
   productos_farm: "stock", insumos_lav: "stock", tarifas_lavado: "stock", paquetes_evento: "stock",
   cotizaciones_taller: "venta",
+  apartados_generales: "reserva", proyectos_generales: "proyecto",
 };
 
 export function configModulo(id: string): ConfigModulo {
