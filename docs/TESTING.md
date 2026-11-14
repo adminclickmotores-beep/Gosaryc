@@ -11,6 +11,19 @@ Estado: no hay suite automatizada en CI. Ninguna funcionalidad está marcada com
 | Imágenes: B no escribe en la carpeta de A | Política de almacenamiento por carpeta | Sin prueba automatizada |
 | Reportes/estadísticas, finanzas, archivos de crédito | Revisión de políticas (todas con `owner_id = mi_negocio_id()`) | Revisado por lectura de código, sin ejecución |
 
+### Revisión del 2026-11-14
+Ninguna prueba fue ejecutada en esta ronda (sin acceso a la base ni a sus registros). Estado individual:
+| Prueba | Estado |
+|---|---|
+| P1 B no ve bodegas de A | Escrita, NO EJECUTADA |
+| P2 B no ve insumos de A | Escrita, NO EJECUTADA |
+| P3 B no suma stock a insumo de A | Escrita, NO EJECUTADA |
+| P4 B no modifica bodega de A | Escrita, NO EJECUTADA |
+| P5 B no borra bodega de A | Escrita, NO EJECUTADA |
+| P6 B no crea bodega a nombre de A | Escrita, NO EJECUTADA |
+| Clientes, pedidos, historial, existencias, almacenamiento, roles | SIN PRUEBA escrita ni ejecutada |
+| Migración aplicada / políticas activas | NO CONFIRMADO |
+
 Pendiente: pruebas negativas por rol (empleado sin módulo), pruebas de descarga de archivos privados y pruebas con dos cuentas reales en la app.
 
 ## Plan mínimo

@@ -54,5 +54,11 @@ Pilotos: CROKANTE (restaurante) y JG MOTORS (concesionario).
 ## Errores conocidos
 Ver docs/KNOWN_ISSUES.md.
 
+## Revisión de verificación T04 (2026-11-14)
+- Se revisó por lectura la migración 20261201120000 y su bloque de pruebas (P1–P6). Resultado de ejecución: NO VERIFICADO. Desde este entorno no hay acceso de lectura a la base ni a sus registros, así que no se puede confirmar que la migración esté aplicada ni leer el aviso de las pruebas.
+- No se inventó ningún resultado. T04 sigue en "IMPLEMENTADO (sin verificar en ejecución)".
+- Seguridad NO se marca como completada.
+
 ## Próxima tarea exacta
-T03: clasificar cada módulo en los 6 niveles (auditoría funcional), empezando por restaurante y concesionario; después T05 (consistencia venta→inventario→caja).
+T04 (bloqueante): confirmar en los registros de la base de Lovable Cloud el aviso "Pruebas de aislamiento: todas superadas" (o "WARNING Pruebas de aislamiento: ..."), y ejecutar `supabase/tests/aislamiento_multiempresa.sql` en un entorno de pruebas. Luego pruebas por rol, descarga de archivos privados e integridad de relaciones.
+Solo con esos resultados se pasa a T03 (clasificar módulos) y T05.

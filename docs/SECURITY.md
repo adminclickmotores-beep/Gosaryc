@@ -23,7 +23,11 @@
 V1–V8 en la migración `20261201120000_aislamiento_multiempresa.sql` (solo agrega columnas, rellena dueños y reemplaza políticas/funciones; no borra datos). La app ahora sube imágenes dentro de la carpeta del negocio (`<negocio>/archivo`).
 Imágenes antiguas sin carpeta siguen visibles por su enlace público pero ya nadie puede modificarlas.
 
+### Estado de verificación (2026-11-14)
+Las correcciones V1–V8 están escritas; su aplicación en la base y el resultado de las pruebas NO están confirmados. El aislamiento no se considera validado. Riesgos vigentes: políticas de almacenamiento sin probar, límites por rol sin probar, relaciones cruzadas en clientes/pedidos sin prueba ejecutada.
+
 ### Pendiente
+0. Confirmar migración aplicada y leer el aviso de pruebas en los registros de la base.
 1. `es_superadmin()` compara un correo fijo (mover a tabla de roles).
 2. Sin pruebas automatizadas en CI; la prueba incluida en la migración es de mejor esfuerzo (informa por aviso, no bloquea).
 3. Pedidos públicos: el visitante puede crear pedidos para cualquier negocio existente (intencional); falta límite de frecuencia.
