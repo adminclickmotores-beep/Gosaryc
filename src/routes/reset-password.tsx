@@ -110,16 +110,26 @@ function ResetPasswordPage() {
             </div>
             <div>
               <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Confirma la contraseña</label>
-              <input
-                type={tipo}
-                required
-                minLength={6}
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                autoComplete="new-password"
-                disabled={!ready}
-                className={clase}
-              />
+              <div className="relative">
+                <input
+                  type={tipo}
+                  required
+                  minLength={6}
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  autoComplete="new-password"
+                  disabled={!ready}
+                  className={clase}
+                />
+                <button
+                  type="button"
+                  onClick={() => setMostrar((v) => !v)}
+                  aria-label={mostrar ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  className="absolute inset-y-0 right-0 mt-1.5 flex w-11 items-center justify-center text-muted-foreground hover:text-foreground"
+                >
+                  {mostrar ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
             <Button type="submit" disabled={busy || !ready} className="w-full">
               {!ready ? "Verificando enlace…" : busy ? "Guardando…" : "Guardar contraseña"}
