@@ -36,6 +36,25 @@ type Categoria = Tables<"restaurante_categorias">;
 type Producto = Tables<"restaurante_productos">;
 type Modalidad = "domicilio" | "recoger" | "mesa";
 
+type Seguimiento = { estado: string; modalidad: string; total: number; metodo_pago: string; created_at: string };
+
+const METODOS_PAGO: [string, string][] = [
+  ["efectivo", "Efectivo"],
+  ["transferencia", "Transferencia"],
+  ["tarjeta", "Tarjeta"],
+];
+
+const ESTADOS_PEDIDO: Record<string, string> = {
+  nuevo: "Recibido: esperando confirmación",
+  aceptado: "Aceptado",
+  preparando: "En preparación",
+  listo: "Listo",
+  en_camino: "En camino",
+  entregado: "Entregado",
+  rechazado: "Rechazado por el local",
+  cancelado: "Cancelado",
+};
+
 const dinero = (n: number) =>
   new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
 
@@ -60,6 +79,40 @@ function MenuPage() {
   const [direccion, setDireccion] = useState("");
   const [notas, setNotas] = useState("");
   const [busqueda, setBusqueda] = useState("");
+  const [barrio, setBarrio] = useState("");
+  const [correo, setCorreo] = useState("");
+  const [metodoPago, setMetodoPago] = useState("efectivo");
+  const [pedidoId, setPedidoId] = useState<string | null>(null);
+  const [seguimiento, setSeguimiento] = useState<Seguimiento | null>(null);
+
+  // Recupera el último pedido de este dispositivo para poder seguirlo.
+  useEffect(() => {
+    try {
+      const guardado = localStorage.getItem("menu:ultimo_pedido");
+      if (guardado) {
+        setPedidoId(guardado);
+        setCodigo(guardado.slice(0, 6).toUpperCase());
+      }
+    } catch {
+      /* almacenamiento bloqueado */
+    }
+  }, []);
+
+  // Consulta el estado del pedido cada 15 s mientras se ve el seguimiento.
+  useEffect(() => {
+    if (!pedidoId || paso !== "listo") return;
+    let vivo = true;
+    const consultar = async () => {
+      const { data } = await supabase.rpc("seguimiento_pedido", { _id: pedidoId });
+      if (vivo) setSeguimiento(data?.[0] ?? null);
+    };
+    consultar();
+    const t = setInterval(consultar, 15000);
+    return () => {
+      vivo = false;
+      clearInterval(t);
+    };
+  }, [pedidoId, paso]);
 
   useEffect(() => {
     if (!dueno) {
@@ -120,6 +173,9 @@ function MenuPage() {
       cliente_telefono: telefono.trim(),
       modalidad,
       direccion: modalidad === "domicilio" ? direccion.trim() : null,
+      barrio: modalidad === "domicilio" && barrio.trim() ? barrio.trim() : null,
+      cliente_email: correo.trim() || null,
+      metodo_pago: metodoPago,
       notas: notas.trim() || null,
       total,
     });
@@ -139,6 +195,13 @@ function MenuPage() {
     setEnviando(false);
     if (errItems) return toast.error("No pudimos guardar los productos del pedido.");
     setCodigo(id.slice(0, 6).toUpperCase());
+    setPedidoId(id);
+    setSeguimiento(null);
+    try {
+      localStorage.setItem("menu:ultimo_pedido", id);
+    } catch {
+      /* almacenamiento bloqueado */
+    }
     setCarrito({});
     setPaso("listo");
   };
@@ -215,6 +278,18 @@ function MenuPage() {
           <span className="rounded-md bg-primary/10 px-2 py-0.5 font-mono text-foreground">{codigo}</span>. Ya lo
           enviamos a cocina.
         </p>
+        <GlassPanel className="w-full space-y-1 p-4 text-left text-sm">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">Estado de tu pedido</p>
+          <p className="text-base font-medium text-foreground">
+            {seguimiento ? (ESTADOS_PEDIDO[seguimiento.estado] ?? seguimiento.estado) : "Consultando…"}
+          </p>
+          {seguimiento && (
+            <p className="text-muted-foreground">
+              {dinero(seguimiento.total)} · pago en {seguimiento.metodo_pago}
+            </p>
+          )}
+          <p className="text-xs text-muted-foreground">Se actualiza solo cada pocos segundos.</p>
+        </GlassPanel>
         <button
           onClick={() => setPaso("menu")}
           className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90"
@@ -388,13 +463,43 @@ function MenuPage() {
               ))}
             </div>
             {modalidad === "domicilio" && (
-              <input
-                className={campo}
-                placeholder="Dirección de entrega"
-                value={direccion}
-                onChange={(e) => setDireccion(e.target.value)}
-              />
+              <>
+                <input
+                  className={campo}
+                  placeholder="Dirección de entrega"
+                  value={direccion}
+                  onChange={(e) => setDireccion(e.target.value)}
+                />
+                <input
+                  className={campo}
+                  placeholder="Barrio"
+                  value={barrio}
+                  onChange={(e) => setBarrio(e.target.value)}
+                />
+              </>
             )}
+            <input
+              className={campo}
+              type="email"
+              placeholder="Correo (opcional)"
+              value={correo}
+              onChange={(e) => setCorreo(e.target.value)}
+            />
+            <div>
+              <p className="mb-2 text-sm text-muted-foreground">Método de pago</p>
+              <div className="grid grid-cols-3 gap-2">
+                {METODOS_PAGO.map(([v, t]) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setMetodoPago(v)}
+                    className={`rounded-xl border px-2 py-3 text-sm font-medium ${metodoPago === v ? "border-primary bg-primary/15 text-foreground" : "border-glass-border text-muted-foreground"}`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
             <textarea
               className={campo}
               rows={2}

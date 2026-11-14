@@ -1259,11 +1259,13 @@ export type Database = {
           notas: string | null
           cliente_id: string | null
           mesa_id: string | null
+          metodo_pago: string
           owner_id: string | null
           repartidor_id: string | null
           total: number
         }
         Insert: {
+          metodo_pago?: string
           canal?: string
           numero_factura?: number | null
           owner_id?: string | null
@@ -1283,6 +1285,7 @@ export type Database = {
           total?: number
         }
         Update: {
+          metodo_pago?: string
           canal?: string
           numero_factura?: number | null
           owner_id?: string | null
@@ -3749,6 +3752,16 @@ export type Database = {
           id: string
           status: Database["public"]["Enums"]["campaign_request_status"]
           workspace_id: string
+        }[]
+      }
+      seguimiento_pedido: {
+        Args: { _id: string }
+        Returns: {
+          created_at: string
+          estado: string
+          metodo_pago: string
+          modalidad: string
+          total: number
         }[]
       }
       public_seed_templates: {
