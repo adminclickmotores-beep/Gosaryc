@@ -19,7 +19,7 @@ interface DemoDataBannerProps {
   className?: string;
 }
 
-const DEFAULT_LABEL = "Demo data — connect your CRM to see real campaigns";
+const DEFAULT_LABEL = "Datos de muestra";
 
 /**
  * Surfaces that data on screen comes from a mocked/demo fallback. Dismissible;
@@ -30,8 +30,8 @@ export function DemoDataBanner({
   storageKey,
   variant = "banner",
   label = DEFAULT_LABEL,
-  ctaLabel = "Connect CRM",
-  ctaHref = "/integrations",
+  ctaLabel = "Ver",
+  ctaHref = "#",
   onCtaClick,
   className,
 }: DemoDataBannerProps) {

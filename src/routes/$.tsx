@@ -11,15 +11,13 @@ import { BRAND } from "@/lib/brand";
  * Unknown paths render a soft 404 with a link back home.
  */
 const LEGACY_REDIRECTS: Record<string, { to: string; search?: Record<string, string> }> = {
-  "campaign-in-a-box": { to: "/tools", search: { focus: "campaign" } },
-  "campaign-performance": { to: "/tools", search: { focus: "campaign-performance" } },
-  "funnel-dashboard": { to: "/tools", search: { focus: "funnel" } },
-  "hackathon-request": { to: "/tools/event-intake" },
-  "hubspot-campaign": { to: "/tools", search: { focus: "campaign-creator" } },
-  "list-cleaner": { to: "/tools", search: { focus: "campaign-list-cleaner" } },
-  "list-import": { to: "/tools", search: { focus: "campaign-import" } },
-  "utm-builder": { to: "/tools", search: { focus: "utm" } },
-  "migrate": { to: "/dashboard" },
+  "migrate": { to: "/restaurante" },
+  "campaigns": { to: "/restaurante" },
+  "funnel": { to: "/restaurante" },
+  "tools": { to: "/restaurante" },
+  "templates": { to: "/restaurante" },
+  "integrations": { to: "/restaurante" },
+  "connectors": { to: "/restaurante" },
 };
 
 export const Route = createFileRoute("/$")({
@@ -50,21 +48,15 @@ function CatchAll() {
           <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">404</p>
           <h1 className="mt-3 font-display text-3xl tracking-tight">Página no encontrada</h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            We couldn't find <span className="font-mono text-foreground/80">/{_splat}</span>.
-            It may have moved or been retired.
+            No encontramos <span className="font-mono text-foreground/80">/{_splat}</span>.
+            Puede que se haya movido o ya no exista.
           </p>
           <div className="mt-6 flex justify-center gap-3">
             <Link
-              to="/dashboard"
+              to="/restaurante"
               className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
             >
-              Back to dashboard
-            </Link>
-            <Link
-              to="/tools"
-              className="rounded-lg border border-glass-border bg-glass/40 px-4 py-2 text-sm transition hover:bg-glass/70"
-            >
-              Browse tools
+              Volver a mi panel
             </Link>
           </div>
         </GlassPanel>

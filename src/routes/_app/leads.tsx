@@ -293,12 +293,6 @@ function LeadsPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Link
-            to="/funnel"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-glass-border bg-glass/30 px-2.5 py-1.5 text-xs text-foreground/80 hover:text-foreground"
-          >
-            ← Volver al embudo
-          </Link>
           <button
             onClick={() => setCreating(true)}
             className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90"
@@ -835,12 +829,6 @@ function EmptyLeadsState({
               <IconClose className="h-3 w-3" /> Quitar filtros
             </button>
           )}
-          <Link
-            to="/funnel"
-            className="inline-flex items-center gap-1 rounded-lg border border-glass-border bg-glass/30 px-3 py-1.5 text-xs hover:bg-glass/50"
-          >
-            Abrir embudo <IconArrowRight className="h-3 w-3" />
-          </Link>
         </div>
       </div>
     </GlassPanel>

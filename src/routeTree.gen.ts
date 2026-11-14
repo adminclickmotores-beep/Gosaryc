@@ -9,112 +9,56 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
-import { Route as ThumbnailRouteImport } from './routes/thumbnail'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as MenuRouteImport } from './routes/menu'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as InstalarRouteImport } from './routes/instalar'
-import { Route as AgenteRouteImport } from './routes/agente'
-import { Route as AppRouteImport } from './routes/_app'
-import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as WTokenRouteImport } from './routes/w.$token'
-import { Route as RequestOrgSlugRouteImport } from './routes/request.$orgSlug'
-import { Route as RSlugRouteImport } from './routes/r.$slug'
-import { Route as InviteTokenRouteImport } from './routes/invite.$token'
-import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
-import { Route as AppWelcomeRouteImport } from './routes/_app/welcome'
-import { Route as AppTemplatesRouteImport } from './routes/_app/templates'
-import { Route as AppSettingsRouteImport } from './routes/_app/settings'
-import { Route as AppRestauranteRouteImport } from './routes/_app/restaurante'
-import { Route as AppResenasPqrsRouteImport } from './routes/_app/resenas-pqrs'
-import { Route as AppRequestsRouteImport } from './routes/_app/requests'
-import { Route as AppRepartidoresRouteImport } from './routes/_app/repartidores'
-import { Route as AppPuntosRecompensasRouteImport } from './routes/_app/puntos-recompensas'
-import { Route as AppProveedoresComprasRouteImport } from './routes/_app/proveedores-compras'
-import { Route as AppPropinasRouteImport } from './routes/_app/propinas'
-import { Route as AppPedidosRecurrentesRouteImport } from './routes/_app/pedidos-recurrentes'
-import { Route as AppPagosDigitalesRouteImport } from './routes/_app/pagos-digitales'
-import { Route as AppMetasRouteImport } from './routes/_app/metas'
-import { Route as AppLeadsRouteImport } from './routes/_app/leads'
-import { Route as AppIntegrationsRouteImport } from './routes/_app/integrations'
-import { Route as AppFunnelRouteImport } from './routes/_app/funnel'
-import { Route as AppFinanzasRouteImport } from './routes/_app/finanzas'
-import { Route as AppEquipoNominaRouteImport } from './routes/_app/equipo-nomina'
-import { Route as AppDomiciliosRouteImport } from './routes/_app/domicilios'
-import { Route as AppDifusionWhatsappRouteImport } from './routes/_app/difusion-whatsapp'
-import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
-import { Route as AppCotizacionesRouteImport } from './routes/_app/cotizaciones'
-import { Route as AppConnectorsRouteImport } from './routes/_app/connectors'
-import { Route as AppCombosRouteImport } from './routes/_app/combos'
-import { Route as AppCarteraFiadosRouteImport } from './routes/_app/cartera-fiados'
-import { Route as AppCalendarRouteImport } from './routes/_app/calendar'
+import { Route as SplatRouteImport } from './routes/$'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AgenteRouteImport } from './routes/agente'
+import { Route as InstalarRouteImport } from './routes/instalar'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as MenuRouteImport } from './routes/menu'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ThumbnailRouteImport } from './routes/thumbnail'
+import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as AppAsistenteVirtualRouteImport } from './routes/_app/asistente-virtual'
-import { Route as AppToolsIndexRouteImport } from './routes/_app/tools/index'
-import { Route as AppCampaignsIndexRouteImport } from './routes/_app/campaigns/index'
-import { Route as RequestStatusTokenRouteImport } from './routes/request.status.$token'
-import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
-import { Route as IntakeOrgSlugHackathonRouteImport } from './routes/intake.$orgSlug.hackathon'
-import { Route as AppToolsUtmRouteImport } from './routes/_app/tools/utm'
-import { Route as AppToolsTaxonomyRouteImport } from './routes/_app/tools/taxonomy'
-import { Route as AppToolsListCleanerRouteImport } from './routes/_app/tools/list-cleaner'
-import { Route as AppToolsImportRouteImport } from './routes/_app/tools/import'
-import { Route as AppToolsFunnelTargetsRouteImport } from './routes/_app/tools/funnel-targets'
-import { Route as AppToolsEventsRouteImport } from './routes/_app/tools/events'
-import { Route as AppToolsEventIntakeRouteImport } from './routes/_app/tools/event-intake'
-import { Route as AppToolsCampaignPerformanceRouteImport } from './routes/_app/tools/campaign-performance'
-import { Route as AppToolsCampaignInABoxRouteImport } from './routes/_app/tools/campaign-in-a-box'
-import { Route as AppToolsCampaignCreatorRouteImport } from './routes/_app/tools/campaign-creator'
-import { Route as AppToolsAllUtmsRouteImport } from './routes/_app/tools/all-utms'
-import { Route as AppToolsSplatRouteImport } from './routes/_app/tools/$'
+import { Route as AppCalendarRouteImport } from './routes/_app/calendar'
+import { Route as AppCarteraFiadosRouteImport } from './routes/_app/cartera-fiados'
+import { Route as AppCombosRouteImport } from './routes/_app/combos'
+import { Route as AppCotizacionesRouteImport } from './routes/_app/cotizaciones'
+import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppDifusionWhatsappRouteImport } from './routes/_app/difusion-whatsapp'
+import { Route as AppDomiciliosRouteImport } from './routes/_app/domicilios'
+import { Route as AppEquipoNominaRouteImport } from './routes/_app/equipo-nomina'
+import { Route as AppFinanzasRouteImport } from './routes/_app/finanzas'
+import { Route as AppLeadsRouteImport } from './routes/_app/leads'
+import { Route as AppMetasRouteImport } from './routes/_app/metas'
+import { Route as AppPagosDigitalesRouteImport } from './routes/_app/pagos-digitales'
+import { Route as AppPedidosRecurrentesRouteImport } from './routes/_app/pedidos-recurrentes'
+import { Route as AppPropinasRouteImport } from './routes/_app/propinas'
+import { Route as AppProveedoresComprasRouteImport } from './routes/_app/proveedores-compras'
+import { Route as AppPuntosRecompensasRouteImport } from './routes/_app/puntos-recompensas'
+import { Route as AppRepartidoresRouteImport } from './routes/_app/repartidores'
+import { Route as AppRequestsRouteImport } from './routes/_app/requests'
+import { Route as AppResenasPqrsRouteImport } from './routes/_app/resenas-pqrs'
+import { Route as AppRestauranteRouteImport } from './routes/_app/restaurante'
+import { Route as AppSettingsRouteImport } from './routes/_app/settings'
+import { Route as AppWelcomeRouteImport } from './routes/_app/welcome'
+import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as InviteTokenRouteImport } from './routes/invite.$token'
+import { Route as RSlugRouteImport } from './routes/r.$slug'
+import { Route as RequestOrgSlugRouteImport } from './routes/request.$orgSlug'
 import { Route as AppModulosIdRouteImport } from './routes/_app/modulos.$id'
-import { Route as AppCampaignsIdRouteImport } from './routes/_app/campaigns/$id'
-import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
-import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
-import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
-import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
-import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as RequestStatusTokenRouteImport } from './routes/request.status.$token'
 import { Route as ApiPublicCronDailyDigestRouteImport } from './routes/api/public/cron/daily-digest'
-import { Route as ApiPublicCronClusterRetrosRouteImport } from './routes/api/public/cron/cluster-retros'
+import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
+import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 
-const UnsubscribeRoute = UnsubscribeRouteImport.update({
-  id: '/unsubscribe',
-  path: '/unsubscribe',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ThumbnailRoute = ThumbnailRouteImport.update({
-  id: '/thumbnail',
-  path: '/thumbnail',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MenuRoute = MenuRouteImport.update({
-  id: '/menu',
-  path: '/menu',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InstalarRoute = InstalarRouteImport.update({
-  id: '/instalar',
-  path: '/instalar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AgenteRoute = AgenteRouteImport.update({
-  id: '/agente',
-  path: '/agente',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SplatRoute = SplatRouteImport.update({
@@ -122,159 +66,48 @@ const SplatRoute = SplatRouteImport.update({
   path: '/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WTokenRoute = WTokenRouteImport.update({
-  id: '/w/$token',
-  path: '/w/$token',
+const AgenteRoute = AgenteRouteImport.update({
+  id: '/agente',
+  path: '/agente',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RequestOrgSlugRoute = RequestOrgSlugRouteImport.update({
-  id: '/request/$orgSlug',
-  path: '/request/$orgSlug',
+const InstalarRoute = InstalarRouteImport.update({
+  id: '/instalar',
+  path: '/instalar',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RSlugRoute = RSlugRouteImport.update({
-  id: '/r/$slug',
-  path: '/r/$slug',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const InviteTokenRoute = InviteTokenRouteImport.update({
-  id: '/invite/$token',
-  path: '/invite/$token',
+const MenuRoute = MenuRouteImport.update({
+  id: '/menu',
+  path: '/menu',
   getParentRoute: () => rootRouteImport,
 } as any)
-const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
-  id: '/email/unsubscribe',
-  path: '/email/unsubscribe',
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppWelcomeRoute = AppWelcomeRouteImport.update({
-  id: '/welcome',
-  path: '/welcome',
-  getParentRoute: () => AppRoute,
+const ThumbnailRoute = ThumbnailRouteImport.update({
+  id: '/thumbnail',
+  path: '/thumbnail',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppTemplatesRoute = AppTemplatesRouteImport.update({
-  id: '/templates',
-  path: '/templates',
-  getParentRoute: () => AppRoute,
+const UnsubscribeRoute = UnsubscribeRouteImport.update({
+  id: '/unsubscribe',
+  path: '/unsubscribe',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppSettingsRoute = AppSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppRestauranteRoute = AppRestauranteRouteImport.update({
-  id: '/restaurante',
-  path: '/restaurante',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppResenasPqrsRoute = AppResenasPqrsRouteImport.update({
-  id: '/resenas-pqrs',
-  path: '/resenas-pqrs',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppRequestsRoute = AppRequestsRouteImport.update({
-  id: '/requests',
-  path: '/requests',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppRepartidoresRoute = AppRepartidoresRouteImport.update({
-  id: '/repartidores',
-  path: '/repartidores',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPuntosRecompensasRoute = AppPuntosRecompensasRouteImport.update({
-  id: '/puntos-recompensas',
-  path: '/puntos-recompensas',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppProveedoresComprasRoute = AppProveedoresComprasRouteImport.update({
-  id: '/proveedores-compras',
-  path: '/proveedores-compras',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPropinasRoute = AppPropinasRouteImport.update({
-  id: '/propinas',
-  path: '/propinas',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPedidosRecurrentesRoute = AppPedidosRecurrentesRouteImport.update({
-  id: '/pedidos-recurrentes',
-  path: '/pedidos-recurrentes',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPagosDigitalesRoute = AppPagosDigitalesRouteImport.update({
-  id: '/pagos-digitales',
-  path: '/pagos-digitales',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppMetasRoute = AppMetasRouteImport.update({
-  id: '/metas',
-  path: '/metas',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLeadsRoute = AppLeadsRouteImport.update({
-  id: '/leads',
-  path: '/leads',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppIntegrationsRoute = AppIntegrationsRouteImport.update({
-  id: '/integrations',
-  path: '/integrations',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppFunnelRoute = AppFunnelRouteImport.update({
-  id: '/funnel',
-  path: '/funnel',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppFinanzasRoute = AppFinanzasRouteImport.update({
-  id: '/finanzas',
-  path: '/finanzas',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppEquipoNominaRoute = AppEquipoNominaRouteImport.update({
-  id: '/equipo-nomina',
-  path: '/equipo-nomina',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppDomiciliosRoute = AppDomiciliosRouteImport.update({
-  id: '/domicilios',
-  path: '/domicilios',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppDifusionWhatsappRoute = AppDifusionWhatsappRouteImport.update({
-  id: '/difusion-whatsapp',
-  path: '/difusion-whatsapp',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppDashboardRoute = AppDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCotizacionesRoute = AppCotizacionesRouteImport.update({
-  id: '/cotizaciones',
-  path: '/cotizaciones',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppConnectorsRoute = AppConnectorsRouteImport.update({
-  id: '/connectors',
-  path: '/connectors',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCombosRoute = AppCombosRouteImport.update({
-  id: '/combos',
-  path: '/combos',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCarteraFiadosRoute = AppCarteraFiadosRouteImport.update({
-  id: '/cartera-fiados',
-  path: '/cartera-fiados',
+const AppAsistenteVirtualRoute = AppAsistenteVirtualRouteImport.update({
+  id: '/asistente-virtual',
+  path: '/asistente-virtual',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCalendarRoute = AppCalendarRouteImport.update({
@@ -282,133 +115,144 @@ const AppCalendarRoute = AppCalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAsistenteVirtualRoute = AppAsistenteVirtualRouteImport.update({
-  id: '/asistente-virtual',
-  path: '/asistente-virtual',
+const AppCarteraFiadosRoute = AppCarteraFiadosRouteImport.update({
+  id: '/cartera-fiados',
+  path: '/cartera-fiados',
   getParentRoute: () => AppRoute,
 } as any)
-const AppToolsIndexRoute = AppToolsIndexRouteImport.update({
-  id: '/tools/',
-  path: '/tools/',
+const AppCombosRoute = AppCombosRouteImport.update({
+  id: '/combos',
+  path: '/combos',
   getParentRoute: () => AppRoute,
 } as any)
-const AppCampaignsIndexRoute = AppCampaignsIndexRouteImport.update({
-  id: '/campaigns/',
-  path: '/campaigns/',
+const AppCotizacionesRoute = AppCotizacionesRouteImport.update({
+  id: '/cotizaciones',
+  path: '/cotizaciones',
   getParentRoute: () => AppRoute,
 } as any)
-const RequestStatusTokenRoute = RequestStatusTokenRouteImport.update({
-  id: '/request/status/$token',
-  path: '/request/status/$token',
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDifusionWhatsappRoute = AppDifusionWhatsappRouteImport.update({
+  id: '/difusion-whatsapp',
+  path: '/difusion-whatsapp',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDomiciliosRoute = AppDomiciliosRouteImport.update({
+  id: '/domicilios',
+  path: '/domicilios',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEquipoNominaRoute = AppEquipoNominaRouteImport.update({
+  id: '/equipo-nomina',
+  path: '/equipo-nomina',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFinanzasRoute = AppFinanzasRouteImport.update({
+  id: '/finanzas',
+  path: '/finanzas',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLeadsRoute = AppLeadsRouteImport.update({
+  id: '/leads',
+  path: '/leads',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMetasRoute = AppMetasRouteImport.update({
+  id: '/metas',
+  path: '/metas',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPagosDigitalesRoute = AppPagosDigitalesRouteImport.update({
+  id: '/pagos-digitales',
+  path: '/pagos-digitales',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPedidosRecurrentesRoute = AppPedidosRecurrentesRouteImport.update({
+  id: '/pedidos-recurrentes',
+  path: '/pedidos-recurrentes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPropinasRoute = AppPropinasRouteImport.update({
+  id: '/propinas',
+  path: '/propinas',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProveedoresComprasRoute = AppProveedoresComprasRouteImport.update({
+  id: '/proveedores-compras',
+  path: '/proveedores-compras',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPuntosRecompensasRoute = AppPuntosRecompensasRouteImport.update({
+  id: '/puntos-recompensas',
+  path: '/puntos-recompensas',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRepartidoresRoute = AppRepartidoresRouteImport.update({
+  id: '/repartidores',
+  path: '/repartidores',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRequestsRoute = AppRequestsRouteImport.update({
+  id: '/requests',
+  path: '/requests',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppResenasPqrsRoute = AppResenasPqrsRouteImport.update({
+  id: '/resenas-pqrs',
+  path: '/resenas-pqrs',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRestauranteRoute = AppRestauranteRouteImport.update({
+  id: '/restaurante',
+  path: '/restaurante',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWelcomeRoute = AppWelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => AppRoute,
+} as any)
+const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
+  id: '/email/unsubscribe',
+  path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
-  id: '/lovable/email/suppression',
-  path: '/lovable/email/suppression',
+const InviteTokenRoute = InviteTokenRouteImport.update({
+  id: '/invite/$token',
+  path: '/invite/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IntakeOrgSlugHackathonRoute = IntakeOrgSlugHackathonRouteImport.update({
-  id: '/intake/$orgSlug/hackathon',
-  path: '/intake/$orgSlug/hackathon',
+const RSlugRoute = RSlugRouteImport.update({
+  id: '/r/$slug',
+  path: '/r/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppToolsUtmRoute = AppToolsUtmRouteImport.update({
-  id: '/tools/utm',
-  path: '/tools/utm',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppToolsTaxonomyRoute = AppToolsTaxonomyRouteImport.update({
-  id: '/tools/taxonomy',
-  path: '/tools/taxonomy',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppToolsListCleanerRoute = AppToolsListCleanerRouteImport.update({
-  id: '/tools/list-cleaner',
-  path: '/tools/list-cleaner',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppToolsImportRoute = AppToolsImportRouteImport.update({
-  id: '/tools/import',
-  path: '/tools/import',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppToolsFunnelTargetsRoute = AppToolsFunnelTargetsRouteImport.update({
-  id: '/tools/funnel-targets',
-  path: '/tools/funnel-targets',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppToolsEventsRoute = AppToolsEventsRouteImport.update({
-  id: '/tools/events',
-  path: '/tools/events',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppToolsEventIntakeRoute = AppToolsEventIntakeRouteImport.update({
-  id: '/tools/event-intake',
-  path: '/tools/event-intake',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppToolsCampaignPerformanceRoute =
-  AppToolsCampaignPerformanceRouteImport.update({
-    id: '/tools/campaign-performance',
-    path: '/tools/campaign-performance',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppToolsCampaignInABoxRoute = AppToolsCampaignInABoxRouteImport.update({
-  id: '/tools/campaign-in-a-box',
-  path: '/tools/campaign-in-a-box',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppToolsCampaignCreatorRoute = AppToolsCampaignCreatorRouteImport.update({
-  id: '/tools/campaign-creator',
-  path: '/tools/campaign-creator',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppToolsAllUtmsRoute = AppToolsAllUtmsRouteImport.update({
-  id: '/tools/all-utms',
-  path: '/tools/all-utms',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppToolsSplatRoute = AppToolsSplatRouteImport.update({
-  id: '/tools/$',
-  path: '/tools/$',
-  getParentRoute: () => AppRoute,
+const RequestOrgSlugRoute = RequestOrgSlugRouteImport.update({
+  id: '/request/$orgSlug',
+  path: '/request/$orgSlug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppModulosIdRoute = AppModulosIdRouteImport.update({
   id: '/modulos/$id',
   path: '/modulos/$id',
   getParentRoute: () => AppRoute,
 } as any)
-const AppCampaignsIdRoute = AppCampaignsIdRouteImport.update({
-  id: '/campaigns/$id',
-  path: '/campaigns/$id',
-  getParentRoute: () => AppRoute,
-} as any)
-const LovableEmailTransactionalSendRoute =
-  LovableEmailTransactionalSendRouteImport.update({
-    id: '/lovable/email/transactional/send',
-    path: '/lovable/email/transactional/send',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const LovableEmailTransactionalPreviewRoute =
-  LovableEmailTransactionalPreviewRouteImport.update({
-    id: '/lovable/email/transactional/preview',
-    path: '/lovable/email/transactional/preview',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const LovableEmailQueueProcessRoute =
-  LovableEmailQueueProcessRouteImport.update({
-    id: '/lovable/email/queue/process',
-    path: '/lovable/email/queue/process',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
-  id: '/lovable/email/auth/webhook',
-  path: '/lovable/email/auth/webhook',
+const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
+  id: '/lovable/email/suppression',
+  path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
-  id: '/lovable/email/auth/preview',
-  path: '/lovable/email/auth/preview',
+const RequestStatusTokenRoute = RequestStatusTokenRouteImport.update({
+  id: '/request/status/$token',
+  path: '/request/status/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicCronDailyDigestRoute =
@@ -417,10 +261,32 @@ const ApiPublicCronDailyDigestRoute =
     path: '/api/public/cron/daily-digest',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicCronClusterRetrosRoute =
-  ApiPublicCronClusterRetrosRouteImport.update({
-    id: '/api/public/cron/cluster-retros',
-    path: '/api/public/cron/cluster-retros',
+const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
+  id: '/lovable/email/auth/preview',
+  path: '/lovable/email/auth/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
+  id: '/lovable/email/auth/webhook',
+  path: '/lovable/email/auth/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LovableEmailTransactionalSendRoute =
+  LovableEmailTransactionalSendRouteImport.update({
+    id: '/lovable/email/transactional/send',
+    path: '/lovable/email/transactional/send',
     getParentRoute: () => rootRouteImport,
   } as any)
 
@@ -438,15 +304,12 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof AppCalendarRoute
   '/cartera-fiados': typeof AppCarteraFiadosRoute
   '/combos': typeof AppCombosRoute
-  '/connectors': typeof AppConnectorsRoute
   '/cotizaciones': typeof AppCotizacionesRoute
   '/dashboard': typeof AppDashboardRoute
   '/difusion-whatsapp': typeof AppDifusionWhatsappRoute
   '/domicilios': typeof AppDomiciliosRoute
   '/equipo-nomina': typeof AppEquipoNominaRoute
   '/finanzas': typeof AppFinanzasRoute
-  '/funnel': typeof AppFunnelRoute
-  '/integrations': typeof AppIntegrationsRoute
   '/leads': typeof AppLeadsRoute
   '/metas': typeof AppMetasRoute
   '/pagos-digitales': typeof AppPagosDigitalesRoute
@@ -459,33 +322,14 @@ export interface FileRoutesByFullPath {
   '/resenas-pqrs': typeof AppResenasPqrsRoute
   '/restaurante': typeof AppRestauranteRoute
   '/settings': typeof AppSettingsRoute
-  '/templates': typeof AppTemplatesRoute
   '/welcome': typeof AppWelcomeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/invite/$token': typeof InviteTokenRoute
   '/r/$slug': typeof RSlugRoute
   '/request/$orgSlug': typeof RequestOrgSlugRoute
-  '/w/$token': typeof WTokenRoute
-  '/campaigns/$id': typeof AppCampaignsIdRoute
   '/modulos/$id': typeof AppModulosIdRoute
-  '/tools/$': typeof AppToolsSplatRoute
-  '/tools/all-utms': typeof AppToolsAllUtmsRoute
-  '/tools/campaign-creator': typeof AppToolsCampaignCreatorRoute
-  '/tools/campaign-in-a-box': typeof AppToolsCampaignInABoxRoute
-  '/tools/campaign-performance': typeof AppToolsCampaignPerformanceRoute
-  '/tools/event-intake': typeof AppToolsEventIntakeRoute
-  '/tools/events': typeof AppToolsEventsRoute
-  '/tools/funnel-targets': typeof AppToolsFunnelTargetsRoute
-  '/tools/import': typeof AppToolsImportRoute
-  '/tools/list-cleaner': typeof AppToolsListCleanerRoute
-  '/tools/taxonomy': typeof AppToolsTaxonomyRoute
-  '/tools/utm': typeof AppToolsUtmRoute
-  '/intake/$orgSlug/hackathon': typeof IntakeOrgSlugHackathonRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/request/status/$token': typeof RequestStatusTokenRoute
-  '/campaigns/': typeof AppCampaignsIndexRoute
-  '/tools/': typeof AppToolsIndexRoute
-  '/api/public/cron/cluster-retros': typeof ApiPublicCronClusterRetrosRoute
   '/api/public/cron/daily-digest': typeof ApiPublicCronDailyDigestRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -507,15 +351,12 @@ export interface FileRoutesByTo {
   '/calendar': typeof AppCalendarRoute
   '/cartera-fiados': typeof AppCarteraFiadosRoute
   '/combos': typeof AppCombosRoute
-  '/connectors': typeof AppConnectorsRoute
   '/cotizaciones': typeof AppCotizacionesRoute
   '/dashboard': typeof AppDashboardRoute
   '/difusion-whatsapp': typeof AppDifusionWhatsappRoute
   '/domicilios': typeof AppDomiciliosRoute
   '/equipo-nomina': typeof AppEquipoNominaRoute
   '/finanzas': typeof AppFinanzasRoute
-  '/funnel': typeof AppFunnelRoute
-  '/integrations': typeof AppIntegrationsRoute
   '/leads': typeof AppLeadsRoute
   '/metas': typeof AppMetasRoute
   '/pagos-digitales': typeof AppPagosDigitalesRoute
@@ -528,33 +369,14 @@ export interface FileRoutesByTo {
   '/resenas-pqrs': typeof AppResenasPqrsRoute
   '/restaurante': typeof AppRestauranteRoute
   '/settings': typeof AppSettingsRoute
-  '/templates': typeof AppTemplatesRoute
   '/welcome': typeof AppWelcomeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/invite/$token': typeof InviteTokenRoute
   '/r/$slug': typeof RSlugRoute
   '/request/$orgSlug': typeof RequestOrgSlugRoute
-  '/w/$token': typeof WTokenRoute
-  '/campaigns/$id': typeof AppCampaignsIdRoute
   '/modulos/$id': typeof AppModulosIdRoute
-  '/tools/$': typeof AppToolsSplatRoute
-  '/tools/all-utms': typeof AppToolsAllUtmsRoute
-  '/tools/campaign-creator': typeof AppToolsCampaignCreatorRoute
-  '/tools/campaign-in-a-box': typeof AppToolsCampaignInABoxRoute
-  '/tools/campaign-performance': typeof AppToolsCampaignPerformanceRoute
-  '/tools/event-intake': typeof AppToolsEventIntakeRoute
-  '/tools/events': typeof AppToolsEventsRoute
-  '/tools/funnel-targets': typeof AppToolsFunnelTargetsRoute
-  '/tools/import': typeof AppToolsImportRoute
-  '/tools/list-cleaner': typeof AppToolsListCleanerRoute
-  '/tools/taxonomy': typeof AppToolsTaxonomyRoute
-  '/tools/utm': typeof AppToolsUtmRoute
-  '/intake/$orgSlug/hackathon': typeof IntakeOrgSlugHackathonRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/request/status/$token': typeof RequestStatusTokenRoute
-  '/campaigns': typeof AppCampaignsIndexRoute
-  '/tools': typeof AppToolsIndexRoute
-  '/api/public/cron/cluster-retros': typeof ApiPublicCronClusterRetrosRoute
   '/api/public/cron/daily-digest': typeof ApiPublicCronDailyDigestRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -578,15 +400,12 @@ export interface FileRoutesById {
   '/_app/calendar': typeof AppCalendarRoute
   '/_app/cartera-fiados': typeof AppCarteraFiadosRoute
   '/_app/combos': typeof AppCombosRoute
-  '/_app/connectors': typeof AppConnectorsRoute
   '/_app/cotizaciones': typeof AppCotizacionesRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/difusion-whatsapp': typeof AppDifusionWhatsappRoute
   '/_app/domicilios': typeof AppDomiciliosRoute
   '/_app/equipo-nomina': typeof AppEquipoNominaRoute
   '/_app/finanzas': typeof AppFinanzasRoute
-  '/_app/funnel': typeof AppFunnelRoute
-  '/_app/integrations': typeof AppIntegrationsRoute
   '/_app/leads': typeof AppLeadsRoute
   '/_app/metas': typeof AppMetasRoute
   '/_app/pagos-digitales': typeof AppPagosDigitalesRoute
@@ -599,33 +418,14 @@ export interface FileRoutesById {
   '/_app/resenas-pqrs': typeof AppResenasPqrsRoute
   '/_app/restaurante': typeof AppRestauranteRoute
   '/_app/settings': typeof AppSettingsRoute
-  '/_app/templates': typeof AppTemplatesRoute
   '/_app/welcome': typeof AppWelcomeRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/invite/$token': typeof InviteTokenRoute
   '/r/$slug': typeof RSlugRoute
   '/request/$orgSlug': typeof RequestOrgSlugRoute
-  '/w/$token': typeof WTokenRoute
-  '/_app/campaigns/$id': typeof AppCampaignsIdRoute
   '/_app/modulos/$id': typeof AppModulosIdRoute
-  '/_app/tools/$': typeof AppToolsSplatRoute
-  '/_app/tools/all-utms': typeof AppToolsAllUtmsRoute
-  '/_app/tools/campaign-creator': typeof AppToolsCampaignCreatorRoute
-  '/_app/tools/campaign-in-a-box': typeof AppToolsCampaignInABoxRoute
-  '/_app/tools/campaign-performance': typeof AppToolsCampaignPerformanceRoute
-  '/_app/tools/event-intake': typeof AppToolsEventIntakeRoute
-  '/_app/tools/events': typeof AppToolsEventsRoute
-  '/_app/tools/funnel-targets': typeof AppToolsFunnelTargetsRoute
-  '/_app/tools/import': typeof AppToolsImportRoute
-  '/_app/tools/list-cleaner': typeof AppToolsListCleanerRoute
-  '/_app/tools/taxonomy': typeof AppToolsTaxonomyRoute
-  '/_app/tools/utm': typeof AppToolsUtmRoute
-  '/intake/$orgSlug/hackathon': typeof IntakeOrgSlugHackathonRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/request/status/$token': typeof RequestStatusTokenRoute
-  '/_app/campaigns/': typeof AppCampaignsIndexRoute
-  '/_app/tools/': typeof AppToolsIndexRoute
-  '/api/public/cron/cluster-retros': typeof ApiPublicCronClusterRetrosRoute
   '/api/public/cron/daily-digest': typeof ApiPublicCronDailyDigestRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -649,15 +449,12 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/cartera-fiados'
     | '/combos'
-    | '/connectors'
     | '/cotizaciones'
     | '/dashboard'
     | '/difusion-whatsapp'
     | '/domicilios'
     | '/equipo-nomina'
     | '/finanzas'
-    | '/funnel'
-    | '/integrations'
     | '/leads'
     | '/metas'
     | '/pagos-digitales'
@@ -670,33 +467,14 @@ export interface FileRouteTypes {
     | '/resenas-pqrs'
     | '/restaurante'
     | '/settings'
-    | '/templates'
     | '/welcome'
     | '/email/unsubscribe'
     | '/invite/$token'
     | '/r/$slug'
     | '/request/$orgSlug'
-    | '/w/$token'
-    | '/campaigns/$id'
     | '/modulos/$id'
-    | '/tools/$'
-    | '/tools/all-utms'
-    | '/tools/campaign-creator'
-    | '/tools/campaign-in-a-box'
-    | '/tools/campaign-performance'
-    | '/tools/event-intake'
-    | '/tools/events'
-    | '/tools/funnel-targets'
-    | '/tools/import'
-    | '/tools/list-cleaner'
-    | '/tools/taxonomy'
-    | '/tools/utm'
-    | '/intake/$orgSlug/hackathon'
     | '/lovable/email/suppression'
     | '/request/status/$token'
-    | '/campaigns/'
-    | '/tools/'
-    | '/api/public/cron/cluster-retros'
     | '/api/public/cron/daily-digest'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -718,15 +496,12 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/cartera-fiados'
     | '/combos'
-    | '/connectors'
     | '/cotizaciones'
     | '/dashboard'
     | '/difusion-whatsapp'
     | '/domicilios'
     | '/equipo-nomina'
     | '/finanzas'
-    | '/funnel'
-    | '/integrations'
     | '/leads'
     | '/metas'
     | '/pagos-digitales'
@@ -739,33 +514,14 @@ export interface FileRouteTypes {
     | '/resenas-pqrs'
     | '/restaurante'
     | '/settings'
-    | '/templates'
     | '/welcome'
     | '/email/unsubscribe'
     | '/invite/$token'
     | '/r/$slug'
     | '/request/$orgSlug'
-    | '/w/$token'
-    | '/campaigns/$id'
     | '/modulos/$id'
-    | '/tools/$'
-    | '/tools/all-utms'
-    | '/tools/campaign-creator'
-    | '/tools/campaign-in-a-box'
-    | '/tools/campaign-performance'
-    | '/tools/event-intake'
-    | '/tools/events'
-    | '/tools/funnel-targets'
-    | '/tools/import'
-    | '/tools/list-cleaner'
-    | '/tools/taxonomy'
-    | '/tools/utm'
-    | '/intake/$orgSlug/hackathon'
     | '/lovable/email/suppression'
     | '/request/status/$token'
-    | '/campaigns'
-    | '/tools'
-    | '/api/public/cron/cluster-retros'
     | '/api/public/cron/daily-digest'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -788,15 +544,12 @@ export interface FileRouteTypes {
     | '/_app/calendar'
     | '/_app/cartera-fiados'
     | '/_app/combos'
-    | '/_app/connectors'
     | '/_app/cotizaciones'
     | '/_app/dashboard'
     | '/_app/difusion-whatsapp'
     | '/_app/domicilios'
     | '/_app/equipo-nomina'
     | '/_app/finanzas'
-    | '/_app/funnel'
-    | '/_app/integrations'
     | '/_app/leads'
     | '/_app/metas'
     | '/_app/pagos-digitales'
@@ -809,33 +562,14 @@ export interface FileRouteTypes {
     | '/_app/resenas-pqrs'
     | '/_app/restaurante'
     | '/_app/settings'
-    | '/_app/templates'
     | '/_app/welcome'
     | '/email/unsubscribe'
     | '/invite/$token'
     | '/r/$slug'
     | '/request/$orgSlug'
-    | '/w/$token'
-    | '/_app/campaigns/$id'
     | '/_app/modulos/$id'
-    | '/_app/tools/$'
-    | '/_app/tools/all-utms'
-    | '/_app/tools/campaign-creator'
-    | '/_app/tools/campaign-in-a-box'
-    | '/_app/tools/campaign-performance'
-    | '/_app/tools/event-intake'
-    | '/_app/tools/events'
-    | '/_app/tools/funnel-targets'
-    | '/_app/tools/import'
-    | '/_app/tools/list-cleaner'
-    | '/_app/tools/taxonomy'
-    | '/_app/tools/utm'
-    | '/intake/$orgSlug/hackathon'
     | '/lovable/email/suppression'
     | '/request/status/$token'
-    | '/_app/campaigns/'
-    | '/_app/tools/'
-    | '/api/public/cron/cluster-retros'
     | '/api/public/cron/daily-digest'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -859,11 +593,8 @@ export interface RootRouteChildren {
   InviteTokenRoute: typeof InviteTokenRoute
   RSlugRoute: typeof RSlugRoute
   RequestOrgSlugRoute: typeof RequestOrgSlugRoute
-  WTokenRoute: typeof WTokenRoute
-  IntakeOrgSlugHackathonRoute: typeof IntakeOrgSlugHackathonRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   RequestStatusTokenRoute: typeof RequestStatusTokenRoute
-  ApiPublicCronClusterRetrosRoute: typeof ApiPublicCronClusterRetrosRoute
   ApiPublicCronDailyDigestRoute: typeof ApiPublicCronDailyDigestRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -874,60 +605,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/unsubscribe': {
-      id: '/unsubscribe'
-      path: '/unsubscribe'
-      fullPath: '/unsubscribe'
-      preLoaderRoute: typeof UnsubscribeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/thumbnail': {
-      id: '/thumbnail'
-      path: '/thumbnail'
-      fullPath: '/thumbnail'
-      preLoaderRoute: typeof ThumbnailRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/menu': {
-      id: '/menu'
-      path: '/menu'
-      fullPath: '/menu'
-      preLoaderRoute: typeof MenuRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/instalar': {
-      id: '/instalar'
-      path: '/instalar'
-      fullPath: '/instalar'
-      preLoaderRoute: typeof InstalarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/agente': {
-      id: '/agente'
-      path: '/agente'
-      fullPath: '/agente'
-      preLoaderRoute: typeof AgenteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_app': {
-      id: '/_app'
-      path: ''
+    '/': {
+      id: '/'
+      path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AppRouteImport
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$': {
@@ -937,221 +619,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
+    '/_app': {
+      id: '/_app'
+      path: ''
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/w/$token': {
-      id: '/w/$token'
-      path: '/w/$token'
-      fullPath: '/w/$token'
-      preLoaderRoute: typeof WTokenRouteImport
+    '/agente': {
+      id: '/agente'
+      path: '/agente'
+      fullPath: '/agente'
+      preLoaderRoute: typeof AgenteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/request/$orgSlug': {
-      id: '/request/$orgSlug'
-      path: '/request/$orgSlug'
-      fullPath: '/request/$orgSlug'
-      preLoaderRoute: typeof RequestOrgSlugRouteImport
+    '/instalar': {
+      id: '/instalar'
+      path: '/instalar'
+      fullPath: '/instalar'
+      preLoaderRoute: typeof InstalarRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/r/$slug': {
-      id: '/r/$slug'
-      path: '/r/$slug'
-      fullPath: '/r/$slug'
-      preLoaderRoute: typeof RSlugRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/invite/$token': {
-      id: '/invite/$token'
-      path: '/invite/$token'
-      fullPath: '/invite/$token'
-      preLoaderRoute: typeof InviteTokenRouteImport
+    '/menu': {
+      id: '/menu'
+      path: '/menu'
+      fullPath: '/menu'
+      preLoaderRoute: typeof MenuRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/email/unsubscribe': {
-      id: '/email/unsubscribe'
-      path: '/email/unsubscribe'
-      fullPath: '/email/unsubscribe'
-      preLoaderRoute: typeof EmailUnsubscribeRouteImport
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/welcome': {
-      id: '/_app/welcome'
-      path: '/welcome'
-      fullPath: '/welcome'
-      preLoaderRoute: typeof AppWelcomeRouteImport
-      parentRoute: typeof AppRoute
+    '/thumbnail': {
+      id: '/thumbnail'
+      path: '/thumbnail'
+      fullPath: '/thumbnail'
+      preLoaderRoute: typeof ThumbnailRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/templates': {
-      id: '/_app/templates'
-      path: '/templates'
-      fullPath: '/templates'
-      preLoaderRoute: typeof AppTemplatesRouteImport
-      parentRoute: typeof AppRoute
+    '/unsubscribe': {
+      id: '/unsubscribe'
+      path: '/unsubscribe'
+      fullPath: '/unsubscribe'
+      preLoaderRoute: typeof UnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/settings': {
-      id: '/_app/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AppSettingsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/restaurante': {
-      id: '/_app/restaurante'
-      path: '/restaurante'
-      fullPath: '/restaurante'
-      preLoaderRoute: typeof AppRestauranteRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/resenas-pqrs': {
-      id: '/_app/resenas-pqrs'
-      path: '/resenas-pqrs'
-      fullPath: '/resenas-pqrs'
-      preLoaderRoute: typeof AppResenasPqrsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/requests': {
-      id: '/_app/requests'
-      path: '/requests'
-      fullPath: '/requests'
-      preLoaderRoute: typeof AppRequestsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/repartidores': {
-      id: '/_app/repartidores'
-      path: '/repartidores'
-      fullPath: '/repartidores'
-      preLoaderRoute: typeof AppRepartidoresRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/puntos-recompensas': {
-      id: '/_app/puntos-recompensas'
-      path: '/puntos-recompensas'
-      fullPath: '/puntos-recompensas'
-      preLoaderRoute: typeof AppPuntosRecompensasRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/proveedores-compras': {
-      id: '/_app/proveedores-compras'
-      path: '/proveedores-compras'
-      fullPath: '/proveedores-compras'
-      preLoaderRoute: typeof AppProveedoresComprasRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/propinas': {
-      id: '/_app/propinas'
-      path: '/propinas'
-      fullPath: '/propinas'
-      preLoaderRoute: typeof AppPropinasRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/pedidos-recurrentes': {
-      id: '/_app/pedidos-recurrentes'
-      path: '/pedidos-recurrentes'
-      fullPath: '/pedidos-recurrentes'
-      preLoaderRoute: typeof AppPedidosRecurrentesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/pagos-digitales': {
-      id: '/_app/pagos-digitales'
-      path: '/pagos-digitales'
-      fullPath: '/pagos-digitales'
-      preLoaderRoute: typeof AppPagosDigitalesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/metas': {
-      id: '/_app/metas'
-      path: '/metas'
-      fullPath: '/metas'
-      preLoaderRoute: typeof AppMetasRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/leads': {
-      id: '/_app/leads'
-      path: '/leads'
-      fullPath: '/leads'
-      preLoaderRoute: typeof AppLeadsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/integrations': {
-      id: '/_app/integrations'
-      path: '/integrations'
-      fullPath: '/integrations'
-      preLoaderRoute: typeof AppIntegrationsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/funnel': {
-      id: '/_app/funnel'
-      path: '/funnel'
-      fullPath: '/funnel'
-      preLoaderRoute: typeof AppFunnelRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/finanzas': {
-      id: '/_app/finanzas'
-      path: '/finanzas'
-      fullPath: '/finanzas'
-      preLoaderRoute: typeof AppFinanzasRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/equipo-nomina': {
-      id: '/_app/equipo-nomina'
-      path: '/equipo-nomina'
-      fullPath: '/equipo-nomina'
-      preLoaderRoute: typeof AppEquipoNominaRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/domicilios': {
-      id: '/_app/domicilios'
-      path: '/domicilios'
-      fullPath: '/domicilios'
-      preLoaderRoute: typeof AppDomiciliosRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/difusion-whatsapp': {
-      id: '/_app/difusion-whatsapp'
-      path: '/difusion-whatsapp'
-      fullPath: '/difusion-whatsapp'
-      preLoaderRoute: typeof AppDifusionWhatsappRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/dashboard': {
-      id: '/_app/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AppDashboardRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/cotizaciones': {
-      id: '/_app/cotizaciones'
-      path: '/cotizaciones'
-      fullPath: '/cotizaciones'
-      preLoaderRoute: typeof AppCotizacionesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/connectors': {
-      id: '/_app/connectors'
-      path: '/connectors'
-      fullPath: '/connectors'
-      preLoaderRoute: typeof AppConnectorsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/combos': {
-      id: '/_app/combos'
-      path: '/combos'
-      fullPath: '/combos'
-      preLoaderRoute: typeof AppCombosRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/cartera-fiados': {
-      id: '/_app/cartera-fiados'
-      path: '/cartera-fiados'
-      fullPath: '/cartera-fiados'
-      preLoaderRoute: typeof AppCarteraFiadosRouteImport
+    '/_app/asistente-virtual': {
+      id: '/_app/asistente-virtual'
+      path: '/asistente-virtual'
+      fullPath: '/asistente-virtual'
+      preLoaderRoute: typeof AppAsistenteVirtualRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/calendar': {
@@ -1161,131 +689,180 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCalendarRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/asistente-virtual': {
-      id: '/_app/asistente-virtual'
-      path: '/asistente-virtual'
-      fullPath: '/asistente-virtual'
-      preLoaderRoute: typeof AppAsistenteVirtualRouteImport
+    '/_app/cartera-fiados': {
+      id: '/_app/cartera-fiados'
+      path: '/cartera-fiados'
+      fullPath: '/cartera-fiados'
+      preLoaderRoute: typeof AppCarteraFiadosRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/tools/': {
-      id: '/_app/tools/'
-      path: '/tools'
-      fullPath: '/tools/'
-      preLoaderRoute: typeof AppToolsIndexRouteImport
+    '/_app/combos': {
+      id: '/_app/combos'
+      path: '/combos'
+      fullPath: '/combos'
+      preLoaderRoute: typeof AppCombosRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/campaigns/': {
-      id: '/_app/campaigns/'
-      path: '/campaigns'
-      fullPath: '/campaigns/'
-      preLoaderRoute: typeof AppCampaignsIndexRouteImport
+    '/_app/cotizaciones': {
+      id: '/_app/cotizaciones'
+      path: '/cotizaciones'
+      fullPath: '/cotizaciones'
+      preLoaderRoute: typeof AppCotizacionesRouteImport
       parentRoute: typeof AppRoute
     }
-    '/request/status/$token': {
-      id: '/request/status/$token'
-      path: '/request/status/$token'
-      fullPath: '/request/status/$token'
-      preLoaderRoute: typeof RequestStatusTokenRouteImport
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/difusion-whatsapp': {
+      id: '/_app/difusion-whatsapp'
+      path: '/difusion-whatsapp'
+      fullPath: '/difusion-whatsapp'
+      preLoaderRoute: typeof AppDifusionWhatsappRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/domicilios': {
+      id: '/_app/domicilios'
+      path: '/domicilios'
+      fullPath: '/domicilios'
+      preLoaderRoute: typeof AppDomiciliosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/equipo-nomina': {
+      id: '/_app/equipo-nomina'
+      path: '/equipo-nomina'
+      fullPath: '/equipo-nomina'
+      preLoaderRoute: typeof AppEquipoNominaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/finanzas': {
+      id: '/_app/finanzas'
+      path: '/finanzas'
+      fullPath: '/finanzas'
+      preLoaderRoute: typeof AppFinanzasRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/leads': {
+      id: '/_app/leads'
+      path: '/leads'
+      fullPath: '/leads'
+      preLoaderRoute: typeof AppLeadsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/metas': {
+      id: '/_app/metas'
+      path: '/metas'
+      fullPath: '/metas'
+      preLoaderRoute: typeof AppMetasRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/pagos-digitales': {
+      id: '/_app/pagos-digitales'
+      path: '/pagos-digitales'
+      fullPath: '/pagos-digitales'
+      preLoaderRoute: typeof AppPagosDigitalesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/pedidos-recurrentes': {
+      id: '/_app/pedidos-recurrentes'
+      path: '/pedidos-recurrentes'
+      fullPath: '/pedidos-recurrentes'
+      preLoaderRoute: typeof AppPedidosRecurrentesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/propinas': {
+      id: '/_app/propinas'
+      path: '/propinas'
+      fullPath: '/propinas'
+      preLoaderRoute: typeof AppPropinasRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/proveedores-compras': {
+      id: '/_app/proveedores-compras'
+      path: '/proveedores-compras'
+      fullPath: '/proveedores-compras'
+      preLoaderRoute: typeof AppProveedoresComprasRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/puntos-recompensas': {
+      id: '/_app/puntos-recompensas'
+      path: '/puntos-recompensas'
+      fullPath: '/puntos-recompensas'
+      preLoaderRoute: typeof AppPuntosRecompensasRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/repartidores': {
+      id: '/_app/repartidores'
+      path: '/repartidores'
+      fullPath: '/repartidores'
+      preLoaderRoute: typeof AppRepartidoresRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/requests': {
+      id: '/_app/requests'
+      path: '/requests'
+      fullPath: '/requests'
+      preLoaderRoute: typeof AppRequestsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/resenas-pqrs': {
+      id: '/_app/resenas-pqrs'
+      path: '/resenas-pqrs'
+      fullPath: '/resenas-pqrs'
+      preLoaderRoute: typeof AppResenasPqrsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/restaurante': {
+      id: '/_app/restaurante'
+      path: '/restaurante'
+      fullPath: '/restaurante'
+      preLoaderRoute: typeof AppRestauranteRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/welcome': {
+      id: '/_app/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof AppWelcomeRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/email/unsubscribe': {
+      id: '/email/unsubscribe'
+      path: '/email/unsubscribe'
+      fullPath: '/email/unsubscribe'
+      preLoaderRoute: typeof EmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lovable/email/suppression': {
-      id: '/lovable/email/suppression'
-      path: '/lovable/email/suppression'
-      fullPath: '/lovable/email/suppression'
-      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
+    '/invite/$token': {
+      id: '/invite/$token'
+      path: '/invite/$token'
+      fullPath: '/invite/$token'
+      preLoaderRoute: typeof InviteTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/intake/$orgSlug/hackathon': {
-      id: '/intake/$orgSlug/hackathon'
-      path: '/intake/$orgSlug/hackathon'
-      fullPath: '/intake/$orgSlug/hackathon'
-      preLoaderRoute: typeof IntakeOrgSlugHackathonRouteImport
+    '/r/$slug': {
+      id: '/r/$slug'
+      path: '/r/$slug'
+      fullPath: '/r/$slug'
+      preLoaderRoute: typeof RSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/tools/utm': {
-      id: '/_app/tools/utm'
-      path: '/tools/utm'
-      fullPath: '/tools/utm'
-      preLoaderRoute: typeof AppToolsUtmRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/tools/taxonomy': {
-      id: '/_app/tools/taxonomy'
-      path: '/tools/taxonomy'
-      fullPath: '/tools/taxonomy'
-      preLoaderRoute: typeof AppToolsTaxonomyRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/tools/list-cleaner': {
-      id: '/_app/tools/list-cleaner'
-      path: '/tools/list-cleaner'
-      fullPath: '/tools/list-cleaner'
-      preLoaderRoute: typeof AppToolsListCleanerRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/tools/import': {
-      id: '/_app/tools/import'
-      path: '/tools/import'
-      fullPath: '/tools/import'
-      preLoaderRoute: typeof AppToolsImportRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/tools/funnel-targets': {
-      id: '/_app/tools/funnel-targets'
-      path: '/tools/funnel-targets'
-      fullPath: '/tools/funnel-targets'
-      preLoaderRoute: typeof AppToolsFunnelTargetsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/tools/events': {
-      id: '/_app/tools/events'
-      path: '/tools/events'
-      fullPath: '/tools/events'
-      preLoaderRoute: typeof AppToolsEventsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/tools/event-intake': {
-      id: '/_app/tools/event-intake'
-      path: '/tools/event-intake'
-      fullPath: '/tools/event-intake'
-      preLoaderRoute: typeof AppToolsEventIntakeRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/tools/campaign-performance': {
-      id: '/_app/tools/campaign-performance'
-      path: '/tools/campaign-performance'
-      fullPath: '/tools/campaign-performance'
-      preLoaderRoute: typeof AppToolsCampaignPerformanceRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/tools/campaign-in-a-box': {
-      id: '/_app/tools/campaign-in-a-box'
-      path: '/tools/campaign-in-a-box'
-      fullPath: '/tools/campaign-in-a-box'
-      preLoaderRoute: typeof AppToolsCampaignInABoxRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/tools/campaign-creator': {
-      id: '/_app/tools/campaign-creator'
-      path: '/tools/campaign-creator'
-      fullPath: '/tools/campaign-creator'
-      preLoaderRoute: typeof AppToolsCampaignCreatorRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/tools/all-utms': {
-      id: '/_app/tools/all-utms'
-      path: '/tools/all-utms'
-      fullPath: '/tools/all-utms'
-      preLoaderRoute: typeof AppToolsAllUtmsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/tools/$': {
-      id: '/_app/tools/$'
-      path: '/tools/$'
-      fullPath: '/tools/$'
-      preLoaderRoute: typeof AppToolsSplatRouteImport
-      parentRoute: typeof AppRoute
+    '/request/$orgSlug': {
+      id: '/request/$orgSlug'
+      path: '/request/$orgSlug'
+      fullPath: '/request/$orgSlug'
+      preLoaderRoute: typeof RequestOrgSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_app/modulos/$id': {
       id: '/_app/modulos/$id'
@@ -1294,46 +871,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppModulosIdRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/campaigns/$id': {
-      id: '/_app/campaigns/$id'
-      path: '/campaigns/$id'
-      fullPath: '/campaigns/$id'
-      preLoaderRoute: typeof AppCampaignsIdRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/lovable/email/transactional/send': {
-      id: '/lovable/email/transactional/send'
-      path: '/lovable/email/transactional/send'
-      fullPath: '/lovable/email/transactional/send'
-      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
+    '/lovable/email/suppression': {
+      id: '/lovable/email/suppression'
+      path: '/lovable/email/suppression'
+      fullPath: '/lovable/email/suppression'
+      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lovable/email/transactional/preview': {
-      id: '/lovable/email/transactional/preview'
-      path: '/lovable/email/transactional/preview'
-      fullPath: '/lovable/email/transactional/preview'
-      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/queue/process': {
-      id: '/lovable/email/queue/process'
-      path: '/lovable/email/queue/process'
-      fullPath: '/lovable/email/queue/process'
-      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/auth/webhook': {
-      id: '/lovable/email/auth/webhook'
-      path: '/lovable/email/auth/webhook'
-      fullPath: '/lovable/email/auth/webhook'
-      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/auth/preview': {
-      id: '/lovable/email/auth/preview'
-      path: '/lovable/email/auth/preview'
-      fullPath: '/lovable/email/auth/preview'
-      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
+    '/request/status/$token': {
+      id: '/request/status/$token'
+      path: '/request/status/$token'
+      fullPath: '/request/status/$token'
+      preLoaderRoute: typeof RequestStatusTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/cron/daily-digest': {
@@ -1343,11 +892,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronDailyDigestRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/cron/cluster-retros': {
-      id: '/api/public/cron/cluster-retros'
-      path: '/api/public/cron/cluster-retros'
-      fullPath: '/api/public/cron/cluster-retros'
-      preLoaderRoute: typeof ApiPublicCronClusterRetrosRouteImport
+    '/lovable/email/auth/preview': {
+      id: '/lovable/email/auth/preview'
+      path: '/lovable/email/auth/preview'
+      fullPath: '/lovable/email/auth/preview'
+      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/auth/webhook': {
+      id: '/lovable/email/auth/webhook'
+      path: '/lovable/email/auth/webhook'
+      fullPath: '/lovable/email/auth/webhook'
+      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/send': {
+      id: '/lovable/email/transactional/send'
+      path: '/lovable/email/transactional/send'
+      fullPath: '/lovable/email/transactional/send'
+      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -1358,15 +935,12 @@ interface AppRouteChildren {
   AppCalendarRoute: typeof AppCalendarRoute
   AppCarteraFiadosRoute: typeof AppCarteraFiadosRoute
   AppCombosRoute: typeof AppCombosRoute
-  AppConnectorsRoute: typeof AppConnectorsRoute
   AppCotizacionesRoute: typeof AppCotizacionesRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppDifusionWhatsappRoute: typeof AppDifusionWhatsappRoute
   AppDomiciliosRoute: typeof AppDomiciliosRoute
   AppEquipoNominaRoute: typeof AppEquipoNominaRoute
   AppFinanzasRoute: typeof AppFinanzasRoute
-  AppFunnelRoute: typeof AppFunnelRoute
-  AppIntegrationsRoute: typeof AppIntegrationsRoute
   AppLeadsRoute: typeof AppLeadsRoute
   AppMetasRoute: typeof AppMetasRoute
   AppPagosDigitalesRoute: typeof AppPagosDigitalesRoute
@@ -1379,24 +953,8 @@ interface AppRouteChildren {
   AppResenasPqrsRoute: typeof AppResenasPqrsRoute
   AppRestauranteRoute: typeof AppRestauranteRoute
   AppSettingsRoute: typeof AppSettingsRoute
-  AppTemplatesRoute: typeof AppTemplatesRoute
   AppWelcomeRoute: typeof AppWelcomeRoute
-  AppCampaignsIdRoute: typeof AppCampaignsIdRoute
   AppModulosIdRoute: typeof AppModulosIdRoute
-  AppToolsSplatRoute: typeof AppToolsSplatRoute
-  AppToolsAllUtmsRoute: typeof AppToolsAllUtmsRoute
-  AppToolsCampaignCreatorRoute: typeof AppToolsCampaignCreatorRoute
-  AppToolsCampaignInABoxRoute: typeof AppToolsCampaignInABoxRoute
-  AppToolsCampaignPerformanceRoute: typeof AppToolsCampaignPerformanceRoute
-  AppToolsEventIntakeRoute: typeof AppToolsEventIntakeRoute
-  AppToolsEventsRoute: typeof AppToolsEventsRoute
-  AppToolsFunnelTargetsRoute: typeof AppToolsFunnelTargetsRoute
-  AppToolsImportRoute: typeof AppToolsImportRoute
-  AppToolsListCleanerRoute: typeof AppToolsListCleanerRoute
-  AppToolsTaxonomyRoute: typeof AppToolsTaxonomyRoute
-  AppToolsUtmRoute: typeof AppToolsUtmRoute
-  AppCampaignsIndexRoute: typeof AppCampaignsIndexRoute
-  AppToolsIndexRoute: typeof AppToolsIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -1404,15 +962,12 @@ const AppRouteChildren: AppRouteChildren = {
   AppCalendarRoute: AppCalendarRoute,
   AppCarteraFiadosRoute: AppCarteraFiadosRoute,
   AppCombosRoute: AppCombosRoute,
-  AppConnectorsRoute: AppConnectorsRoute,
   AppCotizacionesRoute: AppCotizacionesRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppDifusionWhatsappRoute: AppDifusionWhatsappRoute,
   AppDomiciliosRoute: AppDomiciliosRoute,
   AppEquipoNominaRoute: AppEquipoNominaRoute,
   AppFinanzasRoute: AppFinanzasRoute,
-  AppFunnelRoute: AppFunnelRoute,
-  AppIntegrationsRoute: AppIntegrationsRoute,
   AppLeadsRoute: AppLeadsRoute,
   AppMetasRoute: AppMetasRoute,
   AppPagosDigitalesRoute: AppPagosDigitalesRoute,
@@ -1425,24 +980,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppResenasPqrsRoute: AppResenasPqrsRoute,
   AppRestauranteRoute: AppRestauranteRoute,
   AppSettingsRoute: AppSettingsRoute,
-  AppTemplatesRoute: AppTemplatesRoute,
   AppWelcomeRoute: AppWelcomeRoute,
-  AppCampaignsIdRoute: AppCampaignsIdRoute,
   AppModulosIdRoute: AppModulosIdRoute,
-  AppToolsSplatRoute: AppToolsSplatRoute,
-  AppToolsAllUtmsRoute: AppToolsAllUtmsRoute,
-  AppToolsCampaignCreatorRoute: AppToolsCampaignCreatorRoute,
-  AppToolsCampaignInABoxRoute: AppToolsCampaignInABoxRoute,
-  AppToolsCampaignPerformanceRoute: AppToolsCampaignPerformanceRoute,
-  AppToolsEventIntakeRoute: AppToolsEventIntakeRoute,
-  AppToolsEventsRoute: AppToolsEventsRoute,
-  AppToolsFunnelTargetsRoute: AppToolsFunnelTargetsRoute,
-  AppToolsImportRoute: AppToolsImportRoute,
-  AppToolsListCleanerRoute: AppToolsListCleanerRoute,
-  AppToolsTaxonomyRoute: AppToolsTaxonomyRoute,
-  AppToolsUtmRoute: AppToolsUtmRoute,
-  AppCampaignsIndexRoute: AppCampaignsIndexRoute,
-  AppToolsIndexRoute: AppToolsIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -1462,11 +1001,8 @@ const rootRouteChildren: RootRouteChildren = {
   InviteTokenRoute: InviteTokenRoute,
   RSlugRoute: RSlugRoute,
   RequestOrgSlugRoute: RequestOrgSlugRoute,
-  WTokenRoute: WTokenRoute,
-  IntakeOrgSlugHackathonRoute: IntakeOrgSlugHackathonRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   RequestStatusTokenRoute: RequestStatusTokenRoute,
-  ApiPublicCronClusterRetrosRoute: ApiPublicCronClusterRetrosRoute,
   ApiPublicCronDailyDigestRoute: ApiPublicCronDailyDigestRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,

@@ -10,8 +10,6 @@ import { PanelError } from "@/components/ui-custom/PanelError";
 import { IconClock, IconArrowRight, IconCheck, IconClose, IconPlus } from "@/components/ui-custom/CustomIcon";
 import { PageHexBadge } from "@/components/app/PageHexBadge";
 import { toast } from "sonner";
-import { useServerFn } from "@tanstack/react-start";
-import { promoteRequest } from "@/lib/promote-request.functions";
 import { usePublicOrigin } from "@/lib/public-origin";
 import { Link } from "@tanstack/react-router";
 import { RequestForm } from "@/components/requests/RequestForm";
@@ -43,7 +41,6 @@ function RequestsPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [orgSlug, setOrgSlug] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
-  const promote = useServerFn(promoteRequest);
 
   useEffect(() => {
     if (!orgId) return;
@@ -91,11 +88,11 @@ function RequestsPage() {
     if (!user) return;
     setBusy(r.id);
     try {
-      const { workspaceId } = await promote({ data: { requestId: r.id } });
-      toast.success("Campaign created");
-      nav({ to: "/campaigns/$id", params: { id: workspaceId } });
+      const { error } = await supabase.from("campaign_requests").update({ status: "accepted" }).eq("id", r.id);
+      if (error) throw error;
+      toast.success("Solicitud aceptada");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not promote");
+      toast.error(e instanceof Error ? e.message : "No se pudo aceptar la solicitud");
     } finally {
       setBusy(null);
     }
@@ -115,7 +112,7 @@ function RequestsPage() {
             <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Bandeja</div>
             <h1 className="mt-1 font-display text-4xl tracking-tight">Solicitudes</h1>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-              Solicitudes enviadas desde tu formulario público. Acepta una para crear un espacio de trabajo con los datos ya llenos.
+              Solicitudes enviadas desde tu formulario público. Acéptalas o recházalas desde aquí.
             </p>
           </div>
         </div>
@@ -212,17 +209,9 @@ function RequestsPage() {
                     disabled={busy === r.id}
                     className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
                   >
-                    <IconCheck size={12} /> {busy === r.id ? "Creating…" : "Accept"}
+                    <IconCheck size={12} /> {busy === r.id ? "Aceptando…" : "Aceptar"}
                   </button>
                 </div>
-              )}
-              {r.status === "converted" && r.workspace_id && (
-                <button
-                  onClick={() => nav({ to: "/campaigns/$id", params: { id: r.workspace_id! } })}
-                  className="inline-flex shrink-0 items-center gap-1 text-xs text-primary hover:underline"
-                >
-                  Open workspace <IconArrowRight size={12} />
-                </button>
               )}
             </GlassPanel>
           ))}

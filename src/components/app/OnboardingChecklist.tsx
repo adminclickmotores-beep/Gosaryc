@@ -15,17 +15,12 @@ const checklistCache: {
   promise: Promise<string[]> | null;
 } = { userId: null, values: null, promise: null };
 
-type TaskId =
-  | "create_workspace"
-  | "save_campaign_name"
-  | "import_list"
-  | "mint_utm";
+type TaskId = "negocio" | "productos" | "agenda";
 
 const TASKS: { id: TaskId; label: string; to: string; focus?: string; hint: string }[] = [
-  { id: "create_workspace", label: "Crea tu primera campaña", to: "/campaigns", hint: "30 seg: nombre, objetivo y canal" },
-  { id: "save_campaign_name", label: "Genera un nombre de campaña", to: "/tools", focus: "utm-campaign-name", hint: "Nombres con IA y etiqueta de seguimiento" },
-  { id: "mint_utm", label: "Crea un enlace UTM", to: "/tools", focus: "utm", hint: "Enlace listo para copiar, con código QR" },
-  { id: "import_list", label: "Importa una lista de contactos", to: "/tools", focus: "campaign-import", hint: "CSV listo para enviar a tu correo masivo" },
+  { id: "negocio", label: "Configura tu negocio", to: "/restaurante", hint: "Nombre, tipo de negocio y datos básicos" },
+  { id: "productos", label: "Agrega tus productos", to: "/restaurante", hint: "Tu carta o catálogo para empezar a vender" },
+  { id: "agenda", label: "Agenda tu primera cita", to: "/calendar", hint: "Citas, entregas o recordatorios con tus clientes" },
 ];
 
 export function OnboardingChecklist({ variant = "auto" }: { variant?: "auto" | "pill" | "full" } = {}) {
@@ -83,30 +78,13 @@ export function OnboardingChecklist({ variant = "auto" }: { variant?: "auto" | "
     (async () => {
       const completed = new Set(done);
       const checks = await Promise.all([
-        supabase
-          .from("workspaces")
-          .select("id", { count: "exact", head: true })
-          .eq("owner_id", userId)
-          .eq("is_sample", false),
-        supabase
-          .from("campaigns")
-          .select("id", { count: "exact", head: true })
-          .eq("created_by", userId),
-        supabase
-          .from("utm_links")
-          .select("id", { count: "exact", head: true })
-          .eq("created_by", userId),
-        supabase
-          .from("imported_lists")
-          .select("id", { count: "exact", head: true })
-          .eq("created_by", userId),
+        supabase.from("negocio_config").select("id", { count: "exact", head: true }),
+        supabase.from("restaurante_productos").select("id", { count: "exact", head: true }),
+        supabase.from("agenda_citas").select("id", { count: "exact", head: true }),
       ]);
-      // Skip the trigger-seeded "Welcome campaign" by requiring at least 2
-      // user-owned non-sample workspaces (welcome + the one they made).
-      if ((checks[0].count ?? 0) >= 2) completed.add("create_workspace");
-      if ((checks[1].count ?? 0) > 0) completed.add("save_campaign_name");
-      if ((checks[2].count ?? 0) > 0) completed.add("mint_utm");
-      if ((checks[3].count ?? 0) > 0) completed.add("import_list");
+      if ((checks[0].count ?? 0) > 0) completed.add("negocio");
+      if ((checks[1].count ?? 0) > 0) completed.add("productos");
+      if ((checks[2].count ?? 0) > 0) completed.add("agenda");
 
       if (cancelled) return;
       if (completed.size !== done.size) {
@@ -262,8 +240,7 @@ export function OnboardingChecklist({ variant = "auto" }: { variant?: "auto" | "
               return (
                 <Link
                   key={t.id}
-                  to={t.to}
-                  search={t.focus ? { focus: t.focus } : undefined}
+                  to={t.to as never}
                   className={`group flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm transition ${
                     isDone
                       ? "border-glass-border bg-glass/20 text-muted-foreground"
