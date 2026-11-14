@@ -334,6 +334,23 @@ function Insumos({
         Agregar insumo
       </button>
 
+      {bodegas.length > 0 && (
+        <div className="grid gap-2 pt-2 sm:grid-cols-2">
+          {[...bodegas, { id: "sin", nombre: "Sin bodega" }].map((b) => {
+            const de = insumos.filter((i) => (b.id === "sin" ? !i.bodega_id : i.bodega_id === b.id));
+            if (de.length === 0) return null;
+            return (
+              <div key={b.id} className="rounded-lg border border-glass-border p-3">
+                <p className="truncate text-sm font-medium text-foreground">{b.nombre}</p>
+                <p className="text-xs text-muted-foreground">
+                  {de.length} insumo(s) · {de.filter((i) => i.stock_minimo > 0 && i.stock <= i.stock_minimo).length} con stock bajo
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       <div className="space-y-2 pt-2">
         {insumos.map((i) => {
           const bajo = i.stock_minimo > 0 && i.stock <= i.stock_minimo;
