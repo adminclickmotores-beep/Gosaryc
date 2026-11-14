@@ -236,6 +236,96 @@ export type Database = {
         }
         Relationships: []
       }
+      turnos_caja: {
+        Row: {
+          abierto_en: string
+          cajero: string | null
+          cerrado_en: string | null
+          created_at: string
+          diferencia: number | null
+          efectivo_contado: number | null
+          esperado_efectivo: number | null
+          estado: string
+          fondo_inicial: number
+          id: string
+          notas_cierre: string | null
+          owner_id: string | null
+        }
+        Insert: {
+          abierto_en?: string
+          cajero?: string | null
+          cerrado_en?: string | null
+          created_at?: string
+          diferencia?: number | null
+          efectivo_contado?: number | null
+          esperado_efectivo?: number | null
+          estado?: string
+          fondo_inicial?: number
+          id?: string
+          notas_cierre?: string | null
+          owner_id?: string | null
+        }
+        Update: {
+          abierto_en?: string
+          cajero?: string | null
+          cerrado_en?: string | null
+          created_at?: string
+          diferencia?: number | null
+          efectivo_contado?: number | null
+          esperado_efectivo?: number | null
+          estado?: string
+          fondo_inicial?: number
+          id?: string
+          notas_cierre?: string | null
+          owner_id?: string | null
+        }
+        Relationships: []
+      }
+      movimientos_turno: {
+        Row: {
+          anulado: boolean
+          categoria: string | null
+          concepto: string
+          created_at: string
+          id: string
+          metodo: string
+          monto: number
+          motivo_anulacion: string | null
+          owner_id: string | null
+          registrado_por: string | null
+          tipo: string
+          turno_id: string
+        }
+        Insert: {
+          anulado?: boolean
+          categoria?: string | null
+          concepto: string
+          created_at?: string
+          id?: string
+          metodo?: string
+          monto: number
+          motivo_anulacion?: string | null
+          owner_id?: string | null
+          registrado_por?: string | null
+          tipo: string
+          turno_id: string
+        }
+        Update: {
+          anulado?: boolean
+          categoria?: string | null
+          concepto?: string
+          created_at?: string
+          id?: string
+          metodo?: string
+          monto?: number
+          motivo_anulacion?: string | null
+          owner_id?: string | null
+          registrado_por?: string | null
+          tipo?: string
+          turno_id?: string
+        }
+        Relationships: []
+      }
       retomas_vehiculos: {
         Row: {
           anio: number | null

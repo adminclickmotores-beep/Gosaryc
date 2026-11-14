@@ -9,6 +9,7 @@ import { buscarModulo } from "@/lib/modulos-negocio";
 import { configModulo } from "@/lib/modulos-config";
 import { InventarioVehiculos } from "@/components/vehiculos/InventarioVehiculos";
 import { SeparacionesVehiculos } from "@/components/vehiculos/SeparacionesVehiculos";
+import { CajaTurnos } from "@/components/caja/CajaTurnos";
 import { RetomasVehiculos } from "@/components/vehiculos/RetomasVehiculos";
 import { SolicitudesCredito } from "@/components/vehiculos/SolicitudesCredito";
 import { CotizacionesVehiculos } from "@/components/vehiculos/CotizacionesVehiculos";
@@ -31,7 +32,8 @@ const campo =
 function ModuloPage() {
   const { id } = Route.useParams();
   if (id === "vehiculos") return <InventarioVehiculos />;
-  if (id === "vehiculos_usados") return <RetomasVehiculos />;
+  if (id === "caja_diaria") return <CajaTurnos />;
+  if (id === "vehiculos_usados")return <RetomasVehiculos />;
   if (id === "creditos_veh")return <SolicitudesCredito />;
   if (id === "separaciones_veh") return <SeparacionesVehiculos />;
   if (id === "vencimientos_veh") return <VencimientosVehiculos />;
