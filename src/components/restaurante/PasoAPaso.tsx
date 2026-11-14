@@ -105,7 +105,7 @@ export function PasoAPaso({ negocio, tipo, onAbrirNegocio, onAbrirMenu }: Props)
           <li
             key={p.titulo}
             className={`flex min-w-0 flex-col gap-2 rounded-xl border p-3 ${
-              i === actual ? "border-primary bg-accent" : "border-glass-border bg-white"
+              i === actual ? "border-primary bg-accent" : "border-glass-border bg-glass"
             }`}
           >
             <span

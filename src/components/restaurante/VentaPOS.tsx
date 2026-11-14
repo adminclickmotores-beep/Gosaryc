@@ -415,7 +415,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
             <button
               key={clave}
               onClick={() => setModalidad(clave)}
-              className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2 text-xs ${modalidad === clave ? "bg-primary text-primary-foreground" : "border border-glass-border text-muted-foreground"}`}
+              className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2 text-xs ${modalidad === clave ? "bg-primary text-primary-foreground" : "border border-glass-border bg-glass-strong text-foreground/80"}`}
             >
               <Icon className="h-4 w-4" /> {texto}
             </button>

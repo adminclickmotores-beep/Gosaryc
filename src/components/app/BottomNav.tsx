@@ -12,7 +12,7 @@ const items = [
 export function BottomNav() {
   const loc = useLocation();
   return (
-    <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-glass-border bg-white/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
+    <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-glass-border bg-card/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
       <div className="grid grid-cols-6">
         {items.map((it) => {
           const active = loc.pathname.startsWith(it.to);
