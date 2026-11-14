@@ -242,6 +242,15 @@ function Insumos({
     cargarBodegas();
   }, []);
 
+  const cambiarBodega = async (i: Insumo, bodegaNueva: string) => {
+    const { error } = await supabase
+      .from("restaurante_insumos")
+      .update({ bodega_id: bodegaNueva || null })
+      .eq("id", i.id);
+    if (error) return toast.error("No se pudo cambiar la bodega.");
+    onCambio();
+  };
+
   const crearBodega = async () => {
     if (!nuevaBodega.trim()) return toast.error("Escribe el nombre de la bodega.");
     const { error } = await supabase.from("restaurante_bodegas").insert({ nombre: nuevaBodega.trim() });
@@ -354,6 +363,20 @@ function Insumos({
                     if (Number(e.target.value) !== i.stock) ajustarStock(i, Number(e.target.value));
                   }}
                 />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="shrink-0 text-xs text-muted-foreground">Bodega</span>
+                <select
+                  className={`${campo} !py-1.5 min-w-0 flex-1`}
+                  value={i.bodega_id ?? ""}
+                  onChange={(e) => cambiarBodega(i, e.target.value)}
+                  aria-label="Bodega de este insumo"
+                >
+                  <option value="">Sin bodega</option>
+                  {bodegas.map((b) => (
+                    <option key={b.id} value={b.id}>{b.nombre}</option>
+                  ))}
+                </select>
               </div>
             </div>
           );
