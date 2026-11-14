@@ -65,6 +65,13 @@ Ver docs/KNOWN_ISSUES.md.
 - Las migraciones nuevas sí se aplican solas al publicar, pero no hay canal de regreso con el resultado.
 - Sin cambios en la app ni en la base en esta ronda. T04 sigue abierta; T03 sigue bloqueada.
 
+## Auditoría de la migración (2026-11-14, tercera revisión)
+- Hecho: pruebas sacadas de la migración y separadas en conjuntos A–F en `supabase/tests/`; pruebas con error específico; asignación de dueños sin inventar (pendientes de conciliación); informe de conciliación de solo lectura; revisión de fecha, permisos y políticas (hallazgos H1–H7 en docs/SECURITY.md).
+- No se agregó ninguna migración nueva (se habría aplicado sola). No se aplicó nada en producción.
+- Pruebas realmente ejecutadas: NINGUNA. Pruebas preparadas: A–F.
+- Archivos: supabase/migrations/20261201120000_aislamiento_multiempresa.sql (editado), supabase/tests/A–F y informe_conciliacion_propietarios.sql (nuevos), supabase/tests/aislamiento_multiempresa.sql (retirado), docs/TESTING.md y docs/SECURITY.md.
+- Si la migración ya estaba aplicada antes de estos cambios, la versión anterior sigue vigente en la base: correr el informe de conciliación.
+
 ## Próxima tarea exacta
 T04 (bloqueante): confirmar en los registros de la base de Lovable Cloud el aviso "Pruebas de aislamiento: todas superadas" (o "WARNING Pruebas de aislamiento: ..."), y ejecutar `supabase/tests/aislamiento_multiempresa.sql` en un entorno de pruebas. Luego pruebas por rol, descarga de archivos privados e integridad de relaciones.
 Solo con esos resultados se pasa a T03 (clasificar módulos) y T05.

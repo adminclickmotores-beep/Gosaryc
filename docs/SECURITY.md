@@ -28,6 +28,19 @@ Las correcciones V1–V8 están escritas; su aplicación en la base y el resulta
 
 Bloqueo vigente: no existe conexión de lectura a la base desde el asistente (ver PROJECT_CONTROL.md). Seguridad sigue sin validar.
 
+### Auditoría de la migración (2026-11-14, por lectura; nada ejecutado)
+| ID | Hallazgo | Estado |
+|---|---|---|
+| H1 | El bloque de pruebas dentro de la migración tenía su propio manejo de errores y no podía revertir la migración, pero mezclaba pruebas con correcciones y sus avisos pueden no mostrarse | Corregido: pruebas fuera de la migración |
+| H2 | P3 y P6 pasaban con cualquier error, no con el esperado | Corregido: se exige el código de error y el mensaje |
+| H3 | Bodegas sin insumos se asignaban al "negocio más antiguo" sin evidencia | Corregido en el archivo: quedan sin dueño (pendientes de conciliación). Si la migración ya se aplicó antes de este cambio, hay que correr el informe de conciliación y revisar esas bodegas |
+| H4 | Historial del equipo: se usaba al autor del cambio como dueño sin comprobar que fuera dueño | Corregido en el archivo: solo si consta como dueño de un equipo |
+| H5 | Fecha 20261201: el proyecto numera sus migraciones en secuencia y la anterior ya era 20261130120000. Va después de todas, sin conflicto de orden. Tras una migración futura hay que numerar después de ella | Sin conflicto |
+| H6 | Políticas de bodegas usan `es_personal()`: un empleado con solo pedidos/cocina/domicilios podría ver y editar bodegas sin el módulo "insumos". Probable por lectura; la prueba F1/F2 lo confirma o descarta | PENDIENTE (no corregido; requiere migración nueva tras confirmar) |
+| H7 | Cualquiera puede añadir artículos a un pedido "nuevo y reciente" si conoce su id (UUID) | Riesgo aceptado, ver abajo |
+
+Revisado sin hallar problema: los `REVOKE` de la migración quitan `anon` a funciones que solo llama la app con sesión (`authenticated` conserva su permiso); funciones `SECURITY DEFINER` con `search_path = public`; las políticas de `creditos_docs` ya filtran por carpeta de negocio. Relaciones sin validar entre empresas todavía: insumos↔recetas, compras↔proveedores, `modulo_registros` (sin revisar).
+
 ### Pendiente
 0. Confirmar migración aplicada y leer el aviso de pruebas en los registros de la base.
 1. `es_superadmin()` compara un correo fijo (mover a tabla de roles).

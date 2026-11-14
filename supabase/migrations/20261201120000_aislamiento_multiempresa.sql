@@ -14,11 +14,9 @@ UPDATE public.restaurante_bodegas b
    SET owner_id = (SELECT i.owner_id FROM public.restaurante_insumos i WHERE i.bodega_id = b.id AND i.owner_id IS NOT NULL LIMIT 1)
  WHERE b.owner_id IS NULL;
 
-UPDATE public.restaurante_bodegas
-   SET owner_id = coalesce(
-     (SELECT user_id FROM public.personal_autorizado ORDER BY created_at ASC LIMIT 1),
-     (SELECT id FROM auth.users ORDER BY created_at ASC LIMIT 1))
- WHERE owner_id IS NULL;
+-- Bodegas sin insumos relacionados: NO hay evidencia de propiedad, así que NO se asignan a ningún negocio.
+-- Quedan con owner_id NULL (nadie las ve por RLS) y pendientes de conciliación manual.
+-- Informe: supabase/tests/informe_conciliacion_propietarios.sql (solo lectura).
 
 UPDATE public.restaurante_stock_bodega s
    SET owner_id = (SELECT i.owner_id FROM public.restaurante_insumos i WHERE i.id = s.insumo_id)
@@ -159,7 +157,8 @@ ALTER TABLE public.equipo_auditoria
 UPDATE public.equipo_auditoria a
    SET owner_id = coalesce(
      (SELECT e.owner_id FROM public.equipo_negocio e WHERE lower(e.email) = lower(a.miembro_email) AND e.owner_id IS NOT NULL LIMIT 1),
-     a.actor_id)
+     -- Solo se usa quien hizo el cambio si consta como dueño de un equipo; si no, queda pendiente de conciliación.
+     (SELECT e.owner_id FROM public.equipo_negocio e WHERE e.owner_id = a.actor_id LIMIT 1))
  WHERE a.owner_id IS NULL;
 
 CREATE INDEX IF NOT EXISTS equipo_auditoria_owner_idx ON public.equipo_auditoria (owner_id);
@@ -322,74 +321,6 @@ CREATE POLICY "negocios_imagenes_borrar" ON storage.objects
   USING (bucket_id = 'negocios' AND (storage.foldername(name))[1] = public.mi_negocio_id()::text AND public.es_personal());
 
 -- ============================================================
--- 7. Pruebas de aislamiento dentro de la base (se ejecutan al aplicar la migración).
---    Crean dos negocios de prueba, intentan cruzarlos y fallan la migración si algo se cruza.
---    Todo se hace dentro de una transacción de bloque que se revierte: no deja datos.
+-- 7. Pruebas: ya NO viven en esta migración.
+--    Están en supabase/tests/ (conjuntos A–F), separadas, con rollback propio, y no se aplican solas.
 -- ============================================================
-DO $$
-DECLARE
-  a uuid := gen_random_uuid();
-  b uuid := gen_random_uuid();
-  v_ins_a uuid;
-  v_bod_a uuid;
-  v_bod_b uuid;
-  v_vistas integer;
-  v_ok boolean;
-BEGIN
-  BEGIN
-    INSERT INTO auth.users (id, email, aud, role, instance_id)
-    VALUES (a, 'prueba_a@aislamiento.test', 'authenticated', 'authenticated', '00000000-0000-0000-0000-000000000000'),
-           (b, 'prueba_b@aislamiento.test', 'authenticated', 'authenticated', '00000000-0000-0000-0000-000000000000');
-
-    INSERT INTO public.restaurante_insumos (owner_id, nombre, unidad, stock, stock_minimo, precio_compra, cantidad_compra)
-    VALUES (a, 'Insumo A', 'kg', 10, 1, 1000, 1) RETURNING id INTO v_ins_a;
-    INSERT INTO public.restaurante_bodegas (owner_id, nombre) VALUES (a, 'Bodega A') RETURNING id INTO v_bod_a;
-    INSERT INTO public.restaurante_bodegas (owner_id, nombre) VALUES (b, 'Bodega B') RETURNING id INTO v_bod_b;
-
-    -- Se actúa como la empresa B (sesión simulada).
-    PERFORM set_config('request.jwt.claims', json_build_object('sub', b, 'role', 'authenticated')::text, true);
-    SET LOCAL ROLE authenticated;
-
-    -- P1: B no ve bodegas ni insumos de A.
-    SELECT count(*) INTO v_vistas FROM public.restaurante_bodegas WHERE owner_id = a;
-    IF v_vistas <> 0 THEN RAISE EXCEPTION 'FALLO P1: B ve bodegas de A'; END IF;
-    SELECT count(*) INTO v_vistas FROM public.restaurante_insumos WHERE owner_id = a;
-    IF v_vistas <> 0 THEN RAISE EXCEPTION 'FALLO P2: B ve insumos de A'; END IF;
-
-    -- P3: B no puede mover stock del insumo de A.
-    v_ok := false;
-    BEGIN
-      PERFORM public.agregar_stock_bodega(v_ins_a, v_bod_b, 5);
-    EXCEPTION WHEN OTHERS THEN v_ok := true;
-    END;
-    IF NOT v_ok THEN RAISE EXCEPTION 'FALLO P3: B pudo agregar stock a un insumo de A'; END IF;
-
-    -- P4: B no puede modificar ni borrar la bodega de A.
-    UPDATE public.restaurante_bodegas SET nombre = 'hackeada' WHERE id = v_bod_a;
-    GET DIAGNOSTICS v_vistas = ROW_COUNT;
-    IF v_vistas <> 0 THEN RAISE EXCEPTION 'FALLO P4: B modificó una bodega de A'; END IF;
-    DELETE FROM public.restaurante_bodegas WHERE id = v_bod_a;
-    GET DIAGNOSTICS v_vistas = ROW_COUNT;
-    IF v_vistas <> 0 THEN RAISE EXCEPTION 'FALLO P5: B borró una bodega de A'; END IF;
-
-    -- P6: B no puede crear una bodega a nombre de A.
-    v_ok := false;
-    BEGIN
-      INSERT INTO public.restaurante_bodegas (owner_id, nombre) VALUES (a, 'falsa');
-    EXCEPTION WHEN OTHERS THEN v_ok := true;
-    END;
-    IF NOT v_ok THEN RAISE EXCEPTION 'FALLO P6: B creó una bodega a nombre de A'; END IF;
-
-    RESET ROLE;
-    -- Todo superado: se fuerza el retroceso para no dejar datos de prueba.
-    RAISE EXCEPTION 'PRUEBAS_AISLAMIENTO_OK';
-  EXCEPTION WHEN OTHERS THEN
-    RESET ROLE;
-    -- Solo informa: un fallo de la prueba no debe impedir que se apliquen las correcciones.
-    IF SQLERRM = 'PRUEBAS_AISLAMIENTO_OK' THEN
-      RAISE NOTICE 'Pruebas de aislamiento: todas superadas';
-    ELSE
-      RAISE WARNING 'Pruebas de aislamiento: %', SQLERRM;
-    END IF;
-  END;
-END $$;

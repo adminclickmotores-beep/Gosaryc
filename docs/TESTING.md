@@ -1,37 +1,41 @@
 # TESTING
 
-Estado: no hay suite automatizada en CI. Ninguna funcionalidad está marcada como completamente probada.
+Estado (2026-11-14): ninguna prueba de seguridad ha sido ejecutada. No hay acceso a la base desde el asistente.
+Una prueba escrita no es una prueba aprobada.
 
-## Misión 1 — Aislamiento multiempresa
-| Prueba | Dónde | Resultado |
+## Dónde están las pruebas
+`supabase/tests/` (NO es una carpeta de migraciones: GoIDE no las aplica solas). Cada archivo es independiente, crea sus propias empresas A y B de prueba y termina en `ROLLBACK`: no deja datos ni funciones.
+
+| Conjunto | Archivo | Pruebas |
 |---|---|---|
-| B no ve, edita ni borra bodegas de A | `supabase/tests/aislamiento_multiempresa.sql` y bloque de pruebas dentro de la migración `20261201120000` | Escritas. Resultado NO verificado: no se pudo leer la base desde aquí. La migración las ejecuta al aplicarse y las informa como aviso en el registro de la base |
-| B no puede sumar stock a un insumo de A (función protegida) | Migración 20261201120000 (P3) | Escrita, sin verificar |
-| B no puede crear bodegas a nombre de A | Migración 20261201120000 (P6) | Escrita, sin verificar |
-| Imágenes: B no escribe en la carpeta de A | Política de almacenamiento por carpeta | Sin prueba automatizada |
-| Reportes/estadísticas, finanzas, archivos de crédito | Revisión de políticas (todas con `owner_id = mi_negocio_id()`) | Revisado por lectura de código, sin ejecución |
+| A. Bodegas y existencias | `A_bodegas_existencias.sql` | A0–A14 |
+| B. Historial del equipo | `B_historial_equipo.sql` | B0–B8 |
+| C. Clientes | `C_clientes.sql` | C0–C7 |
+| D. Pedidos y relaciones | `D_pedidos_relaciones.sql` | D0–D12 |
+| E. Archivos privados | `E_archivos_privados.sql` | E0–E13 |
+| F. Roles y permisos | `F_roles_permisos.sql` | F0–F11 |
+| Conciliación de propietarios (solo lectura) | `informe_conciliacion_propietarios.sql` | 9 consultas |
 
-### Segunda revisión 2026-11-14: sin acceso a la base (sin MCP ni consulta SQL). Ninguna prueba pudo ejecutarse; el estado de la tabla siguiente no cambia.
+## Cómo se lee el resultado
+Cada prueba emite un aviso `RESULTADO | id | estado | detalle`:
+- **BLOQUEADA_OK**: se bloqueó con el código de error o el número de filas esperado (no vale "cualquier error").
+- **PERMITIDA_INDEBIDAMENTE**: falla de seguridad.
+- **ERROR_TECNICO**: error distinto del esperado; NO cuenta como aprobada, hay que revisarla.
+- **NO_EJECUTADA**: no se pudo preparar (tabla, bucket o columna inesperada).
+- **CONTROL_OK / CONTROL_FALLIDO**: confirma que lo legítimo sí funciona. Sin controles OK, un bloqueo no demuestra nada.
 
-### Revisión del 2026-11-14
-Ninguna prueba fue ejecutada en esta ronda (sin acceso a la base ni a sus registros). Estado individual:
-| Prueba | Estado |
-|---|---|
-| P1 B no ve bodegas de A | Escrita, NO EJECUTADA |
-| P2 B no ve insumos de A | Escrita, NO EJECUTADA |
-| P3 B no suma stock a insumo de A | Escrita, NO EJECUTADA |
-| P4 B no modifica bodega de A | Escrita, NO EJECUTADA |
-| P5 B no borra bodega de A | Escrita, NO EJECUTADA |
-| P6 B no crea bodega a nombre de A | Escrita, NO EJECUTADA |
-| Clientes, pedidos, historial, existencias, almacenamiento, roles | SIN PRUEBA escrita ni ejecutada |
-| Migración aplicada / políticas activas | NO CONFIRMADO |
+## Cambios respecto a la versión anterior
+- Las pruebas se quitaron de la migración: ya no pueden afectar las correcciones.
+- Se eliminó el criterio "pasa si hubo cualquier error" (antes P3 y P6).
+- Se agregaron controles positivos y pruebas con visitante sin sesión (anon).
 
-Pendiente: pruebas negativas por rol (empleado sin módulo), pruebas de descarga de archivos privados y pruebas con dos cuentas reales en la app.
+## Resultados reales
+| Conjunto | Ejecutado | Resultado |
+|---|---|---|
+| A, B, C, D, E, F | NO | Sin resultado. Preparadas, no aprobadas |
+| Migración aplicada / políticas activas | NO CONFIRMADO | — |
 
-## Plan mínimo
-1. Aislamiento: dos cuentas A y B; B no debe leer ni escribir datos de A en ninguna tabla.
-2. Permisos: un empleado sin módulo no puede leer ni escribir sus registros (probar contra la API).
-3. Finanzas: venta POS → caja; abono en módulo → caja; anulación no duplica ingresos.
-4. Inventario: vender descuenta insumos; mover entre bodegas conserva el total; stock negativo rechazado.
-5. Sin conexión: crear registros sin internet, recuperar conexión, sin duplicados.
-6. Suscripción: empresa suspendida o vencida queda bloqueada.
+## Pendiente
+1. Ejecutar A–F en un entorno de pruebas y registrar cada línea `RESULTADO` aquí.
+2. Descarga con la API de Storage con dos sesiones reales (las pruebas E solo cubren las políticas de la base).
+3. Finanzas, sin conexión y suscripciones (ver plan mínimo en PROJECT_CONTROL.md).
