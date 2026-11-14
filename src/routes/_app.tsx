@@ -2,6 +2,8 @@ import { createFileRoute, Outlet, Link, useLocation, useNavigate } from "@tansta
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { motion, AnimatePresence } from "framer-motion";
+import { Lock } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
 import {
@@ -88,6 +90,7 @@ function AppShell() {
   const { negocio } = useNegocio();
   const tipoNegocio = resolverTipoNegocio(negocio?.tipo_negocio);
   const { esAdmin, puede, cargando: cargandoPermisos } = usePermisos();
+  const [bloqueo, setBloqueo] = useState<"suspendido" | "vencido" | null>(null);
   // Empleados (no administrador) en el panel: pantalla completa fija, sin menú lateral.
   // El administrador conserva el menú para probar módulo por módulo.
   const completaFinal = completa || (!cargandoPermisos && !esAdmin && loc.pathname.startsWith("/restaurante"));
@@ -209,6 +212,24 @@ function AppShell() {
     }
     // Fragile: this guard must not depend on location.pathname.
   }, [loading, session, nav]);
+
+  // Bloqueo por suspensión o vencimiento de la suscripción de la empresa.
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.from("suscripciones_negocio").select("estado, vence_el").maybeSingle();
+      if (cancelled || !data) return;
+      const d = new Date();
+      const hoy = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      if (data.estado === "suspendido") setBloqueo("suspendido");
+      else if (data.vence_el < hoy) setBloqueo("vencido");
+      else setBloqueo(null);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   if (loading || !session) {
     return (
@@ -396,7 +417,19 @@ function AppShell() {
             }`}
           >
             <InstructivoPagina />
-            {sinAcceso ? (
+            {bloqueo ? (
+              <div className="mx-auto mt-10 max-w-md rounded-2xl border border-glass-border bg-glass/30 p-8 text-center">
+                <Lock className="mx-auto h-8 w-8 text-destructive" />
+                <h1 className="mt-3 font-display text-2xl">
+                  {bloqueo === "suspendido" ? "Cuenta suspendida" : "Suscripción vencida"}
+                </h1>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {bloqueo === "suspendido"
+                    ? "Tu cuenta está suspendida por falta de pago. Comunícate con Gosaryc para reactivarla."
+                    : "El periodo de uso de tu cuenta venció. Comunícate con Gosaryc para renovarlo."}
+                </p>
+              </div>
+            ) : sinAcceso ? (
               <div className="mx-auto mt-10 max-w-md rounded-2xl border border-glass-border bg-glass/30 p-8 text-center">
                 <h1 className="font-display text-2xl">Sin acceso a esta sección</h1>
                 <p className="mt-2 text-sm text-muted-foreground">
