@@ -1045,6 +1045,7 @@ export type Database = {
           unidad: string
         }
         Insert: {
+          bodega_id?: string | null
           cantidad_compra?: number
           created_at?: string
           id?: string
@@ -1056,6 +1057,7 @@ export type Database = {
           unidad?: string
         }
         Update: {
+          bodega_id?: string | null
           cantidad_compra?: number
           created_at?: string
           id?: string

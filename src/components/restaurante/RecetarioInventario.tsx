@@ -229,6 +229,26 @@ function Insumos({
   const [precio, setPrecio] = useState("");
   const [stock, setStock] = useState("");
   const [minimo, setMinimo] = useState("");
+  const [bodegas, setBodegas] = useState<Tables<"restaurante_bodegas">[]>([]);
+  const [bodegaId, setBodegaId] = useState("");
+  const [nuevaBodega, setNuevaBodega] = useState("");
+
+  const cargarBodegas = async () => {
+    const { data } = await supabase.from("restaurante_bodegas").select("*").order("nombre");
+    setBodegas(data ?? []);
+  };
+
+  useEffect(() => {
+    cargarBodegas();
+  }, []);
+
+  const crearBodega = async () => {
+    if (!nuevaBodega.trim()) return toast.error("Escribe el nombre de la bodega.");
+    const { error } = await supabase.from("restaurante_bodegas").insert({ nombre: nuevaBodega.trim() });
+    if (error) return toast.error("No se pudo crear la bodega.");
+    setNuevaBodega("");
+    cargarBodegas();
+  };
 
   const agregar = async () => {
     const c = Number(cantidad);
@@ -243,6 +263,7 @@ function Insumos({
       precio_compra: p,
       stock: Number(stock) || 0,
       stock_minimo: Number(minimo) || 0,
+      bodega_id: bodegaId || null,
     });
     if (error) return toast.error("No se pudo guardar el insumo.");
     setNombre("");
@@ -285,6 +306,20 @@ function Insumos({
       <div className="grid grid-cols-2 gap-2">
         <input className={campo} placeholder="Stock actual" inputMode="decimal" value={stock} onChange={(e) => setStock(e.target.value)} />
         <input className={campo} placeholder="Stock mínimo" inputMode="decimal" value={minimo} onChange={(e) => setMinimo(e.target.value)} />
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <select className={campo} value={bodegaId} onChange={(e) => setBodegaId(e.target.value)} aria-label="Bodega del insumo">
+          <option value="">Sin bodega</option>
+          {bodegas.map((b) => (
+            <option key={b.id} value={b.id}>{b.nombre}</option>
+          ))}
+        </select>
+        <div className="flex min-w-0 gap-2">
+          <input className={`${campo} min-w-0 flex-1`} placeholder="Nueva bodega (ej. Cuarto frío)" value={nuevaBodega} onChange={(e) => setNuevaBodega(e.target.value)} />
+          <button onClick={crearBodega} className="shrink-0 rounded-lg border border-glass-border px-4 py-2.5 text-sm text-foreground hover:bg-glass-strong">
+            Crear bodega
+          </button>
+        </div>
       </div>
       <button onClick={agregar} className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90">
         Agregar insumo
