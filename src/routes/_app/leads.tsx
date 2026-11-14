@@ -288,7 +288,7 @@ function LeadsPage() {
 
             </h1>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-              Cada persona que pasa por tu embudo: ordénala, fíltrala y abre su ficha.
+              Cada persona interesada en tu negocio: ordénala, fíltrala y abre su ficha.
             </p>
           </div>
         </div>
@@ -305,7 +305,7 @@ function LeadsPage() {
       {(allRows ?? []).some((r) => r.is_sample) && (
         <DemoDataBanner
           storageKey="leads-sample"
-          label="Datos de muestra: estos contactos se crearon para que el embudo no esté vacío. Reemplázalos con los tuyos o bórralos en Configuración."
+          label="Datos de muestra: estos contactos se crearon para que la lista no esté vacía. Reemplázalos con los tuyos o bórralos en Configuración."
           ctaHref="#"
         />
       )}
@@ -818,7 +818,7 @@ function EmptyLeadsState({
         <p className="text-sm text-muted-foreground">
           {hasFilter
             ? "Prueba ampliando los filtros de arriba: tus datos están ocultos detrás de una vista muy estrecha."
-            : "Cuando los leads empiecen a pasar por tu embudo, cada persona aparecerá aquí."}
+            : "Cuando lleguen nuevos contactos, cada persona aparecerá aquí."}
         </p>
         <div className="flex justify-center gap-2 pt-1">
           {hasFilter && (
@@ -936,7 +936,7 @@ function ContactFormDialog({
           <DialogDescription className="text-xs">
             {isEdit
               ? "Actualiza los datos de este contacto."
-              : "Agrega un contacto a tu embudo."}
+              : "Agrega un contacto a tu lista."}
           </DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-3">

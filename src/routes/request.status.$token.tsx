@@ -11,9 +11,9 @@ export const Route = createFileRoute("/request/status/$token")({
   head: () => ({
     meta: [
       { title: `Estado de la solicitud | ${BRAND.name}` },
-      { name: "description", content: "Consulta el estado de una solicitud de campaña que enviaste." },
+      { name: "description", content: "Consulta el estado de la solicitud que enviaste." },
       { property: "og:title", content: `Estado de la solicitud | ${BRAND.name}` },
-      { property: "og:description", content: "Consulta el estado de una solicitud de campaña que enviaste." },
+      { property: "og:description", content: "Consulta el estado de la solicitud que enviaste." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -78,7 +78,7 @@ function StatusPage() {
                   {done ? <IconCheck size={18} /> : <IconClock size={18} />}
                 </span>
                 <h1 className="font-display text-2xl capitalize">
-                  {({ new: "Pendiente de revisión", accepted: "Aceptada", declined: "Rechazada", converted: "Convertida en campaña" } as const)[s.status]}
+                  {({ new: "Pendiente de revisión", accepted: "Aceptada", declined: "Rechazada", converted: "En proceso" } as const)[s.status]}
                 </h1>
               </div>
               <div>
@@ -91,7 +91,7 @@ function StatusPage() {
               </div>
               {s.status === "converted" && (
                 <div className="rounded-md border border-primary/20 bg-primary/5 p-3 text-xs">
-                  Esta solicitud se convirtió en una campaña de trabajo. Escribe al equipo para recibir el enlace del espacio.
+                  Esta solicitud ya está en proceso. Escribe al negocio si necesitas más información.
                 </div>
               )}
             </div>

@@ -11,8 +11,8 @@ export const Route = createFileRoute("/request/$orgSlug")({
   component: RequestPage,
   head: () => ({
     meta: [
-      { title: "Solicitar una campaña" },
-      { name: "description", content: "Envía un resumen de campaña y recibe un enlace para dar seguimiento." },
+      { title: "Hacer una solicitud" },
+      { name: "description", content: "Envía tu solicitud al negocio y recibe un enlace para dar seguimiento." },
     ],
   }),
 });
@@ -84,7 +84,7 @@ function RequestPage() {
           <IconLogo size={26} className="text-primary" />
           <span className="font-display text-lg">{BRAND.name}</span>
         </Link>
-        <h1 className="mt-8 font-display text-4xl">Solicitar una campaña</h1>
+        <h1 className="mt-8 font-display text-4xl">Hacer una solicitud</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Escribe tu idea en una frase y el equipo se encarga del resto.
         </p>

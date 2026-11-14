@@ -5,8 +5,6 @@ import { newRequestStatusToken } from "@/lib/request-token";
 import { IconArrowRight } from "@/components/ui-custom/CustomIcon";
 import { toast } from "sonner";
 
-type Template = { id: string; name: string; description: string | null };
-
 export type RequestFormProps = {
   orgId: string;
   /** Unique draft key to isolate this form's draft state from other instances. */
@@ -25,10 +23,8 @@ export function RequestForm({
   draftKey,
   initialEmail,
   onSubmitted,
-  loadTemplates = true,
-  submitLabel = "Submit request",
+  submitLabel = "Enviar solicitud",
 }: RequestFormProps) {
-  const [templates, setTemplates] = useState<Template[]>([]);
   const [form, setForm, { clearDraft }] = useDraft(draftKey, {
     name: "",
     email: initialEmail ?? "",
@@ -49,17 +45,9 @@ export function RequestForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialEmail]);
 
-  useEffect(() => {
-    if (!loadTemplates) return;
-    (async () => {
-      const { data } = await supabase.rpc("public_seed_templates");
-      setTemplates((data as Template[]) ?? []);
-    })();
-  }, [loadTemplates]);
-
   const submit = async () => {
-    if (!email.includes("@")) return toast.error("Email looks off");
-    if (brief.trim().length < 10) return toast.error("Tell us a bit more");
+    if (!email.includes("@")) return toast.error("Revisa tu correo");
+    if (brief.trim().length < 10) return toast.error("Cuéntanos un poco más");
     setSubmitting(true);
     const statusToken = newRequestStatusToken();
     const { error } = await supabase
@@ -71,7 +59,6 @@ export function RequestForm({
         requestor_name: name.trim() || null,
         brief: brief.trim(),
         desired_due_date: due || null,
-        template_id: templateId || null,
       });
     setSubmitting(false);
     if (error) {
@@ -84,47 +71,37 @@ export function RequestForm({
 
   return (
     <div className="space-y-4">
-      <Field label="Your name (optional)">
-        <input value={name} onChange={(e) => setName(e.target.value)} className="request-input" placeholder="Jordan" />
+      <Field label="Tu nombre (opcional)">
+        <input value={name} onChange={(e) => setName(e.target.value)} className="request-input" placeholder="Juan" />
       </Field>
-      <Field label="Email *">
+      <Field label="Correo *">
         <input
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="request-input"
-          placeholder="jordan@acme.co"
+          placeholder="juan@correo.com"
           type="email"
           readOnly={!!initialEmail}
         />
       </Field>
-      <Field label="What do you need? *">
+      <Field label="¿Qué necesitas? *">
         <textarea
           value={brief}
           onChange={(e) => setBrief(e.target.value)}
           rows={4}
-          placeholder="A 2-week LinkedIn campaign for the Q3 webinar — 250 sign-ups."
+          placeholder="Una cotización para 50 arreglos de mesa para un evento."
           className="request-input resize-none"
         />
       </Field>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Needed by">
-          <input type="date" value={due} onChange={(e) => setDue(e.target.value)} className="request-input" />
-        </Field>
-        <Field label="Template">
-          <select value={templateId} onChange={(e) => setTemplateId(e.target.value)} className="request-input">
-            <option value="">No template</option>
-            {templates.map((t) => (
-              <option key={t.id} value={t.id}>{t.name}</option>
-            ))}
-          </select>
-        </Field>
-      </div>
+      <Field label="Fecha en que lo necesitas">
+        <input type="date" value={due} onChange={(e) => setDue(e.target.value)} className="request-input" />
+      </Field>
       <button
         onClick={submit}
         disabled={submitting}
         className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
       >
-        {submitting ? "Submitting…" : submitLabel} <IconArrowRight size={14} />
+        {submitting ? "Enviando…" : submitLabel} <IconArrowRight size={14} />
       </button>
       <style>{`.request-input { width: 100%; border-radius: 0.5rem; border: 1px solid hsl(var(--glass-border, 0 0% 100%/0.1)); background: hsl(var(--background, 0 0% 0%)/0.4); padding: 0.5rem 0.75rem; font-size: 0.875rem; outline: none; } .request-input:focus { border-color: hsl(var(--primary)/0.5); }`}</style>
     </div>
