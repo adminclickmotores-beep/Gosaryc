@@ -3621,6 +3621,17 @@ export type Database = {
         }
         Returns: number
       }
+      registrar_compra_insumo_bodega: {
+        Args: {
+          p_insumo: string
+          p_cantidad: number
+          p_costo_total: number
+          p_proveedor: string
+          p_credito: boolean
+          p_bodega?: string
+        }
+        Returns: number
+      }
       devolver_compra_insumo: {
         Args: { p_insumo: string; p_cantidad: number; p_motivo: string }
         Returns: number

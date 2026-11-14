@@ -35,14 +35,18 @@ function ProveedoresComprasPage() {
   const [devMotivo, setDevMotivo] = useState("");
   const [devProveedor, setDevProveedor] = useState("");
   const [devValor, setDevValor] = useState("");
+  const [bodegas, setBodegas] = useState<Tables<"restaurante_bodegas">[]>([]);
+  const [bodegaCompra, setBodegaCompra] = useState("");
 
   const cargarInventario = useCallback(async () => {
-    const [i, k] = await Promise.all([
+    const [i, k, b] = await Promise.all([
       supabase.from("restaurante_insumos").select("*").order("nombre"),
       supabase.from("restaurante_kardex").select("*").eq("tipo", "compra").order("created_at", { ascending: false }).limit(15),
+      supabase.from("restaurante_bodegas").select("*").order("nombre"),
     ]);
     setInsumos(i.data ?? []);
     setCompras(k.data ?? []);
+    setBodegas(b.data ?? []);
   }, []);
 
   useEffect(() => {
@@ -64,12 +68,13 @@ function ProveedoresComprasPage() {
     if (!Number.isFinite(cantNum) || cantNum <= 0) return toast.error("Escribe la cantidad comprada.");
     if (!Number.isFinite(costoNum) || costoNum < 0 || !costo.trim()) return toast.error("Escribe el valor total de la compra.");
     setGuardando(true);
-    const { error } = await supabase.rpc("registrar_compra_insumo", {
+    const { error } = await supabase.rpc("registrar_compra_insumo_bodega", {
       p_insumo: insumoSel.id,
       p_cantidad: cantNum,
       p_costo_total: costoNum,
       p_proveedor: proveedor.trim() || insumoSel.proveedor || "",
       p_credito: credito,
+      p_bodega: bodegaCompra || undefined,
     });
     setGuardando(false);
     if (error) return toast.error("No se pudo registrar la compra.");
@@ -175,6 +180,12 @@ function ProveedoresComprasPage() {
                 <option value="">Elige el insumo *</option>
                 {insumos.map((x) => (
                   <option key={x.id} value={x.id}>{x.nombre} (hay {Number(x.stock.toFixed(2))} {x.unidad})</option>
+                ))}
+              </select>
+              <select className={campo} value={bodegaCompra} onChange={(e) => setBodegaCompra(e.target.value)} aria-label="Bodega donde entra la compra">
+                <option value="">Sin bodega específica</option>
+                {bodegas.map((b) => (
+                  <option key={b.id} value={b.id}>Entra a: {b.nombre}</option>
                 ))}
               </select>
               <input className={campo} placeholder="Proveedor" value={proveedor} onChange={(e) => setProveedor(e.target.value)} />
