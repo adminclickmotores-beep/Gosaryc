@@ -25,7 +25,9 @@ const botonSec =
 
 const TIPOS_SALDO = ["cartera", "reserva", "pago", "huesped", "estudiante", "proyecto"];
 const TIPOS_FECHA = ["cartera", "reserva", "cita", "vencimiento", "socio", "proyecto", "pago", "venta"];
-const EXCLUIR_FLUJO = ["por_vencer", "vencido", "bajo", "agotado"];
+/** Módulos de tipo "pago" que son dinero que ENTRA (el resto de pagos es dinero que sale). */
+const PAGOS_QUE_ENTRAN = ["pagos_digitales", "facturas", "propinas"];
+const EXCLUIR_FLUJO =["por_vencer", "vencido", "bajo", "agotado"];
 
 const leerHistorial = (j: Json): Entrada[] => {
   if (!Array.isArray(j)) return [];
@@ -143,6 +145,18 @@ export function ModuloOperativo({ id }: { id: string }) {
 
   const tieneAlerta = (r: Registro) => Boolean(alertaFecha(r) || alertaStock(r));
 
+  /** Todo dinero que se abona o se paga en un módulo queda también en la caja del día y en finanzas. */
+  const registrarEnCaja = async (valorCaja: number, titulo: string) => {
+    if (!conSaldo || !(valorCaja > 0)) return;
+    const sale = tipo === "pago" && !PAGOS_QUE_ENTRAN.includes(id);
+    const { error } = await supabase.from("restaurante_movimientos_caja").insert({
+      tipo: sale ? "gasto" : "ingreso",
+      concepto: `${modulo?.titulo ?? "Módulo"}: ${titulo}`.slice(0, 160),
+      monto: valorCaja,
+    });
+    if (error) toast.warning("El valor se guardó, pero no se pudo reflejar en la caja.");
+  };
+
   const guardar = async (r: Registro, cambios: TablesUpdate<"modulo_registros">, texto: string) => {
     const hist = [...leerHistorial(r.historial), { f: new Date().toISOString(), t: texto }];
     const { error } = await supabase
@@ -207,6 +221,7 @@ export function ModuloOperativo({ id }: { id: string }) {
       historial: hist as unknown as Json,
     });
     if (error) return toast.error("No se pudo guardar el registro.");
+    await registrarEnCaja(abonado, `abono inicial · ${titulo.trim()}`);
     setTitulo(""); setDetalle(""); setContacto(""); setTelefono(""); setMonto(""); setFecha("");
     setAbonoInicial(""); setCantidadIni(""); setMinimoIni("");
     toast.success("Registro guardado.");
@@ -228,7 +243,10 @@ export function ModuloOperativo({ id }: { id: string }) {
       cambios.abonado = r.monto;
       texto += ` (se saldó ${dinero(saldo)})`;
     }
-    if (await guardar(r, cambios, texto)) toast.success(`Pasó a "${sig.texto}".`);
+    if (await guardar(r, cambios, texto)) {
+      if (cambios.abonado !== undefined) await registrarEnCaja(saldo, `saldo · ${r.titulo}`);
+      toast.success(`Pasó a "${sig.texto}".`);
+    }
   };
 
   const registrarAbono = async (r: Registro) => {
@@ -243,6 +261,7 @@ export function ModuloOperativo({ id }: { id: string }) {
     if (estado && !cerrado(r)) cambios.estado = estado;
     const ok = await guardar(r, cambios, `Abono de ${dinero(v)}${nota.trim() ? ` · ${nota.trim()}` : ""}. Saldo: ${dinero(r.monto - nuevo)}`);
     if (ok) {
+      await registrarEnCaja(v, `abono · ${r.titulo}`);
       toast.success(completo ? "Quedó saldado." : "Abono registrado.");
       limpiarPanel();
     }
