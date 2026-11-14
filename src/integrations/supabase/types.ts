@@ -268,6 +268,11 @@ export type Database = {
           transmision: string | null
           version: string | null
           vin: string | null
+          separado_cliente: string | null
+          separado_telefono: string | null
+          separado_abono: number | null
+          separado_fecha: string | null
+          separado_notas: string | null
         }
         Insert: {
           anio?: number | null
@@ -300,6 +305,11 @@ export type Database = {
           transmision?: string | null
           version?: string | null
           vin?: string | null
+          separado_cliente?: string | null
+          separado_telefono?: string | null
+          separado_abono?: number | null
+          separado_fecha?: string | null
+          separado_notas?: string | null
         }
         Update: {
           anio?: number | null
@@ -332,6 +342,11 @@ export type Database = {
           transmision?: string | null
           version?: string | null
           vin?: string | null
+          separado_cliente?: string | null
+          separado_telefono?: string | null
+          separado_abono?: number | null
+          separado_fecha?: string | null
+          separado_notas?: string | null
         }
         Relationships: []
       }
