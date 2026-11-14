@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { GuiaRapida } from "@/components/app/GuiaRapida";
 import { GUIAS_NEGOCIO } from "@/lib/guia-negocio";
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables } from "@/integrations/supabase/types";
+import type { Json, Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { NegocioConfig } from "@/components/restaurante/NegocioConfig";
 import { RecetarioInventario } from "@/components/restaurante/RecetarioInventario";
@@ -48,6 +48,28 @@ const ESTADOS: { clave: string; titulo: string }[] = [
   { clave: "en_camino", titulo: "En camino" },
   { clave: "entregado", titulo: "Entregados" },
 ];
+
+const TEXTO_METODO: Record<string, string> = {
+  efectivo: "Efectivo",
+  transferencia: "Transferencia",
+  tarjeta: "Tarjeta",
+  nequi: "Nequi",
+  daviplata: "Daviplata",
+  "bre-b": "Bre-B",
+};
+const textoMetodo = (m: string) => TEXTO_METODO[m] ?? m;
+
+type EventoHistorial = { f: string; t: string };
+const leerHistorial = (h: Json): EventoHistorial[] =>
+  Array.isArray(h)
+    ? h.flatMap((e) =>
+        e && typeof e === "object" && !Array.isArray(e) && typeof e.f === "string" && typeof e.t === "string"
+          ? [{ f: e.f, t: e.t }]
+          : [],
+      )
+    : [];
+const conEvento = (p: Pedido, texto: string): Json =>
+  [...leerHistorial(p.historial), { f: new Date().toISOString(), t: texto }] as unknown as Json;
 
 const SIGUIENTE = (p: Pedido): { estado: string; texto: string } | null => {
   if (p.estado === "nuevo") return { estado: "preparando", texto: "Enviar a cocina" };
@@ -127,17 +149,29 @@ function RestaurantePage() {
   }, [cargar]);
 
   const mover = async (p: Pedido, estado: string) => {
-    const { error } = await supabase.from("restaurante_pedidos").update({ estado }).eq("id", p.id);
+    const { error } = await supabase
+      .from("restaurante_pedidos")
+      .update({ estado, historial: conEvento(p, `Estado: ${estado.replace("_", " ")}`) })
+      .eq("id", p.id);
     if (error) return toast.error("No se pudo actualizar el pedido.");
     cargar();
   };
 
   const cobrar = async (p: Pedido) => {
-    const { error } = await supabase.from("restaurante_pedidos").update({ estado: "entregado" }).eq("id", p.id);
+    if (p.pago_estado === "pagado") return toast.info("Este pedido ya está pagado.");
+    const metodo = textoMetodo(p.metodo_pago);
+    const { error } = await supabase
+      .from("restaurante_pedidos")
+      .update({
+        estado: "entregado",
+        pago_estado: "pagado",
+        historial: conEvento(p, `Pago verificado y cobrado (${metodo}) · ${dinero(p.total)}`),
+      })
+      .eq("id", p.id);
     if (error) return toast.error("No se pudo cobrar el pedido.");
     await supabase.from("restaurante_movimientos_caja").insert({
       tipo: "ingreso",
-      concepto: `Venta #${p.id.slice(0, 6).toUpperCase()}`,
+      concepto: `Venta #${p.id.slice(0, 6).toUpperCase()} (${metodo})`,
       monto: p.total,
     });
     toast.success(`Cobrado ${dinero(p.total)}.`);
@@ -293,6 +327,30 @@ function RestaurantePage() {
                       </ul>
                       {p.notas && <p className="text-xs italic text-muted-foreground">“{p.notas}”</p>}
                       <p className="text-sm font-medium text-foreground">{dinero(p.total)}</p>
+                      <p className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                        <span>Pago: {textoMetodo(p.metodo_pago)}</span>
+                        <span
+                          className={`rounded-full px-2 py-0.5 ${p.pago_estado === "pagado" ? "bg-primary/15 text-primary" : "border border-glass-border text-muted-foreground"}`}
+                        >
+                          {p.pago_estado === "pagado"
+                            ? "Pagado"
+                            : p.metodo_pago === "efectivo"
+                              ? "Por cobrar"
+                              : "Sin verificar"}
+                        </span>
+                      </p>
+                      {leerHistorial(p.historial).length > 0 && (
+                        <details className="text-xs text-muted-foreground">
+                          <summary className="cursor-pointer">Historial</summary>
+                          <ul className="mt-1 space-y-0.5">
+                            {leerHistorial(p.historial).map((e, idx) => (
+                              <li key={idx} className="break-words">
+                                {new Date(e.f).toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" })} · {e.t}
+                              </li>
+                            ))}
+                          </ul>
+                        </details>
+                      )}
                       <div className="flex gap-2">
                         {sig && (
                           <button onClick={() => mover(p, sig.estado)} className="flex-1 rounded-lg bg-primary px-3 py-2 text-xs font-medium text-primary-foreground hover:opacity-90">
@@ -301,7 +359,7 @@ function RestaurantePage() {
                         )}
                         {p.estado !== "entregado" && p.estado !== "cancelado" && (
                           <button onClick={() => cobrar(p)} className="rounded-lg border border-primary px-3 py-2 text-xs text-primary">
-                            Cobrar
+                            {p.metodo_pago === "efectivo" ? "Cobrar" : "Verificar pago y cobrar"}
                           </button>
                         )}
                         {p.estado !== "entregado" && p.estado !== "cancelado" && (

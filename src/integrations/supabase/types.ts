@@ -1260,11 +1260,15 @@ export type Database = {
           cliente_id: string | null
           mesa_id: string | null
           metodo_pago: string
+          pago_estado: string
+          historial: Json
           owner_id: string | null
           repartidor_id: string | null
           total: number
         }
         Insert: {
+          pago_estado?: string
+          historial?: Json
           metodo_pago?: string
           canal?: string
           numero_factura?: number | null
@@ -1285,6 +1289,8 @@ export type Database = {
           total?: number
         }
         Update: {
+          pago_estado?: string
+          historial?: Json
           metodo_pago?: string
           canal?: string
           numero_factura?: number | null

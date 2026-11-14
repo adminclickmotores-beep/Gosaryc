@@ -247,6 +247,11 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
         notas: notas.trim() || null,
         canal: "mostrador",
         estado: "nuevo",
+        metodo_pago: metodo,
+        pago_estado: cobrar ? "pagado" : "pendiente",
+        historial: [
+          { f: new Date().toISOString(), t: `Pedido creado en mostrador · ${METODOS.find((m) => m.clave === metodo)?.texto ?? metodo}${cobrar ? " · cobrado" : ""}` },
+        ],
         total,
       })
       .select("id, numero_factura")
