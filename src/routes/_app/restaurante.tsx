@@ -66,15 +66,34 @@ function RestaurantePage() {
   const { negocio } = useNegocio();
   const tipo = resolverTipoNegocio(negocio?.tipo_negocio);
   const busqueda = Route.useSearch();
-  const { esAdmin, cargando: cargandoPermisos } = usePermisos();
+  const { esAdmin, cargando: cargandoPermisos, puede } = usePermisos();
   const completa = busqueda.ventana === "completa" || (!cargandoPermisos && !esAdmin);
   const [vistaElegida, setVista] = useState<VistaClave>(
     (VISTAS_VALIDAS as readonly string[]).includes(busqueda.vista ?? "") ? (busqueda.vista as VistaClave) : "venta",
   );
-  const vista = tipo.usaPedidos ? vistaElegida : "negocio";
-  const vistas = tipo.usaPedidos
-    ? (["venta", "pedidos", "menu", "qr", "mesas", "caja", "reportes", "recetario", "negocio"] as const)
-    : (["negocio"] as const);
+  // Qué módulo (de los que asigna el administrador) abre cada pestaña del panel.
+  const PERMISO_VISTA: Record<string, string[]> = {
+    venta: ["pedidos"],
+    pedidos: ["pedidos", "cocina"],
+    menu: ["pedidos"],
+    qr: ["pedidos"],
+    mesas: ["mesas"],
+    caja: ["caja_diaria"],
+    reportes: ["finanzas"],
+    recetario: ["insumos"],
+    negocio: [],
+  };
+  const todasLasVistas: VistaClave[] = tipo.usaPedidos
+    ? ["venta", "pedidos", "menu", "qr", "mesas", "caja", "reportes", "recetario", "negocio"]
+    : ["negocio"];
+  const vistas: VistaClave[] = todasLasVistas.filter((v: VistaClave) =>
+    esAdmin ? true : v === "negocio" ? !tipo.usaPedidos : (PERMISO_VISTA[v] ?? []).some((id: string) => puede(id)),
+  );
+  const vista: VistaClave = !tipo.usaPedidos
+    ? "negocio"
+    : vistas.includes(vistaElegida)
+      ? vistaElegida
+      : (vistas[0] ?? "negocio");
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [mesas, setMesas] = useState<Tables<"restaurante_mesas">[]>([]);

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNegocio } from "@/hooks/use-negocio";
+import { usePermisos } from "@/hooks/use-permisos";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
 import { IconLogo } from "@/components/ui-custom/CustomIcon";
@@ -22,6 +23,7 @@ const campo =
 function Welcome() {
   const { user } = useAuth();
   const { negocio, cargando, recargar } = useNegocio();
+  const { esAdmin, cargando: cargandoPermisos } = usePermisos();
   const nav = useNavigate();
   const [nombre, setNombre] = useState("");
   const [tipo, setTipo] = useState<TipoNegocioClave | "">("");
@@ -52,6 +54,20 @@ function Welcome() {
     await supabase.from("profiles").update({ onboarded_at: new Date().toISOString() }).eq("id", user.id);
     markOnboarded(user.id);
   };
+
+  // Las personas que el administrador agregó al equipo no configuran el negocio: entran directo a lo suyo.
+  useEffect(() => {
+    if (!user || cargandoPermisos || esAdmin) return;
+    let cancelado = false;
+    (async () => {
+      await terminarOnboarding();
+      if (!cancelado) nav({ to: "/restaurante", replace: true });
+    })();
+    return () => {
+      cancelado = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, cargandoPermisos, esAdmin]);
 
   const continuar = async () => {
     if (!user) return;

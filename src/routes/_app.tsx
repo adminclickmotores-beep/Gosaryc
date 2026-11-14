@@ -92,7 +92,7 @@ function AppShell() {
   // El administrador conserva el menú para probar módulo por módulo.
   const completaFinal = completa || (!cargandoPermisos && !esAdmin && loc.pathname.startsWith("/restaurante"));
   const anchoGrande = completaFinal || loc.pathname.startsWith("/restaurante");
-  const verPanel = esAdmin || puede("pedidos") || puede("cocina");
+  const verPanel = ["pedidos", "cocina", "mesas", "caja_diaria", "insumos"].some((id) => puede(id));
   const modulosVisibles = tipoNegocio.modulos;
   const navItems: NavItem[] = [
     ...(verPanel || cargandoPermisos
@@ -106,6 +106,23 @@ function AppShell() {
   useEffect(() => {
     pathnameRef.current = loc.pathname;
   });
+
+  // Control de acceso por módulo: cada persona solo entra a lo que el administrador le asignó.
+  const modulosDeLaRuta = modulosVisibles.filter(
+    (m) => m.ruta && m.ruta !== "/restaurante" && (loc.pathname === m.ruta || loc.pathname.startsWith(`${m.ruta}/`)),
+  );
+  const enPanel = loc.pathname.startsWith("/restaurante");
+  const sinAcceso =
+    !cargandoPermisos &&
+    !esAdmin &&
+    ((enPanel && !verPanel) || (modulosDeLaRuta.length > 0 && !modulosDeLaRuta.some((m) => puede(m.id))));
+  const primeraRutaPermitida = navItems.find((n) => n.to !== "/restaurante")?.to;
+  useEffect(() => {
+    if (!cargandoPermisos && !esAdmin && enPanel && !verPanel && primeraRutaPermitida) {
+      nav({ to: primeraRutaPermitida as never, replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cargandoPermisos, esAdmin, enPanel, verPanel, primeraRutaPermitida]);
 
   // Cada módulo se abre en una pestaña aparte, a pantalla completa, sin importar
   // desde dónde se haga clic (menú lateral, menú inferior, tarjetas, enlaces).
@@ -379,7 +396,16 @@ function AppShell() {
             }`}
           >
             <InstructivoPagina />
-            <Outlet />
+            {sinAcceso ? (
+              <div className="mx-auto mt-10 max-w-md rounded-2xl border border-glass-border bg-glass/30 p-8 text-center">
+                <h1 className="font-display text-2xl">Sin acceso a esta sección</h1>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Tu cuenta no tiene permiso para este módulo. Si lo necesitas, pídeselo a quien administra el negocio.
+                </p>
+              </div>
+            ) : (
+              <Outlet />
+            )}
           </div>
         </main>
       </div>

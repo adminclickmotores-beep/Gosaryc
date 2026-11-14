@@ -13,6 +13,17 @@ type Miembro = Tables<"equipo_negocio">;
 const campo =
   "w-full rounded-lg border border-glass-border bg-glass/40 px-3 py-2.5 text-base text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary/50";
 
+/** Combinaciones listas de módulos; solo se marcan los que existen en el tipo de negocio. */
+const ROLES_RAPIDOS: { nombre: string; modulos: string[] }[] = [
+  { nombre: "Cajero", modulos: ["pedidos", "caja_diaria"] },
+  { nombre: "Cocina", modulos: ["cocina"] },
+  { nombre: "Mesero", modulos: ["pedidos", "mesas"] },
+  { nombre: "Domiciliario", modulos: ["domicilios"] },
+  { nombre: "Contador/a", modulos: ["finanzas", "facturas", "caja_diaria"] },
+  { nombre: "Bodega / compras", modulos: ["insumos", "proveedores"] },
+  { nombre: "Agenda y clientes", modulos: ["agenda", "clientes", "cotizaciones"] },
+];
+
 export function EquipoPermisos() {
   const { negocio } = useNegocio();
   const { esAdmin, cargando } = usePermisos();
@@ -107,7 +118,20 @@ export function EquipoPermisos() {
           />
         </div>
         <div className="space-y-2">
-          <p className="text-xs text-muted-foreground">Puede usar:</p>
+          <p className="text-xs text-muted-foreground">Rol rápido (luego puedes ajustar los módulos):</p>
+          <div className="flex flex-wrap gap-2">
+            {ROLES_RAPIDOS.map((r) => (
+              <button
+                key={r.nombre}
+                type="button"
+                onClick={() => setElegidos(r.modulos.filter((id) => modulos.some((m) => m.id === id)))}
+                className="rounded-full border border-glass-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+              >
+                {r.nombre}
+              </button>
+            ))}
+          </div>
+          <p className="pt-1 text-xs text-muted-foreground">Puede usar:</p>
           <div className="grid gap-2 sm:grid-cols-2">
             {modulos.map((m) => (
               <label key={m.id} className="flex items-center gap-2 rounded-lg border border-glass-border px-3 py-2 text-sm">
