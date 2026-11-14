@@ -13,9 +13,12 @@ export type ConfigModulo = {
   resumen: string;
   /** Estado que requiere que el registro tenga fecha (ej. citas). */
   exigeFecha?: boolean;
+  /** Familia operativa del módulo (define qué acciones reales tiene). */
+  tipo: string;
 };
 
 const base: ConfigModulo = {
+  tipo: "general",
   estados: [
     { clave: "pendiente", texto: "Pendiente" },
     { clave: "en_proceso", texto: "En proceso" },
@@ -266,5 +269,5 @@ const POR_MODULO: Record<string, keyof typeof PRESETS> = {
 
 export function configModulo(id: string): ConfigModulo {
   const preset = POR_MODULO[id];
-  return preset ? { ...base, ...PRESETS[preset] } : base;
+  return preset ? { ...base, ...PRESETS[preset], tipo: preset } : base;
 }

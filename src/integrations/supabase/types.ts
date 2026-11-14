@@ -748,38 +748,56 @@ export type Database = {
       }
       modulo_registros: {
         Row: {
+          abonado: number
+          anulado: boolean
+          cantidad: number
           contacto: string | null
           created_at: string
           detalle: string | null
           estado: string
           fecha: string | null
+          historial: Json
           id: string
+          minimo: number
           modulo: string
           monto: number
+          motivo_anulacion: string | null
           telefono: string | null
           titulo: string
         }
         Insert: {
+          abonado?: number
+          anulado?: boolean
+          cantidad?: number
           contacto?: string | null
           created_at?: string
           detalle?: string | null
           estado?: string
           fecha?: string | null
+          historial?: Json
           id?: string
+          minimo?: number
           modulo: string
           monto?: number
+          motivo_anulacion?: string | null
           telefono?: string | null
           titulo: string
         }
         Update: {
+          abonado?: number
+          anulado?: boolean
+          cantidad?: number
           contacto?: string | null
           created_at?: string
           detalle?: string | null
           estado?: string
           fecha?: string | null
+          historial?: Json
           id?: string
+          minimo?: number
           modulo?: string
           monto?: number
+          motivo_anulacion?: string | null
           telefono?: string | null
           titulo?: string
         }
