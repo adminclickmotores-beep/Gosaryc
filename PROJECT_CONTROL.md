@@ -8,6 +8,11 @@ TESTING, DATABASE, INTEGRATIONS, CHANGELOG, KNOWN_ISSUES). Pendientes: DEPLOYMEN
 Plataforma empresarial multinegocio (ERP/CRM/POS) con soluciones especializadas por sector.
 Pilotos: CROKANTE (restaurante) y JG MOTORS (concesionario).
 
+## FASE ACTUAL: REVISIÓN TÉCNICA PREVIA A LA VALIDACIÓN DE SEGURIDAD (2026-11-14)
+- Revisión independiente en curso, solo lectura. No se aplica ninguna migración, no se ejecutan pruebas, no se tocan datos, no se cambian nombres ni fechas.
+- Entregados completos al revisor: docs/VALIDACION_AISLAMIENTO.md, supabase/propuestas/*, supabase/consultas/*, supabase/tests/A–F e informe_conciliacion_propietarios.sql, y los 8 archivos de los 4 pares de migraciones con número repetido.
+- La validación de seguridad NO ha empezado. La propuesta de bodegas sigue sin aplicar.
+
 ## Estado actual
 - Stack: TanStack Router/Start, Vite, React, Tailwind, Lovable Cloud (Supabase).
 - Existe: restaurante (POS, mesas, caja, recetario/inventario, reportes, contabilidad, menú QR), vehículos
