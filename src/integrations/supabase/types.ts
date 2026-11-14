@@ -3595,6 +3595,16 @@ export type Database = {
         Args: { p_insumo: string; p_cantidad: number; p_motivo: string }
         Returns: number
       }
+      devolver_compra_proveedor: {
+        Args: {
+          p_insumo: string
+          p_cantidad: number
+          p_motivo: string
+          p_proveedor: string
+          p_valor: number
+        }
+        Returns: number
+      }
       is_org_member: { Args: { _org_id: string }; Returns: boolean }
       move_to_dlq: {
         Args: {

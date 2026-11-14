@@ -33,6 +33,8 @@ function ProveedoresComprasPage() {
   const [devInsumo, setDevInsumo] = useState("");
   const [devCantidad, setDevCantidad] = useState("");
   const [devMotivo, setDevMotivo] = useState("");
+  const [devProveedor, setDevProveedor] = useState("");
+  const [devValor, setDevValor] = useState("");
 
   const cargarInventario = useCallback(async () => {
     const [i, k] = await Promise.all([
@@ -100,10 +102,13 @@ function ProveedoresComprasPage() {
     if (!Number.isFinite(cant) || cant <= 0) return toast.error("Escribe la cantidad devuelta.");
     if (cant > insumo.stock) return toast.error(`Solo hay ${Number(insumo.stock.toFixed(2))} ${insumo.unidad} en inventario.`);
     setGuardando(true);
-    const { error } = await supabase.rpc("devolver_compra_insumo", {
+    const valor = Number(devValor);
+    const { error } = await supabase.rpc("devolver_compra_proveedor", {
       p_insumo: insumo.id,
       p_cantidad: cant,
       p_motivo: devMotivo.trim(),
+      p_proveedor: devProveedor.trim(),
+      p_valor: Number.isFinite(valor) && valor > 0 ? valor : 0,
     });
     setGuardando(false);
     if (error) return toast.error("No se pudo registrar la devolución.");
@@ -111,7 +116,10 @@ function ProveedoresComprasPage() {
     setDevInsumo("");
     setDevCantidad("");
     setDevMotivo("");
+    setDevProveedor("");
+    setDevValor("");
     cargarInventario();
+    cargar();
   };
 
   const porProveedor = useMemo(() => {
@@ -214,7 +222,14 @@ function ProveedoresComprasPage() {
         <GlassPanel className="space-y-3 p-5">
           <h2 className="font-medium text-foreground">Devolver mercancía al proveedor</h2>
           <div className="grid gap-3 sm:grid-cols-2">
-            <select className={campo} value={devInsumo} onChange={(e) => setDevInsumo(e.target.value)}>
+            <select
+              className={campo}
+              value={devInsumo}
+              onChange={(e) => {
+                setDevInsumo(e.target.value);
+                setDevProveedor(insumos.find((x) => x.id === e.target.value)?.proveedor ?? "");
+              }}
+            >
               <option value="">Elige el insumo *</option>
               {insumos.map((x) => (
                 <option key={x.id} value={x.id}>{x.nombre} (hay {Number(x.stock.toFixed(2))} {x.unidad})</option>
@@ -227,9 +242,11 @@ function ProveedoresComprasPage() {
               value={devCantidad}
               onChange={(e) => setDevCantidad(e.target.value)}
             />
+            <input className={campo} placeholder="Proveedor" value={devProveedor} onChange={(e) => setDevProveedor(e.target.value)} />
+            <input className={campo} inputMode="decimal" placeholder="Valor a descontar de la deuda (COP, opcional)" value={devValor} onChange={(e) => setDevValor(e.target.value)} />
             <input className={`${campo} sm:col-span-2`} placeholder="Motivo (ej. producto vencido, dañado)" value={devMotivo} onChange={(e) => setDevMotivo(e.target.value)} />
           </div>
-          <p className="text-xs text-muted-foreground">La devolución saca la cantidad del inventario y queda en el kardex. El saldo con el proveedor se ajusta en sus registros.</p>
+          <p className="text-xs text-muted-foreground">La devolución saca la cantidad del inventario y queda en el kardex. Si escribes un valor, se descuenta de lo que le debes a ese proveedor (sin pasar de su deuda pendiente).</p>
           <button
             disabled={guardando}
             onClick={devolverCompra}
