@@ -495,6 +495,24 @@ svg.text-slate-950 {
 
 
 
+/* Listas desplegables nativas (select): fondo oscuro sólido y letra clara legible */
+select {
+  color-scheme: dark;
+}
+select option,
+select optgroup {
+  background-color: oklch(0.21 0.035 275);
+  color: oklch(0.96 0.01 260);
+}
+.light select {
+  color-scheme: light;
+}
+.light select option,
+.light select optgroup {
+  background-color: #fff;
+  color: oklch(0.18 0.02 240);
+}
+
 /* Phone input library overrides */
 .PhoneInput {
   display: flex;
