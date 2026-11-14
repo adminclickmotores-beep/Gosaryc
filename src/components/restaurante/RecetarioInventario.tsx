@@ -232,6 +232,26 @@ function Insumos({
   const [bodegas, setBodegas] = useState<Tables<"restaurante_bodegas">[]>([]);
   const [bodegaId, setBodegaId] = useState("");
   const [nuevaBodega, setNuevaBodega] = useState("");
+  const [movInsumo, setMovInsumo] = useState("");
+  const [movOrigen, setMovOrigen] = useState("");
+  const [movDestino, setMovDestino] = useState("");
+  const [movCantidad, setMovCantidad] = useState("");
+
+  const moverStock = async () => {
+    const cant = Number(movCantidad);
+    if (!movInsumo || !movOrigen || !movDestino) return toast.error("Elige el insumo y las dos bodegas.");
+    if (movOrigen === movDestino) return toast.error("La bodega de origen y destino deben ser distintas.");
+    if (!(cant > 0)) return toast.error("Escribe la cantidad a mover.");
+    const { error } = await supabase.rpc("mover_stock_bodega", {
+      p_insumo: movInsumo,
+      p_origen: movOrigen,
+      p_destino: movDestino,
+      p_cantidad: cant,
+    });
+    if (error) return toast.error("No se pudo mover el stock. Revisa que la bodega de origen tenga esa cantidad.");
+    toast.success("Stock movido entre bodegas.");
+    setMovCantidad("");
+  };
 
   const cargarBodegas = async () => {
     const { data } = await supabase.from("restaurante_bodegas").select("*").order("nombre");
@@ -348,6 +368,38 @@ function Insumos({
               </div>
             );
           })}
+        </div>
+      )}
+
+      {bodegas.length > 1 && insumos.length > 0 && (
+        <div className="space-y-2 rounded-lg border border-glass-border p-3">
+          <p className="text-sm font-medium text-foreground">Mover stock entre bodegas</p>
+          <select className={campo} value={movInsumo} onChange={(e) => setMovInsumo(e.target.value)} aria-label="Insumo a mover">
+            <option value="">Elige el insumo</option>
+            {insumos.map((i) => (
+              <option key={i.id} value={i.id}>{i.nombre}</option>
+            ))}
+          </select>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <select className={campo} value={movOrigen} onChange={(e) => setMovOrigen(e.target.value)} aria-label="Bodega de origen">
+              <option value="">Desde…</option>
+              {bodegas.map((b) => (
+                <option key={b.id} value={b.id}>{b.nombre}</option>
+              ))}
+            </select>
+            <select className={campo} value={movDestino} onChange={(e) => setMovDestino(e.target.value)} aria-label="Bodega de destino">
+              <option value="">Hacia…</option>
+              {bodegas.map((b) => (
+                <option key={b.id} value={b.id}>{b.nombre}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex gap-2">
+            <input className={`${campo} min-w-0 flex-1`} inputMode="decimal" placeholder="Cantidad a mover" value={movCantidad} onChange={(e) => setMovCantidad(e.target.value)} />
+            <button onClick={moverStock} className="shrink-0 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90">
+              Mover
+            </button>
+          </div>
         </div>
       )}
 

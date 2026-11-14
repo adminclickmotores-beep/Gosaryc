@@ -3621,6 +3621,10 @@ export type Database = {
         }
         Returns: number
       }
+      mover_stock_bodega: {
+        Args: { p_insumo: string; p_origen: string; p_destino: string; p_cantidad: number }
+        Returns: undefined
+      }
       registrar_compra_insumo_bodega: {
         Args: {
           p_insumo: string
