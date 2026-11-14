@@ -89,6 +89,23 @@ function ProveedoresComprasPage() {
         historial: [{ f: new Date().toISOString(), t: "Registro creado desde una compra de inventario" }] as unknown as Json,
       });
       if (errDeuda) toast.error("La compra entró al inventario, pero no se pudo registrar la deuda con el proveedor.");
+    } else {
+      const { data: turnoAbierto } = await supabase
+        .from("turnos_caja").select("id").eq("estado", "abierto").order("abierto_en", { ascending: false }).limit(1);
+      const turnoId = turnoAbierto?.[0]?.id;
+      if (turnoId) {
+        const { error: errCaja } = await supabase.from("movimientos_turno").insert({
+          turno_id: turnoId,
+          tipo: "gasto",
+          metodo: "efectivo",
+          concepto: `Compra de contado: ${cantNum} ${insumoSel.unidad} de ${insumoSel.nombre}`,
+          categoria: "Proveedores",
+          monto: costoNum,
+        });
+        if (errCaja) toast.error("La compra entró al inventario, pero no se pudo descontar de la caja.");
+      } else {
+        toast.info("La caja está cerrada: esta compra de contado no se descontó de la caja.");
+      }
     }
     toast.success(`Compra registrada: +${cantNum} ${insumoSel.unidad} al inventario.`);
     setCantidad("");
