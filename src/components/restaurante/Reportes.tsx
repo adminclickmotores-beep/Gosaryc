@@ -22,6 +22,8 @@ export function Reportes() {
   const [cargando, setCargando] = useState(true);
   const [costoProducto, setCostoProducto] = useState<Map<string, number>>(new Map());
   const [gastosDia, setGastosDia] = useState(0);
+  const [kardex, setKardex] = useState<Tables<"restaurante_kardex">[]>([]);
+  const [nombreInsumo, setNombreInsumo] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     let vivo = true;
@@ -70,7 +72,14 @@ export function Reportes() {
         const base = costoReceta.get(r.id) ?? 0;
         costos.set(r.producto_id, (base * (1 + r.merma_pct / 100)) / Math.max(1, r.porciones));
       }
+      const { data: kd } = await supabase
+        .from("restaurante_kardex")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(40);
       if (!vivo) return;
+      setKardex(kd ?? []);
+      setNombreInsumo(new Map((ins.data ?? []).map((i) => [i.id, `${i.nombre} (${i.unidad})`] as [string, string])));
       setCostoProducto(costos);
       setGastosDia((gas.data ?? []).reduce((s, m) => s + m.monto, 0));
       setPedidos(lista);
@@ -228,6 +237,31 @@ export function Reportes() {
               )}
             </GlassPanel>
           </div>
+
+          <GlassPanel className="space-y-3 p-5">
+            <h2 className="font-medium text-foreground">Kardex de insumos (últimos movimientos)</h2>
+            {kardex.length === 0 && (
+              <p className="text-sm text-muted-foreground">
+                Cuando vendas platos con receta, aquí verás cuánto insumo se descontó de cada uno.
+              </p>
+            )}
+            {kardex.map((k) => (
+              <div key={k.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-glass-border pb-2 text-sm last:border-0">
+                <div className="min-w-0">
+                  <p className="break-words text-foreground">{nombreInsumo.get(k.insumo_id) ?? "Insumo"}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(k.created_at).toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" })} · {k.motivo ?? k.tipo}
+                  </p>
+                </div>
+                <p className="shrink-0 text-right text-foreground">
+                  <span className={k.cantidad < 0 ? "text-destructive" : "text-primary"}>
+                    {k.cantidad > 0 ? "+" : ""}{Number(k.cantidad.toFixed(2))}
+                  </span>
+                  <span className="block text-xs text-muted-foreground">queda {Number(k.stock_resultante.toFixed(2))}</span>
+                </p>
+              </div>
+            ))}
+          </GlassPanel>
         </>
       )}
     </div>

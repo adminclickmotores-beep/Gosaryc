@@ -259,6 +259,11 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
       setGuardando(false);
       return toast.error("El pedido se creó pero no se pudieron guardar los productos.");
     }
+    // Descuenta del inventario los insumos de las recetas de lo vendido (queda en el kardex).
+    const { data: bajos } = await supabase.rpc("descontar_insumos_pedido", { p_pedido: pedido.id });
+    if (typeof bajos === "number" && bajos > 0) {
+      toast.warning(`${bajos} ${bajos === 1 ? "insumo está" : "insumos están"} en o bajo el stock mínimo. Revisa el recetario.`);
+    }
     if (cobrar) {
       await supabase.from("restaurante_pedidos").update({ estado: "entregado" }).eq("id", pedido.id);
       await supabase.from("restaurante_movimientos_caja").insert({

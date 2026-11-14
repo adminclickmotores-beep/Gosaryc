@@ -1043,6 +1043,42 @@ export type Database = {
         }
         Relationships: []
       }
+      restaurante_kardex: {
+        Row: {
+          cantidad: number
+          created_at: string
+          id: string
+          insumo_id: string
+          motivo: string | null
+          owner_id: string | null
+          pedido_id: string | null
+          stock_resultante: number
+          tipo: string
+        }
+        Insert: {
+          cantidad: number
+          created_at?: string
+          id?: string
+          insumo_id: string
+          motivo?: string | null
+          owner_id?: string | null
+          pedido_id?: string | null
+          stock_resultante?: number
+          tipo: string
+        }
+        Update: {
+          cantidad?: number
+          created_at?: string
+          id?: string
+          insumo_id?: string
+          motivo?: string | null
+          owner_id?: string | null
+          pedido_id?: string | null
+          stock_resultante?: number
+          tipo?: string
+        }
+        Relationships: []
+      }
       restaurante_recetas: {
         Row: {
           created_at: string
@@ -3544,6 +3580,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      descontar_insumos_pedido: { Args: { p_pedido: string }; Returns: number }
       is_org_member: { Args: { _org_id: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
