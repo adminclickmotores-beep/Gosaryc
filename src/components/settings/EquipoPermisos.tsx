@@ -9,6 +9,7 @@ import { usePermisos } from "@/hooks/use-permisos";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 
 type Miembro = Tables<"equipo_negocio">;
+type Registro = Tables<"equipo_auditoria">;
 
 const campo =
   "w-full rounded-lg border border-glass-border bg-glass/40 px-3 py-2.5 text-base text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary/50";
@@ -35,10 +36,17 @@ export function EquipoPermisos() {
   const [nombre, setNombre] = useState("");
   const [elegidos, setElegidos] = useState<string[]>([]);
   const [guardando, setGuardando] = useState(false);
+  const [auditoria, setAuditoria] = useState<Registro[]>([]);
 
   const cargar = useCallback(async () => {
     const { data } = await supabase.from("equipo_negocio").select("*").order("created_at");
     setMiembros(data ?? []);
+    const { data: registros } = await supabase
+      .from("equipo_auditoria")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(30);
+    setAuditoria(registros ?? []);
   }, []);
 
   useEffect(() => {
@@ -189,6 +197,23 @@ export function EquipoPermisos() {
             </div>
           </div>
         ))}
+      </GlassPanel>
+
+      <GlassPanel className="space-y-3 p-6">
+        <h2 className="font-display text-xl">Historial de cambios</h2>
+        {auditoria.length === 0 && <p className="text-sm text-muted-foreground">Aún no hay cambios registrados.</p>}
+        <ul className="space-y-2">
+          {auditoria.map((a) => (
+            <li key={a.id} className="rounded-lg border border-glass-border px-3 py-2 text-sm">
+              <p className="break-words">
+                <span className="font-medium">{a.actor_email || "Alguien"}</span> {a.accion}{" "}
+                <span className="font-medium">{a.miembro_email}</span>
+              </p>
+              {a.detalle && <p className="break-words text-xs text-muted-foreground">{a.detalle}</p>}
+              <p className="text-xs text-muted-foreground">{new Date(a.created_at).toLocaleString("es-MX")}</p>
+            </li>
+          ))}
+        </ul>
       </GlassPanel>
     </div>
   );

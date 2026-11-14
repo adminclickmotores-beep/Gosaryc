@@ -44,6 +44,36 @@ export type Database = {
         }
         Relationships: []
       }
+      equipo_auditoria: {
+        Row: {
+          accion: string
+          actor_email: string | null
+          actor_id: string | null
+          created_at: string
+          detalle: string | null
+          id: string
+          miembro_email: string
+        }
+        Insert: {
+          accion: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          detalle?: string | null
+          id?: string
+          miembro_email: string
+        }
+        Update: {
+          accion?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          detalle?: string | null
+          id?: string
+          miembro_email?: string
+        }
+        Relationships: []
+      }
       asientos_contables: {
         Row: {
           asiento_id: string
