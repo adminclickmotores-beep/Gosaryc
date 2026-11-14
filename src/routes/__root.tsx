@@ -74,12 +74,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: `${BRAND.tagline} — ${BRAND.name}` },
       { name: "description", content: BRAND.description },
-      { name: "theme-color", content: "#2563eb" },
+      { name: "theme-color", content: "#5b21b6" },
       { name: "robots", content: "index, follow" },
       {
         name: "keywords",
         content:
-          "software para negocios, punto de venta, pos, inventario, facturación, pedidos en línea, menú digital, domicilios, recetario, control de costos, Gosaly",
+          "software para negocios, punto de venta, pos, inventario, facturación, pedidos en línea, menú digital, domicilios, recetario, control de costos, Gosaryc",
       },
       { property: "og:url", content: "https://gosaly.lovable.app/" },
       { property: "og:image", content: "https://gosaly.lovable.app/og-image.svg" },

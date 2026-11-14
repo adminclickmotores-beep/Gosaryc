@@ -103,49 +103,20 @@ export function IconCopy({ size = 24, ...p }: IconProps) {
 }
 
 export function IconLogo({ size = 32, ...p }: IconProps) {
-  const uid = `mp-${size}`;
-  // Pointy-top hexagon path, centered at (cx, cy) with circumradius r
-  const hex = (cx: number, cy: number, r: number) => {
-    const h = (r * Math.sqrt(3)) / 2;
-    return `M${cx} ${cy - r} L${cx + h} ${cy - r / 2} L${cx + h} ${cy + r / 2} L${cx} ${cy + r} L${cx - h} ${cy + r / 2} L${cx - h} ${cy - r / 2} Z`;
-  };
-  // Uniform pointy-top hexagons in a tight 3/2/1 honeycomb pack.
-  const r = 11;
-  const h = (r * Math.sqrt(3)) / 2;            // half-width
-  const cx = 32;                                // canvas center x
-  const y1 = 11 + r;                            // top row center (top margin ~3.5)
-  const y2 = y1 + r * 1.5;                      // middle row center
-  const y3 = y2 + r * 1.5;                      // bottom row center
-  // Colors lifted from the Marketing Command Center hexes
-  const cells = [
-    { d: hex(cx - 2 * h, y1, r), a: "oklch(0.48 0.20 268)", b: "oklch(0.30 0.16 268)" },
-    { d: hex(cx,         y1, r), a: "oklch(0.58 0.13 195)", b: "oklch(0.34 0.10 200)" },
-    { d: hex(cx + 2 * h, y1, r), a: "oklch(0.62 0.18 38)",  b: "oklch(0.38 0.14 38)"  },
-    { d: hex(cx - h,     y2, r), a: "oklch(0.50 0.20 350)", b: "oklch(0.30 0.14 350)" },
-    { d: hex(cx + h,     y2, r), a: "oklch(0.55 0.16 150)", b: "oklch(0.32 0.12 150)" },
-    { d: hex(cx,         y3, r), a: "oklch(0.58 0.20 300)", b: "oklch(0.34 0.16 300)" },
-  ];
-  const glowId = `${uid}-glow`;
+  // Marca Gosaryc: una G con tres puntos (los tres integrantes de la familia).
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" fill="none" {...p}>
-      <defs>
-        {cells.map((_, i) => (
-          <linearGradient key={i} id={`${uid}-g${i}`} x1="32" y1="2" x2="32" y2="62" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor={cells[i].a} />
-            <stop offset="100%" stopColor={cells[i].b} />
-          </linearGradient>
-        ))}
-        <radialGradient id={glowId} cx="50%" cy="18%" r="60%">
-          <stop offset="0%" stopColor="oklch(1 0 0 / 0.25)" />
-          <stop offset="100%" stopColor="oklch(1 0 0 / 0)" />
-        </radialGradient>
-      </defs>
-      {cells.map((c, i) => (
-        <g key={i}>
-          <path d={c.d} fill={`url(#${uid}-g${i})`} />
-          <path d={c.d} fill={`url(#${glowId})`} />
-        </g>
-      ))}
+      <path
+        d="M44.3 23.4A15 15 0 1 0 47 37H34.5"
+        transform="translate(0 3)"
+        stroke="currentColor"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="25.5" cy="9" r="2.4" fill="currentColor" opacity="0.7" />
+      <circle cx="32" cy="9" r="2.4" fill="currentColor" />
+      <circle cx="38.5" cy="9" r="2.4" fill="currentColor" opacity="0.7" />
     </svg>
   );
 }

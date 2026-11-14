@@ -63,7 +63,7 @@ export function BrandHexLogo({ size = 42, className }: BrandHexLogoProps) {
             "linear-gradient(160deg, oklch(1 0 0 / 0.18) 0%, transparent 45%)",
         }}
       />
-      {/* Monogram M */}
+      {/* Monograma G */}
       <svg
         viewBox="0 0 24 24"
         className="relative"
@@ -77,7 +77,7 @@ export function BrandHexLogo({ size = 42, className }: BrandHexLogoProps) {
           </linearGradient>
         </defs>
         <path
-          d="M19 8a8 8 0 1 0 1 4h-8"
+          d="M17.2 7.6A6.6 6.6 0 1 0 18.6 13H12.4"
           fill="none"
           stroke="url(#brand-hex-m-grad)"
           strokeWidth="2"

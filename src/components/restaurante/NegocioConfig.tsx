@@ -209,7 +209,7 @@ export function NegocioConfig() {
                 onClick={() => setForm({ ...form, color_principal: "" })}
                 className="rounded-lg border border-glass-border px-3 py-2 text-xs text-muted-foreground"
               >
-                Usar color de Gosaly
+                Usar color de Gosaryc
               </button>
             ) : null}
           </div>

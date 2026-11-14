@@ -1,8 +1,8 @@
 {
-  "name": "gosaly-escritorio",
+  "name": "gosaryc-escritorio",
   "version": "1.0.0",
-  "description": "Gosaly - aplicación de escritorio",
-  "author": "Gosaly",
+  "description": "Gosaryc - aplicación de escritorio",
+  "author": "Gosaryc",
   "main": "main.cjs",
   "private": true,
   "scripts": {
@@ -17,14 +17,14 @@
     "electron-builder": "^25.1.8"
   },
   "build": {
-    "appId": "com.gosaly.app",
-    "productName": "Gosaly",
-    "copyright": "Copyright © 2026 Gosaly",
+    "appId": "com.gosaryc.app",
+    "productName": "Gosaryc",
+    "copyright": "Copyright © 2026 Gosaryc",
     "files": ["main.cjs", "package.json"],
     "directories": { "output": "instaladores" },
     "win": {
       "target": ["nsis"],
-      "publisherName": "Gosaly"
+      "publisherName": "Gosaryc"
     },
     "nsis": {
       "oneClick": false,
@@ -37,7 +37,7 @@
     "linux": {
       "target": ["AppImage", "deb"],
       "category": "Office",
-      "maintainer": "Gosaly"
+      "maintainer": "Gosaryc"
     }
   }
 }

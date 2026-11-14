@@ -1,9 +1,9 @@
-// Gosaly - envoltorio de escritorio (Electron).
-// Abre la web publicada de Gosaly dentro de una ventana propia.
-// Para apuntar a otra dirección: GOSALY_URL=https://tu-dominio.com npm run iniciar
+// Gosaryc - envoltorio de escritorio (Electron).
+// Abre la web publicada de Gosaryc dentro de una ventana propia.
+// Para apuntar a otra dirección: GOSARYC_URL=https://tu-dominio.com npm run iniciar
 const { app, BrowserWindow, shell } = require("electron");
 
-const URL_APP = process.env.GOSALY_URL || "https://mesari.lovable.app";
+const URL_APP = process.env.GOSARYC_URL || process.env.GOSALY_URL || "https://gosaly.lovable.app";
 
 function crearVentana() {
   const ventana = new BrowserWindow({
@@ -11,7 +11,7 @@ function crearVentana() {
     height: 820,
     minWidth: 380,
     minHeight: 600,
-    title: "Gosaly",
+    title: "Gosaryc",
     backgroundColor: "#ffffff",
     autoHideMenuBar: true,
     webPreferences: {
