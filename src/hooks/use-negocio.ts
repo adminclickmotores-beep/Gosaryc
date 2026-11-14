@@ -33,12 +33,22 @@ export function useNegocio(duenoId?: string | null) {
   useEffect(() => {
     const color = negocio?.color_principal;
     const raiz = document.documentElement;
-    if (color && /^#[0-9a-f]{6}$/i.test(color)) {
+    // Luminancia aproximada (0-1): si el color elegido es muy oscuro se pierde sobre el fondo oscuro,
+    // así que en ese caso se usa el color claro por defecto del tema.
+    const luminancia = (hex: string): number => {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    };
+    if (color && /^#[0-9a-f]{6}$/i.test(color) && luminancia(color) >= 0.45) {
       raiz.style.setProperty("--primary", color);
       raiz.style.setProperty("--ring", color);
+      raiz.style.setProperty("--primary-foreground", "#0b0d1f");
     } else {
       raiz.style.removeProperty("--primary");
       raiz.style.removeProperty("--ring");
+      raiz.style.removeProperty("--primary-foreground");
     }
   }, [negocio?.color_principal]);
 
