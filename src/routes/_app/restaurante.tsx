@@ -18,6 +18,7 @@ import { Reportes } from "@/components/restaurante/Reportes";
 import { MesasPanel } from "@/components/restaurante/MesasPanel";
 import { CajaPanel } from "@/components/restaurante/CajaPanel";
 import { VentaPOS } from "@/components/restaurante/VentaPOS";
+import { OpcionesProducto } from "@/components/restaurante/OpcionesProducto";
 import { BotonVentanaCompleta } from "@/components/app/BotonVentanaCompleta";
 import { IndicadoresNegocio } from "@/components/app/IndicadoresNegocio";
 
@@ -70,6 +71,43 @@ const leerHistorial = (h: Json): EventoHistorial[] =>
     : [];
 const conEvento = (p: Pedido, texto: string): Json =>
   [...leerHistorial(p.historial), { f: new Date().toISOString(), t: texto }] as unknown as Json;
+
+type OpcionElegida = { grupo: string; nombre: string; precio: number };
+const leerOpciones = (o: Json): OpcionElegida[] =>
+  Array.isArray(o)
+    ? o.flatMap((e) =>
+        e && typeof e === "object" && !Array.isArray(e) && typeof e.grupo === "string" && typeof e.nombre === "string"
+          ? [{ grupo: e.grupo, nombre: e.nombre, precio: typeof e.precio === "number" ? e.precio : 0 }]
+          : [],
+      )
+    : [];
+
+const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/** Comanda para cocina: exactamente lo que confirmó el cliente. */
+const imprimirComanda = (p: Pedido, lineas: Item[]) => {
+  const w = window.open("", "_blank", "width=380,height=640");
+  if (!w) return toast.error("Permite las ventanas emergentes para imprimir la comanda.");
+  const cobro =
+    p.pago_estado === "pagado" ? "PAGADO" : p.metodo_pago === "efectivo" ? "POR COBRAR" : "PAGO SIN VERIFICAR";
+  const filas = lineas
+    .map((i) => {
+      const ops = leerOpciones(i.opciones);
+      return `<p><b>${i.cantidad} × ${esc(i.nombre)}</b>${ops.map((o) => `<br>&nbsp;&nbsp;${esc(o.grupo)}: ${esc(o.nombre)}`).join("")}</p>`;
+    })
+    .join("");
+  w.document.write(`<html><head><title>Comanda</title><style>body{font-family:monospace;font-size:14px;padding:12px}h2{margin:0 0 6px}hr{border:0;border-top:1px dashed #000}p{margin:6px 0}</style></head><body>
+<h2>COMANDA #${p.numero_factura ?? p.id.slice(0, 6).toUpperCase()}</h2>
+<p>${new Date(p.created_at).toLocaleString("es-CO")}</p>
+<p>Cliente: ${esc(p.cliente_nombre)} · ${esc(p.cliente_telefono)}</p>
+<p>Modalidad: ${esc(p.modalidad)}${p.direccion ? ` · ${esc(p.direccion)}${p.barrio ? `, ${esc(p.barrio)}` : ""}` : ""}</p><hr>
+${filas}<hr>
+${p.notas ? `<p>Observaciones: ${esc(p.notas)}</p>` : ""}
+<p>Pago: ${esc(textoMetodo(p.metodo_pago))} · ${cobro}</p>
+<p>Total: ${dinero(p.total)}</p>
+<script>window.onload=function(){window.print()}</script></body></html>`);
+  w.document.close();
+};
 
 const SIGUIENTE = (p: Pedido): { estado: string; texto: string } | null => {
   if (p.estado === "nuevo") return { estado: "preparando", texto: "Enviar a cocina" };
@@ -154,7 +192,25 @@ function RestaurantePage() {
       .update({ estado, historial: conEvento(p, `Estado: ${estado.replace("_", " ")}`) })
       .eq("id", p.id);
     if (error) return toast.error("No se pudo actualizar el pedido.");
+    // Al enviar a cocina se descuenta el inventario (la función evita descontar dos veces).
+    if (estado === "preparando") await descontarInventario(p);
     cargar();
+  };
+
+  const descontarInventario = async (p: Pedido) => {
+    const lineasPedido = items.filter((i) => i.pedido_id === p.id && i.producto_id);
+    const { data: bajos, error } = await supabase.rpc("descontar_insumos_pedido", { p_pedido: p.id });
+    if (error) return toast.error("El pedido avanzó, pero no se pudo descontar el inventario.");
+    if (typeof bajos === "number" && bajos > 0) {
+      toast.warning(`${bajos} ${bajos === 1 ? "insumo está" : "insumos están"} en o bajo el stock mínimo.`);
+    }
+    const ids = Array.from(new Set(lineasPedido.map((i) => i.producto_id as string)));
+    if (ids.length > 0) {
+      const { data: recetas } = await supabase.from("restaurante_recetas").select("producto_id").in("producto_id", ids);
+      const conReceta = new Set((recetas ?? []).map((r) => r.producto_id));
+      const sin = lineasPedido.filter((i) => !conReceta.has(i.producto_id as string)).map((i) => i.nombre);
+      if (sin.length > 0) toast.info(`Sin receta, no descuentan inventario: ${Array.from(new Set(sin)).join(", ")}.`);
+    }
   };
 
   const cobrar = async (p: Pedido) => {
@@ -174,6 +230,7 @@ function RestaurantePage() {
       concepto: `Venta #${p.id.slice(0, 6).toUpperCase()} (${metodo})`,
       monto: p.total,
     });
+    await descontarInventario(p);
     toast.success(`Cobrado ${dinero(p.total)}.`);
     cargar();
   };
@@ -322,7 +379,14 @@ function RestaurantePage() {
                       {p.direccion && <p className="break-words text-xs text-muted-foreground">{p.direccion}</p>}
                       <ul className="text-sm text-muted-foreground">
                         {items.filter((i) => i.pedido_id === p.id).map((i) => (
-                          <li key={i.id}>{i.cantidad} × {i.nombre}</li>
+                          <li key={i.id} className="break-words">
+                            {i.cantidad} × {i.nombre}
+                            {leerOpciones(i.opciones).length > 0 && (
+                              <span className="block pl-3 text-xs">
+                                {leerOpciones(i.opciones).map((o) => `${o.grupo}: ${o.nombre}`).join(" · ")}
+                              </span>
+                            )}
+                          </li>
                         ))}
                       </ul>
                       {p.notas && <p className="text-xs italic text-muted-foreground">“{p.notas}”</p>}
@@ -357,6 +421,9 @@ function RestaurantePage() {
                             {sig.texto}
                           </button>
                         )}
+                        <button onClick={() => imprimirComanda(p, items.filter((i) => i.pedido_id === p.id))} className="rounded-lg border border-glass-border px-3 py-2 text-xs text-foreground">
+                          Comanda
+                        </button>
                         {p.estado !== "entregado" && p.estado !== "cancelado" && (
                           <button onClick={() => cobrar(p)} className="rounded-lg border border-primary px-3 py-2 text-xs text-primary">
                             {p.metodo_pago === "efectivo" ? "Cobrar" : "Verificar pago y cobrar"}
@@ -541,7 +608,8 @@ function GestionMenu() {
 
       <div className="space-y-2">
         {productos.map((p) => (
-          <GlassPanel key={p.id} className="flex items-center gap-3 p-4">
+          <div key={p.id} className="space-y-1">
+          <GlassPanel className="flex items-center gap-3 p-4">
             {p.imagen_url ? (
               <img src={p.imagen_url} alt={p.nombre} className="h-12 w-12 shrink-0 rounded-lg object-cover" />
             ) : null}
@@ -562,6 +630,8 @@ function GestionMenu() {
               <Trash2 className="h-4 w-4" />
             </button>
           </GlassPanel>
+          <OpcionesProducto productoId={p.id} />
+          </div>
         ))}
       </div>
     </div>

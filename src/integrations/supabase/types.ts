@@ -1334,8 +1334,56 @@ export type Database = {
           },
         ]
       }
+      restaurante_producto_opciones: {
+        Row: {
+          activa: boolean
+          created_at: string
+          grupo: string
+          id: string
+          multiple: boolean
+          nombre: string
+          obligatorio: boolean
+          owner_id: string | null
+          precio_extra: number
+          producto_id: string
+        }
+        Insert: {
+          activa?: boolean
+          created_at?: string
+          grupo: string
+          id?: string
+          multiple?: boolean
+          nombre: string
+          obligatorio?: boolean
+          owner_id?: string | null
+          precio_extra?: number
+          producto_id: string
+        }
+        Update: {
+          activa?: boolean
+          created_at?: string
+          grupo?: string
+          id?: string
+          multiple?: boolean
+          nombre?: string
+          obligatorio?: boolean
+          owner_id?: string | null
+          precio_extra?: number
+          producto_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurante_producto_opciones_producto_id_fkey"
+            columns: ["producto_id"]
+            isOneToOne: false
+            referencedRelation: "restaurante_productos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       restaurante_pedido_items: {
         Row: {
+          opciones: Json
           cantidad: number
           created_at: string
           id: string
@@ -1345,6 +1393,7 @@ export type Database = {
           producto_id: string | null
         }
         Insert: {
+          opciones?: Json
           cantidad: number
           created_at?: string
           id?: string
@@ -1354,6 +1403,7 @@ export type Database = {
           producto_id?: string | null
         }
         Update: {
+          opciones?: Json
           cantidad?: number
           created_at?: string
           id?: string

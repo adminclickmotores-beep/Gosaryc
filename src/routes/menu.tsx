@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables } from "@/integrations/supabase/types";
+import type { Json, Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 
@@ -35,6 +35,11 @@ export const Route = createFileRoute("/menu")({
 type Categoria = Tables<"restaurante_categorias">;
 type Producto = Tables<"restaurante_productos">;
 type Modalidad = "domicilio" | "recoger" | "mesa";
+
+type OpcionProducto = Tables<"restaurante_producto_opciones">;
+type Seleccion = { grupo: string; nombre: string; precio: number };
+type Linea = { key: string; producto: Producto; cantidad: number; opciones: Seleccion[] };
+const precioLinea = (l: Linea) => l.producto.precio + l.opciones.reduce((s, o) => s + o.precio, 0);
 
 type Seguimiento = { estado: string; modalidad: string; total: number; metodo_pago: string; created_at: string };
 
@@ -69,7 +74,10 @@ function MenuPage() {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [productos, setProductos] = useState<Producto[]>([]);
   const [cargando, setCargando] = useState(true);
-  const [carrito, setCarrito] = useState<Record<string, number>>({});
+  const [carrito, setCarrito] = useState<Linea[]>([]);
+  const [opcionesTodas, setOpcionesTodas] = useState<OpcionProducto[]>([]);
+  const [elegir, setElegir] = useState<Producto | null>(null);
+  const [sel, setSel] = useState<Record<string, string[]>>({});
   const [paso, setPaso] = useState<"menu" | "datos" | "listo">("menu");
   const [enviando, setEnviando] = useState(false);
   const [codigo, setCodigo] = useState("");
@@ -120,28 +128,85 @@ function MenuPage() {
       return;
     }
     (async () => {
-      const [c, p] = await Promise.all([
+      const [c, p, o] = await Promise.all([
         supabase.from("restaurante_categorias").select("*").eq("owner_id", dueno).eq("activa", true).order("orden"),
         supabase.from("restaurante_productos").select("*").eq("owner_id", dueno).eq("activo", true).order("nombre"),
+        supabase.from("restaurante_producto_opciones").select("*").eq("owner_id", dueno).eq("activa", true).order("created_at"),
       ]);
       setCategorias(c.data ?? []);
       setProductos(p.data ?? []);
+      setOpcionesTodas(o.data ?? []);
       setCargando(false);
     })();
   }, [dueno, cargandoNegocio]);
 
-  const lineas = useMemo(
-    () =>
-      productos
-        .filter((p) => (carrito[p.id] ?? 0) > 0)
-        .map((p) => ({ producto: p, cantidad: carrito[p.id] })),
-    [productos, carrito],
-  );
-  const total = lineas.reduce((s, l) => s + l.producto.precio * l.cantidad, 0);
+  const lineas = carrito;
+  const total = lineas.reduce((s, l) => s + precioLinea(l) * l.cantidad, 0);
   const unidades = lineas.reduce((s, l) => s + l.cantidad, 0);
 
-  const cambiar = (id: string, delta: number) =>
-    setCarrito((c) => ({ ...c, [id]: Math.max(0, (c[id] ?? 0) + delta) }));
+  const opcionesDe = (productoId: string) => opcionesTodas.filter((o) => o.producto_id === productoId);
+
+  const sumarLinea = (producto: Producto, opciones: Seleccion[]) => {
+    const key = `${producto.id}|${opciones.map((o) => `${o.grupo}:${o.nombre}`).sort().join(",")}`;
+    setCarrito((c) =>
+      c.some((l) => l.key === key)
+        ? c.map((l) => (l.key === key ? { ...l, cantidad: l.cantidad + 1 } : l))
+        : [...c, { key, producto, cantidad: 1, opciones }],
+    );
+  };
+
+  const agregar = (p: Producto) => {
+    if (opcionesDe(p.id).length > 0) {
+      setSel({});
+      setElegir(p);
+    } else {
+      sumarLinea(p, []);
+    }
+  };
+
+  const cambiarLinea = (key: string, delta: number) =>
+    setCarrito((c) =>
+      c.map((l) => (l.key === key ? { ...l, cantidad: l.cantidad + delta } : l)).filter((l) => l.cantidad > 0),
+    );
+
+  const quitarUno = (productoId: string) => {
+    const ultima = [...carrito].reverse().find((l) => l.producto.id === productoId);
+    if (ultima) cambiarLinea(ultima.key, -1);
+  };
+
+  // Grupos del producto que se está personalizando.
+  const gruposElegir = useMemo(() => {
+    if (!elegir) return [];
+    const ops = opcionesTodas.filter((o) => o.producto_id === elegir.id);
+    return Array.from(new Set(ops.map((o) => o.grupo))).map((g) => {
+      const items = ops.filter((o) => o.grupo === g);
+      return { grupo: g, items, obligatorio: items[0].obligatorio, multiple: items[0].multiple };
+    });
+  }, [elegir, opcionesTodas]);
+
+  const alternarOpcion = (g: { grupo: string; multiple: boolean }, id: string) =>
+    setSel((s) => {
+      const actual = s[g.grupo] ?? [];
+      if (g.multiple) return { ...s, [g.grupo]: actual.includes(id) ? actual.filter((x) => x !== id) : [...actual, id] };
+      return { ...s, [g.grupo]: actual.includes(id) ? [] : [id] };
+    });
+
+  const extrasElegidos = gruposElegir
+    .flatMap((g) => g.items.filter((o) => (sel[g.grupo] ?? []).includes(o.id)))
+    .reduce((s, o) => s + o.precio_extra, 0);
+
+  const confirmarOpciones = () => {
+    if (!elegir) return;
+    const faltante = gruposElegir.find((g) => g.obligatorio && (sel[g.grupo] ?? []).length === 0);
+    if (faltante) return toast.error(`Elige una opción en "${faltante.grupo}".`);
+    const opciones: Seleccion[] = gruposElegir.flatMap((g) =>
+      g.items
+        .filter((o) => (sel[g.grupo] ?? []).includes(o.id))
+        .map((o) => ({ grupo: g.grupo, nombre: o.nombre, precio: o.precio_extra })),
+    );
+    sumarLinea(elegir, opciones);
+    setElegir(null);
+  };
 
   const termino = busqueda.trim().toLowerCase();
   const visibles = useMemo(
@@ -189,7 +254,8 @@ function MenuPage() {
         producto_id: l.producto.id,
         nombre: l.producto.nombre,
         cantidad: l.cantidad,
-        precio_unitario: l.producto.precio,
+        precio_unitario: precioLinea(l),
+        opciones: l.opciones as unknown as Json,
       })),
     );
     setEnviando(false);
@@ -202,12 +268,13 @@ function MenuPage() {
     } catch {
       /* almacenamiento bloqueado */
     }
-    setCarrito({});
+    setCarrito([]);
     setPaso("listo");
   };
 
   const tarjeta = (p: Producto) => {
-    const cant = carrito[p.id] ?? 0;
+    const cant = carrito.filter((l) => l.producto.id === p.id).reduce((s, l) => s + l.cantidad, 0);
+    const conOpciones = opcionesDe(p.id).length > 0;
     return (
       <GlassPanel
         key={p.id}
@@ -228,7 +295,7 @@ function MenuPage() {
             {cant > 0 ? (
               <div className="flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 p-0.5">
                 <button
-                  onClick={() => cambiar(p.id, -1)}
+                  onClick={() => quitarUno(p.id)}
                   aria-label="Quitar uno"
                   className="flex h-8 w-8 items-center justify-center rounded-full text-foreground hover:bg-primary/15"
                 >
@@ -236,7 +303,7 @@ function MenuPage() {
                 </button>
                 <span className="w-6 text-center text-sm font-medium text-foreground">{cant}</span>
                 <button
-                  onClick={() => cambiar(p.id, 1)}
+                  onClick={() => agregar(p)}
                   aria-label="Agregar uno"
                   className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground"
                 >
@@ -245,11 +312,11 @@ function MenuPage() {
               </div>
             ) : (
               <button
-                onClick={() => cambiar(p.id, 1)}
+                onClick={() => agregar(p)}
                 aria-label="Agregar"
                 className="flex h-9 items-center gap-1 rounded-full bg-primary px-3.5 text-sm font-medium text-primary-foreground hover:opacity-90"
               >
-                <Plus className="h-4 w-4" /> Agregar
+                <Plus className="h-4 w-4" /> {conOpciones ? "Personalizar" : "Agregar"}
               </button>
             )}
           </div>
@@ -509,11 +576,25 @@ function MenuPage() {
             />
             <div className="space-y-1.5 border-t border-glass-border pt-3 text-sm">
               {lineas.map((l) => (
-                <div key={l.producto.id} className="flex justify-between gap-3 text-muted-foreground">
-                  <span className="min-w-0 break-words">
-                    {l.cantidad} × {l.producto.nombre}
-                  </span>
-                  <span className="shrink-0">{dinero(l.producto.precio * l.cantidad)}</span>
+                <div key={l.key} className="flex items-start justify-between gap-3 text-muted-foreground">
+                  <div className="min-w-0">
+                    <span className="break-words text-foreground">{l.producto.nombre}</span>
+                    {l.opciones.length > 0 && (
+                      <p className="break-words text-xs">
+                        {l.opciones.map((o) => `${o.nombre}${o.precio > 0 ? ` (+${dinero(o.precio)})` : ""}`).join(" · ")}
+                      </p>
+                    )}
+                    <div className="mt-1 flex items-center gap-1">
+                      <button type="button" aria-label="Quitar uno" onClick={() => cambiarLinea(l.key, -1)} className="flex h-8 w-8 items-center justify-center rounded-full border border-glass-border">
+                        <Minus className="h-4 w-4" />
+                      </button>
+                      <span className="w-6 text-center text-foreground">{l.cantidad}</span>
+                      <button type="button" aria-label="Agregar uno" onClick={() => cambiarLinea(l.key, 1)} className="flex h-8 w-8 items-center justify-center rounded-full border border-glass-border">
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                  <span className="shrink-0">{dinero(precioLinea(l) * l.cantidad)}</span>
                 </div>
               ))}
               <div className="flex justify-between pt-2 text-base font-semibold text-foreground">
@@ -522,6 +603,53 @@ function MenuPage() {
               </div>
             </div>
           </GlassPanel>
+        </div>
+      )}
+
+      {elegir && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center" onClick={() => setElegir(null)}>
+          <div
+            className="max-h-[90dvh] w-full max-w-md space-y-4 overflow-y-auto rounded-t-3xl border border-glass-border bg-background p-5 sm:rounded-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div>
+              <h2 className="break-words font-display text-xl text-foreground">{elegir.nombre}</h2>
+              <p className="text-sm text-muted-foreground">{dinero(elegir.precio)}</p>
+            </div>
+            {gruposElegir.map((g) => (
+              <div key={g.grupo} className="space-y-2">
+                <p className="text-sm font-medium text-foreground">
+                  {g.grupo}{" "}
+                  <span className="font-normal text-muted-foreground">
+                    · {g.obligatorio ? "obligatorio" : "opcional"}
+                    {g.multiple ? " · puedes elegir varias" : " · elige una"}
+                  </span>
+                </p>
+                {g.items.map((o) => {
+                  const marcada = (sel[g.grupo] ?? []).includes(o.id);
+                  return (
+                    <button
+                      key={o.id}
+                      type="button"
+                      onClick={() => alternarOpcion(g, o.id)}
+                      className={`flex w-full items-center justify-between gap-3 rounded-xl border px-3.5 py-3 text-left text-base ${marcada ? "border-primary bg-primary/15 text-foreground" : "border-glass-border text-muted-foreground"}`}
+                    >
+                      <span className="min-w-0 break-words">{o.nombre}</span>
+                      {o.precio_extra > 0 && <span className="shrink-0 text-sm">+{dinero(o.precio_extra)}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setElegir(null)} className="rounded-full border border-glass-border px-5 py-3 text-sm text-foreground">
+                Cancelar
+              </button>
+              <button type="button" onClick={confirmarOpciones} className="flex-1 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground">
+                Agregar · {dinero(elegir.precio + extrasElegidos)}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
