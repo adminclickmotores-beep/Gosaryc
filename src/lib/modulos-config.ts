@@ -267,7 +267,303 @@ const POR_MODULO: Record<string, keyof typeof PRESETS> = {
   apartados_generales: "reserva", proyectos_generales: "proyecto",
 };
 
+const est = (...pares: [string, string][]): EstadoModulo[] => pares.map(([clave, texto]) => ({ clave, texto }));
+
+/**
+ * Vocabulario propio de cada sector: estados, etiquetas y textos de ayuda por módulo.
+ * Se aplica encima del comportamiento (preset) del módulo, sin cambiar sus acciones.
+ */
+const VOCABULARIO: Record<string, Partial<ConfigModulo>> = {
+  // Servicios, belleza y bienestar
+  catalogo_servicios: {
+    estados: est(["pendiente", "Activo"], ["en_proceso", "En promoción"], ["hecho", "Pausado"]),
+    cerrados: ["pendiente", "en_proceso", "hecho"],
+    placeholderTitulo: "Servicio (ej. corte, manicure, consulta)",
+    placeholderDetalle: "Duración, qué incluye y personal que lo presta",
+    etiquetaContacto: "Profesional asignado",
+    etiquetaMonto: "Precio (COP)",
+    etiquetaFecha: "Vigente hasta",
+    resumen: "En promoción",
+  },
+  paquetes: {
+    estados: est(["pendiente", "Vigente"], ["en_proceso", "En uso"], ["hecho", "Agotado"]),
+    cerrados: ["hecho"],
+    placeholderTitulo: "Paquete o bono (ej. 5 sesiones)",
+    placeholderDetalle: "Sesiones incluidas, usadas y condiciones",
+    etiquetaContacto: "Cliente titular",
+    etiquetaMonto: "Valor del paquete (COP)",
+    etiquetaFecha: "Vence el",
+    resumen: "Paquetes activos",
+  },
+  historial: {
+    placeholderTitulo: "Trabajo o atención realizada",
+    placeholderDetalle: "Fórmulas, alergias, preferencias y resultado",
+    etiquetaContacto: "Cliente",
+    etiquetaMonto: "Valor cobrado (COP)",
+    etiquetaFecha: "Fecha de la atención",
+    resumen: "En seguimiento",
+  },
+  // Hospedaje
+  habitaciones: {
+    estados: est(["pendiente", "Disponible"], ["en_proceso", "Ocupada"], ["hecho", "Mantenimiento"]),
+    cerrados: ["pendiente"],
+    placeholderTitulo: "Habitación o espacio (ej. Hab. 203)",
+    placeholderDetalle: "Camas, capacidad, servicios y estado",
+    etiquetaContacto: "Huésped actual",
+    etiquetaMonto: "Tarifa por noche (COP)",
+    etiquetaFecha: "Libre desde",
+    resumen: "Ocupadas o en mantenimiento",
+  },
+  servicios_extra: {
+    placeholderTitulo: "Cargo adicional (desayuno, tour, lavandería)",
+    placeholderDetalle: "Habitación, cantidad y observaciones",
+    etiquetaContacto: "Huésped",
+    etiquetaMonto: "Valor del cargo (COP)",
+    etiquetaFecha: "Fecha del servicio",
+    resumen: "Cargos por facturar",
+  },
+  // Gimnasio
+  control_acceso: {
+    estados: est(["pendiente", "Dentro"], ["hecho", "Salió"]),
+    cerrados: ["hecho"],
+    placeholderTitulo: "Socio que ingresa",
+    placeholderDetalle: "Clase o zona, observaciones",
+    etiquetaContacto: "Entrenador",
+    etiquetaMonto: "Valor (COP)",
+    etiquetaFecha: "Fecha de ingreso",
+    resumen: "Dentro ahora",
+  },
+  planes_entreno: {
+    estados: est(["pendiente", "Nueva"], ["en_proceso", "En curso"], ["hecho", "Cumplida"]),
+    cerrados: ["hecho"],
+    placeholderTitulo: "Rutina o plan (ej. hipertrofia 4 días)",
+    placeholderDetalle: "Ejercicios, medidas y avances del socio",
+    etiquetaContacto: "Socio",
+    etiquetaMonto: "Valor del plan (COP)",
+    etiquetaFecha: "Próxima revisión",
+    resumen: "Rutinas en curso",
+  },
+  // Agro
+  animales: {
+    estados: est(["pendiente", "Sano"], ["en_proceso", "En tratamiento"], ["hecho", "Vendido o baja"]),
+    cerrados: ["hecho"],
+    placeholderTitulo: "Animal o lote (arete, nombre, especie)",
+    placeholderDetalle: "Vacunas, peso, tratamientos y observaciones",
+    etiquetaContacto: "Potrero o responsable",
+    etiquetaMonto: "Valor estimado (COP)",
+    etiquetaFecha: "Próxima vacuna o control",
+    resumen: "En tratamiento",
+  },
+  cultivos: {
+    estados: est(["pendiente", "Preparación"], ["en_proceso", "En crecimiento"], ["hecho", "Cosechado"]),
+    cerrados: ["hecho"],
+    placeholderTitulo: "Cultivo y lote (ej. tomate · Lote 2)",
+    placeholderDetalle: "Área, variedad, riegos, fumigaciones y novedades",
+    etiquetaContacto: "Encargado del lote",
+    etiquetaMonto: "Inversión (COP)",
+    etiquetaFecha: "Cosecha estimada",
+    resumen: "Lotes en producción",
+  },
+  cosechas: {
+    placeholderTitulo: "Cosecha (producto, lote y cantidad)",
+    placeholderDetalle: "Kilos o unidades, calidad y destino",
+    etiquetaContacto: "Comprador",
+    etiquetaMonto: "Valor de venta (COP)",
+    etiquetaFecha: "Fecha de cosecha",
+    resumen: "Por vender",
+  },
+  // Transporte
+  flota: {
+    estados: est(["pendiente", "Disponible"], ["en_proceso", "En ruta"], ["hecho", "En mantenimiento"]),
+    cerrados: ["pendiente"],
+    placeholderTitulo: "Vehículo (placa y tipo)",
+    placeholderDetalle: "Capacidad, kilometraje, documentos y novedades",
+    etiquetaContacto: "Conductor asignado",
+    etiquetaMonto: "Costo del último mantenimiento (COP)",
+    etiquetaFecha: "Próximo mantenimiento",
+    resumen: "En ruta o taller",
+    exigeFecha: false,
+  },
+  viajes: {
+    estados: est(["pendiente", "Programado"], ["en_proceso", "En ruta"], ["hecho", "Entregado"]),
+    cerrados: ["hecho"],
+    placeholderTitulo: "Origen → destino y carga",
+    placeholderDetalle: "Vehículo, peso, guía y novedades de la entrega",
+    etiquetaContacto: "Cliente o remitente",
+    etiquetaMonto: "Flete (COP)",
+    etiquetaFecha: "Fecha de salida",
+    resumen: "Despachos en curso",
+  },
+  // Lavandería
+  ordenes_lavado: {
+    estados: est(["pendiente", "Recibido"], ["en_proceso", "En proceso"], ["hecho", "Entregado"]),
+    cerrados: ["hecho"],
+    placeholderTitulo: "Orden (prendas o vehículo y servicio)",
+    placeholderDetalle: "Cantidad, manchas o daños previos, control de calidad",
+    etiquetaContacto: "Cliente",
+    etiquetaMonto: "Valor del servicio (COP)",
+    etiquetaFecha: "Fecha de entrega",
+    resumen: "Por entregar",
+  },
+  tarifas_lavado: {
+    estados: est(["pendiente", "Vigente"], ["hecho", "Descontinuada"]),
+    cerrados: ["pendiente", "hecho"],
+    placeholderTitulo: "Servicio (ej. camisa, edredón, lavado completo)",
+    placeholderDetalle: "Unidad de cobro (prenda, kilo, vehículo) y tiempo",
+    etiquetaContacto: "Categoría",
+    etiquetaMonto: "Precio por unidad (COP)",
+    etiquetaFecha: "Vigente desde",
+    resumen: "Tarifas vigentes",
+  },
+  // Taller
+  ordenes_servicio: {
+    estados: est(["pendiente", "Recibido"], ["en_proceso", "En reparación"], ["hecho", "Entregado"]),
+    cerrados: ["hecho"],
+    placeholderTitulo: "Placa y falla reportada",
+    placeholderDetalle: "Diagnóstico, trabajos, repuestos usados y mecánico",
+    etiquetaContacto: "Dueño del vehículo",
+    etiquetaMonto: "Total de la orden (COP)",
+    etiquetaFecha: "Entrega prometida",
+    resumen: "Vehículos en taller",
+  },
+  // Eventos
+  paquetes_evento: {
+    estados: est(["pendiente", "Vigente"], ["hecho", "Retirado"]),
+    cerrados: ["pendiente", "hecho"],
+    placeholderTitulo: "Paquete (ej. boda completa, 15 años)",
+    placeholderDetalle: "Qué incluye, horas, invitados y extras",
+    etiquetaContacto: "Proveedor aliado",
+    etiquetaMonto: "Precio del paquete (COP)",
+    etiquetaFecha: "Vigente hasta",
+    resumen: "Paquetes vigentes",
+  },
+  eventos_reg: {
+    placeholderTitulo: "Evento (cliente y tipo de celebración)",
+    placeholderDetalle: "Lugar, invitados, proveedores y programación",
+    etiquetaMonto: "Valor del contrato (COP)",
+    etiquetaFecha: "Fecha del evento",
+    resumen: "Eventos por realizar",
+  },
+  // Profesionales
+  casos: {
+    estados: est(["pendiente", "Abierto"], ["en_proceso", "En trámite"], ["hecho", "Cerrado"]),
+    cerrados: ["hecho"],
+    placeholderTitulo: "Caso o expediente (cliente y asunto)",
+    placeholderDetalle: "Actuaciones, documentos, horas y responsable",
+    etiquetaContacto: "Cliente",
+    etiquetaMonto: "Honorarios pactados (COP)",
+    etiquetaFecha: "Próxima actuación",
+    resumen: "Casos abiertos",
+  },
+  documentos_prof: {
+    placeholderTitulo: "Documento (contrato, poder, declaración)",
+    placeholderDetalle: "Cliente, ubicación del archivo y vigencia",
+    etiquetaContacto: "Cliente",
+    etiquetaMonto: "Valor asociado (COP)",
+    etiquetaFecha: "Vence o se revisa el",
+    resumen: "Por revisar",
+  },
+  // Tecnología
+  horas: {
+    estados: est(["pendiente", "Registradas"], ["en_proceso", "Por facturar"], ["hecho", "Facturadas"]),
+    cerrados: ["hecho"],
+    placeholderTitulo: "Tarea y horas dedicadas",
+    placeholderDetalle: "Proyecto, responsable y detalle del trabajo",
+    etiquetaContacto: "Cliente",
+    etiquetaMonto: "Valor de las horas (COP)",
+    etiquetaFecha: "Fecha del trabajo",
+    resumen: "Horas por facturar",
+  },
+  // Salud
+  tratamientos: {
+    estados: est(["pendiente", "Presupuestado"], ["en_proceso", "En tratamiento"], ["hecho", "Finalizado"]),
+    cerrados: ["hecho"],
+    placeholderTitulo: "Tratamiento o procedimiento",
+    placeholderDetalle: "Sesiones, avance y valor acordado con el paciente",
+    etiquetaContacto: "Paciente",
+    etiquetaMonto: "Valor del tratamiento (COP)",
+    etiquetaFecha: "Próxima sesión",
+    resumen: "En tratamiento",
+  },
+  // Educación
+  cursos: {
+    estados: est(["pendiente", "Abierto a inscripción"], ["en_proceso", "En curso"], ["hecho", "Finalizado"]),
+    cerrados: ["hecho"],
+    placeholderTitulo: "Curso o grupo (nombre y horario)",
+    placeholderDetalle: "Docente, cupos, inscritos y salón",
+    etiquetaContacto: "Docente",
+    etiquetaMonto: "Valor del curso (COP)",
+    etiquetaFecha: "Fecha de inicio",
+    resumen: "Cursos activos",
+  },
+  asistencia: {
+    estados: est(["pendiente", "Presente"], ["en_proceso", "Tarde o excusa"], ["hecho", "Ausente"]),
+    cerrados: ["pendiente", "en_proceso", "hecho"],
+    placeholderTitulo: "Estudiante y curso",
+    placeholderDetalle: "Nota, evaluación u observación del docente",
+    etiquetaContacto: "Docente",
+    etiquetaMonto: "Nota o valor",
+    etiquetaFecha: "Fecha de la clase",
+    resumen: "Novedades",
+  },
+  // Construcción y tienda
+  materiales: {
+    placeholderTitulo: "Material o herramienta",
+    placeholderDetalle: "Cantidad, obra donde se usa y ubicación",
+    etiquetaContacto: "Proveedor",
+    etiquetaMonto: "Costo unitario (COP)",
+    etiquetaFecha: "Último ingreso",
+  },
+  proyectos_obra: {
+    estados: est(["pendiente", "Por iniciar"], ["en_proceso", "En obra"], ["hecho", "Entregada"]),
+    cerrados: ["hecho"],
+    placeholderTitulo: "Obra (nombre y dirección)",
+    placeholderDetalle: "Avance por etapa, maestro, materiales y novedades",
+    etiquetaContacto: "Cliente o propietario",
+    etiquetaMonto: "Presupuesto de la obra (COP)",
+    etiquetaFecha: "Entrega estimada",
+    resumen: "Obras en curso",
+  },
+  // Negocio general
+  catalogo: {
+    estados: est(["pendiente", "Activo"], ["hecho", "Pausado"]),
+    cerrados: ["pendiente", "hecho"],
+    placeholderTitulo: "Producto o servicio",
+    placeholderDetalle: "Descripción, referencia y condiciones",
+    etiquetaContacto: "Proveedor o responsable",
+    etiquetaMonto: "Precio (COP)",
+    etiquetaFecha: "Vigente hasta",
+    resumen: "Activos",
+  },
+  ventas_generales: {
+    estados: est(["pendiente", "Por entregar"], ["en_proceso", "En camino"], ["hecho", "Entregado"]),
+    cerrados: ["hecho"],
+    placeholderTitulo: "Venta o pedido (producto y cliente)",
+    placeholderDetalle: "Cantidad, forma de pago y dirección",
+    etiquetaContacto: "Cliente",
+    etiquetaMonto: "Valor de la venta (COP)",
+    etiquetaFecha: "Fecha de entrega",
+    resumen: "Por entregar",
+  },
+};
+
+/** Módulos del catálogo que tenían la configuración genérica y ahora tienen un comportamiento acorde. */
+const COMPORTAMIENTO_EXTRA: Record<string, keyof typeof PRESETS> = {
+  habitaciones: "huesped",
+  flota: "vencimiento",
+  asistencia: "estudiante",
+  cursos: "proyecto",
+  paquetes: "socio",
+  planes_entreno: "proyecto",
+  animales: "vencimiento",
+  horas: "pago",
+  paquetes_evento: "venta",
+  ventas_generales: "proyecto",
+};
+
 export function configModulo(id: string): ConfigModulo {
-  const preset = POR_MODULO[id];
-  return preset ? { ...base, ...PRESETS[preset], tipo: preset } : base;
+  const preset = POR_MODULO[id] ?? COMPORTAMIENTO_EXTRA[id];
+  const principal: ConfigModulo = preset ? { ...base, ...PRESETS[preset], tipo: preset } : base;
+  const vocab = VOCABULARIO[id];
+  return vocab ? { ...principal, ...vocab, tipo: principal.tipo } : principal;
 }
