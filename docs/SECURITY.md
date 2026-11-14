@@ -26,6 +26,8 @@ Imágenes antiguas sin carpeta siguen visibles por su enlace público pero ya na
 ### Estado de verificación (2026-11-14)
 Las correcciones V1–V8 están escritas; su aplicación en la base y el resultado de las pruebas NO están confirmados. El aislamiento no se considera validado. Riesgos vigentes: políticas de almacenamiento sin probar, límites por rol sin probar, relaciones cruzadas en clientes/pedidos sin prueba ejecutada.
 
+Bloqueo vigente: no existe conexión de lectura a la base desde el asistente (ver PROJECT_CONTROL.md). Seguridad sigue sin validar.
+
 ### Pendiente
 0. Confirmar migración aplicada y leer el aviso de pruebas en los registros de la base.
 1. `es_superadmin()` compara un correo fijo (mover a tabla de roles).

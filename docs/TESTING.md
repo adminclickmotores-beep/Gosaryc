@@ -11,6 +11,8 @@ Estado: no hay suite automatizada en CI. Ninguna funcionalidad está marcada com
 | Imágenes: B no escribe en la carpeta de A | Política de almacenamiento por carpeta | Sin prueba automatizada |
 | Reportes/estadísticas, finanzas, archivos de crédito | Revisión de políticas (todas con `owner_id = mi_negocio_id()`) | Revisado por lectura de código, sin ejecución |
 
+### Segunda revisión 2026-11-14: sin acceso a la base (sin MCP ni consulta SQL). Ninguna prueba pudo ejecutarse; el estado de la tabla siguiente no cambia.
+
 ### Revisión del 2026-11-14
 Ninguna prueba fue ejecutada en esta ronda (sin acceso a la base ni a sus registros). Estado individual:
 | Prueba | Estado |

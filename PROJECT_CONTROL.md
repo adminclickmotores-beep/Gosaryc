@@ -59,6 +59,12 @@ Ver docs/KNOWN_ISSUES.md.
 - No se inventó ningún resultado. T04 sigue en "IMPLEMENTADO (sin verificar en ejecución)".
 - Seguridad NO se marca como completada.
 
+## Diagnóstico de conexión con la base (2026-11-14, segunda revisión)
+- Acceso efectivo a Supabase/Lovable Cloud: NO. Este asistente solo puede leer y editar archivos del repositorio. No hay conexión MCP, ni herramienta de consulta SQL, ni lectura de historial de migraciones, políticas RLS, Storage o registros.
+- Falta: una conexión de solo lectura (MCP o equivalente) autorizada para el proyecto de Lovable Cloud, configurada por el dueño en los ajustes de GoIDE/Lovable, nunca pegando claves en el chat.
+- Las migraciones nuevas sí se aplican solas al publicar, pero no hay canal de regreso con el resultado.
+- Sin cambios en la app ni en la base en esta ronda. T04 sigue abierta; T03 sigue bloqueada.
+
 ## Próxima tarea exacta
 T04 (bloqueante): confirmar en los registros de la base de Lovable Cloud el aviso "Pruebas de aislamiento: todas superadas" (o "WARNING Pruebas de aislamiento: ..."), y ejecutar `supabase/tests/aislamiento_multiempresa.sql` en un entorno de pruebas. Luego pruebas por rol, descarga de archivos privados e integridad de relaciones.
 Solo con esos resultados se pasa a T03 (clasificar módulos) y T05.
