@@ -30,7 +30,6 @@ import {
   BadgeCheck,
   Shield,
   Repeat,
-  Megaphone,
   Target,
   Banknote,
   Armchair,
@@ -135,10 +134,6 @@ const RESENAS: ModuloNegocio = {
   ...m("resenas", "Reseñas y PQRS", "Quejas, reclamos y opiniones con seguimiento.", Star),
   ruta: "/resenas-pqrs",
 };
-const DIFUSION: ModuloNegocio = {
-  ...m("difusion", "Difusión por WhatsApp", "Promociones y recordatorios para tus contactos.", Megaphone),
-  ruta: "/difusion-whatsapp",
-};
 const CAJA = m("caja_diaria", "Caja y gastos diarios", "Apertura, cierre de caja y gastos del día.", Banknote);
 const PROVEEDORES: ModuloNegocio = {
   ...m("proveedores", "Proveedores y compras", "Pedidos y deudas con proveedores.", Truck),
@@ -208,7 +203,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("insumos", "Inventario de insumos", "Ingredientes, mermas y alertas de faltantes.", Boxes),
       { ...m("propinas", "Propinas y reparto", "Registro y reparto de propinas entre el equipo.", Coins), ruta: "/propinas" },
       { ...m("suscripciones", "Pedidos recurrentes", "Clientes que piden cada semana (almuerzos, corporativos).", Repeat), ruta: "/pedidos-recurrentes" },
-      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -238,7 +233,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("cartera_veh", "Cartera y cuotas de clientes", "Saldos y cuotas pendientes de pago.", Coins),
       m("proveedores_veh", "Proveedores y gestores", "Gestores de trámites, talleres externos y proveedores.", Truck),
       m("comisiones", "Comisiones de asesores", "Comisión por venta de cada asesor.", Percent),
-      FACTURAS, GARANTIAS, RESENAS, DIFUSION, CAJA, EMPLEADOS, METAS, FINANZAS,
+      FACTURAS, GARANTIAS, RESENAS,CAJA, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -253,7 +248,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("catalogo_whatsapp", "Catálogo para WhatsApp", "Comparte tu catálogo con un enlace.", QrCode),
       m("devoluciones", "Cambios y devoluciones", "Control de cambios y notas crédito.", Repeat),
       CLIENTES, SOLICITUDES, GARANTIAS,
-      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -269,7 +264,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("lista_espera", "Lista de espera", "Clientes por atender cuando se libere un cupo.", Bell),
       m("comisiones", "Comisiones del personal", "Pago por servicio realizado.", Percent),
       CLIENTES, SOLICITUDES,
-      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -284,7 +279,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("tratamientos", "Tratamientos y presupuestos", "Planes de tratamiento con su valor y avance.", FileText),
       m("insumos_salud", "Insumos y medicamentos", "Existencias y alertas de faltantes.", Package),
       m("autorizaciones", "Autorizaciones y EPS", "Seguimiento de autorizaciones y cobros a aseguradoras.", Landmark),
-      CLIENTES, FACTURAS, PAGOS, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES, FACTURAS, PAGOS, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -298,7 +293,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       AGENDA,
       m("mensualidades", "Pensiones y mensualidades", "Pagos pendientes y recordatorios de cobro.", Coins),
       m("asistencia", "Asistencia y notas", "Seguimiento del avance de cada estudiante.", BadgeCheck),
-      CLIENTES, FACTURAS, PAGOS, RESENAS, DIFUSION, CAJA, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES, FACTURAS, PAGOS, RESENAS,CAJA, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -312,7 +307,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("huespedes", "Huéspedes", "Registro y preferencias de tus huéspedes.", Users),
       m("servicios_extra", "Servicios adicionales", "Desayunos, tours, lavandería y otros cargos.", Tag),
       m("limpieza", "Limpieza y mantenimiento", "Tareas por habitación y estado.", Wrench),
-      FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -325,7 +320,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("clases", "Clases y cupos", "Horarios de clases con cupos y asistentes.", CalendarDays),
       m("control_acceso", "Control de ingreso", "Registro de asistencia de los socios.", QrCode),
       m("planes_entreno", "Rutinas y seguimiento", "Planes y medidas de cada socio.", ClipboardList),
-      CLIENTES, FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES, FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -364,7 +359,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("arrendatarios", "Arrendatarios y contratos", "Contratos, canon y vencimientos.", FileText),
       m("cobro_canon", "Cobro de arriendos", "Cartera mensual y recordatorios.", Coins),
       m("visitas", "Visitas a inmuebles", "Agenda de visitas con seguimiento.", KeyRound),
-      CLIENTES, AGENDA, FACTURAS, PAGOS, DIFUSION, CAJA, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES, AGENDA, FACTURAS, PAGOS, CAJA, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -377,7 +372,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       AGENDA,
       m("vacunacion", "Vacunas y desparasitación", "Próximas dosis y recordatorios.", ShieldCheck),
       m("productos_vet", "Productos y alimentos", "Inventario y ventas.", ShoppingBag),
-      CLIENTES, FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES, FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -418,7 +413,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("proyectos_generales", "Trabajos y proyectos", "Tareas, responsables y fechas de entrega.", ClipboardList),
       m("apartados_generales", "Apartados y anticipos", "Abonos y reservas de tus clientes.", Tag),
       CLIENTES, AGENDA, SOLICITUDES, GARANTIAS,
-      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
 ];
@@ -466,7 +461,7 @@ TIPOS_NEGOCIO.push(
       m("comisiones", "Comisiones del personal", "Pago por servicio realizado.", Percent),
       m("productos_belleza", "Productos y cosméticos", "Inventario y venta de productos.", Sparkles),
       CLIENTES, SOLICITUDES,
-      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -481,7 +476,7 @@ TIPOS_NEGOCIO.push(
       m("repuestos_taller", "Repuestos e inventario", "Existencias, costos y alertas de faltantes.", Cog),
       m("recordatorio_mant", "Mantenimientos próximos", "Aviso de cambio de aceite, revisiones y vencimientos.", CalendarClock),
       AGENDA, CLIENTES, GARANTIAS,
-      FIADOS, FACTURAS, PAGOS, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      FIADOS, FACTURAS, PAGOS, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -495,7 +490,7 @@ TIPOS_NEGOCIO.push(
       m("vencimientos_farm", "Lotes y vencimientos", "Fechas de vencimiento por lote para rotar a tiempo.", CalendarClock),
       m("formulas", "Fórmulas y domicilios", "Pedidos con fórmula y entregas a domicilio.", ClipboardList),
       CLIENTES,
-      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -509,7 +504,7 @@ TIPOS_NEGOCIO.push(
       m("paquetes_evento", "Paquetes y servicios", "Paquetes con su precio y lo que incluyen.", Gift),
       m("entregas_evento", "Entregas y pendientes", "Álbumes, archivos o materiales por entregar.", PackageCheck),
       CLIENTES, SOLICITUDES,
-      FIADOS, FACTURAS, PAGOS, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      FIADOS, FACTURAS, PAGOS, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -537,7 +532,7 @@ TIPOS_NEGOCIO.push(
       m("entregas_lav", "Recogida y entrega", "Rutas de recogida y entrega a domicilio.", Bike),
       m("insumos_lav", "Insumos", "Jabones, químicos y consumibles.", Boxes),
       CLIENTES, AGENDA,
-      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, DIFUSION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
 );

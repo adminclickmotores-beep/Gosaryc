@@ -41,16 +41,6 @@ const POR_RUTA: Record<string, Instructivo> = {
       "Envíala por WhatsApp y cambia su estado cuando el cliente responda.",
     ],
   },
-  "/difusion-whatsapp": {
-    titulo: "Difusión por WhatsApp",
-    paraQue: "Mandar promociones y recordatorios a tus contactos.",
-    pasos: [
-      "Escribe el mensaje que quieres enviar.",
-      "Elige a quiénes se lo mandas.",
-      "Abre el envío por WhatsApp contacto por contacto.",
-    ],
-    consejo: "Mensajes cortos y con una sola oferta funcionan mejor. No envíes a quien no quiera recibirlos.",
-  },
   "/domicilios": {
     titulo: "Domicilios y clientes",
     paraQue: "Ver los pedidos a domicilio y tu base de clientes con sus direcciones.",
