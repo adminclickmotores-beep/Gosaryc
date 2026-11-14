@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables } from "@/integrations/supabase/types";
+import type { Json, Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 
 export const Route = createFileRoute("/_app/proveedores-compras")({
@@ -78,6 +78,18 @@ function ProveedoresComprasPage() {
     });
     setGuardando(false);
     if (error) return toast.error("No se pudo registrar la compra.");
+    if (credito) {
+      const { error: errDeuda } = await supabase.from("modulo_registros").insert({
+        modulo: "proveedores",
+        estado: "pendiente",
+        titulo: `Compra a crédito: ${cantNum} ${insumoSel.unidad} de ${insumoSel.nombre}`,
+        contacto: proveedor.trim() || insumoSel.proveedor || "Proveedor",
+        monto: costoNum,
+        abonado: 0,
+        historial: [{ f: new Date().toISOString(), t: "Registro creado desde una compra de inventario" }] as unknown as Json,
+      });
+      if (errDeuda) toast.error("La compra entró al inventario, pero no se pudo registrar la deuda con el proveedor.");
+    }
     toast.success(`Compra registrada: +${cantNum} ${insumoSel.unidad} al inventario.`);
     setCantidad("");
     setCosto("");
@@ -154,11 +166,10 @@ function ProveedoresComprasPage() {
           <Truck className="h-7 w-7 text-primary" /> Proveedores y compras
         </h1>
         <p className="text-sm text-muted-foreground">
-          Lo que debes a cada proveedor por sus compras. Registra cada compra en{" "}
+          Lo que debes a cada proveedor. Las compras a crédito se suman solas; cuando las canceles, márcalas como "Pagado" en{" "}
           <Link to="/modulos/$id" params={{ id: "proveedores" }} className="text-primary">
             sus registros
-          </Link>{" "}
-          y márcala como "Pagado" cuando la canceles.
+          </Link>.
         </p>
       </div>
 
