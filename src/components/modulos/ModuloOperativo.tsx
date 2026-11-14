@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle, ArrowLeft, ArrowRight, Ban, Banknote, CalendarClock, Download, History, MessageCircle,
-  PackageMinus, PackagePlus, Printer, RefreshCw, Search, Trash2,
+  LayoutGrid, List, PackageMinus, PackagePlus, Printer, RefreshCw, Search, Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -85,6 +85,7 @@ export function ModuloOperativo({ id }: { id: string }) {
   const [nota, setNota] = useState("");
   const [op, setOp] = useState("entrada");
   const [verHistorial, setVerHistorial] = useState<string | null>(null);
+  const [vista, setVista] = useState<"lista" | "tablero">("lista");
 
   useEffect(() => {
     setHoy(hoyLocal());
@@ -475,6 +476,22 @@ export function ModuloOperativo({ id }: { id: string }) {
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input className={`${campo} pl-9`} placeholder="Buscar por nombre, contacto o teléfono" value={busca} onChange={(e) => setBusca(e.target.value)} />
             </div>
+            <div className="inline-flex overflow-hidden rounded-lg border border-glass-border">
+              <button
+                onClick={() => setVista("lista")}
+                aria-label="Ver como lista"
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs ${vista === "lista" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+              >
+                <List className="h-3.5 w-3.5" /> Lista
+              </button>
+              <button
+                onClick={() => setVista("tablero")}
+                aria-label="Ver como tablero"
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs ${vista === "tablero" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" /> Tablero
+              </button>
+            </div>
             <button onClick={exportar} disabled={visibles.length === 0} className={botonSec}>
               <Download className="h-3.5 w-3.5" /> Exportar
             </button>
@@ -491,7 +508,51 @@ export function ModuloOperativo({ id }: { id: string }) {
             ))}
           </div>
           {visibles.length === 0 && <p className="text-sm text-muted-foreground">No hay registros para mostrar.</p>}
-          {visibles.map((r) => {
+          {vista === "tablero" && visibles.length > 0 && (
+            <div className="flex gap-3 overflow-x-auto pb-2">
+              {cfg.estados.map((col) => {
+                const items = visibles.filter((r) => !r.anulado && r.estado === col.clave);
+                const idxCol = flujo.findIndex((x) => x.clave === col.clave);
+                const siguiente = idxCol >= 0 && !conStock ? flujo[idxCol + 1] : undefined;
+                return (
+                  <div key={col.clave} className="w-64 shrink-0 space-y-2 rounded-xl border border-glass-border bg-glass/20 p-3">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-medium text-foreground">{col.texto}</span>
+                      <span className="rounded-full bg-glass/60 px-2 py-0.5 text-muted-foreground">{items.length}</span>
+                    </div>
+                    {items.length === 0 && <p className="text-xs text-muted-foreground">Sin registros</p>}
+                    {items.map((r) => {
+                      const alerta = alertaStock(r) ?? alertaFecha(r)?.texto ?? null;
+                      return (
+                        <div key={r.id} className="space-y-1.5 rounded-lg border border-glass-border bg-background/60 p-3">
+                          <p className="break-words text-sm font-medium text-foreground">{r.titulo}</p>
+                          {(r.contacto || r.fecha) && (
+                            <p className="break-words text-xs text-muted-foreground">{[r.contacto, r.fecha].filter(Boolean).join(" · ")}</p>
+                          )}
+                          <p className="text-xs text-foreground">
+                            {dinero(r.monto)}
+                            {conSaldo && r.monto - r.abonado > 0 ? ` · Saldo ${dinero(r.monto - r.abonado)}` : ""}
+                            {conStock ? ` · Existencia ${r.cantidad}` : ""}
+                          </p>
+                          {alerta && (
+                            <p className="flex items-center gap-1 text-xs text-destructive">
+                              <AlertTriangle className="h-3 w-3" /> {alerta}
+                            </p>
+                          )}
+                          {siguiente && (
+                            <button onClick={() => avanzar(r)} className="inline-flex items-center gap-1 text-xs font-medium text-primary">
+                              <ArrowRight className="h-3 w-3" /> Pasar a {siguiente.texto}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {vista === "lista" && visibles.map((r) => {
             const af = alertaFecha(r);
             const as = alertaStock(r);
             const saldo = r.monto - r.abonado;
