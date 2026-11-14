@@ -41,6 +41,11 @@ Bloqueo vigente: no existe conexión de lectura a la base desde el asistente (ve
 
 Revisado sin hallar problema: los `REVOKE` de la migración quitan `anon` a funciones que solo llama la app con sesión (`authenticated` conserva su permiso); funciones `SECURITY DEFINER` con `search_path = public`; las políticas de `creditos_docs` ya filtran por carpeta de negocio. Relaciones sin validar entre empresas todavía: insumos↔recetas, compras↔proveedores, `modulo_registros` (sin revisar).
 
+### Actualización H6 y migraciones (2026-11-14, por lectura; nada ejecutado)
+- H6: CONFIRMADO POR LECTURA. `es_personal()` (pedidos/cocina/domicilios) abre `bodegas_personal` y `stock_bodega_personal` sin exigir `insumos`. Solo dentro de la misma empresa. Corrección en `supabase/propuestas/20261201130000_restringir_bodegas_por_modulo.sql`, NO aplicada. Falta la confirmación con F1/F2.
+- H8: números de migración repetidos (20261113120000, 20261114120000, 20261121120000, 20261122120000). Pendiente de comprobar en el historial real.
+- Detalle y pasos: `docs/VALIDACION_AISLAMIENTO.md`. Seguridad sigue sin validar.
+
 ### Pendiente
 0. Confirmar migración aplicada y leer el aviso de pruebas en los registros de la base.
 1. `es_superadmin()` compara un correo fijo (mover a tabla de roles).

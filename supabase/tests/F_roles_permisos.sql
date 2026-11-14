@@ -2,6 +2,9 @@
 -- SOLO para un entorno de pruebas. Termina en ROLLBACK. Estados: ver encabezado de A_bodegas_existencias.sql.
 -- F1 y F2 pueden salir PERMITIDA_INDEBIDAMENTE: por lectura, la política de bodegas usa es_personal(), que acepta
 -- a quien tenga pedidos/cocina/domicilios aunque no tenga el módulo "insumos". Si ocurre, es un hallazgo real.
+-- Resultado esperado ANTES de la corrección propuesta (supabase/propuestas/20261201130000_restringir_bodegas_por_modulo.sql):
+--   F1 y F2 = PERMITIDA_INDEBIDAMENTE (si la sospecha es cierta). DESPUÉS de aplicarla en el entorno de pruebas: BLOQUEADA_OK.
+-- Qué demuestran: F1 = que un empleado sin "insumos" no LEE bodegas; F2 = que no las MODIFICA. F9 usa un empleado desactivado.
 BEGIN;
 
 CREATE FUNCTION public.zz_t_error(p_id text, p_sql text, p_sqlstate text, p_frag text DEFAULT NULL)

@@ -72,6 +72,13 @@ Ver docs/KNOWN_ISSUES.md.
 - Archivos: supabase/migrations/20261201120000_aislamiento_multiempresa.sql (editado), supabase/tests/A–F y informe_conciliacion_propietarios.sql (nuevos), supabase/tests/aislamiento_multiempresa.sql (retirado), docs/TESTING.md y docs/SECURITY.md.
 - Si la migración ya estaba aplicada antes de estos cambios, la versión anterior sigue vigente en la base: correr el informe de conciliación.
 
+## Preparación de validación (2026-11-14, cuarta revisión)
+- Guía completa: `docs/VALIDACION_AISLAMIENTO.md` (estado de la migración, H6, rutas, ejecución en entorno de pruebas, fechas).
+- H6 confirmado por lectura de políticas (no por ejecución). Corrección preparada y NO aplicada: `supabase/propuestas/20261201130000_restringir_bodegas_por_modulo.sql`.
+- Consultas de solo lectura: `supabase/consultas/verificar_migraciones_aplicadas.sql` y `revisar_politicas_rls.sql`.
+- Hallazgo nuevo: números de migración repetidos (4 pares). Sin tocar.
+- Sin migraciones nuevas aplicadas, sin datos tocados, pruebas ejecutadas: NINGUNA.
+
 ## Próxima tarea exacta
 T04 (bloqueante): confirmar en los registros de la base de Lovable Cloud el aviso "Pruebas de aislamiento: todas superadas" (o "WARNING Pruebas de aislamiento: ..."), y ejecutar `supabase/tests/aislamiento_multiempresa.sql` en un entorno de pruebas. Luego pruebas por rol, descarga de archivos privados e integridad de relaciones.
 Solo con esos resultados se pasa a T03 (clasificar módulos) y T05.

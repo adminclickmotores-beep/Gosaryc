@@ -35,6 +35,11 @@ Cada prueba emite un aviso `RESULTADO | id | estado | detalle`:
 | A, B, C, D, E, F | NO | Sin resultado. Preparadas, no aprobadas |
 | Migración aplicada / políticas activas | NO CONFIRMADO | — |
 
+## Consultas de solo lectura y entorno de pruebas
+- `supabase/consultas/verificar_migraciones_aplicadas.sql` y `supabase/consultas/revisar_politicas_rls.sql` (solo SELECT).
+- Pasos para correr A–F sin tocar producción: `docs/VALIDACION_AISLAMIENTO.md`, sección 4.
+- F1/F2: esperado PERMITIDA_INDEBIDAMENTE hoy si H6 es cierto; BLOQUEADA_OK tras aplicar la propuesta en el entorno de pruebas. Sin resultados registrados.
+
 ## Pendiente
 1. Ejecutar A–F en un entorno de pruebas y registrar cada línea `RESULTADO` aquí.
 2. Descarga con la API de Storage con dos sesiones reales (las pruebas E solo cubren las políticas de la base).
