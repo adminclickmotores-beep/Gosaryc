@@ -549,9 +549,7 @@ const VOCABULARIO: Record<string, Partial<ConfigModulo>> = {
 
 /** Módulos del catálogo que tenían la configuración genérica y ahora tienen un comportamiento acorde. */
 const COMPORTAMIENTO_EXTRA: Record<string, keyof typeof PRESETS> = {
-  habitaciones: "huesped",
   flota: "vencimiento",
-  asistencia: "estudiante",
   cursos: "proyecto",
   paquetes: "socio",
   planes_entreno: "proyecto",

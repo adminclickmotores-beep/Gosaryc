@@ -26,7 +26,7 @@ const botonSec =
 const TIPOS_SALDO = ["cartera", "reserva", "pago", "huesped", "estudiante", "proyecto"];
 const TIPOS_FECHA = ["cartera", "reserva", "cita", "vencimiento", "socio", "proyecto", "pago", "venta"];
 /** Módulos de tipo "pago" que son dinero que ENTRA (el resto de pagos es dinero que sale). */
-const PAGOS_QUE_ENTRAN = ["pagos_digitales", "facturas", "propinas"];
+const PAGOS_QUE_ENTRAN = ["pagos_digitales", "facturas", "propinas", "horas"];
 const EXCLUIR_FLUJO =["por_vencer", "vencido", "bajo", "agotado"];
 
 const leerHistorial = (j: Json): Entrada[] => {
