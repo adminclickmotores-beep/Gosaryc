@@ -300,7 +300,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
             <button
               key={c.id}
               onClick={() => setCatActiva(c.id)}
-              className={`shrink-0 rounded-full px-5 py-2.5 text-sm font-medium transition ${catActiva === c.id ? "bg-primary text-primary-foreground shadow-md" : "border border-glass-border bg-white/60 text-muted-foreground hover:text-foreground"}`}
+              className={`shrink-0 rounded-full px-5 py-2.5 text-sm font-medium transition ${catActiva === c.id ? "bg-primary text-primary-foreground shadow-md" : "border border-glass-border bg-glass-strong text-foreground/80 hover:text-foreground"}`}
             >
               {c.nombre}
             </button>
