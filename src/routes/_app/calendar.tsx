@@ -1,480 +1,434 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState, useMemo } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { CalendarDays, Check, ChevronLeft, ChevronRight, MessageCircle, Plus, Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useOrgId } from "@/hooks/use-org";
+import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
-import { GlassSkeleton } from "@/components/ui-custom/GlassSkeleton";
-import {
-  IconCalendar,
-  IconArrowRight,
-  IconChevronLeft,
-  IconChevronRight,
-} from "@/components/ui-custom/CustomIcon";
-import { PageHexBadge } from "@/components/app/PageHexBadge";
-import { PanelError } from "@/components/ui-custom/PanelError";
 import { cn } from "@/lib/utils";
-import { TimelineGantt } from "@/components/workspace/TimelineGantt";
-import { MonthGrid, type CalCampaign, type CalItem } from "@/components/calendar/MonthGrid";
-import {
-  CalendarFilters,
-  EMPTY_FILTERS,
-  type CalendarFilterValue,
-} from "@/components/calendar/CalendarFilters";
-import { colorForCampaign } from "@/lib/calendar-colors";
 
 export const Route = createFileRoute("/_app/calendar")({
-  component: CalendarPage,
+  component: AgendaPage,
 });
 
-type Ws = CalCampaign & { updated_at: string };
+type Cita = Tables<"agenda_citas">;
 
-const calendarCampaignCache = new Map<string, Ws[]>();
-const calendarOverlayCache = new Map<string, CalItem[]>();
+const TIPOS: { valor: string; etiqueta: string }[] = [
+  { valor: "cita", etiqueta: "Cita" },
+  { valor: "entrega", etiqueta: "Entrega" },
+  { valor: "reserva", etiqueta: "Reserva" },
+  { valor: "recordatorio", etiqueta: "Recordatorio" },
+  { valor: "evento", etiqueta: "Evento" },
+];
 
-const STATUS_DOT: Record<string, string> = {
-  draft: "bg-muted-foreground/40",
-  planning: "bg-accent",
-  live: "bg-primary",
-  complete: "bg-secondary",
-  archived: "bg-muted-foreground/20",
+const ESTADOS: Record<string, string> = {
+  pendiente: "Pendiente",
+  confirmada: "Confirmada",
+  cumplida: "Cumplida",
+  cancelada: "Cancelada",
 };
 
-function startOfMonth(d: Date) {
-  return new Date(d.getFullYear(), d.getMonth(), 1);
-}
-function addMonths(d: Date, n: number) {
-  return new Date(d.getFullYear(), d.getMonth() + n, 1);
-}
-function displayName(n: string | null | undefined) {
-  const t = (n ?? "").trim();
-  if (!t || t === "Untitled workspace" || t === "Untitled campaign") return "Campaña sin nombre";
-  return t;
+const DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+
+function ymd(d: Date): string {
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
 }
 
-function CalendarPage() {
-  const orgId = useOrgId();
-  const [items, setItems] = useState<Ws[] | null>(null);
-  const [checklistItems, setChecklistItems] = useState<CalItem[] | null>(null);
-  const [view, setView] = useState<"month" | "list" | "timeline">(() => {
-    if (typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches) {
-      return "list";
-    }
-    return "month";
-  });
-  const [cursor, setCursor] = useState(() => startOfMonth(new Date()));
-  const [filters, setFilters] = useState<CalendarFilterValue>(EMPTY_FILTERS);
+function etiquetaTipo(t: string): string {
+  return TIPOS.find((x) => x.valor === t)?.etiqueta ?? t;
+}
+
+function AgendaPage() {
+  const [mes, setMes] = useState<Date>(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [seleccion, setSeleccion] = useState<string>(() => ymd(new Date()));
+  const [citas, setCitas] = useState<Cita[]>([]);
+  const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [reloadKey, setReloadKey] = useState(0);
+  const [mostrarForm, setMostrarForm] = useState(false);
+  const [guardando, setGuardando] = useState(false);
 
-  // Keyboard nav: ← / → for prev / next month when in month view
+  const [titulo, setTitulo] = useState("");
+  const [tipo, setTipo] = useState("cita");
+  const [cliente, setCliente] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [hora, setHora] = useState("");
+  const [notas, setNotas] = useState("");
+
+  const cargar = useCallback(async () => {
+    setCargando(true);
+    const desde = ymd(new Date(mes.getFullYear(), mes.getMonth() - 1, 1));
+    const hasta = ymd(new Date(mes.getFullYear(), mes.getMonth() + 2, 0));
+    const { data, error: err } = await supabase
+      .from("agenda_citas")
+      .select("*")
+      .gte("fecha", desde)
+      .lte("fecha", hasta)
+      .order("fecha", { ascending: true })
+      .order("hora", { ascending: true });
+    if (err) {
+      setError(err.message);
+    } else {
+      setError(null);
+      setCitas(data ?? []);
+    }
+    setCargando(false);
+  }, [mes]);
+
   useEffect(() => {
-    if (view !== "month") return;
-    const onKey = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
-      const tag = target?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || target?.isContentEditable) return;
-      if (e.key === "ArrowLeft") setCursor((c) => addMonths(c, -1));
-      else if (e.key === "ArrowRight") setCursor((c) => addMonths(c, 1));
-      else if (e.key.toLowerCase() === "t") setCursor(startOfMonth(new Date()));
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [view]);
+    cargar();
+  }, [cargar]);
 
-  useEffect(() => {
-    if (!orgId) return;
-    const cacheKey = `calendar:campaigns:${orgId}`;
-    const cached = calendarCampaignCache.get(cacheKey);
-    if (cached) setItems(cached);
-    setError(null);
-    let cancelled = false;
-    (async () => {
-      const res = await supabase
-        .from("workspaces")
-        .select(
-          "id,name,status,channel,campaign_type,start_date,end_date,updated_at",
-        )
-        .eq("org_id", orgId)
-        .order("updated_at", { ascending: false });
-      if (cancelled) return;
-      if (res.error) {
-        console.error("[Calendar] failed to load workspaces:", res.error);
-        setError(res.error.message ?? "No se pudo cargar");
-        return;
-      }
-      const next = (res.data as Ws[]) ?? [];
-      calendarCampaignCache.set(cacheKey, next);
-      setItems(next);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [orgId, reloadKey]);
-
-  // Load checklist items + campaign requests with due dates in a wide window around the cursor
-  useEffect(() => {
-    if (!orgId) return;
-    const overlayKey = `calendar:overlays:${orgId}:${cursor.toISOString().slice(0, 7)}`;
-    const cached = calendarOverlayCache.get(overlayKey);
-    if (cached) setChecklistItems(cached);
-    let cancelled = false;
-    const start = new Date(cursor);
-    start.setMonth(start.getMonth() - 1);
-    const end = new Date(cursor);
-    end.setMonth(end.getMonth() + 2);
-    (async () => {
-      const startIso = start.toISOString();
-      const endIso = end.toISOString();
-      const startYmd = startIso.slice(0, 10);
-      const endYmd = endIso.slice(0, 10);
-
-      const [checklistRes, requestsRes, listsRes] = await Promise.all([
-        supabase
-          .from("checklist_items")
-          .select("id,workspace_id,title,due_at,done")
-          .eq("org_id", orgId)
-          .not("due_at", "is", null)
-          .gte("due_at", startIso)
-          .lt("due_at", endIso)
-          .order("due_at", { ascending: true }),
-        supabase
-          .from("campaign_requests")
-          .select("id,workspace_id,brief,desired_due_date,status,requestor_name,requestor_email")
-          .eq("org_id", orgId)
-          .not("desired_due_date", "is", null)
-          .gte("desired_due_date", startYmd)
-          .lt("desired_due_date", endYmd)
-          .order("desired_due_date", { ascending: true }),
-        supabase
-          .from("imported_lists")
-          .select("id,workspace_id,source_label,event_date,row_count")
-          .eq("org_id", orgId)
-          .not("event_date", "is", null)
-          .gte("event_date", startYmd)
-          .lt("event_date", endYmd)
-          .order("event_date", { ascending: true }),
-      ]);
-
-      if (cancelled) return;
-      const overlayErr =
-        checklistRes.error || requestsRes.error || listsRes.error;
-      if (overlayErr) {
-        console.error("[Calendar] failed to load overlay items:", overlayErr);
-        // Items list (campaigns) is still useful — don't blank the page; just skip overlays.
-        setChecklistItems([]);
-        return;
-      }
-
-
-
-      const reqItems: CalItem[] = ((requestsRes.data ?? []) as Array<{
-        id: string;
-        workspace_id: string | null;
-        brief: string | null;
-        desired_due_date: string;
-        status: string;
-        requestor_name: string | null;
-        requestor_email: string | null;
-      }>).map((r) => {
-        const who = r.requestor_name?.trim() || r.requestor_email || "Solicitud";
-        const briefSnip = (r.brief ?? "").trim().split(/\s+/).slice(0, 6).join(" ");
-        return {
-          id: `req-${r.id}`,
-          workspace_id: r.workspace_id ?? "",
-          title: `Solicitud · ${who}${briefSnip ? ` — ${briefSnip}` : ""}`,
-          due_at: `${r.desired_due_date}T12:00:00.000Z`,
-          done: r.status === "converted" || r.status === "declined",
-        } satisfies CalItem;
-      });
-
-      const listItems: CalItem[] = ((listsRes.data ?? []) as Array<{
-        id: string;
-        workspace_id: string | null;
-        source_label: string;
-        event_date: string;
-        row_count: number;
-      }>).map((l) => ({
-        id: `list-${l.id}`,
-        workspace_id: l.workspace_id ?? "",
-        title: `Evento · ${l.source_label}${l.row_count ? ` (${l.row_count})` : ""}`,
-        due_at: `${l.event_date}T12:00:00.000Z`,
-        done: false,
-      }));
-
-      const next = [
-        ...(((checklistRes.data as CalItem[]) ?? [])),
-        ...reqItems,
-        ...listItems,
-      ];
-      calendarOverlayCache.set(overlayKey, next);
-      setChecklistItems(next);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [orgId, cursor, reloadKey]);
-
-  const availableChannels = useMemo(
-    () => Array.from(new Set((items ?? []).map((w) => w.channel).filter(Boolean))) as string[],
-    [items],
-  );
-  const availableTypes = useMemo(
-    () =>
-      Array.from(
-        new Set((items ?? []).map((w) => w.campaign_type ?? "other")),
-      ),
-    [items],
-  );
-
-  const filteredCampaigns = useMemo(() => {
-    if (!items) return [];
-    const q = filters.search.trim().toLowerCase();
-    return items.filter((w) => {
-      if (!filters.showCampaigns) return false;
-      if (!w.start_date) return false;
-      if (filters.statuses.length && !filters.statuses.includes(w.status)) return false;
-      if (filters.channels.length && (!w.channel || !filters.channels.includes(w.channel))) return false;
-      if (filters.types.length && !filters.types.includes(w.campaign_type ?? "other")) return false;
-      if (q && !displayName(w.name).toLowerCase().includes(q)) return false;
-      return true;
-    });
-  }, [items, filters]);
-
-  const campaignById = useMemo(() => {
-    const m = new Map<string, CalCampaign>();
-    for (const c of items ?? []) m.set(c.id, c);
+  const porDia = useMemo(() => {
+    const m = new Map<string, Cita[]>();
+    for (const c of citas) {
+      const arr = m.get(c.fecha) ?? [];
+      arr.push(c);
+      m.set(c.fecha, arr);
+    }
     return m;
-  }, [items]);
+  }, [citas]);
 
-  const visibleItems = useMemo(() => {
-    if (!filters.showPosts) return [];
-    const q = filters.search.trim().toLowerCase();
-    const visibleCampaignIds = new Set(filteredCampaigns.map((c) => c.id));
-    return (checklistItems ?? []).filter((it) => {
-      // If any campaign filters are active, restrict posts to campaigns that pass them
-      const anyCampaignFilter =
-        filters.statuses.length > 0 ||
-        filters.channels.length > 0 ||
-        filters.types.length > 0;
-      if (anyCampaignFilter && !visibleCampaignIds.has(it.workspace_id)) return false;
-      if (q && !it.title.toLowerCase().includes(q)) return false;
-      return true;
+  // Celdas del mes (semana inicia el lunes)
+  const celdas = useMemo(() => {
+    const primero = new Date(mes.getFullYear(), mes.getMonth(), 1);
+    const offset = (primero.getDay() + 6) % 7;
+    const total = new Date(mes.getFullYear(), mes.getMonth() + 1, 0).getDate();
+    const out: (Date | null)[] = [];
+    for (let i = 0; i < offset; i++) out.push(null);
+    for (let d = 1; d <= total; d++) out.push(new Date(mes.getFullYear(), mes.getMonth(), d));
+    while (out.length % 7 !== 0) out.push(null);
+    return out;
+  }, [mes]);
+
+  const hoy = ymd(new Date());
+  const delDia = porDia.get(seleccion) ?? [];
+  const proximas = useMemo(
+    () => citas.filter((c) => c.fecha >= hoy && c.estado !== "cancelada" && c.estado !== "cumplida").slice(0, 6),
+    [citas, hoy],
+  );
+
+  const etiquetaMes = mes.toLocaleDateString("es-CO", { month: "long", year: "numeric" });
+
+  async function agregar() {
+    if (!titulo.trim()) return;
+    setGuardando(true);
+    const { error: err } = await supabase.from("agenda_citas").insert({
+      titulo: titulo.trim(),
+      tipo,
+      cliente: cliente.trim() || null,
+      telefono: telefono.trim() || null,
+      fecha: seleccion,
+      hora: hora || null,
+      notas: notas.trim() || null,
     });
-  }, [checklistItems, filters, filteredCampaigns]);
+    setGuardando(false);
+    if (err) {
+      setError(err.message);
+      return;
+    }
+    setTitulo("");
+    setCliente("");
+    setTelefono("");
+    setHora("");
+    setNotas("");
+    setTipo("cita");
+    setMostrarForm(false);
+    cargar();
+  }
 
-  const monthLabel = cursor.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  async function cambiarEstado(c: Cita, estado: string) {
+    const { error: err } = await supabase.from("agenda_citas").update({ estado }).eq("id", c.id);
+    if (err) setError(err.message);
+    else cargar();
+  }
+
+  async function borrar(c: Cita) {
+    const { error: err } = await supabase.from("agenda_citas").delete().eq("id", c.id);
+    if (err) setError(err.message);
+    else cargar();
+  }
+
+  function enlaceWhatsApp(c: Cita): string | null {
+    const tel = (c.telefono ?? "").replace(/\D/g, "");
+    if (!tel) return null;
+    const numero = tel.length === 10 ? `57${tel}` : tel;
+    const cuando = `${c.fecha}${c.hora ? ` a las ${c.hora.slice(0, 5)}` : ""}`;
+    const texto = `Hola${c.cliente ? ` ${c.cliente}` : ""}, te recordamos tu ${etiquetaTipo(c.tipo).toLowerCase()}: ${c.titulo} (${cuando}).`;
+    return `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`;
+  }
+
+  const campo =
+    "w-full rounded-xl border border-glass-border bg-glass px-3 py-2.5 text-base text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none";
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex items-start gap-4 min-w-0">
-          <PageHexBadge hue={200} size={26} icon={<IconCalendar size={22} />} aria-label="Calendario" />
-          <div className="min-w-0">
-            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Calendario</div>
-            <h1 className="mt-1 font-display text-4xl tracking-tight">Cuándo sale todo</h1>
-            <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-              Las campañas ocupan todo su rango de fechas. Las publicaciones y tareas marcan los días en que vencen. El color se mantiene con la campaña en todas las vistas.
-            </p>
-          </div>
-        </div>
-        <div className="inline-flex rounded-lg border border-glass-border bg-background/40 p-0.5 text-xs shrink-0">
-          {(["month", "list", "timeline"] as const).map((v) => (
-            <button
-              key={v}
-              onClick={() => setView(v)}
-              className={cn(
-                "rounded-md px-3 py-1.5 capitalize transition",
-                view === v ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {v === "month" ? "Mes" : v === "list" ? "Lista" : "Línea de tiempo"}
-            </button>
-          ))}
+      <div className="flex items-start gap-3">
+        <span className="inline-flex size-11 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+          <CalendarDays size={22} />
+        </span>
+        <div className="min-w-0">
+          <h1 className="font-display text-3xl tracking-tight">Agenda</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Citas, entregas, reservas y recordatorios de tu negocio, día por día.
+          </p>
         </div>
       </div>
 
-      {error ? (
-        <PanelError onRetry={() => setReloadKey((k) => k + 1)} />
-      ) : items === null ? (
-        <GlassSkeleton rows={6} />
-      ) : items.length === 0 ? (
-        <GlassPanel tier="strong" className="flex flex-col items-center gap-4 p-12 text-center">
-          <span className="inline-flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <IconCalendar size={24} />
-          </span>
-          <h2 className="font-display text-2xl">Tu calendario te espera</h2>
-          <p className="max-w-md text-sm text-muted-foreground">
-            Cuando crees una campaña con fecha de inicio y de fin, aparecerá en los días correspondientes, con sus publicaciones y tareas marcadas en los días de entrega.
-          </p>
-          <Link
-            to="/campaigns"
-            className="mt-2 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90"
-          >
-            Crea tu primera campaña <IconArrowRight size={14} />
-          </Link>
-        </GlassPanel>
-      ) : (
-        <>
-          <CalendarFilters
-            value={filters}
-            onChange={setFilters}
-            availableChannels={availableChannels}
-            availableTypes={availableTypes}
-            totalVisible={filteredCampaigns.length + visibleItems.length}
-            totalAll={items.length + (checklistItems?.length ?? 0)}
-          />
+      {error && (
+        <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-foreground">
+          {error}
+        </div>
+      )}
 
-          {view === "timeline" ? (
-            <TimelineGantt items={filteredCampaigns as never} />
-          ) : view === "month" ? (
-            <GlassPanel className="overflow-hidden p-0">
-              <div className="flex items-center justify-between border-b border-glass-border px-5 py-3">
-                <div className="font-display text-xl">{monthLabel}</div>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => setCursor(startOfMonth(new Date()))}
-                    className="rounded-md px-3 py-1 text-xs text-muted-foreground transition hover:bg-muted/40 hover:text-foreground"
-                  >
-                    Hoy
-                  </button>
-                  <button
-                    onClick={() => setCursor(addMonths(cursor, -1))}
-                    className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted/40 hover:text-foreground"
-                    aria-label="Mes anterior"
-                  >
-                    <IconChevronLeft size={16} />
-                  </button>
-                  <button
-                    onClick={() => setCursor(addMonths(cursor, 1))}
-                    className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted/40 hover:text-foreground"
-                    aria-label="Mes siguiente"
-                  >
-                    <IconChevronRight size={16} />
-                  </button>
-                </div>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <GlassPanel className="p-4 sm:p-5">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="font-display text-xl capitalize">{etiquetaMes}</div>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => {
+                  const h = new Date();
+                  setMes(new Date(h.getFullYear(), h.getMonth(), 1));
+                  setSeleccion(ymd(h));
+                }}
+                className="rounded-md px-3 py-1 text-xs text-muted-foreground hover:bg-glass-strong hover:text-foreground"
+              >
+                Hoy
+              </button>
+              <button
+                type="button"
+                aria-label="Mes anterior"
+                onClick={() => setMes(new Date(mes.getFullYear(), mes.getMonth() - 1, 1))}
+                className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-glass-strong hover:text-foreground"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <button
+                type="button"
+                aria-label="Mes siguiente"
+                onClick={() => setMes(new Date(mes.getFullYear(), mes.getMonth() + 1, 1))}
+                className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-glass-strong hover:text-foreground"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-7 gap-1 text-center text-[11px] uppercase tracking-wider text-muted-foreground">
+            {DIAS.map((d) => (
+              <div key={d} className="py-1">
+                {d}
               </div>
-
-              <div className="overflow-x-auto">
-                <div className="min-w-[640px]">
-                  <MonthGrid
-                    cursor={cursor}
-                    campaigns={filteredCampaigns}
-                    items={visibleItems}
-                    campaignById={campaignById}
-                  />
-                </div>
-              </div>
-
-              {/* Color legend — first 6 visible campaigns */}
-              {filteredCampaigns.length > 0 && (
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-glass-border bg-background/20 px-5 py-3">
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                    Leyenda
-                  </span>
-                  {filteredCampaigns.slice(0, 8).map((c) => {
-                    const color = colorForCampaign(c.id);
-                    return (
-                      <Link
-                        key={c.id}
-                        to="/campaigns/$id"
-                        params={{ id: c.id }}
-                        className="group flex items-center gap-1.5 text-xs text-muted-foreground transition hover:text-foreground"
-                      >
-                        <span
-                          className="inline-block size-2 rounded-full"
-                          style={{ background: color.edge }}
-                        />
-                        <span className="truncate max-w-[160px]">{displayName(c.name)}</span>
-                      </Link>
-                    );
-                  })}
-                  {filteredCampaigns.length > 8 && (
-                    <span className="text-xs text-muted-foreground">
-                      +{filteredCampaigns.length - 8} más
+            ))}
+          </div>
+          <div className="mt-1 grid grid-cols-7 gap-1">
+            {celdas.map((d, i) => {
+              if (!d) return <div key={`v${i}`} className="aspect-square" />;
+              const clave = ymd(d);
+              const n = (porDia.get(clave) ?? []).filter((c) => c.estado !== "cancelada").length;
+              const activo = clave === seleccion;
+              return (
+                <button
+                  key={clave}
+                  type="button"
+                  onClick={() => setSeleccion(clave)}
+                  className={cn(
+                    "relative flex aspect-square flex-col items-center justify-center rounded-xl border text-sm transition",
+                    activo
+                      ? "border-primary bg-primary/20 text-foreground"
+                      : "border-glass-border bg-glass text-foreground/90 hover:bg-glass-strong",
+                    clave === hoy && !activo && "border-primary/60",
+                  )}
+                >
+                  <span>{d.getDate()}</span>
+                  {n > 0 && (
+                    <span className="mt-0.5 inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
+                      {n}
                     </span>
                   )}
-                </div>
-              )}
-            </GlassPanel>
-          ) : filteredCampaigns.length === 0 ? (
-            <GlassPanel className="p-10 text-center text-sm text-muted-foreground">
-              No hay campañas que coincidan.{" "}
-              <Link to="/campaigns" className="text-primary underline-offset-4 hover:underline">
-                Crea una
-              </Link>{" "}
-              para llenar el calendario.
-            </GlassPanel>
-          ) : (
-            <ListView items={filteredCampaigns as Ws[]} />
-          )}
-        </>
-      )}
-    </div>
-  );
-}
-
-function ListView({ items }: { items: Ws[] }) {
-  const byWeek = useMemo(() => {
-    const groups = new Map<string, Ws[]>();
-    items.forEach((w) => {
-      const ref = w.start_date ? new Date(w.start_date) : new Date(w.updated_at);
-      const monday = new Date(ref);
-      monday.setDate(ref.getDate() - ((ref.getDay() + 6) % 7));
-      const key = monday.toISOString().slice(0, 10);
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key)!.push(w);
-    });
-    return Array.from(groups.entries()).sort(([a], [b]) => (a < b ? 1 : -1));
-  }, [items]);
-
-  return (
-    <div className="space-y-4">
-      {byWeek.map(([week, ws]) => (
-        <GlassPanel key={week} className="p-5">
-          <div className="mb-3 flex items-center justify-between">
-            <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-              Semana del{" "}
-              {new Date(week).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-            </div>
-            <span className="text-xs text-muted-foreground">
-              {ws.length} campaña{ws.length === 1 ? "" : "s"}
-            </span>
-          </div>
-          <div className="divide-y divide-glass-border">
-            {ws.map((w) => {
-              const color = colorForCampaign(w.id);
-              return (
-                <Link
-                  key={w.id}
-                  to="/campaigns/$id"
-                  params={{ id: w.id }}
-                  className="group flex items-center justify-between gap-3 py-2.5 text-sm"
-                >
-                  <span className="flex min-w-0 items-center gap-3">
-                    <span
-                      className="inline-block size-2 rounded-full"
-                      style={{ background: color.edge }}
-                    />
-                    <span className="truncate">{displayName(w.name)}</span>
-                    {w.channel && (
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                        {w.channel}
-                      </span>
-                    )}
-                    <span
-                      className={`inline-block size-1.5 rounded-full ${STATUS_DOT[w.status] ?? STATUS_DOT.draft}`}
-                    />
-                  </span>
-                  <IconArrowRight
-                    size={14}
-                    className="text-muted-foreground transition group-hover:translate-x-1"
-                  />
-                </Link>
+                </button>
               );
             })}
           </div>
+          {cargando && <div className="mt-3 text-xs text-muted-foreground">Cargando…</div>}
         </GlassPanel>
-      ))}
+
+        <div className="space-y-6">
+          <GlassPanel className="p-4 sm:p-5">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground">Día seleccionado</div>
+                <div className="font-display text-lg capitalize">
+                  {new Date(`${seleccion}T12:00:00`).toLocaleDateString("es-CO", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                  })}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMostrarForm((v) => !v)}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+              >
+                {mostrarForm ? <X size={14} /> : <Plus size={14} />}
+                {mostrarForm ? "Cerrar" : "Nueva"}
+              </button>
+            </div>
+
+            {mostrarForm && (
+              <div className="mb-4 space-y-2 rounded-xl border border-glass-border bg-glass p-3">
+                <input
+                  className={campo}
+                  placeholder="Título (ej. Entrega de torta, Cita de corte)"
+                  value={titulo}
+                  onChange={(e) => setTitulo(e.target.value)}
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <select className={campo} value={tipo} onChange={(e) => setTipo(e.target.value)}>
+                    {TIPOS.map((t) => (
+                      <option key={t.valor} value={t.valor}>
+                        {t.etiqueta}
+                      </option>
+                    ))}
+                  </select>
+                  <input className={campo} type="time" value={hora} onChange={(e) => setHora(e.target.value)} />
+                </div>
+                <input
+                  className={campo}
+                  placeholder="Cliente (opcional)"
+                  value={cliente}
+                  onChange={(e) => setCliente(e.target.value)}
+                />
+                <input
+                  className={campo}
+                  inputMode="tel"
+                  placeholder="WhatsApp del cliente (opcional)"
+                  value={telefono}
+                  onChange={(e) => setTelefono(e.target.value)}
+                />
+                <textarea
+                  className={campo}
+                  rows={2}
+                  placeholder="Notas (opcional)"
+                  value={notas}
+                  onChange={(e) => setNotas(e.target.value)}
+                />
+                <button
+                  type="button"
+                  disabled={guardando || !titulo.trim()}
+                  onClick={agregar}
+                  className="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-60"
+                >
+                  {guardando ? "Guardando…" : "Agregar a la agenda"}
+                </button>
+              </div>
+            )}
+
+            {delDia.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">No hay nada agendado este día.</p>
+            ) : (
+              <ul className="space-y-2">
+                {delDia.map((c) => {
+                  const wa = enlaceWhatsApp(c);
+                  return (
+                    <li key={c.id} className="rounded-xl border border-glass-border bg-glass p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div
+                            className={cn(
+                              "font-medium text-foreground",
+                              c.estado === "cancelada" && "line-through opacity-60",
+                            )}
+                          >
+                            {c.hora ? `${c.hora.slice(0, 5)} · ` : ""}
+                            {c.titulo}
+                          </div>
+                          <div className="mt-0.5 text-xs text-muted-foreground">
+                            {etiquetaTipo(c.tipo)}
+                            {c.cliente ? ` · ${c.cliente}` : ""}
+                          </div>
+                          {c.notas && <div className="mt-1 text-xs text-foreground/80">{c.notas}</div>}
+                        </div>
+                        <button
+                          type="button"
+                          aria-label="Eliminar"
+                          onClick={() => borrar(c)}
+                          className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-glass-strong hover:text-destructive"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <select
+                          value={c.estado}
+                          onChange={(e) => cambiarEstado(c, e.target.value)}
+                          className="rounded-lg border border-glass-border bg-glass px-2 py-1.5 text-base text-foreground focus:outline-none"
+                        >
+                          {Object.entries(ESTADOS).map(([v, l]) => (
+                            <option key={v} value={v}>
+                              {l}
+                            </option>
+                          ))}
+                        </select>
+                        {c.estado !== "cumplida" && (
+                          <button
+                            type="button"
+                            onClick={() => cambiarEstado(c, "cumplida")}
+                            className="inline-flex items-center gap-1 rounded-lg border border-glass-border px-2.5 py-1.5 text-xs text-foreground hover:bg-glass-strong"
+                          >
+                            <Check size={13} /> Cumplida
+                          </button>
+                        )}
+                        {wa && (
+                          <a
+                            href={wa}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 rounded-lg border border-glass-border px-2.5 py-1.5 text-xs text-foreground hover:bg-glass-strong"
+                          >
+                            <MessageCircle size={13} /> Recordar
+                          </a>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </GlassPanel>
+
+          <GlassPanel className="p-4 sm:p-5">
+            <div className="mb-2 font-display text-lg">Próximas</div>
+            {proximas.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Sin compromisos próximos.</p>
+            ) : (
+              <ul className="divide-y divide-glass-border">
+                {proximas.map((c) => (
+                  <li key={c.id}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSeleccion(c.fecha);
+                        setMes(new Date(`${c.fecha}T12:00:00`.slice(0, 7) + "-01T12:00:00"));
+                      }}
+                      className="flex w-full items-center justify-between gap-3 py-2 text-left text-sm text-foreground hover:text-primary"
+                    >
+                      <span className="min-w-0 truncate">{c.titulo}</span>
+                      <span className="shrink-0 text-xs text-muted-foreground">
+                        {c.fecha.slice(5)}
+                        {c.hora ? ` ${c.hora.slice(0, 5)}` : ""}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </GlassPanel>
+        </div>
+      </div>
     </div>
   );
 }

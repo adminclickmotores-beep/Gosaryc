@@ -155,6 +155,51 @@ export type Database = {
         }
         Relationships: []
       }
+      agenda_citas: {
+        Row: {
+          cliente: string | null
+          created_at: string
+          duracion_min: number
+          estado: string
+          fecha: string
+          hora: string | null
+          id: string
+          notas: string | null
+          owner_id: string | null
+          telefono: string | null
+          tipo: string
+          titulo: string
+        }
+        Insert: {
+          cliente?: string | null
+          created_at?: string
+          duracion_min?: number
+          estado?: string
+          fecha: string
+          hora?: string | null
+          id?: string
+          notas?: string | null
+          owner_id?: string | null
+          telefono?: string | null
+          tipo?: string
+          titulo: string
+        }
+        Update: {
+          cliente?: string | null
+          created_at?: string
+          duracion_min?: number
+          estado?: string
+          fecha?: string
+          hora?: string | null
+          id?: string
+          notas?: string | null
+          owner_id?: string | null
+          telefono?: string | null
+          tipo?: string
+          titulo?: string
+        }
+        Relationships: []
+      }
       modulo_registros: {
         Row: {
           contacto: string | null
