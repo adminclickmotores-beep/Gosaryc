@@ -10,7 +10,15 @@ export const Route = createFileRoute("/_app/cartera-fiados")({
   component: CarteraFiadosPage,
 });
 
-type Fila = { titulo: string; contacto: string | null; estado: string; monto: number };
+type Fila = {
+  titulo: string;
+  contacto: string | null;
+  telefono: string | null;
+  estado: string;
+  monto: number;
+  abonado: number;
+  anulado: boolean;
+};
 
 const dinero = (n: number) =>
   new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
@@ -22,7 +30,7 @@ function CarteraFiadosPage() {
   const cargar = useCallback(async () => {
     const { data, error } = await supabase
       .from("modulo_registros")
-      .select("titulo, contacto, estado, monto")
+      .select("titulo, contacto, telefono, estado, monto, abonado, anulado")
       .eq("modulo", "fiados");
     if (error) toast.error("No se pudo cargar la cartera.");
     setFilas(data ?? []);
@@ -34,21 +42,25 @@ function CarteraFiadosPage() {
   }, [cargar]);
 
   const deudores = useMemo(() => {
-    const mapa = new Map<string, { contacto: string | null; debe: number }>();
+    const mapa = new Map<string, { contacto: string | null; telefono: string | null; debe: number }>();
     for (const f of filas) {
-      if (f.estado === "pagado") continue;
+      if (f.anulado || f.estado === "pagado") continue;
+      const saldo = f.monto - f.abonado;
+      if (saldo <= 0) continue;
       const clave = (f.contacto ?? f.titulo).trim() || f.titulo;
-      const actual = mapa.get(clave) ?? { contacto: f.contacto, debe: 0 };
-      actual.debe += f.monto;
+      const actual = mapa.get(clave) ?? { contacto: f.contacto, telefono: f.telefono, debe: 0 };
+      actual.debe += saldo;
+      if (!actual.telefono && f.telefono) actual.telefono = f.telefono;
       mapa.set(clave, actual);
     }
     return Array.from(mapa.entries())
-      .map(([nombre, v]) => ({ nombre, contacto: v.contacto, debe: v.debe }))
+      .map(([nombre, v]) => ({ nombre, contacto: v.contacto, telefono: v.telefono, debe: v.debe }))
       .sort((a, b) => b.debe - a.debe);
   }, [filas]);
 
   const totalPorCobrar = deudores.reduce((s, d) => s + d.debe, 0);
-  const totalCobrado = filas.filter((f) => f.estado === "pagado").reduce((s, f) => s + f.monto, 0);
+  // Lo cobrado = abonos recibidos en fiados vigentes (los anulados no cuentan).
+  const totalCobrado = filas.filter((f) => !f.anulado).reduce((s, f) => s + f.abonado, 0);
 
   return (
     <div className="space-y-6">
@@ -95,6 +107,18 @@ function CarteraFiadosPage() {
                 <div className="min-w-0 flex-1">
                   <p className="break-words text-sm font-medium text-foreground">{d.contacto ?? d.nombre}</p>
                 </div>
+                {d.telefono && (
+                  <a
+                    href={`https://wa.me/${d.telefono.replace(/\D/g, "")}?text=${encodeURIComponent(
+                      `Hola ${d.contacto ?? d.nombre}, te recordamos tu saldo pendiente de ${dinero(d.debe)}. ¡Gracias!`,
+                    )}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="shrink-0 rounded-full border border-glass-border px-3 py-1 text-xs text-primary"
+                  >
+                    Recordar por WhatsApp
+                  </a>
+                )}
                 <span className="shrink-0 text-sm text-foreground">{dinero(d.debe)}</span>
               </GlassPanel>
             ))}
