@@ -1010,8 +1010,30 @@ export type Database = {
         }
         Relationships: []
       }
+      restaurante_bodegas: {
+        Row: {
+          created_at: string
+          direccion: string | null
+          id: string
+          nombre: string
+        }
+        Insert: {
+          created_at?: string
+          direccion?: string | null
+          id?: string
+          nombre: string
+        }
+        Update: {
+          created_at?: string
+          direccion?: string | null
+          id?: string
+          nombre?: string
+        }
+        Relationships: []
+      }
       restaurante_insumos: {
         Row: {
+          bodega_id: string | null
           cantidad_compra: number
           created_at: string
           id: string
