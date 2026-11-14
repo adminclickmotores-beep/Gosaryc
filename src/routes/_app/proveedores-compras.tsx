@@ -29,6 +29,7 @@ function ProveedoresComprasPage() {
   const [costo, setCosto] = useState("");
   const [proveedor, setProveedor] = useState("");
   const [credito, setCredito] = useState(false);
+  const [metodoPago, setMetodoPago] = useState("efectivo");
   const [guardando, setGuardando] = useState(false);
   const [devInsumo, setDevInsumo] = useState("");
   const [devCantidad, setDevCantidad] = useState("");
@@ -97,13 +98,13 @@ function ProveedoresComprasPage() {
         const { error: errCaja } = await supabase.from("movimientos_turno").insert({
           turno_id: turnoId,
           tipo: "gasto",
-          metodo: "efectivo",
+          metodo: metodoPago,
           concepto: `Compra de contado: ${cantNum} ${insumoSel.unidad} de ${insumoSel.nombre}`,
           categoria: "Proveedores",
           monto: costoNum,
         });
         if (errCaja) toast.error("La compra entró al inventario, pero no se pudo descontar de la caja.");
-      } else {
+      } else if (metodoPago === "efectivo") {
         toast.info("La caja está cerrada: esta compra de contado no se descontó de la caja.");
       }
     }
@@ -230,6 +231,13 @@ function ProveedoresComprasPage() {
               <input type="checkbox" checked={credito} onChange={(e) => setCredito(e.target.checked)} className="h-4 w-4" />
               Compra a crédito (queda por pagar al proveedor)
             </label>
+            {!credito && (
+              <select className={campo} value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)} aria-label="Medio de pago de la compra">
+                <option value="efectivo">Pagado en efectivo</option>
+                <option value="transferencia">Pagado por transferencia</option>
+                <option value="tarjeta">Pagado con tarjeta</option>
+              </select>
+            )}
             {insumoSel && cantNum > 0 && costo.trim() !== "" && (
               <p className="text-xs text-muted-foreground">
                 Costo de esta compra: {dinero(unitNuevo)} por {insumoSel.unidad}. El costo promedio del inventario pasa de{" "}
