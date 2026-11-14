@@ -107,6 +107,135 @@ export type Database = {
         }
         Relationships: []
       }
+      solicitudes_credito: {
+        Row: {
+          antiguedad: string | null
+          cargo: string | null
+          ciudad: string | null
+          created_at: string
+          cuota_inicial: number | null
+          direccion: string | null
+          documentos: string[]
+          egresos_mensuales: number | null
+          email: string | null
+          empresa: string | null
+          entidad: string | null
+          estado: string
+          estado_civil: string | null
+          fecha_nacimiento: string | null
+          id: string
+          ingresos_mensuales: number | null
+          lugar_expedicion: string | null
+          monto_solicitado: number | null
+          nombre_completo: string
+          numero_documento: string | null
+          observaciones: string | null
+          ocupacion: string | null
+          otros_ingresos: number | null
+          owner_id: string | null
+          patrimonio: number | null
+          personas_a_cargo: number | null
+          plazo_meses: number | null
+          ref1_nombre: string | null
+          ref1_parentesco: string | null
+          ref1_telefono: string | null
+          ref2_nombre: string | null
+          ref2_parentesco: string | null
+          ref2_telefono: string | null
+          telefono: string | null
+          telefono_empresa: string | null
+          tipo_documento: string
+          tipo_vinculacion: string | null
+          tipo_vivienda: string | null
+          valor_vehiculo: number | null
+          vehiculo: string | null
+        }
+        Insert: {
+          antiguedad?: string | null
+          cargo?: string | null
+          ciudad?: string | null
+          created_at?: string
+          cuota_inicial?: number | null
+          direccion?: string | null
+          documentos?: string[]
+          egresos_mensuales?: number | null
+          email?: string | null
+          empresa?: string | null
+          entidad?: string | null
+          estado?: string
+          estado_civil?: string | null
+          fecha_nacimiento?: string | null
+          id?: string
+          ingresos_mensuales?: number | null
+          lugar_expedicion?: string | null
+          monto_solicitado?: number | null
+          nombre_completo: string
+          numero_documento?: string | null
+          observaciones?: string | null
+          ocupacion?: string | null
+          otros_ingresos?: number | null
+          owner_id?: string | null
+          patrimonio?: number | null
+          personas_a_cargo?: number | null
+          plazo_meses?: number | null
+          ref1_nombre?: string | null
+          ref1_parentesco?: string | null
+          ref1_telefono?: string | null
+          ref2_nombre?: string | null
+          ref2_parentesco?: string | null
+          ref2_telefono?: string | null
+          telefono?: string | null
+          telefono_empresa?: string | null
+          tipo_documento?: string
+          tipo_vinculacion?: string | null
+          tipo_vivienda?: string | null
+          valor_vehiculo?: number | null
+          vehiculo?: string | null
+        }
+        Update: {
+          antiguedad?: string | null
+          cargo?: string | null
+          ciudad?: string | null
+          created_at?: string
+          cuota_inicial?: number | null
+          direccion?: string | null
+          documentos?: string[]
+          egresos_mensuales?: number | null
+          email?: string | null
+          empresa?: string | null
+          entidad?: string | null
+          estado?: string
+          estado_civil?: string | null
+          fecha_nacimiento?: string | null
+          id?: string
+          ingresos_mensuales?: number | null
+          lugar_expedicion?: string | null
+          monto_solicitado?: number | null
+          nombre_completo?: string
+          numero_documento?: string | null
+          observaciones?: string | null
+          ocupacion?: string | null
+          otros_ingresos?: number | null
+          owner_id?: string | null
+          patrimonio?: number | null
+          personas_a_cargo?: number | null
+          plazo_meses?: number | null
+          ref1_nombre?: string | null
+          ref1_parentesco?: string | null
+          ref1_telefono?: string | null
+          ref2_nombre?: string | null
+          ref2_parentesco?: string | null
+          ref2_telefono?: string | null
+          telefono?: string | null
+          telefono_empresa?: string | null
+          tipo_documento?: string
+          tipo_vinculacion?: string | null
+          tipo_vivienda?: string | null
+          valor_vehiculo?: number | null
+          vehiculo?: string | null
+        }
+        Relationships: []
+      }
       vehiculos_inventario: {
         Row: {
           anio: number | null
@@ -3049,6 +3178,7 @@ export type Database = {
     Functions: {
       accept_org_invite: { Args: { _token: string }; Returns: string }
       mi_acceso: { Args: never; Returns: Json }
+      mi_negocio_id: { Args: never; Returns: string }
       reclamar_acceso: { Args: never; Returns: undefined }
       delete_email: {
         Args: { message_id: number; queue_name: string }

@@ -8,6 +8,7 @@ import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { buscarModulo } from "@/lib/modulos-negocio";
 import { configModulo } from "@/lib/modulos-config";
 import { InventarioVehiculos } from "@/components/vehiculos/InventarioVehiculos";
+import { SolicitudesCredito } from "@/components/vehiculos/SolicitudesCredito";
 
 export const Route = createFileRoute("/_app/modulos/$id")({
   head: () => ({ meta: [{ title: "Módulo del negocio" }] }),
@@ -25,6 +26,7 @@ const campo =
 function ModuloPage() {
   const { id } = Route.useParams();
   if (id === "vehiculos") return <InventarioVehiculos />;
+  if (id === "creditos_veh") return <SolicitudesCredito />;
   return <ModuloGenerico id={id} />;
 }
 
