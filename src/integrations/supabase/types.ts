@@ -3581,6 +3581,16 @@ export type Database = {
         Returns: boolean
       }
       descontar_insumos_pedido: { Args: { p_pedido: string }; Returns: number }
+      registrar_compra_insumo: {
+        Args: {
+          p_insumo: string
+          p_cantidad: number
+          p_costo_total: number
+          p_proveedor: string
+          p_credito: boolean
+        }
+        Returns: number
+      }
       is_org_member: { Args: { _org_id: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
