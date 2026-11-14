@@ -57,23 +57,32 @@ function Settings() {
           .from("profiles")
           .select("default_org_id, full_name")
           .eq("id", user.id)
-          .single();
+          .maybeSingle();
         if (cancelled) return;
         if (pErr) throw pErr;
         if (p?.full_name) setFullName(p.full_name);
-        if (!p?.default_org_id) {
+        let currentOrg: string | null = p?.default_org_id ?? null;
+        if (!currentOrg) {
+          const { data: m } = await supabase
+            .from("org_members")
+            .select("org_id")
+            .eq("user_id", user.id)
+            .limit(1)
+            .maybeSingle();
+          currentOrg = (m?.org_id as string | undefined) ?? null;
+        }
+        if (cancelled) return;
+        if (!currentOrg) {
           setLoading(false);
           return;
         }
-        setOrgId(p.default_org_id);
+        setOrgId(currentOrg);
         const [orgRes, memberRes, inviteRes] = await Promise.all([
-          supabase.from("organizations").select("name, slug").eq("id", p.default_org_id).single(),
-          supabase.from("org_members").select("id", { count: "exact", head: true }).eq("org_id", p.default_org_id),
-          supabase.from("org_invites").select("id", { count: "exact", head: true }).eq("org_id", p.default_org_id).is("accepted_at", null),
+          supabase.from("organizations").select("name, slug").eq("id", currentOrg).maybeSingle(),
+          supabase.from("org_members").select("id", { count: "exact", head: true }).eq("org_id", currentOrg),
+          supabase.from("org_invites").select("id", { count: "exact", head: true }).eq("org_id", currentOrg).is("accepted_at", null),
         ]);
         if (cancelled) return;
-        const firstErr = orgRes.error ?? memberRes.error ?? inviteRes.error;
-        if (firstErr) throw firstErr;
         const org = orgRes.data;
         if (org) {
           setOrgName(org.name ?? "");
@@ -174,7 +183,7 @@ function PublicUrlCard({ orgId }: { orgId: string | null }) {
         .from("organizations")
         .select("public_url")
         .eq("id", orgId)
-        .single();
+        .maybeSingle();
       if (cancelled) return;
       const v = (data?.public_url as string | null) ?? "";
       setValue(v);
