@@ -40,13 +40,13 @@ export function GuiaRapida({ tipo }: { tipo: TipoNegocioClave }) {
         <div className="mt-4 space-y-4">
           <ol className="space-y-3">
             {pasos.map((p, i) => (
-              <li key={p.titulo} className="flex gap-3">
+              <li key={p.titulo} className="flex gap-3 rounded-xl border border-border bg-background/80 p-3">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
                   {i + 1}
                 </span>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-foreground">{p.titulo}</p>
-                  <p className="text-sm text-muted-foreground">{p.texto}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="break-words text-sm font-semibold text-foreground">{p.titulo}</p>
+                  <p className="mt-0.5 break-words text-sm leading-relaxed text-foreground/80">{p.texto}</p>
                 </div>
               </li>
             ))}
