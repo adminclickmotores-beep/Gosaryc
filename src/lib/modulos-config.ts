@@ -262,7 +262,7 @@ const POR_MODULO: Record<string, keyof typeof PRESETS> = {
   entregas_evento: "proyecto", entregas_lav: "proyecto", formulas: "proyecto", puntos_venta: "venta",
   honorarios: "cartera", plazos: "vencimiento", vencimientos_farm: "vencimiento", recordatorio_mant: "vencimiento",
   insumos_barra: "stock", productos_belleza: "stock", repuestos_taller: "stock", inventario_farm: "stock",
-  productos_farm: "stock", insumos_lav: "stock", tarifas_lavado: "stock", paquetes_evento: "stock",
+  productos_farm: "stock", insumos_lav: "stock",
   cotizaciones_taller: "venta",
   apartados_generales: "reserva", proyectos_generales: "proyecto",
 };
