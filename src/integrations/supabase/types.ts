@@ -2898,6 +2898,36 @@ export type Database = {
           },
         ]
       }
+      suscripciones_negocio: {
+        Row: {
+          created_at: string
+          estado: string
+          notas: string | null
+          owner_id: string
+          plan: string
+          updated_at: string
+          vence_el: string
+        }
+        Insert: {
+          created_at?: string
+          estado?: string
+          notas?: string | null
+          owner_id: string
+          plan?: string
+          updated_at?: string
+          vence_el?: string
+        }
+        Update: {
+          created_at?: string
+          estado?: string
+          notas?: string | null
+          owner_id?: string
+          plan?: string
+          updated_at?: string
+          vence_el?: string
+        }
+        Relationships: []
+      }
       user_preferences: {
         Row: {
           key: string
@@ -3579,6 +3609,7 @@ export type Database = {
     }
     Functions: {
       accept_org_invite: { Args: { _token: string }; Returns: string }
+      es_superadmin: { Args: never; Returns: boolean }
       mi_acceso: { Args: never; Returns: Json }
       mi_negocio_id: { Args: never; Returns: string }
       reclamar_acceso: { Args: never; Returns: undefined }
