@@ -217,7 +217,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       CLIENTES,
       m("seguimiento_leads", "Seguimiento de interesados", "Recordatorios para cerrar cada venta.", Bell),
       m("pruebas_manejo", "Pruebas de manejo", "Agenda de test drives con seguimiento.", KeyRound),
-      m("cotizaciones_veh", "Cotizaciones y financiación", "Propuestas, cuota inicial y simulación de crédito.", FileText),
+      m("cotizaciones_veh", "Cotizaciones", "Cotiza un vehículo de contado o a crédito, con la cuota calculada.", FileText),
       m("separaciones_veh", "Separaciones de vehículos", "Anticipos y reservas de un vehículo para un cliente.", Tag),
       m("ventas_veh", "Ventas y entregas", "Ventas cerradas, fecha y acta de entrega al cliente.", PackageCheck),
       m("creditos_veh", "Créditos y entidades financieras", "Solicitudes de crédito con bancos y financieras, y su estado.", Landmark),

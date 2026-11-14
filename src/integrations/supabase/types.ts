@@ -107,6 +107,105 @@ export type Database = {
         }
         Relationships: []
       }
+      cotizaciones_vehiculo: {
+        Row: {
+          cliente: string
+          condicion: string
+          created_at: string
+          cuota_inicial: number
+          cuota_mensual: number | null
+          descuento: number
+          estado: string
+          forma_pago: string
+          id: string
+          monto_financiar: number
+          notas: string | null
+          numero: number
+          owner_id: string | null
+          plazo_meses: number | null
+          precio: number
+          tasa_mensual: number | null
+          telefono: string | null
+          total_a_pagar: number
+          vehiculo: string
+          vehiculo_id: string | null
+          vigente_hasta: string | null
+        }
+        Insert: {
+          cliente: string
+          condicion?: string
+          created_at?: string
+          cuota_inicial?: number
+          cuota_mensual?: number | null
+          descuento?: number
+          estado?: string
+          forma_pago?: string
+          id?: string
+          monto_financiar?: number
+          notas?: string | null
+          numero?: number
+          owner_id?: string | null
+          plazo_meses?: number | null
+          precio?: number
+          tasa_mensual?: number | null
+          telefono?: string | null
+          total_a_pagar?: number
+          vehiculo: string
+          vehiculo_id?: string | null
+          vigente_hasta?: string | null
+        }
+        Update: {
+          cliente?: string
+          condicion?: string
+          created_at?: string
+          cuota_inicial?: number
+          cuota_mensual?: number | null
+          descuento?: number
+          estado?: string
+          forma_pago?: string
+          id?: string
+          monto_financiar?: number
+          notas?: string | null
+          numero?: number
+          owner_id?: string | null
+          plazo_meses?: number | null
+          precio?: number
+          tasa_mensual?: number | null
+          telefono?: string | null
+          total_a_pagar?: number
+          vehiculo?: string
+          vehiculo_id?: string | null
+          vigente_hasta?: string | null
+        }
+        Relationships: []
+      }
+      tasas_vehiculo: {
+        Row: {
+          condicion: string
+          created_at: string
+          id: string
+          mes: string
+          owner_id: string | null
+          tasa_mensual: number
+        }
+        Insert: {
+          condicion: string
+          created_at?: string
+          id?: string
+          mes: string
+          owner_id?: string | null
+          tasa_mensual: number
+        }
+        Update: {
+          condicion?: string
+          created_at?: string
+          id?: string
+          mes?: string
+          owner_id?: string | null
+          tasa_mensual?: number
+        }
+        Relationships: []
+      }
       documentos_vehiculo: {
         Row: {
           created_at: string

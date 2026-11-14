@@ -10,6 +10,7 @@ import { configModulo } from "@/lib/modulos-config";
 import { InventarioVehiculos } from "@/components/vehiculos/InventarioVehiculos";
 import { SeparacionesVehiculos } from "@/components/vehiculos/SeparacionesVehiculos";
 import { SolicitudesCredito } from "@/components/vehiculos/SolicitudesCredito";
+import { CotizacionesVehiculos } from "@/components/vehiculos/CotizacionesVehiculos";
 import { DocumentosVehiculos } from "@/components/vehiculos/DocumentosVehiculos";
 import { VencimientosVehiculos } from "@/components/vehiculos/VencimientosVehiculos";
 
@@ -33,6 +34,7 @@ function ModuloPage() {
   if (id === "separaciones_veh") return <SeparacionesVehiculos />;
   if (id === "vencimientos_veh") return <VencimientosVehiculos />;
   if (id === "documentos_veh") return <DocumentosVehiculos />;
+  if (id === "cotizaciones_veh") return <CotizacionesVehiculos />;
   return <ModuloGenerico id={id} />;
 }
 
