@@ -3737,6 +3737,7 @@ export type Database = {
         Returns: boolean
       }
       descontar_insumos_pedido: { Args: { p_pedido: string }; Returns: number }
+      devolver_insumos_pedido: { Args: { p_pedido: string }; Returns: number }
       registrar_compra_insumo: {
         Args: {
           p_insumo: string

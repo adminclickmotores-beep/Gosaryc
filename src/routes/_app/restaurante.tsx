@@ -194,6 +194,14 @@ function RestaurantePage() {
     if (error) return toast.error("No se pudo actualizar el pedido.");
     // Al enviar a cocina se descuenta el inventario (la función evita descontar dos veces).
     if (estado === "preparando") await descontarInventario(p);
+    if (estado === "cancelado") {
+      // Si el pedido ya había descontado inventario, se devuelve (una sola vez).
+      const { data: devueltos, error: errDev } = await supabase.rpc("devolver_insumos_pedido", { p_pedido: p.id });
+      if (errDev) toast.error("El pedido se canceló, pero no se pudo devolver el inventario.");
+      else if (typeof devueltos === "number" && devueltos > 0) {
+        toast.success(`Pedido cancelado: se devolvieron ${devueltos} ${devueltos === 1 ? "insumo" : "insumos"} al inventario.`);
+      }
+    }
     cargar();
   };
 
