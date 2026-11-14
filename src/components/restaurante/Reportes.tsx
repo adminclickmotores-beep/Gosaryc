@@ -20,6 +20,8 @@ export function Reportes() {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [cargando, setCargando] = useState(true);
+  const [costoProducto, setCostoProducto] = useState<Map<string, number>>(new Map());
+  const [gastosDia, setGastosDia] = useState(0);
 
   useEffect(() => {
     let vivo = true;
@@ -43,7 +45,34 @@ export function Reportes() {
           .in("pedido_id", lista.map((p) => p.id));
         its = d2 ?? [];
       }
+      // Costo por porción de cada producto (recetas + precio de los insumos).
+      const [rec, ing, ins, gas] = await Promise.all([
+        supabase.from("restaurante_recetas").select("*"),
+        supabase.from("restaurante_receta_ingredientes").select("*"),
+        supabase.from("restaurante_insumos").select("*"),
+        supabase
+          .from("movimientos_turno")
+          .select("*")
+          .eq("tipo", "gasto")
+          .eq("anulado", false)
+          .gte("created_at", desde.toISOString()),
+      ]);
+      const precioInsumo = new Map<string, number>();
+      for (const i of ins.data ?? []) {
+        precioInsumo.set(i.id, i.cantidad_compra > 0 ? i.precio_compra / i.cantidad_compra : 0);
+      }
+      const costoReceta = new Map<string, number>();
+      for (const g of ing.data ?? []) {
+        costoReceta.set(g.receta_id, (costoReceta.get(g.receta_id) ?? 0) + g.cantidad * (precioInsumo.get(g.insumo_id) ?? 0));
+      }
+      const costos = new Map<string, number>();
+      for (const r of rec.data ?? []) {
+        const base = costoReceta.get(r.id) ?? 0;
+        costos.set(r.producto_id, (base * (1 + r.merma_pct / 100)) / Math.max(1, r.porciones));
+      }
       if (!vivo) return;
+      setCostoProducto(costos);
+      setGastosDia((gas.data ?? []).reduce((s, m) => s + m.monto, 0));
       setPedidos(lista);
       setItems(its);
       setCargando(false);
@@ -80,6 +109,22 @@ export function Reportes() {
     };
   }, [pedidos, items]);
 
+  // Utilidad real: solo pedidos cobrados (entregados) menos costo de insumos y gastos de caja.
+  const utilidad = useMemo(() => {
+    const cobrados = new Set(pedidos.filter((p) => p.estado === "entregado").map((p) => p.id));
+    const ventas = pedidos.filter((p) => cobrados.has(p.id)).reduce((s, p) => s + p.total, 0);
+    let costo = 0;
+    let sinReceta = 0;
+    for (const i of items) {
+      if (!cobrados.has(i.pedido_id)) continue;
+      const c = i.producto_id ? costoProducto.get(i.producto_id) : undefined;
+      if (c === undefined) sinReceta += i.cantidad;
+      else costo += c * i.cantidad;
+    }
+    const neta = ventas - costo - gastosDia;
+    return { ventas, costo, gastos: gastosDia, neta, margen: ventas > 0 ? (neta / ventas) * 100 : 0, sinReceta };
+  }, [pedidos, items, costoProducto, gastosDia]);
+
   const maxDia = Math.max(1, ...resumen.dias.map(([, v]) => v));
   const maxPlato = Math.max(1, ...resumen.top.map(([, v]) => v.cantidad));
 
@@ -115,6 +160,35 @@ export function Reportes() {
               <p className="font-display text-2xl text-foreground">{dinero(resumen.ticket)}</p>
             </GlassPanel>
           </div>
+
+          <GlassPanel className="space-y-3 p-5">
+            <h2 className="font-medium text-foreground">Utilidad real {dias === 1 ? "de hoy" : `de los últimos ${dias} días`}</h2>
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <div>
+                <p className="text-xs text-muted-foreground">Ventas cobradas</p>
+                <p className="truncate text-lg text-foreground">{dinero(utilidad.ventas)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">− Costo de insumos</p>
+                <p className="truncate text-lg text-foreground">{dinero(utilidad.costo)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">− Gastos de caja</p>
+                <p className="truncate text-lg text-foreground">{dinero(utilidad.gastos)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">= Utilidad ({utilidad.margen.toFixed(0)}%)</p>
+                <p className={`truncate text-lg font-medium ${utilidad.neta < 0 ? "text-destructive" : "text-primary"}`}>
+                  {dinero(utilidad.neta)}
+                </p>
+              </div>
+            </div>
+            {utilidad.sinReceta > 0 && (
+              <p className="text-xs text-muted-foreground">
+                {utilidad.sinReceta} unidades vendidas no tienen receta, así que su costo no está incluido. Crea la receta en el recetario para que la utilidad sea exacta.
+              </p>
+            )}
+          </GlassPanel>
 
           <div className="grid gap-4 lg:grid-cols-2">
             <GlassPanel className="space-y-3 p-5">
