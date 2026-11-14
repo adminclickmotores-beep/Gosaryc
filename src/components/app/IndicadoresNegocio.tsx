@@ -1,0 +1,108 @@
+import { useEffect, useMemo, useState } from "react";
+import { AlertTriangle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
+import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import type { TipoNegocio } from "@/lib/modulos-negocio";
+import { configModulo } from "@/lib/modulos-config";
+
+type Registro = Tables<"modulo_registros">;
+type Alerta = { id: string; titulo: string; modulo: string; texto: string };
+
+const dinero = (n: number) =>
+  new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
+
+const hoyLocal = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
+const diasHasta = (fecha: string, hoy: string) =>
+  Math.round((new Date(`${fecha}T00:00:00`).getTime() - new Date(`${hoy}T00:00:00`).getTime()) / 86400000);
+
+/** Resumen del negocio: suma los registros de todos sus módulos y marca lo que requiere atención. */
+export function IndicadoresNegocio({ tipo }: { tipo: TipoNegocio }) {
+  const [registros, setRegistros] = useState<Registro[]>([]);
+  const [hoy, setHoy] = useState("");
+  const ids = useMemo(() => tipo.modulos.map((m) => m.id), [tipo]);
+  const titulos = useMemo(() => new Map(tipo.modulos.map((m) => [m.id, m.titulo] as const)), [tipo]);
+
+  useEffect(() => {
+    setHoy(hoyLocal());
+  }, []);
+
+  useEffect(() => {
+    let cancelado = false;
+    (async () => {
+      const { data } = await supabase
+        .from("modulo_registros")
+        .select("*")
+        .in("modulo", ids)
+        .eq("anulado", false)
+        .limit(2000);
+      if (!cancelado) setRegistros(data ?? []);
+    })();
+    return () => {
+      cancelado = true;
+    };
+  }, [ids]);
+
+  const resumen = useMemo(() => {
+    let pendiente = 0;
+    const alertas: Alerta[] = [];
+    for (const r of registros) {
+      const cfg = configModulo(r.modulo);
+      if (cfg.cerrados.includes(r.estado)) continue;
+      pendiente += Math.max(r.monto - r.abonado, 0);
+      const nombre = titulos.get(r.modulo) ?? "";
+      if (cfg.tipo === "stock" && r.minimo > 0 && r.cantidad <= r.minimo) {
+        alertas.push({
+          id: r.id,
+          titulo: r.titulo,
+          modulo: nombre,
+          texto: r.cantidad <= 0 ? "agotado" : "bajo el mínimo",
+        });
+        continue;
+      }
+      if (r.fecha && hoy) {
+        const d = diasHasta(r.fecha, hoy);
+        if (d < 0) alertas.push({ id: r.id, titulo: r.titulo, modulo: nombre, texto: `vencido hace ${-d} días` });
+        else if (d <= 7) alertas.push({ id: r.id, titulo: r.titulo, modulo: nombre, texto: d === 0 ? "es hoy" : `faltan ${d} días` });
+      }
+    }
+    return { pendiente, alertas };
+  }, [registros, hoy, titulos]);
+
+  const tarjetas = [
+    { t: "Registros activos", v: String(registros.length) },
+    { t: "Pendiente en tus módulos", v: dinero(resumen.pendiente) },
+    { t: "Requieren atención", v: String(resumen.alertas.length) },
+  ];
+
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {tarjetas.map((c) => (
+          <GlassPanel key={c.t} className="min-w-0 p-4">
+            <p className="text-xs text-muted-foreground">{c.t}</p>
+            <p className="truncate text-lg font-medium text-foreground">{c.v}</p>
+          </GlassPanel>
+        ))}
+      </div>
+      {resumen.alertas.length > 0 && (
+        <GlassPanel className="space-y-2 p-4">
+          <p className="flex items-center gap-2 text-sm font-medium text-foreground">
+            <AlertTriangle className="h-4 w-4 text-destructive" /> Requiere atención
+          </p>
+          <ul className="space-y-1">
+            {resumen.alertas.slice(0, 8).map((a) => (
+              <li key={a.id} className="break-words text-xs text-muted-foreground">
+                {a.titulo} · {a.modulo}: {a.texto}
+              </li>
+            ))}
+          </ul>
+        </GlassPanel>
+      )}
+    </div>
+  );
+}

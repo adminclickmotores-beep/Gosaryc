@@ -19,6 +19,7 @@ import { MesasPanel } from "@/components/restaurante/MesasPanel";
 import { CajaPanel } from "@/components/restaurante/CajaPanel";
 import { VentaPOS } from "@/components/restaurante/VentaPOS";
 import { BotonVentanaCompleta } from "@/components/app/BotonVentanaCompleta";
+import { IndicadoresNegocio } from "@/components/app/IndicadoresNegocio";
 
 const VISTAS_VALIDAS = ["venta", "pedidos", "menu", "qr", "mesas", "caja", "reportes", "recetario", "negocio"] as const;
 type VistaClave = (typeof VISTAS_VALIDAS)[number];
@@ -202,6 +203,8 @@ function RestaurantePage() {
           </Link>
         </div>
       </div>
+
+      {!tipo.usaPedidos && <IndicadoresNegocio tipo={tipo} />}
 
       <GuiaRapida tipo={tipo.clave} />
 
