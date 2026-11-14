@@ -107,6 +107,105 @@ export type Database = {
         }
         Relationships: []
       }
+      vehiculos_inventario: {
+        Row: {
+          anio: number | null
+          carroceria: string | null
+          ciudad_matricula: string | null
+          color: string | null
+          combustible: string | null
+          condicion: string
+          created_at: string
+          cilindraje: string | null
+          equipamiento: string | null
+          estado: string
+          fotos: string[]
+          id: string
+          kilometraje: number | null
+          marca: string
+          modelo: string
+          motor_numero: string | null
+          num_propietarios: number | null
+          observaciones: string | null
+          owner_id: string | null
+          placa: string | null
+          precio: number
+          precio_compra: number | null
+          puertas: number | null
+          soat_vence: string | null
+          tecnomecanica_vence: string | null
+          tipo: string
+          traccion: string | null
+          transmision: string | null
+          version: string | null
+          vin: string | null
+        }
+        Insert: {
+          anio?: number | null
+          carroceria?: string | null
+          ciudad_matricula?: string | null
+          color?: string | null
+          combustible?: string | null
+          condicion?: string
+          created_at?: string
+          cilindraje?: string | null
+          equipamiento?: string | null
+          estado?: string
+          fotos?: string[]
+          id?: string
+          kilometraje?: number | null
+          marca: string
+          modelo: string
+          motor_numero?: string | null
+          num_propietarios?: number | null
+          observaciones?: string | null
+          owner_id?: string | null
+          placa?: string | null
+          precio?: number
+          precio_compra?: number | null
+          puertas?: number | null
+          soat_vence?: string | null
+          tecnomecanica_vence?: string | null
+          tipo?: string
+          traccion?: string | null
+          transmision?: string | null
+          version?: string | null
+          vin?: string | null
+        }
+        Update: {
+          anio?: number | null
+          carroceria?: string | null
+          ciudad_matricula?: string | null
+          color?: string | null
+          combustible?: string | null
+          condicion?: string
+          created_at?: string
+          cilindraje?: string | null
+          equipamiento?: string | null
+          estado?: string
+          fotos?: string[]
+          id?: string
+          kilometraje?: number | null
+          marca?: string
+          modelo?: string
+          motor_numero?: string | null
+          num_propietarios?: number | null
+          observaciones?: string | null
+          owner_id?: string | null
+          placa?: string | null
+          precio?: number
+          precio_compra?: number | null
+          puertas?: number | null
+          soat_vence?: string | null
+          tecnomecanica_vence?: string | null
+          tipo?: string
+          traccion?: string | null
+          transmision?: string | null
+          version?: string | null
+          vin?: string | null
+        }
+        Relationships: []
+      }
       cotizaciones: {
         Row: {
           cliente: string

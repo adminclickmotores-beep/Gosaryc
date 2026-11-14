@@ -7,6 +7,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { buscarModulo } from "@/lib/modulos-negocio";
 import { configModulo } from "@/lib/modulos-config";
+import { InventarioVehiculos } from "@/components/vehiculos/InventarioVehiculos";
 
 export const Route = createFileRoute("/_app/modulos/$id")({
   head: () => ({ meta: [{ title: "Módulo del negocio" }] }),
@@ -23,6 +24,11 @@ const campo =
 
 function ModuloPage() {
   const { id } = Route.useParams();
+  if (id === "vehiculos") return <InventarioVehiculos />;
+  return <ModuloGenerico id={id} />;
+}
+
+function ModuloGenerico({ id }: { id: string }) {
   const modulo = buscarModulo(id);
   const cfg = configModulo(id);
   const [lista, setLista] = useState<Registro[]>([]);
