@@ -824,6 +824,7 @@ export type Database = {
           telefono_pedidos: string | null
           tipo_negocio: string | null
           updated_at: string
+          iva_porcentaje: number
           whatsapp_cocina: string | null
         }
         Insert: {
@@ -846,6 +847,7 @@ export type Database = {
           telefono_pedidos?: string | null
           tipo_negocio?: string | null
           updated_at?: string
+          iva_porcentaje?: number
           whatsapp_cocina?: string | null
         }
         Update: {
@@ -868,6 +870,7 @@ export type Database = {
           telefono_pedidos?: string | null
           tipo_negocio?: string | null
           updated_at?: string
+          iva_porcentaje?: number
           whatsapp_cocina?: string | null
         }
         Relationships: []

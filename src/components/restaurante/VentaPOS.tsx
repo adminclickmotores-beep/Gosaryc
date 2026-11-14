@@ -108,6 +108,20 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
   useEffect(() => {
     setNumCocina(negocio?.whatsapp_cocina || WA_COCINA);
   }, [negocio?.whatsapp_cocina]);
+  const [ivaTexto, setIvaTexto] = useState("0");
+  useEffect(() => {
+    setIvaTexto(String(negocio?.iva_porcentaje ?? 0));
+  }, [negocio?.iva_porcentaje]);
+
+  const guardarIva = async () => {
+    if (!negocio) return;
+    const pct = Number(ivaTexto.replace(",", "."));
+    if (!Number.isFinite(pct) || pct < 0 || pct > 100) return toast.error("El IVA debe estar entre 0 y 100.");
+    const { error } = await supabase.from("negocio_config").update({ iva_porcentaje: pct }).eq("id", negocio.id);
+    if (error) return toast.error("No se pudo guardar el IVA.");
+    toast.success("IVA guardado.");
+    recargar();
+  };
 
   const guardarNumCocina = async () => {
     if (!negocio) return;
@@ -180,6 +194,8 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
         : tarifaDetectada;
   const envio = tarifa ? tarifa.precio : 0;
   const total = subtotal + envio;
+  const ivaPct = negocio?.iva_porcentaje ?? 0;
+  const ivaIncluido = ivaPct > 0 ? total - total / (1 + ivaPct / 100) : 0;
   const cambio = Number(recibido) > total ? Number(recibido) - total : 0;
   const numPersonas = Math.min(50, Math.max(1, Math.floor(Number(personas) || 1)));
   const porPersona = Math.ceil(total / numPersonas);
@@ -494,6 +510,20 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
         <div className="flex items-center justify-between border-t border-glass-border pt-3">
           <span className="text-sm text-muted-foreground">Total</span>
           <span className="text-xl font-medium text-foreground">{dinero(total)}</span>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+          <span className="text-muted-foreground">IVA incluido en los precios ({ivaPct}%)</span>
+          <span className="flex items-center gap-2">
+            <span className="text-foreground">{dinero(ivaIncluido)}</span>
+            <input
+              aria-label="Porcentaje de IVA"
+              inputMode="decimal"
+              className={`${campo} w-20 text-base`}
+              value={ivaTexto}
+              onChange={(e) => setIvaTexto(e.target.value)}
+              onBlur={guardarIva}
+            />
+          </span>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
