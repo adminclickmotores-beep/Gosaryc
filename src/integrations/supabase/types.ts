@@ -236,6 +236,87 @@ export type Database = {
         }
         Relationships: []
       }
+      retomas_vehiculos: {
+        Row: {
+          anio: number | null
+          color: string | null
+          created_at: string
+          id: string
+          kilometraje: number | null
+          marca: string
+          modelo: string
+          motivo_resultado: string | null
+          observaciones: string | null
+          operacion: string
+          owner_id: string | null
+          peritaje_fecha: string | null
+          peritaje_notas: string | null
+          placa: string | null
+          precio_pedido: number | null
+          precio_retoma: number | null
+          precio_venta: number | null
+          resultado: string
+          tipo: string
+          vehiculo_id: string | null
+          vendedor_documento: string | null
+          vendedor_nombre: string | null
+          vendedor_telefono: string | null
+          version: string | null
+        }
+        Insert: {
+          anio?: number | null
+          color?: string | null
+          created_at?: string
+          id?: string
+          kilometraje?: number | null
+          marca: string
+          modelo: string
+          motivo_resultado?: string | null
+          observaciones?: string | null
+          operacion?: string
+          owner_id?: string | null
+          peritaje_fecha?: string | null
+          peritaje_notas?: string | null
+          placa?: string | null
+          precio_pedido?: number | null
+          precio_retoma?: number | null
+          precio_venta?: number | null
+          resultado?: string
+          tipo?: string
+          vehiculo_id?: string | null
+          vendedor_documento?: string | null
+          vendedor_nombre?: string | null
+          vendedor_telefono?: string | null
+          version?: string | null
+        }
+        Update: {
+          anio?: number | null
+          color?: string | null
+          created_at?: string
+          id?: string
+          kilometraje?: number | null
+          marca?: string
+          modelo?: string
+          motivo_resultado?: string | null
+          observaciones?: string | null
+          operacion?: string
+          owner_id?: string | null
+          peritaje_fecha?: string | null
+          peritaje_notas?: string | null
+          placa?: string | null
+          precio_pedido?: number | null
+          precio_retoma?: number | null
+          precio_venta?: number | null
+          resultado?: string
+          tipo?: string
+          vehiculo_id?: string | null
+          vendedor_documento?: string | null
+          vendedor_nombre?: string | null
+          vendedor_telefono?: string | null
+          version?: string | null
+        }
+        Relationships: []
+      }
       solicitudes_credito: {
         Row: {
           antiguedad: string | null
