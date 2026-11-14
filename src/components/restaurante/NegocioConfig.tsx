@@ -42,17 +42,17 @@ const VACIO: Form = {
   aviso_entrega: "",
 };
 
-const CAMPOS: { clave: keyof Form; etiqueta: string; largo?: boolean }[] = [
-  { clave: "nombre", etiqueta: "Nombre del negocio" },
-  { clave: "eslogan", etiqueta: "Eslogan" },
-  { clave: "descripcion", etiqueta: "Descripción", largo: true },
-  { clave: "ciudad", etiqueta: "Ciudad" },
-  { clave: "cobertura", etiqueta: "Cobertura de entregas" },
-  { clave: "telefono_pedidos", etiqueta: "WhatsApp / teléfono de pedidos" },
-  { clave: "instagram", etiqueta: "Instagram" },
-  { clave: "sitio_web", etiqueta: "Página web" },
-  { clave: "horarios", etiqueta: "Horarios (una línea por día)", largo: true },
-  { clave: "aviso_entrega", etiqueta: "Aviso de entrega" },
+const CAMPOS: { clave: keyof Form; etiqueta: string; ejemplo: string; largo?: boolean }[] = [
+  { clave: "nombre", etiqueta: "Nombre del negocio", ejemplo: "Ej: Café La Esquina" },
+  { clave: "eslogan", etiqueta: "Eslogan", ejemplo: "Ej: El mejor sabor del barrio" },
+  { clave: "descripcion", etiqueta: "Descripción", ejemplo: "Ej: Somos un negocio familiar con más de 10 años de experiencia.", largo: true },
+  { clave: "ciudad", etiqueta: "Ciudad", ejemplo: "Ej: Cali, Valle del Cauca" },
+  { clave: "cobertura", etiqueta: "Cobertura de entregas", ejemplo: "Ej: Todos los barrios de la ciudad" },
+  { clave: "telefono_pedidos", etiqueta: "WhatsApp / teléfono de pedidos", ejemplo: "Ej: 300 123 4567" },
+  { clave: "instagram", etiqueta: "Instagram", ejemplo: "Ej: @minegocio" },
+  { clave: "sitio_web", etiqueta: "Página web", ejemplo: "Ej: https://www.minegocio.com" },
+  { clave: "horarios", etiqueta: "Horarios (una línea por día)", ejemplo: "Ej:\nLunes a viernes: 8:00 a. m. a 6:00 p. m.\nSábado: 9:00 a. m. a 2:00 p. m.\nDomingo: cerrado", largo: true },
+  { clave: "aviso_entrega", etiqueta: "Aviso de entrega", ejemplo: "Ej: El domicilio se cobra aparte según el sector" },
 ];
 
 export function NegocioConfig() {
@@ -223,12 +223,14 @@ export function NegocioConfig() {
               <textarea
                 className={campo}
                 rows={c.clave === "horarios" ? 7 : 2}
+                placeholder={c.ejemplo}
                 value={form[c.clave]}
                 onChange={(e) => setForm({ ...form, [c.clave]: e.target.value })}
               />
             ) : (
               <input
                 className={campo}
+                placeholder={c.ejemplo}
                 value={form[c.clave]}
                 onChange={(e) => setForm({ ...form, [c.clave]: e.target.value })}
               />

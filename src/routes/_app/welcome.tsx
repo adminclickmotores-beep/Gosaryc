@@ -126,7 +126,7 @@ function Welcome() {
               className={campo}
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
-              placeholder="Ej. Crokante, Autos del Valle…"
+              placeholder="Ej: Café La Esquina"
               disabled={cargando}
             />
           </label>
