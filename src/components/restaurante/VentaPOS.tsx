@@ -129,6 +129,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
   const [notas, setNotas] = useState("");
   const [metodo, setMetodo] = useState("efectivo");
   const [recibido, setRecibido] = useState("");
+  const [personas, setPersonas] = useState("1");
   const [guardando, setGuardando] = useState(false);
   const [zonaManual, setZonaManual] = useState("");
   const [correo, setCorreo] = useState("");
@@ -179,6 +180,8 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
   const envio = tarifa ? tarifa.precio : 0;
   const total = subtotal + envio;
   const cambio = Number(recibido) > total ? Number(recibido) - total : 0;
+  const numPersonas = Math.min(50, Math.max(1, Math.floor(Number(personas) || 1)));
+  const porPersona = Math.ceil(total / numPersonas);
 
   const cambiarCant = (id: string, delta: number) =>
     setCuenta((c) => {
@@ -495,6 +498,11 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
           <input className={campo} placeholder="Recibido" inputMode="decimal" value={recibido} onChange={(e) => setRecibido(e.target.value)} />
         </div>
         {cambio > 0 && <p className="text-sm text-foreground">Devuelta: {dinero(cambio)}</p>}
+
+        <div className="grid grid-cols-2 items-center gap-2">
+          <input className={campo} placeholder="Dividir entre (personas)" inputMode="numeric" value={personas} onChange={(e) => setPersonas(e.target.value.replace(/\D/g, ""))} aria-label="Número de personas" />
+          <p className="text-sm text-foreground">{numPersonas > 1 ? `Cada uno: ${dinero(porPersona)}` : "Cuenta completa"}</p>
+        </div>
 
         <div className="grid grid-cols-2 gap-2">
           <button
