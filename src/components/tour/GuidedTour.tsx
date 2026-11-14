@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { TOUR_STEPS, TOUR_PREF_KEY, type TourStep } from "./tour-steps";
 
 const TOOLTIP_W = 340;
+const TOOLTIP_H = 290;
 const TOOLTIP_GAP = 20;
 const SPOTLIGHT_PAD = 12;
 const CONTEXT_PAD = 6;
@@ -105,7 +106,13 @@ function computeTooltipPos(
     .map((c) => ({ ...c, finalScore: c.fits ? c.score : c.score - 1000 }))
     .sort((a, b) => b.finalScore - a.finalScore);
   const winner = ranked[0];
-  return { left: winner.pos.left, top: winner.pos.top, arrow: winner.arrow };
+  const maxTop = Math.max(16, vh - TOOLTIP_H - 16);
+  const maxLeft = Math.max(16, vw - TOOLTIP_W - 16);
+  return {
+    left: Math.min(maxLeft, Math.max(16, winner.pos.left)),
+    top: Math.min(maxTop, Math.max(16, winner.pos.top)),
+    arrow: winner.arrow,
+  };
 }
 
 async function loadTourState(userId: string): Promise<string[]> {
@@ -419,7 +426,7 @@ export function GuidedTour() {
           exit={REDUCED_MOTION ? undefined : { opacity: 0, y: -4 }}
           transition={{ duration: REDUCED_MOTION ? 0 : 0.22, ease: [0.22, 1, 0.36, 1] }}
           className="absolute"
-          style={{ left: tooltipPos.left, top: tooltipPos.top, width: TOOLTIP_W }}
+          style={{ left: tooltipPos.left, top: tooltipPos.top, width: Math.min(TOOLTIP_W, viewport.vw - 32), maxHeight: viewport.vh - 32 }}
         >
           <div className="relative rounded-2xl readable-glass-surface p-5">
             <div className="flex items-center justify-between gap-3">
@@ -444,7 +451,7 @@ export function GuidedTour() {
                 }}
                 className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80"
               >
-                Open this page →
+                Abrir esta página →
               </button>
             )}
 
@@ -469,20 +476,20 @@ export function GuidedTour() {
                     onClick={back}
                     className="rounded-full px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
                   >
-                    Back
+                    Atrás
                   </button>
                 )}
                 <button
                   onClick={() => void finish("skipped")}
                   className="rounded-full px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
                 >
-                  Skip
+                  Omitir
                 </button>
                 <button
                   onClick={next}
                   className="rounded-full bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90"
                 >
-                  {isLast ? "Finish" : "Next"}
+                  {isLast ? "Terminar" : "Siguiente"}
                 </button>
               </div>
             </div>
