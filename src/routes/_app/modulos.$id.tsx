@@ -10,6 +10,7 @@ import { configModulo } from "@/lib/modulos-config";
 import { InventarioVehiculos } from "@/components/vehiculos/InventarioVehiculos";
 import { SeparacionesVehiculos } from "@/components/vehiculos/SeparacionesVehiculos";
 import { SolicitudesCredito } from "@/components/vehiculos/SolicitudesCredito";
+import { VencimientosVehiculos } from "@/components/vehiculos/VencimientosVehiculos";
 
 export const Route = createFileRoute("/_app/modulos/$id")({
   head: () => ({ meta: [{ title: "Módulo del negocio" }] }),
@@ -29,6 +30,7 @@ function ModuloPage() {
   if (id === "vehiculos") return <InventarioVehiculos />;
   if (id === "creditos_veh") return <SolicitudesCredito />;
   if (id === "separaciones_veh") return <SeparacionesVehiculos />;
+  if (id === "vencimientos_veh") return <VencimientosVehiculos />;
   return <ModuloGenerico id={id} />;
 }
 
