@@ -97,7 +97,7 @@ export function CotizacionesVehiculos() {
   );
 
   const vigenteCond = tasaVigente(condicion);
-  const tasaUsada = tasaManual !== null && tasaManual.trim() !== "" ? Number(tasaManual) : vigenteCond.tasa;
+  const tasaUsada = tasaManual !== null && tasaManual.trim() !== "" ? Number(tasaManual) : Number.NaN;
 
   const valorPrecio = Number(precio) || 0;
   const valorDesc = Math.min(Math.max(Number(descuento) || 0, 0), valorPrecio);
@@ -144,7 +144,7 @@ export function CotizacionesVehiculos() {
     if (!cliente.trim()) return toast.error("Escribe el nombre del cliente.");
     if (!vehiculoTxt.trim()) return toast.error("Elige o escribe el vehículo.");
     if (precioFinal <= 0) return toast.error("Escribe el precio del vehículo.");
-    if (formaPago === "credito" && !tasaValida) return toast.error("La tasa no es válida.");
+    if (formaPago === "credito" && !tasaValida) return toast.error("Escribe la tasa mensual del crédito.");
     if (formaPago === "credito" && monto <= 0) return toast.error("El valor a financiar debe ser mayor a cero.");
     const numero = lista.reduce((m, c) => Math.max(m, c.numero), 0) + 1;
     const { error } = await supabase.from("cotizaciones_vehiculo").insert({
@@ -289,9 +289,9 @@ export function CotizacionesVehiculos() {
                 </div>
                 <label className="block space-y-1">
                   <span className="text-xs text-muted-foreground">
-                    Tasa mensual (%) · {vigenteCond.origen} para {condicion === "nuevo" ? "nuevo" : "usado"}: {vigenteCond.tasa}%
+                    Tasa mensual (%) que cobra la entidad
                   </span>
-                  <input className={campo} inputMode="decimal" placeholder={String(vigenteCond.tasa)} value={tasaManual ?? ""} onChange={(e) => setTasaManual(e.target.value.replace(",", "."))} />
+                  <input className={campo} inputMode="decimal" placeholder="Ej: 1.6" value={tasaManual ?? ""} onChange={(e) => setTasaManual(e.target.value.replace(",", "."))} />
                 </label>
                 <div className="space-y-1 rounded-lg bg-glass/40 p-3 text-sm">
                   <div className="flex justify-between gap-2"><span className="text-muted-foreground">A financiar</span><span className="text-foreground">{dinero(monto)}</span></div>
