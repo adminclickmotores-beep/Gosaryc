@@ -264,7 +264,7 @@ const POR_MODULO: Record<string, keyof typeof PRESETS> = {
   honorarios: "cartera", plazos: "vencimiento", vencimientos_farm: "vencimiento", recordatorio_mant: "vencimiento",
   insumos_barra: "stock", productos_belleza: "stock", repuestos_taller: "stock", inventario_farm: "stock",
   productos_farm: "stock", insumos_lav: "stock", tarifas_lavado: "stock", paquetes_evento: "stock",
-  cotizaciones_taller: "venta", vehiculos_clientes: "stock",
+  cotizaciones_taller: "venta",
 };
 
 export function configModulo(id: string): ConfigModulo {
