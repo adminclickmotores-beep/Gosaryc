@@ -33,6 +33,7 @@ const METODOS = [
 
 type Recibo = {
   id: string;
+  numero: number | null;
   cliente: string;
   telefono: string;
   modalidad: string;
@@ -232,7 +233,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
         estado: "nuevo",
         total,
       })
-      .select("id")
+      .select("id, numero_factura")
       .single();
     if (error || !pedido) {
       setGuardando(false);
@@ -279,6 +280,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
     setGuardando(false);
     setRecibo({
       id: pedido.id,
+      numero: pedido.numero_factura ?? null,
       cliente: nombre,
       telefono: telefono.trim(),
       modalidad,
@@ -353,7 +355,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
           <div className="space-y-2 rounded-xl border border-primary/40 bg-primary/5 p-3">
             <div className="flex items-center justify-between gap-2">
               <p className="text-sm font-medium text-foreground">
-                Pedido #{recibo.id.slice(0, 6).toUpperCase()} {recibo.cobrado ? "cobrado" : "en cocina"} · {dinero(recibo.total)}
+                Factura #{recibo.numero ?? recibo.id.slice(0, 6).toUpperCase()} {recibo.cobrado ? "cobrado" : "en cocina"} · {dinero(recibo.total)}
               </p>
               <button aria-label="Cerrar" onClick={() => setRecibo(null)} className="text-muted-foreground">
                 <X className="h-4 w-4" />

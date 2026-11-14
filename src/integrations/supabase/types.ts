@@ -1183,6 +1183,7 @@ export type Database = {
       restaurante_pedidos: {
         Row: {
           canal: string
+          numero_factura: number | null
           barrio: string | null
           cliente_email: string | null
           cliente_nombre: string
@@ -1201,6 +1202,7 @@ export type Database = {
         }
         Insert: {
           canal?: string
+          numero_factura?: number | null
           owner_id?: string | null
           barrio?: string | null
           cliente_email?: string | null
@@ -1219,6 +1221,7 @@ export type Database = {
         }
         Update: {
           canal?: string
+          numero_factura?: number | null
           owner_id?: string | null
           barrio?: string | null
           cliente_email?: string | null
