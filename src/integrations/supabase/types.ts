@@ -107,6 +107,36 @@ export type Database = {
         }
         Relationships: []
       }
+      documentos_vehiculo: {
+        Row: {
+          created_at: string
+          id: string
+          nombre: string
+          owner_id: string | null
+          ruta: string
+          tipo: string
+          vehiculo_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nombre: string
+          owner_id?: string | null
+          ruta: string
+          tipo?: string
+          vehiculo_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nombre?: string
+          owner_id?: string | null
+          ruta?: string
+          tipo?: string
+          vehiculo_id?: string
+        }
+        Relationships: []
+      }
       solicitudes_credito: {
         Row: {
           antiguedad: string | null
