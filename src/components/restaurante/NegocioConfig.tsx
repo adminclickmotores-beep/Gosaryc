@@ -86,7 +86,9 @@ export function NegocioConfig() {
     if (!archivo.type.startsWith("image/")) return toast.error("Elige un archivo de imagen.");
     if (archivo.size > 3 * 1024 * 1024) return toast.error("La imagen debe pesar menos de 3 MB.");
     const ext = (archivo.name.split(".").pop() ?? "png").toLowerCase().replace(/[^a-z0-9]/g, "");
-    const ruta = `${clave === "logo_url" ? "logo" : "portada"}-${Date.now()}.${ext || "png"}`;
+    const { data: negocioId } = await supabase.rpc("mi_negocio_id");
+    if (!negocioId) return toast.error("No se pudo identificar tu negocio.");
+    const ruta = `${negocioId}/${clave === "logo_url" ? "logo" : "portada"}-${Date.now()}.${ext || "png"}`;
     const { error } = await supabase.storage.from("negocios").upload(ruta, archivo, { upsert: true });
     if (error) return toast.error("No se pudo subir la imagen.");
     const { data } = supabase.storage.from("negocios").getPublicUrl(ruta);

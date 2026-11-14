@@ -23,7 +23,7 @@ Pilotos: CROKANTE (restaurante) y JG MOTORS (concesionario).
 | T01 | Archivo central PROJECT_CONTROL.md | Documentación | Alta | IMPLEMENTADO | Este archivo | Mantenerlo al cierre de cada sesión |
 | T02 | Documentos obligatorios (sec. 24) | Documentación | Media | PARCIAL: 11 de 14 existen en docs/ | docs/*.md | DEPLOYMENT.md, RECOVERY_PLAN.md; revisar que el contenido sea real |
 | T03 | Auditoría técnica y funcional (sec. 21) | Todo | Crítica | PENDIENTE | — | Clasificar cada módulo en los 6 niveles |
-| T04 | Seguridad y aislamiento multiempresa (sec. 12, 13) | Base de datos / RLS | Crítica | EN ANÁLISIS | docs/SECURITY.md | Auditar políticas RLS de todas las tablas |
+| T04 | Seguridad y aislamiento multiempresa (sec. 12, 13) | Base de datos / RLS | Crítica | IMPLEMENTADO (sin verificar en ejecución) | Migración 20261201120000; 8 hallazgos V1–V8 corregidos (docs/SECURITY.md) | Verificar resultados de las pruebas; pruebas por rol; módulos de los otros sectores; descargas de archivos privados |
 | T05 | Integración entre módulos: venta→inventario/caja/cartera (sec. 8) | Restaurante/Caja | Alta | PENDIENTE | Caja y compras con medio de pago hechas en encargo previo | Verificar consistencia e idempotencia |
 | T06 | Motor financiero (sec. 9) | Finanzas | Alta | PENDIENTE | — | CxC, CxP, presupuestos, rentabilidad por producto |
 | T07 | Análisis y módulos de los 21 sectores (sec. 4-5) | Módulos | Alta | PENDIENTE | docs/BUSINESS_TYPES.md | Módulos especializados por sector |
@@ -44,10 +44,15 @@ Pilotos: CROKANTE (restaurante) y JG MOTORS (concesionario).
 - Motores compartidos con reglas por sector, no 21 copias de la misma pantalla.
 
 ## Archivos modificados en esta sesión
-- PROJECT_CONTROL.md (nuevo)
+- PROJECT_CONTROL.md (nuevo, actualizado)
+- supabase/migrations/20261201120000_aislamiento_multiempresa.sql (nuevo)
+- supabase/tests/aislamiento_multiempresa.sql (nuevo)
+- NegocioConfig.tsx, InventarioVehiculos.tsx, routes/_app/restaurante.tsx: imágenes en carpeta del negocio
+- types.ts: owner_id en bodegas y auditoría
+- docs/SECURITY.md, TESTING.md, DATABASE.md, ARCHITECTURE.md, DEVELOPMENT_STATUS.md
 
 ## Errores conocidos
 Ver docs/KNOWN_ISSUES.md.
 
 ## Próxima tarea exacta
-T04: auditar las políticas de seguridad (RLS) de las tablas en `supabase/migrations/` para confirmar aislamiento por empresa; después T03.
+T03: clasificar cada módulo en los 6 niveles (auditoría funcional), empezando por restaurante y concesionario; después T05 (consistencia venta→inventario→caja).

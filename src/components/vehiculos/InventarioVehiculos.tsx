@@ -82,11 +82,13 @@ export function InventarioVehiculos() {
     if (!archivos || archivos.length === 0) return;
     setSubiendo(true);
     const nuevas: string[] = [];
+    const { data: negocioId } = await supabase.rpc("mi_negocio_id");
+    if (!negocioId) { toast.error("No se pudo identificar tu negocio."); setSubiendo(false); return; }
     for (const archivo of Array.from(archivos)) {
       if (!archivo.type.startsWith("image/")) { toast.error("Elige solo imágenes."); continue; }
       if (archivo.size > 4 * 1024 * 1024) { toast.error(`${archivo.name} pesa más de 4 MB.`); continue; }
       const ext = (archivo.name.split(".").pop() ?? "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-      const ruta = `vehiculo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const ruta = `${negocioId}/vehiculo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
       const { error } = await supabase.storage.from("negocios").upload(ruta, archivo, { upsert: true });
       if (error) { toast.error("No se pudo subir una foto."); continue; }
       nuevas.push(supabase.storage.from("negocios").getPublicUrl(ruta).data.publicUrl);

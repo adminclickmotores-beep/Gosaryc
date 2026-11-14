@@ -53,6 +53,7 @@ export type Database = {
           detalle: string | null
           id: string
           miembro_email: string
+          owner_id: string | null
         }
         Insert: {
           accion: string
@@ -62,6 +63,7 @@ export type Database = {
           detalle?: string | null
           id?: string
           miembro_email: string
+          owner_id?: string | null
         }
         Update: {
           accion?: string
@@ -71,6 +73,7 @@ export type Database = {
           detalle?: string | null
           id?: string
           miembro_email?: string
+          owner_id?: string | null
         }
         Relationships: []
       }
@@ -1046,18 +1049,21 @@ export type Database = {
           direccion: string | null
           id: string
           nombre: string
+          owner_id: string | null
         }
         Insert: {
           created_at?: string
           direccion?: string | null
           id?: string
           nombre: string
+          owner_id?: string | null
         }
         Update: {
           created_at?: string
           direccion?: string | null
           id?: string
           nombre?: string
+          owner_id?: string | null
         }
         Relationships: []
       }

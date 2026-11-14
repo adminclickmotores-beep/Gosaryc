@@ -10,6 +10,8 @@ Cliente único: `src/integrations/supabase/client.ts`.
 - RLS por tabla: `owner_id = mi_negocio_id()` más permiso de módulo (`tiene_permiso`, `es_personal`, `es_admin`).
 - `es_superadmin()` da acceso total al dueño de la plataforma (ver SECURITY).
 
+- Regla: toda función `SECURITY DEFINER` debe validar `owner_id = mi_negocio_id()` ella misma. Archivos: siempre en carpeta `<negocio>/` dentro del bucket.
+
 ## Piezas compartidas
 - `modulos-negocio.ts`: catálogo de los 21 tipos y sus módulos (menú lateral).
 - `modulos-config.ts` + `ModuloOperativo.tsx`: motor genérico de registros (`modulo_registros`) con estados, abonos, stock, renovación, seguimiento, tablero Kanban, historial, anulación, CSV e impresión. Los abonos/pagos se reflejan en `restaurante_movimientos_caja`.

@@ -3,6 +3,8 @@
 Clasificación: No desarrollado · Solo visual · Parcialmente funcional · Funcional sin integración · Funcional e integrado · Completamente probado.
 **Ningún módulo está "completamente probado": no hay pruebas automatizadas ni verificación en ejecución registrada.**
 
+**Aislamiento multiempresa:** corregido en bodegas, historial del equipo, imágenes, clientes de domicilios y pedidos (ver SECURITY.md). Pruebas escritas pero sin resultado verificado.
+
 ## Universales
 | Módulo | Estado | Nota |
 |---|---|---|
