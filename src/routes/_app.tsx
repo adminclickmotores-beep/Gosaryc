@@ -33,6 +33,7 @@ import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 import { AutosaveStatus } from "@/components/app/AutosaveStatus";
 import { purgeExpiredDrafts } from "@/hooks/use-draft";
 import { getCachedOnboardedAt } from "@/hooks/use-onboarding-status";
+import { esCuentaMaestra } from "@/lib/cuenta-maestra";
 
 export const Route = createFileRoute("/_app")({
   component: AppShell,
@@ -188,6 +189,8 @@ function AppShell() {
   // First-run gate: send to /welcome until onboarded.
   useEffect(() => {
     if (!user) return;
+    // La cuenta maestra nunca pasa por la configuración inicial.
+    if (esCuentaMaestra(user.email)) return;
     // En ventana completa (nueva pestaña) nunca redirigir a /welcome.
     if (new URLSearchParams(window.location.search).get("ventana") === "completa") return;
     let cancelled = false;

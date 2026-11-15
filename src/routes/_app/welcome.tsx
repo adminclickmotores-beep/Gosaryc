@@ -12,6 +12,7 @@ import { IconLogo } from "@/components/ui-custom/CustomIcon";
 import { TIPOS_NEGOCIO, type TipoNegocioClave } from "@/lib/modulos-negocio";
 import { BRAND } from "@/lib/brand";
 import { getCachedOnboardedAt, markOnboarded } from "@/hooks/use-onboarding-status";
+import { esCuentaMaestra } from "@/lib/cuenta-maestra";
 
 export const Route = createFileRoute("/_app/welcome")({
   component: Welcome,
@@ -55,9 +56,10 @@ function Welcome() {
     markOnboarded(user.id);
   };
 
-  // Las personas que el administrador agregó al equipo no configuran el negocio: entran directo a lo suyo.
+  // Las personas del equipo y la cuenta maestra no configuran el negocio: entran directo a lo suyo.
   useEffect(() => {
-    if (!user || cargandoPermisos || esAdmin) return;
+    const saltaBienvenida = esCuentaMaestra(user?.email) || !esAdmin;
+    if (!user || cargandoPermisos || !saltaBienvenida) return;
     let cancelado = false;
     (async () => {
       await terminarOnboarding();
