@@ -96,6 +96,8 @@ function DomiciliosPage() {
                 <p className="break-words text-foreground">{p.cliente_nombre}</p>
                 <p className="flex items-center gap-1.5 text-muted-foreground"><Phone className="h-3.5 w-3.5" />{p.cliente_telefono}</p>
                 <p className="flex items-start gap-1.5 break-words text-muted-foreground"><MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />{p.direccion}</p>
+                {p.barrio && <p className="break-words text-xs text-muted-foreground">Barrio: {p.barrio}</p>}
+                {p.notas && <p className="break-words text-xs text-muted-foreground">Indicaciones: {p.notas}</p>}
               </div>
               <p className="text-sm font-medium text-foreground">{dinero(p.total)}</p>
               <select
@@ -105,7 +107,9 @@ function DomiciliosPage() {
               >
                 <option value="">Sin repartidor</option>
                 {repartidores.filter((r) => r.activo || r.id === p.repartidor_id).map((r) => (
-                  <option key={r.id} value={r.id}>{r.nombre}</option>
+                  <option key={r.id} value={r.id}>
+                    {[r.nombre, r.vehiculo && r.vehiculo.replace("_", " "), r.placa].filter(Boolean).join(" · ")}
+                  </option>
                 ))}
               </select>
               <div className="flex gap-2">
