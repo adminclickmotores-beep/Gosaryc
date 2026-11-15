@@ -28,20 +28,21 @@ function InstalarPage() {
   const { user } = useAuth();
   const esAdmin = esCuentaMaestra(user?.email);
   const tipo = resolverTipoNegocio(negocio?.tipo_negocio);
-  const nombre = negocio?.nombre?.trim() || tipo.panel;
+  const nombre = negocio?.nombre?.trim() || "Gosaryc";
   const opciones = useMemo(() => {
-    const vistas = new Set<string>();
-    const lista: { ruta: string; titulo: string }[] = esAdmin ? [{ ruta: `/negocio/${tipo.clave}`, titulo: "Panel completo del negocio" }] : [];
+    const vistas = new Set<string>(["/dashboard"]);
+    const lista: { ruta: string; titulo: string }[] = [{ ruta: "/dashboard", titulo: "Inicio de Gosaryc" }];
+    if (esAdmin && negocio) lista.push({ ruta: `/negocio/${tipo.clave}`, titulo: "Panel completo del negocio" });
     for (const m of tipo.modulos) {
       if (!m.ruta || vistas.has(m.ruta)) continue;
       vistas.add(m.ruta);
       lista.push({ ruta: m.ruta, titulo: m.titulo });
     }
     return lista;
-  }, [tipo, esAdmin]);
+  }, [tipo, esAdmin, negocio]);
 
   const [destinoElegido, setDestino] = useState<string | null>(null);
-  const destino = destinoElegido && opciones.some((o) => o.ruta === destinoElegido) ? destinoElegido : (opciones[0]?.ruta ?? `/negocio/${tipo.clave}`);
+  const destino = destinoElegido && opciones.some((o) => o.ruta === destinoElegido) ? destinoElegido : (opciones[0]?.ruta ?? "/dashboard");
   const [evento, setEvento] = useState<EventoInstalacion | null>(null);
   const [instalada, setInstalada] = useState(false);
   const [esIos, setEsIos] = useState(false);
@@ -65,12 +66,12 @@ function InstalarPage() {
   // La app instalada lleva el nombre del negocio y abre directo el módulo elegido.
   useEffect(() => {
     const tituloModulo = opciones.find((o) => o.ruta === destino)?.titulo ?? "";
-    const corto = destino.startsWith("/negocio/") ? nombre : `${nombre} · ${tituloModulo}`;
+    const corto = destino.startsWith("/negocio/") || destino === "/dashboard" ? nombre : `${nombre} · ${tituloModulo}`;
     // Manifiesto real (URL propia): el navegador instala con el nombre y módulo del negocio elegido.
     const params = new URLSearchParams({
       destino,
       nombre: corto,
-      corto: (destino.startsWith("/negocio/") ? nombre : tituloModulo).slice(0, 12),
+      corto: (destino.startsWith("/negocio/") || destino === "/dashboard" ? nombre : tituloModulo).slice(0, 12),
       color: negocio?.color_principal ?? "",
       logo: negocio?.logo_url ?? "",
     });
