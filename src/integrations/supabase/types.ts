@@ -383,6 +383,120 @@ export type Database = {
         }
         Relationships: []
       }
+      consignaciones_vehiculos: {
+        Row: {
+          id: string
+          owner_id: string | null
+          estado: string
+          propietario_nombre: string
+          propietario_documento: string | null
+          propietario_telefono: string | null
+          propietario_email: string | null
+          tipo: string
+          marca: string
+          modelo: string
+          anio: number | null
+          placa: string | null
+          vin: string | null
+          color: string | null
+          kilometraje: number | null
+          fecha_inicio: string
+          fecha_vencimiento: string | null
+          observaciones: string | null
+          creado_por: string | null
+          liquidada_por: string | null
+          liquidada_en: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          owner_id?: string | null
+          estado?: string
+          propietario_nombre: string
+          propietario_documento?: string | null
+          propietario_telefono?: string | null
+          propietario_email?: string | null
+          tipo?: string
+          marca: string
+          modelo: string
+          anio?: number | null
+          placa?: string | null
+          vin?: string | null
+          color?: string | null
+          kilometraje?: number | null
+          fecha_inicio?: string
+          fecha_vencimiento?: string | null
+          observaciones?: string | null
+          creado_por?: string | null
+          liquidada_por?: string | null
+          liquidada_en?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          owner_id?: string | null
+          estado?: string
+          propietario_nombre?: string
+          propietario_documento?: string | null
+          propietario_telefono?: string | null
+          propietario_email?: string | null
+          tipo?: string
+          marca?: string
+          modelo?: string
+          anio?: number | null
+          placa?: string | null
+          vin?: string | null
+          color?: string | null
+          kilometraje?: number | null
+          fecha_inicio?: string
+          fecha_vencimiento?: string | null
+          observaciones?: string | null
+          creado_por?: string | null
+          liquidada_por?: string | null
+          liquidada_en?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      consignaciones_economico: {
+        Row: {
+          consignacion_id: string
+          owner_id: string | null
+          precio_acordado: number | null
+          comision_pct: number | null
+          gastos_autorizados: number | null
+          precio_venta_final: number | null
+          monto_liquidado: number | null
+          updated_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          consignacion_id: string
+          owner_id?: string | null
+          precio_acordado?: number | null
+          comision_pct?: number | null
+          gastos_autorizados?: number | null
+          precio_venta_final?: number | null
+          monto_liquidado?: number | null
+          updated_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          consignacion_id?: string
+          owner_id?: string | null
+          precio_acordado?: number | null
+          comision_pct?: number | null
+          gastos_autorizados?: number | null
+          precio_venta_final?: number | null
+          monto_liquidado?: number | null
+          updated_by?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       compras_vehiculos_gastos: {
         Row: {
           id: string
@@ -4341,6 +4455,7 @@ export type Database = {
       compra_cancelar: { Args: { p_compra: string; p_motivo: string }; Returns: undefined }
       retoma_decidir: { Args: { p_id: string; p_decision: string; p_notas?: string }; Returns: undefined }
       retoma_a_inventario: { Args: { p_id: string }; Returns: string }
+      consignacion_liquidar: { Args: { p_id: string }; Returns: number }
       reclamar_acceso: { Args: never; Returns: undefined }
       delete_email: {
         Args: { message_id: number; queue_name: string }
