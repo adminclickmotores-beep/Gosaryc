@@ -43,6 +43,9 @@ const leerHistorial = (j: Json): Entrada[] => {
   return salida;
 };
 
+/** "Vehículo (placa, marca y modelo)" -> "Vehículo". */
+const etiquetaCorta = (s: string) => s.replace(/\s*\(.*$/, "").trim() || s;
+
 const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
@@ -470,18 +473,42 @@ export function ModuloOperativo({ id }: { id: string }) {
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
         <GlassPanel className="h-fit space-y-3 p-5">
           <h2 className="font-medium text-foreground">Nuevo registro</h2>
-          <input className={campo} placeholder={cfg.placeholderTitulo} value={titulo} onChange={(e) => setTitulo(e.target.value)} />
-          <textarea className={campo} rows={2} placeholder={cfg.placeholderDetalle} value={detalle} onChange={(e) => setDetalle(e.target.value)} />
-          <input className={campo} placeholder={cfg.etiquetaContacto} value={contacto} onChange={(e) => setContacto(e.target.value)} />
-          <input className={campo} placeholder="Teléfono" inputMode="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
-          <input className={campo} placeholder={cfg.etiquetaMonto} inputMode="decimal" value={monto} onChange={(e) => setMonto(e.target.value)} />
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">{etiquetaCorta(cfg.placeholderTitulo)} *</span>
+            <input className={campo} placeholder={cfg.placeholderTitulo} value={titulo} onChange={(e) => setTitulo(e.target.value)} />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">Detalle</span>
+            <textarea className={campo} rows={2} placeholder={cfg.placeholderDetalle} value={detalle} onChange={(e) => setDetalle(e.target.value)} />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">{cfg.etiquetaContacto}</span>
+            <input className={campo} placeholder={cfg.etiquetaContacto} value={contacto} onChange={(e) => setContacto(e.target.value)} />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">Teléfono de {cfg.etiquetaContacto.toLowerCase()}</span>
+            <input className={campo} placeholder="Teléfono" inputMode="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">{cfg.etiquetaMonto}</span>
+            <input className={campo} placeholder={cfg.etiquetaMonto} inputMode="decimal" value={monto} onChange={(e) => setMonto(e.target.value)} />
+          </label>
           {conSaldo && (
-            <input className={campo} placeholder="Abono inicial (COP, opcional)" inputMode="decimal" value={abonoInicial} onChange={(e) => setAbonoInicial(e.target.value)} />
+            <label className="block space-y-1">
+              <span className="text-xs text-muted-foreground">Abono inicial (COP, opcional)</span>
+              <input className={campo} placeholder="Abono inicial (COP, opcional)" inputMode="decimal" value={abonoInicial} onChange={(e) => setAbonoInicial(e.target.value)} />
+            </label>
           )}
           {conStock && (
             <div className="grid grid-cols-2 gap-2">
-              <input className={campo} placeholder="Cantidad inicial" inputMode="decimal" value={cantidadIni} onChange={(e) => setCantidadIni(e.target.value)} />
-              <input className={campo} placeholder="Stock mínimo" inputMode="decimal" value={minimoIni} onChange={(e) => setMinimoIni(e.target.value)} />
+              <label className="block space-y-1">
+                <span className="text-xs text-muted-foreground">Cantidad inicial</span>
+                <input className={campo} placeholder="Cantidad inicial" inputMode="decimal" value={cantidadIni} onChange={(e) => setCantidadIni(e.target.value)} />
+              </label>
+              <label className="block space-y-1">
+                <span className="text-xs text-muted-foreground">Stock mínimo (alerta)</span>
+                <input className={campo} placeholder="Stock mínimo" inputMode="decimal" value={minimoIni} onChange={(e) => setMinimoIni(e.target.value)} />
+              </label>
             </div>
           )}
           <label className="block space-y-1">
