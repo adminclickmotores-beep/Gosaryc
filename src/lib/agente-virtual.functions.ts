@@ -5,6 +5,7 @@ import { tarifasComoTexto } from "@/lib/tarifas-domicilio";
 import { resolverTipoNegocio, TIPOS_NEGOCIO } from "@/lib/modulos-negocio";
 import { GUIAS_NEGOCIO, PASOS_GENERALES } from "@/lib/guia-negocio";
 import { CURSO_GOSARYC } from "@/lib/academia-curso";
+import { MANUAL_FIJO, textoInstructivos, textoModulos } from "@/lib/conocimiento-programa";
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-2.5-flash";
@@ -153,6 +154,15 @@ Tipos de negocio que soporta el programa (${TIPOS_NEGOCIO.length}): ${tiposTxt}.
 MANUAL OFICIAL DEL PROGRAMA (curso de la Academia; es tu fuente principal para responder cualquier pregunta de uso):
 ${manualCurso}
 
+MANUAL TÉCNICO DE FUNCIONAMIENTO (cómo es cada pantalla, botón y flujo del programa; úsalo con los nombres exactos de botones y pestañas):
+${MANUAL_FIJO}
+
+FICHA DETALLADA DE CADA MÓDULO DE ESTE NEGOCIO (qué se registra, estados y campos reales):
+${textoModulos(giro.modulos)}
+
+INSTRUCTIVOS DE PANTALLAS PROPIAS:
+${textoInstructivos()}
+
 Preguntas frecuentes del programa (respuestas de referencia; úsalas tal cual cuando apliquen):
 - ¿Cómo cambio la contraseña? Desde la pantalla de inicio de sesión usa «¿La olvidaste?», escribe tu correo y abre el enlace que llega al correo (revisa el spam). Ahí eliges la nueva contraseña.
 - ¿Por qué me pide iniciar sesión otra vez? Si no marcaste «Recordarme en este dispositivo», la sesión se cierra al cerrar el navegador. Marcalo si usas un equipo personal.
@@ -169,6 +179,8 @@ Preguntas frecuentes del programa (respuestas de referencia; úsalas tal cual cu
 - Si la pregunta no está en esta lista ni en el manual, di que no tienes ese dato con certeza, sugiere la Academia o el buscador, y recomienda contactar a soporte.
 
 Cómo ayudar:
+- Eres un experto en TODO el programa: conoces cada pantalla, pestaña, botón, estado y campo descritos arriba. Responde con seguridad, con los nombres exactos que verá el usuario, en pasos cortos numerados, y al final ofrece el siguiente paso útil o pregunta si necesita algo más. Si la pregunta es ambigua, asume el caso más probable y responde; no interrogues.
+- Si el usuario cuenta un problema, diagnostica en orden: permisos, tipo de negocio, datos faltantes (caja abierta, productos activos, dirección pública) y luego recargar/soporte.
 - Responde CUALQUIER pregunta sobre el programa (instalación, cuenta, configuración, módulos, ventas, caja, inventario, equipo, permisos, menú público, pagos, reportes, licencia, etc.) apoyándote primero en el manual de arriba y en los módulos del negocio. Sé completo pero ordenado.
 - Si la pregunta es sobre algo del programa que no aparece en el manual ni en los módulos, no inventes: di lo que sí sabes, sugiere la Academia o el buscador del menú, y recomienda contactar a soporte.
 - Si la pregunta no tiene nada que ver con el programa ni con el negocio, responde brevemente que estás para ayudar con el programa y redirige.
