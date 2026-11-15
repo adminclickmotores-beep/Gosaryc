@@ -7,6 +7,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
+import { useUsuariosEnLinea } from "@/hooks/use-presencia";
 
 export const Route = createFileRoute("/superadmin")({
   head: () => ({ meta: [{ title: "Panel del dueño" }] }),
@@ -44,6 +45,7 @@ function SuperAdminPage() {
   const [subs, setSubs] = useState<Record<string, Suscripcion>>({});
   const [hoy, setHoy] = useState("");
   const [busca, setBusca] = useState("");
+  const enLinea = useUsuariosEnLinea(permitido === true);
 
   useEffect(() => {
     setHoy(hoyIso());
@@ -139,6 +141,43 @@ function SuperAdminPage() {
           </GlassPanel>
         ))}
       </div>
+
+      <GlassPanel className="space-y-3 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <p className="flex items-center gap-2 text-sm font-medium text-foreground">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+            </span>
+            Usando el programa ahora
+          </p>
+          <p className="text-2xl font-medium text-foreground">{enLinea.length}</p>
+        </div>
+        {enLinea.length === 0 ? (
+          <p className="text-xs text-muted-foreground">Nadie conectado en este momento.</p>
+        ) : (
+          <ul className="divide-y divide-glass-border">
+            {Object.entries(
+              enLinea.reduce<Record<string, { tipo: string; personas: number }>>((acc, u) => {
+                const a = acc[u.negocio] ?? { tipo: u.tipo, personas: 0 };
+                a.personas += 1;
+                acc[u.negocio] = a;
+                return acc;
+              }, {}),
+            ).map(([negocio, v]) => (
+              <li key={negocio} className="flex items-center justify-between gap-3 py-2 text-sm">
+                <span className="min-w-0 break-words text-foreground">
+                  {negocio}
+                  {v.tipo ? <span className="text-xs text-muted-foreground"> · {v.tipo}</span> : null}
+                </span>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {v.personas} {v.personas === 1 ? "persona" : "personas"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </GlassPanel>
 
       <input className={`${campo} w-full`} placeholder="Buscar empresa por nombre o ciudad" value={busca} onChange={(e) => setBusca(e.target.value)} />
 

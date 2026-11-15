@@ -28,6 +28,7 @@ import { EstadoSinConexion } from "@/components/app/EstadoSinConexion";
 import { BRAND } from "@/lib/brand";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
+import { useAnunciarPresencia } from "@/hooks/use-presencia";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 
 import { AutosaveStatus } from "@/components/app/AutosaveStatus";
@@ -92,6 +93,7 @@ function AppShell() {
   const { negocio } = useNegocio();
   const tipoNegocio = resolverTipoNegocio(negocio?.tipo_negocio);
   const { esAdmin, puede, cargando: cargandoPermisos } = usePermisos();
+  useAnunciarPresencia(user?.id, negocio?.nombre ?? "Sin nombre", tipoNegocio.etiqueta);
   const [bloqueo, setBloqueo] = useState<"suspendido" | "vencido" | null>(null);
   // Empleados (no administrador) en el panel: pantalla completa fija, sin menú lateral.
   // El administrador conserva el menú para probar módulo por módulo.
