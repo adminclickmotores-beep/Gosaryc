@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
@@ -57,6 +58,7 @@ const CAMPOS: { clave: keyof Form; etiqueta: string; ejemplo: string; largo?: bo
 
 export function NegocioConfig() {
   const { negocio, recargar } = useNegocio();
+  const navegar = useNavigate();
   const [form, setForm] = useState<Form>(VACIO);
   const [guardando, setGuardando] = useState(false);
   const tipoActual = resolverTipoNegocio(form.tipo_negocio);
@@ -154,6 +156,15 @@ export function NegocioConfig() {
                   return toast.error("No se pudo cambiar el tipo de negocio. Tu cuenta debe ser la del administrador.");
                 }
                 window.dispatchEvent(new Event("negocio:cambio"));
+                // La dirección sigue al tipo elegido, al instante.
+                const destino = nuevo === "restaurante" ? "/restaurante" : `/negocio/${nuevo}`;
+                if (window.location.pathname !== destino) {
+                  navegar({
+                    to: destino as never,
+                    search: { vista: "negocio", ventana: new URLSearchParams(window.location.search).get("ventana") ?? undefined } as never,
+                    replace: true,
+                  });
+                }
               }
               const tipoPrevio = resolverTipoNegocio(negocio?.tipo_negocio ?? "").clave;
               if (negocio && nuevo !== tipoPrevio) {
