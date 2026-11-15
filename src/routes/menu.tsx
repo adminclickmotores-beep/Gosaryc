@@ -334,15 +334,26 @@ function MenuPage() {
     );
   };
 
-  // Un negocio que no vende por pedidos (concesionario, clínica, etc.) no tiene menú digital.
-  if (negocio && !resolverTipoNegocio(negocio.tipo_negocio).usaPedidos) {
+  // Mientras carga el negocio no se muestra ningún producto: así nunca aparece la carta de otro negocio.
+  if (cargandoNegocio) {
+    return (
+      <div className="mx-auto flex min-h-dvh max-w-md items-center justify-center px-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Sin negocio encontrado, o un negocio que no vende por pedidos (concesionario, clínica, etc.), no tiene menú digital.
+  if (!negocio || !resolverTipoNegocio(negocio.tipo_negocio).usaPedidos) {
     return (
       <div className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-4 px-4 text-center">
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/15">
           <UtensilsCrossed className="h-10 w-10 text-primary" />
         </div>
-        <h1 className="font-display text-2xl text-foreground">{negocio.nombre}</h1>
-        <p className="text-muted-foreground">Este negocio no tiene menú digital de pedidos.</p>
+        <h1 className="font-display text-2xl text-foreground">{negocio?.nombre ?? "Menú digital"}</h1>
+        <p className="text-muted-foreground">
+          {negocio ? "Este negocio no tiene menú digital de pedidos." : "Este menú no está disponible."}
+        </p>
         <Link to="/" className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90">
           Ir al inicio
         </Link>
