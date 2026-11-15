@@ -3,6 +3,7 @@ import { ModuloOperativo } from "@/components/modulos/ModuloOperativo";
 import { InventarioVehiculos } from "@/components/vehiculos/InventarioVehiculos";
 import { SeparacionesVehiculos } from "@/components/vehiculos/SeparacionesVehiculos";
 import { CajaTurnos } from "@/components/caja/CajaTurnos";
+import { ComprasVehiculos } from "@/components/vehiculos/ComprasVehiculos";
 import { RetomasVehiculos } from "@/components/vehiculos/RetomasVehiculos";
 import { SolicitudesCredito } from "@/components/vehiculos/SolicitudesCredito";
 import { CotizacionesVehiculos } from "@/components/vehiculos/CotizacionesVehiculos";
@@ -18,6 +19,7 @@ function ModuloPage() {
   const { id } = Route.useParams();
   if (id === "vehiculos") return <InventarioVehiculos />;
   if (id === "caja_diaria") return <CajaTurnos />;
+  if (id === "compras_veh") return <ComprasVehiculos />;
   if (id === "vehiculos_usados") return <RetomasVehiculos />;
   if (id === "creditos_veh") return <SolicitudesCredito />;
   if (id === "separaciones_veh") return <SeparacionesVehiculos />;

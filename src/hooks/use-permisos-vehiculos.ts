@@ -16,6 +16,10 @@ export const PERMISOS_VEHICULOS = [
   { id: "ret_avaluo", titulo: "Retomas: registrar avalúos técnicos (jefe de patio)" },
   { id: "ret_economico", titulo: "Retomas: ver y modificar valores económicos" },
   { id: "ret_aprobar", titulo: "Retomas: aprobar retomas y pasarlas al inventario" },
+  { id: "com_ver_todas", titulo: "Compras: ver todas las compras (sin valores económicos)" },
+  { id: "com_economico", titulo: "Compras: ver y modificar precios, gastos y pagos" },
+  { id: "com_aprobar", titulo: "Compras: aprobar o cancelar compras" },
+  { id: "com_recibir", titulo: "Compras: registrar la recepción y pasar al inventario" },
 ];
 
 const BASE = ["veh_ver", "veh_crear", "veh_editar", "veh_gastos", "veh_estados"];
@@ -34,8 +38,19 @@ export function usePermisosVehiculos() {
       mods.includes(p) ||
       (RET_BASE.includes(p) && mods.some((m) => MODULOS_BASE.includes(m))) ||
       (p === "ret_ver_todas" && mods.some((m) => RET_VER_TODAS.includes(m)));
+    const puedeCom = (p: string) =>
+      esAdmin ||
+      mods.includes(p) ||
+      (["com_crear", "com_ver_propias"].includes(p) && mods.some((m) => MODULOS_BASE.includes(m))) ||
+      (p === "com_ver_todas" && mods.some((m) => ["com_economico", "com_aprobar", "com_recibir"].includes(m)));
     return {
       cargando,
+      comCrear: puedeCom("com_crear"),
+      comVerPropias: puedeCom("com_ver_propias"),
+      comVerTodas: puedeCom("com_ver_todas"),
+      comEconomico: puedeCom("com_economico"),
+      comAprobar: puedeCom("com_aprobar"),
+      comRecibir: puedeCom("com_recibir"),
       ver: puede("veh_ver"),
       crear: puede("veh_crear"),
       editar: puede("veh_editar"),

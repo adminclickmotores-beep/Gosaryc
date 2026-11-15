@@ -18,8 +18,13 @@ Nada está "verificado": no hay cuentas de prueba por rol ni pruebas automatizad
 ## Hallazgo clave
 En las migraciones revisadas no encontré políticas abiertas vigentes sobre las tablas del ERP. No puedo confirmar que la base real tenga exactamente ese estado hasta probarlo con cuentas reales.
 
-## Bloque 2 — Concesionario (pendiente)
-Compras, consignaciones, inspecciones/peritajes, prospectos, comisiones, costos por vehículo y cartera: hoy son registros genéricos. Estado: pendiente de pasar a tablas propias.
+## Bloque 2 — Concesionario
+| Módulo | Estado | Detalle / dependencias | Pruebas | Próxima tarea |
+|---|---|---|---|---|
+| Compras de vehículos | implementado sin probar | Tablas propias (compra, negociación, gastos, pagos, aprobaciones, historial, documentos). Valores económicos protegidos con permiso `com_economico`; cualquier cambio económico invalida la aprobación; la recepción crea o vincula el vehículo (sin duplicar placa/VIN) y guarda el precio en la tabla protegida de costos. | Ninguna (sin cuentas por rol) | Probar con asesor / administrador |
+| Compras → Caja, cuentas por pagar y contabilidad | pendiente | Los pagos quedan registrados en la compra pero no se descuentan solos de caja ni se contabilizan. Los documentos quedan en la compra, no se copian a la ficha del vehículo. | — | Conectar pagos con caja y asientos |
+| Consignaciones | pendiente | Siguen como registro genérico. | — | Tablas propias (propietario, precio mínimo, comisión, contrato, vigencia, liquidación) |
+| Inspecciones/peritajes, prospectos, comisiones, costos por vehículo, cartera | pendiente | Registros genéricos. | — | Después de consignaciones |
 
 ## Bloque 3 — Procesos (pendiente)
 Compra→Inventario→Venta→Cobro→Caja→Contabilidad; Retoma→Avalúo→Aprobación→Inventario; Reserva→Servicio→Factura→Pago (con control de disponibilidad); Pedido→Cocina→Inventario→Caja→Contabilidad.

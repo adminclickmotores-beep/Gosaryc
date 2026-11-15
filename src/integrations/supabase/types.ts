@@ -248,6 +248,327 @@ export type Database = {
         }
         Relationships: []
       }
+      compras_vehiculos: {
+        Row: {
+          id: string
+          owner_id: string | null
+          estado: string
+          vendedor_tipo: string
+          vendedor_nombre: string
+          vendedor_documento: string | null
+          vendedor_telefono: string | null
+          vendedor_email: string | null
+          propietario_nombre: string | null
+          propietario_documento: string | null
+          tipo: string
+          marca: string
+          linea: string | null
+          modelo: string
+          anio: number | null
+          placa: string | null
+          vin: string | null
+          chasis: string | null
+          motor_numero: string | null
+          color: string | null
+          kilometraje: number | null
+          observaciones: string | null
+          vehiculo_id: string | null
+          creado_por: string | null
+          aprobada_por: string | null
+          aprobada_en: string | null
+          recibida_por: string | null
+          recibida_en: string | null
+          recepcion_notas: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          owner_id?: string | null
+          estado?: string
+          vendedor_tipo?: string
+          vendedor_nombre: string
+          vendedor_documento?: string | null
+          vendedor_telefono?: string | null
+          vendedor_email?: string | null
+          propietario_nombre?: string | null
+          propietario_documento?: string | null
+          tipo?: string
+          marca: string
+          linea?: string | null
+          modelo: string
+          anio?: number | null
+          placa?: string | null
+          vin?: string | null
+          chasis?: string | null
+          motor_numero?: string | null
+          color?: string | null
+          kilometraje?: number | null
+          observaciones?: string | null
+          vehiculo_id?: string | null
+          creado_por?: string | null
+          aprobada_por?: string | null
+          aprobada_en?: string | null
+          recibida_por?: string | null
+          recibida_en?: string | null
+          recepcion_notas?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          owner_id?: string | null
+          estado?: string
+          vendedor_tipo?: string
+          vendedor_nombre?: string
+          vendedor_documento?: string | null
+          vendedor_telefono?: string | null
+          vendedor_email?: string | null
+          propietario_nombre?: string | null
+          propietario_documento?: string | null
+          tipo?: string
+          marca?: string
+          linea?: string | null
+          modelo?: string
+          anio?: number | null
+          placa?: string | null
+          vin?: string | null
+          chasis?: string | null
+          motor_numero?: string | null
+          color?: string | null
+          kilometraje?: number | null
+          observaciones?: string | null
+          vehiculo_id?: string | null
+          creado_por?: string | null
+          aprobada_por?: string | null
+          aprobada_en?: string | null
+          recibida_por?: string | null
+          recibida_en?: string | null
+          recepcion_notas?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      compras_vehiculos_economico: {
+        Row: {
+          compra_id: string
+          owner_id: string | null
+          oferta_inicial: number | null
+          precio_acordado: number | null
+          forma_pago: string | null
+          condiciones_pago: string | null
+          updated_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          compra_id: string
+          owner_id?: string | null
+          oferta_inicial?: number | null
+          precio_acordado?: number | null
+          forma_pago?: string | null
+          condiciones_pago?: string | null
+          updated_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          compra_id?: string
+          owner_id?: string | null
+          oferta_inicial?: number | null
+          precio_acordado?: number | null
+          forma_pago?: string | null
+          condiciones_pago?: string | null
+          updated_by?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      compras_vehiculos_gastos: {
+        Row: {
+          id: string
+          compra_id: string
+          owner_id: string | null
+          concepto: string
+          monto: number
+          fecha: string
+          creado_por: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          compra_id: string
+          owner_id?: string | null
+          concepto: string
+          monto: number
+          fecha?: string
+          creado_por?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          compra_id?: string
+          owner_id?: string | null
+          concepto?: string
+          monto?: number
+          fecha?: string
+          creado_por?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      compras_vehiculos_pagos: {
+        Row: {
+          id: string
+          compra_id: string
+          owner_id: string | null
+          tipo: string
+          monto: number
+          fecha: string
+          metodo: string | null
+          nota: string | null
+          registrado_por: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          compra_id: string
+          owner_id?: string | null
+          tipo?: string
+          monto: number
+          fecha?: string
+          metodo?: string | null
+          nota?: string | null
+          registrado_por?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          compra_id?: string
+          owner_id?: string | null
+          tipo?: string
+          monto?: number
+          fecha?: string
+          metodo?: string | null
+          nota?: string | null
+          registrado_por?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      compras_vehiculos_aprobaciones: {
+        Row: {
+          id: string
+          compra_id: string
+          owner_id: string | null
+          usuario_id: string | null
+          usuario_email: string | null
+          precio_aprobado: number
+          gastos_aprobados: number
+          forma_pago: string | null
+          vigente: boolean
+          invalidada_en: string | null
+          motivo_invalidacion: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          compra_id: string
+          owner_id?: string | null
+          usuario_id?: string | null
+          usuario_email?: string | null
+          precio_aprobado: number
+          gastos_aprobados?: number
+          forma_pago?: string | null
+          vigente?: boolean
+          invalidada_en?: string | null
+          motivo_invalidacion?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          compra_id?: string
+          owner_id?: string | null
+          usuario_id?: string | null
+          usuario_email?: string | null
+          precio_aprobado?: number
+          gastos_aprobados?: number
+          forma_pago?: string | null
+          vigente?: boolean
+          invalidada_en?: string | null
+          motivo_invalidacion?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      compras_vehiculos_historial: {
+        Row: {
+          id: string
+          compra_id: string
+          owner_id: string | null
+          tipo: string
+          detalle: string
+          economico: boolean
+          usuario_id: string | null
+          usuario_email: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          compra_id: string
+          owner_id?: string | null
+          tipo: string
+          detalle: string
+          economico?: boolean
+          usuario_id?: string | null
+          usuario_email?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          compra_id?: string
+          owner_id?: string | null
+          tipo?: string
+          detalle?: string
+          economico?: boolean
+          usuario_id?: string | null
+          usuario_email?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      compras_vehiculos_documentos: {
+        Row: {
+          id: string
+          compra_id: string
+          owner_id: string | null
+          tipo: string
+          nombre: string
+          ruta: string
+          creado_por: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          compra_id: string
+          owner_id?: string | null
+          tipo?: string
+          nombre: string
+          ruta: string
+          creado_por?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          compra_id?: string
+          owner_id?: string | null
+          tipo?: string
+          nombre?: string
+          ruta?: string
+          creado_por?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       tasas_vehiculo: {
         Row: {
           condicion: string
@@ -4014,6 +4335,10 @@ export type Database = {
       mi_acceso: { Args: never; Returns: Json }
       mi_negocio_id: { Args: never; Returns: string }
       ret_permiso: { Args: { p: string }; Returns: boolean }
+      com_permiso: { Args: { p: string }; Returns: boolean }
+      compra_aprobar: { Args: { p_compra: string }; Returns: undefined }
+      compra_recibir: { Args: { p_compra: string; p_notas?: string }; Returns: string }
+      compra_cancelar: { Args: { p_compra: string; p_motivo: string }; Returns: undefined }
       retoma_decidir: { Args: { p_id: string; p_decision: string; p_notas?: string }; Returns: undefined }
       retoma_a_inventario: { Args: { p_id: string }; Returns: string }
       reclamar_acceso: { Args: never; Returns: undefined }
