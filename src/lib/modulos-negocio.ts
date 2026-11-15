@@ -426,9 +426,10 @@ const comida = (
   etiqueta: string,
   panel: string,
   extras: ModuloNegocio[],
+  quitar: string[] = [],
 ): TipoNegocio => {
   const base = TIPOS_NEGOCIO.find((x) => x.clave === "restaurante") as TipoNegocio;
-  const mods = [...base.modulos];
+  const mods = base.modulos.filter((x) => !quitar.includes(x.id));
   mods.splice(2, 0, ...extras);
   return { clave, etiqueta, panel, usaPedidos: true, modulos: mods };
 };
@@ -437,16 +438,16 @@ TIPOS_NEGOCIO.push(
   comida("panaderia", "Panadería / pastelería / repostería", "Panadería", [
     m("encargos_tortas", "Encargos de tortas y pasteles", "Pedidos por fecha: sabor, tamaño, decoración y anticipo.", Cake),
     m("produccion_dia", "Producción del día", "Qué hornear hoy y cuántas unidades por producto.", ChefHat),
-  ]),
+  ], ["mesas", "propinas", "suscripciones"]),
   comida("cafeteria", "Cafetería / bar / heladería", "Cafetería", [
     m("insumos_barra", "Barra y bebidas", "Control de botellas, tragos, café y mermas de la barra.", Coffee),
-  ]),
+  ], ["suscripciones"]),
   comida("comida_rapida", "Comida rápida / food truck / asadero", "Comida rápida", [
     m("puntos_venta", "Puntos de venta y turnos", "Ventas por local, carro o ubicación del día.", Sandwich),
-  ]),
+  ], ["mesas", "suscripciones"]),
   comida("catering", "Catering / banquetes / cocina por encargo", "Catering", [
     m("eventos_catering", "Eventos y banquetes", "Fecha, invitados, menú, anticipo y saldo de cada evento.", PartyPopper),
-  ]),
+  ], ["mesas", "propinas", "domicilios", "repartidores"]),
   {
     clave: "belleza",
     etiqueta: "Belleza / peluquería / spa / uñas",
@@ -539,7 +540,7 @@ TIPOS_NEGOCIO.push(
 
 // Se agrega el módulo de cotizaciones a los tipos que cotizan y no tienen uno propio.
 // Salud (presupuestos de tratamiento), educación, hospedaje, gimnasio, mascotas, agro, farmacia y lavandería no cotizan así.
-const SIN_COTIZACIONES: TipoNegocioClave[] = ["salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro", "farmacia", "lavanderia", "belleza"];
+const SIN_COTIZACIONES: TipoNegocioClave[] = ["restaurante", "cafeteria", "comida_rapida","salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro", "farmacia", "lavanderia", "belleza"];
 for (const t of TIPOS_NEGOCIO) {
   if (SIN_COTIZACIONES.includes(t.clave)) continue;
   if (t.modulos.some((x) => x.id === COTIZACIONES.id || x.id.startsWith("cotizaciones_"))) continue;
