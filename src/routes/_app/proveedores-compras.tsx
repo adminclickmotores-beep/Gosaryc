@@ -29,6 +29,8 @@ function ProveedoresComprasPage() {
   const [costo, setCosto] = useState("");
   const [proveedor, setProveedor] = useState("");
   const [credito, setCredito] = useState(false);
+  const [telefonoProv, setTelefonoProv] = useState("");
+  const [nitProv, setNitProv] = useState("");
   const [metodoPago, setMetodoPago] = useState("efectivo");
   const [guardando, setGuardando] = useState(false);
   const [devInsumo, setDevInsumo] = useState("");
@@ -85,6 +87,8 @@ function ProveedoresComprasPage() {
         estado: "pendiente",
         titulo: `Compra a crédito: ${cantNum} ${insumoSel.unidad} de ${insumoSel.nombre}`,
         contacto: proveedor.trim() || insumoSel.proveedor || "Proveedor",
+        telefono: telefonoProv.trim() || null,
+        datos: { nit: nitProv.trim() || null, cantidad: cantNum, unidad: insumoSel.unidad } as unknown as Json,
         monto: costoNum,
         abonado: 0,
         historial: [{ f: new Date().toISOString(), t: "Registro creado desde una compra de inventario" }] as unknown as Json,
@@ -112,6 +116,8 @@ function ProveedoresComprasPage() {
     setCantidad("");
     setCosto("");
     setCredito(false);
+    setTelefonoProv("");
+    setNitProv("");
     cargarInventario();
     cargar();
   };
@@ -218,6 +224,8 @@ function ProveedoresComprasPage() {
                 ))}
               </select>
               <input className={campo} placeholder="Proveedor" value={proveedor} onChange={(e) => setProveedor(e.target.value)} />
+              <input className={campo} inputMode="tel" placeholder="Teléfono del proveedor" value={telefonoProv} onChange={(e) => setTelefonoProv(e.target.value)} />
+              <input className={campo} placeholder="NIT o documento del proveedor" value={nitProv} onChange={(e) => setNitProv(e.target.value)} />
               <input
                 className={campo}
                 inputMode="decimal"
