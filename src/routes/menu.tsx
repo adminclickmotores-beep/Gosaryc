@@ -429,10 +429,18 @@ function MenuPage() {
                 </span>
               )}
               {negocio.telefono_pedidos && (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-glass-border bg-glass/40 px-3 py-1 text-foreground">
+                <a
+                  href={`https://wa.me/${(() => {
+                    const d = negocio.telefono_pedidos.replace(/\D/g, "");
+                    return d.length === 10 ? `57${d}` : d;
+                  })()}?text=${encodeURIComponent(`Hola ${negocio.nombre ?? ""}, quiero hacer un pedido.`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-foreground hover:bg-primary/20"
+                >
                   <MessageCircle className="h-3.5 w-3.5 text-primary" />
-                  {negocio.telefono_pedidos}
-                </span>
+                  Pedir por WhatsApp · {negocio.telefono_pedidos}
+                </a>
               )}
             </div>
             {negocio.aviso_entrega && <p className="text-muted-foreground">{negocio.aviso_entrega}</p>}

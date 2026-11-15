@@ -55,7 +55,6 @@ const numeroWa = (t: string) => {
   const d = soloDigitos(t);
   return d.length === 10 ? `57${d}` : d;
 };
-const WA_COCINA = "3122325027";
 const WA_NEGOCIO = "3052095232";
 /** Abre WhatsApp Web siempre en la misma pestaña, para dejarlo abierto mientras se trabaja. */
 const abrirWa = (tel: string, texto: string) =>
@@ -107,8 +106,8 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
   const [numCocina, setNumCocina] = useState("");
   const nombreNegocio = negocio?.nombre ?? "Mi negocio";
   useEffect(() => {
-    setNumCocina(negocio?.whatsapp_cocina || WA_COCINA);
-  }, [negocio?.whatsapp_cocina]);
+    setNumCocina(negocio?.whatsapp_cocina || negocio?.telefono_pedidos || "");
+  }, [negocio?.whatsapp_cocina, negocio?.telefono_pedidos]);
   const [ivaTexto, setIvaTexto] = useState("0");
   useEffect(() => {
     setIvaTexto(String(negocio?.iva_porcentaje ?? 0));
