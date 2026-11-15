@@ -591,6 +591,128 @@ const VOCABULARIO: Record<string, Partial<ConfigModulo>> = {
   },
 };
 
+const vc = (
+  placeholderTitulo: string,
+  placeholderDetalle: string,
+  etiquetaContacto: string,
+  etiquetaMonto: string,
+  etiquetaFecha: string,
+  resumen: string,
+  estados?: EstadoModulo[],
+): Partial<ConfigModulo> => ({
+  placeholderTitulo, placeholderDetalle, etiquetaContacto, etiquetaMonto, etiquetaFecha, resumen,
+  ...(estados ? { estados } : {}),
+});
+
+/** Vocabulario complementario: cada módulo con sus propios campos según el negocio. */
+const VOCABULARIO_EXTRA: Record<string, Partial<ConfigModulo>> = {
+  // Restaurante y comida
+  mesas: vc("Reserva (nombre y número de personas)", "Mesa o zona, ocasión especial y pedidos anticipados", "Cliente", "Consumo estimado o abono (COP)", "Fecha y hora de la reserva", "Reservas por atender",
+    est(["pendiente", "Reservada"], ["abonado", "Confirmada"], ["entregado", "Atendida"], ["cancelado", "No llegó o cancelada"])),
+  insumos: vc("Insumo (ej. pollo, arroz, aceite)", "Cantidad, unidad de medida, ubicación y merma", "Proveedor", "Costo por unidad (COP)", "Último ingreso", "Insumos por reponer"),
+  insumos_barra: vc("Bebida o insumo (ej. café, ron, leche)", "Cantidad, presentación, merma y ubicación en barra", "Proveedor", "Costo por unidad (COP)", "Último ingreso", "A reponer en barra"),
+  combos: vc("Combo o promoción (ej. 2x1 hamburguesa)", "Productos incluidos, horario y condiciones", "Canal (mostrador, domicilio, ambos)", "Precio del combo (COP)", "Vigente hasta", "Promociones activas"),
+  encargos_tortas: vc("Encargo (sabor, tamaño y porciones)", "Decoración, mensaje, alergias, relleno y anticipo recibido", "Cliente", "Valor total (COP)", "Fecha y hora de entrega", "Encargos por entregar"),
+  eventos_catering: vc("Evento (cliente y tipo)", "Menú, número de invitados, lugar, personal y anticipo", "Cliente o empresa", "Valor del contrato (COP)", "Fecha del evento", "Eventos por realizar"),
+  puntos_venta: vc("Punto de venta (local, carro o ubicación)", "Turno, responsable, ventas del día y novedades", "Encargado", "Ventas del turno (COP)", "Fecha del turno", "Puntos en seguimiento"),
+  produccion_dia: vc("Producto a producir (ej. 50 panes, 30 almuerzos)", "Cantidad, receta, responsable y lote", "Responsable", "Costo estimado (COP)", "Fecha de producción", "Producción pendiente"),
+  suscripciones: vc("Cliente y pedido recurrente", "Productos, días de entrega, dirección y forma de pago", "Cliente", "Valor por entrega (COP)", "Próxima entrega", "Pedidos recurrentes activos"),
+  // Tienda y finanzas
+  productos: vc("Producto (nombre y referencia)", "Cantidad, talla o color, ubicación y código de barras", "Proveedor", "Precio de venta (COP)", "Último ingreso", "Productos por reponer"),
+  apartados: vc("Producto apartado", "Abonos recibidos, talla o color y condiciones", "Cliente", "Valor total (COP)", "Fecha límite para retirar", "Apartados por entregar"),
+  devoluciones: vc("Producto y motivo del cambio o devolución", "Factura de origen, estado del producto y solución (cambio, nota crédito)", "Cliente", "Valor devuelto (COP)", "Fecha de la devolución", "Devoluciones por resolver"),
+  facturas: vc("Factura o documento soporte (número)", "Prefijo, CUFE, concepto e impuestos", "Cliente o proveedor", "Total facturado (COP)", "Fecha de emisión", "Facturas por cobrar"),
+  caja_diaria: vc("Movimiento de caja (apertura, cierre o gasto)", "Concepto, soporte y responsable del turno", "Responsable de caja", "Valor (COP)", "Fecha", "Movimientos por revisar"),
+  proveedores: vc("Proveedor o pedido de compra", "Productos, condiciones de pago y número de factura", "Proveedor", "Valor del pedido o deuda (COP)", "Fecha de pago acordada", "Por pagar a proveedores"),
+  equipo_turnos: vc("Empleado y turno o novedad", "Horario, horas extra, incapacidades y descuentos", "Empleado", "Pago o nómina (COP)", "Fecha de pago", "Pagos del personal"),
+  comisiones: vc("Comisión (persona y venta o servicio)", "Venta o servicio de origen y porcentaje aplicado", "Asesor o empleado", "Valor de la comisión (COP)", "Fecha de pago", "Comisiones por pagar"),
+  fidelizacion: vc("Cliente del programa de puntos", "Puntos acumulados, canjes y nivel", "Cliente", "Valor acumulado (COP)", "Vencen los puntos el", "Puntos activos"),
+  catalogo_whatsapp: vc("Producto del catálogo", "Descripción, variantes y enlace de la foto", "Categoría", "Precio publicado (COP)", "Última actualización", "Por actualizar"),
+  // Concesionario
+  vehiculos: vc("Vehículo (placa, marca y modelo)", "Año, kilometraje, color, combustible, transmisión y procedencia", "Propietario o proveedor", "Precio de venta (COP)", "Fecha de ingreso", "Vehículos por vender",
+    est(["pendiente", "Disponible"], ["bajo", "Separado"], ["agotado", "Vendido"])),
+  vehiculos_usados: vc("Vehículo recibido en retoma (placa y modelo)", "Peritaje, kilometraje, estado y avalúo", "Cliente que entrega", "Valor de retoma (COP)", "Fecha de recepción", "Retomas por alistar"),
+  pruebas_manejo: vc("Prueba de manejo (vehículo)", "Licencia del cliente, ruta y observaciones", "Cliente interesado", "Precio del vehículo (COP)", "Fecha y hora de la prueba", "Pruebas por realizar"),
+  cotizaciones_veh: vc("Vehículo cotizado", "Cuota inicial, plazo, tasa y accesorios", "Cliente o interesado", "Valor cotizado (COP)", "Próximo seguimiento", "Cotizaciones abiertas"),
+  separaciones_veh: vc("Vehículo separado (placa)", "Anticipo recibido, condiciones y vigencia", "Cliente", "Valor del anticipo (COP)", "Vence la separación", "Separaciones activas"),
+  ventas_veh: vc("Venta de vehículo (placa y comprador)", "Forma de pago, traspaso y acta de entrega", "Comprador", "Valor de la venta (COP)", "Fecha de entrega", "Entregas pendientes"),
+  creditos_veh: vc("Solicitud de crédito (cliente y vehículo)", "Entidad financiera, plazo, cuota y documentos", "Cliente solicitante", "Valor financiado (COP)", "Próximo seguimiento", "Créditos en estudio"),
+  alistamiento: vc("Vehículo a alistar (placa)", "Lavado, revisión, latonería, papeles y pendientes", "Responsable del alistamiento", "Costo del alistamiento (COP)", "Fecha de entrega", "Vehículos en alistamiento"),
+  costos_veh: vc("Gasto del vehículo (placa y concepto)", "Compra, reparación, trámite o repuesto y soporte", "Proveedor", "Valor del gasto (COP)", "Fecha del gasto", "Gastos por pagar"),
+  cartera_veh: vc("Cuota o saldo (cliente y placa)", "Número de cuota, acuerdo de pago y abonos", "Cliente deudor", "Saldo pendiente (COP)", "Fecha de la cuota", "Por cobrar"),
+  proveedores_veh: vc("Gestor, taller o proveedor", "Servicio que presta, tarifa y calificación", "Contacto", "Tarifa o deuda (COP)", "Próximo pago", "Por pagar"),
+  inspecciones_veh: vc("Inspección (placa del vehículo)", "Estado mecánico, exterior, interior y reparaciones sugeridas", "Inspector", "Costo de reparaciones (COP)", "Fecha de la inspección", "Inspecciones en curso"),
+  prospectos_veh: vc("Prospecto (nombre y vehículo de interés)", "Presupuesto, medio de contacto, forma de pago y seguimientos", "Asesor asignado", "Presupuesto del cliente (COP)", "Próximo seguimiento", "Prospectos activos",
+    est(["pendiente", "Nuevo"], ["en_proceso", "En seguimiento"], ["hecho", "Vendido o perdido"])),
+  garantias: vc("Reclamo o garantía (producto o vehículo)", "Falla reportada, factura de origen y solución", "Cliente", "Costo de la garantía (COP)", "Fecha límite de respuesta", "Garantías abiertas"),
+  // Taller
+  vehiculos_clientes: vc("Vehículo (placa, marca y modelo)", "Kilometraje, color, año y historial de servicios", "Dueño", "Valor del último servicio (COP)", "Próximo mantenimiento", "Vehículos en seguimiento"),
+  cotizaciones_taller: vc("Presupuesto (placa y trabajo)", "Mano de obra, repuestos y tiempo estimado", "Dueño del vehículo", "Valor del presupuesto (COP)", "Vigente hasta", "Presupuestos por aprobar"),
+  repuestos_taller: vc("Repuesto (nombre y referencia)", "Cantidad, marca, compatibilidad y ubicación", "Proveedor", "Precio de venta (COP)", "Último ingreso", "Repuestos por pedir"),
+  recordatorio_mant: vc("Mantenimiento (placa y servicio)", "Kilometraje de la próxima revisión y servicio sugerido", "Dueño del vehículo", "Costo estimado (COP)", "Fecha del próximo servicio", "Mantenimientos por avisar"),
+  citas_taller: vc("Cita (placa y servicio)", "Falla reportada y observaciones", "Dueño del vehículo", "Valor estimado (COP)", "Fecha y hora de la cita", "Citas por atender"),
+  // Servicios, belleza
+  profesionales: vc("Profesional o recurso (nombre o sala)", "Servicios que presta, horario y especialidad", "Contacto", "Comisión o tarifa (COP)", "Disponible desde", "Profesionales activos"),
+  disponibilidad: vc("Bloqueo o disponibilidad (profesional o recurso)", "Horario, motivo del bloqueo y observaciones", "Profesional", "Valor (COP)", "Fecha del bloqueo", "Bloqueos vigentes"),
+  prospectos_serv: vc("Interesado y servicio que busca", "Medio de contacto, presupuesto y seguimiento", "Persona interesada", "Valor estimado (COP)", "Próximo seguimiento", "Prospectos activos"),
+  anticipos_serv: vc("Anticipo (cliente y servicio)", "Reserva asociada y forma de pago", "Cliente", "Valor del anticipo (COP)", "Fecha del servicio", "Anticipos por aplicar"),
+  lista_espera: vc("Cliente en espera y servicio", "Horarios preferidos y profesional deseado", "Cliente", "Valor estimado (COP)", "Fecha preferida", "Clientes en espera"),
+  productos_belleza: vc("Producto (nombre, marca y tono)", "Cantidad, uso en cabina o venta y ubicación", "Proveedor", "Precio de venta (COP)", "Último ingreso", "Productos por reponer"),
+  // Salud
+  pacientes: vc("Nombre del paciente", "Documento, edad, EPS, alergias y antecedentes", "Acudiente o responsable", "Valor de la consulta (COP)", "Fecha de la última atención", "Pacientes en tratamiento"),
+  procedimientos: vc("Paciente y procedimiento realizado", "Zona o pieza tratada, materiales, profesional y observaciones", "Paciente", "Valor del procedimiento (COP)", "Fecha del procedimiento", "Procedimientos en curso"),
+  consultas_diagnosticos: vc("Paciente y diagnóstico", "Código CIE-10, hallazgos y plan a seguir", "Profesional que atendió", "Valor de la consulta (COP)", "Próximo control", "Diagnósticos en seguimiento"),
+  ordenes_medicas: vc("Paciente y examen o remisión", "Tipo de examen, especialista, indicación y diagnóstico", "Profesional que ordena", "Costo estimado (COP)", "Fecha de la orden", "Órdenes por gestionar"),
+  formulas: vc("Paciente y medicamento formulado", "Dosis, frecuencia, duración y número de fórmula", "Profesional o domiciliario", "Valor de la fórmula (COP)", "Fecha de entrega o control", "Fórmulas por entregar"),
+  convenios_salud: vc("Convenio (empresa o aseguradora)", "Tarifas pactadas, cobertura y condiciones de cobro", "Contacto de la entidad", "Valor por cobrar (COP)", "Fecha de corte o pago", "Convenios por cobrar"),
+  auditoria_clinica: vc("Acceso o modificación (paciente y acción)", "Qué se consultó o cambió y motivo", "Usuario que accedió", "Valor", "Fecha del acceso", "Accesos por revisar"),
+  insumos_salud: vc("Insumo o medicamento", "Cantidad, lote, vencimiento y ubicación", "Proveedor", "Costo por unidad (COP)", "Último ingreso", "Insumos por reponer"),
+  autorizaciones: vc("Autorización (paciente y servicio)", "Número de autorización, EPS y servicio autorizado", "EPS o aseguradora", "Valor a cobrar (COP)", "Vence la autorización", "Autorizaciones por renovar"),
+  // Educación
+  estudiantes: vc("Nombre del estudiante", "Documento, grado o curso, y observaciones", "Acudiente o padre/madre", "Valor de la matrícula (COP)", "Fecha de inscripción", "Estudiantes por cerrar"),
+  mensualidades: vc("Pensión (estudiante y mes)", "Mes cobrado, abonos y acuerdo de pago", "Acudiente", "Valor adeudado (COP)", "Fecha de vencimiento de la pensión", "Pensiones por cobrar"),
+  // Hospedaje
+  reservas_hosp: vc("Reserva (huésped y habitación)", "Número de personas, anticipo, noches y observaciones", "Huésped", "Valor de la estadía (COP)", "Fecha de llegada", "Reservas por recibir",
+    est(["pendiente", "Reservada"], ["abonado", "Con anticipo"], ["entregado", "Salió"], ["cancelado", "Cancelada"])),
+  huespedes: vc("Nombre del huésped", "Documento, nacionalidad, habitación, placa y preferencias", "Acompañante o empresa", "Valor de la estadía (COP)", "Fecha de llegada", "Huéspedes por cobrar"),
+  limpieza: vc("Habitación o área a limpiar", "Tarea, insumos, estado y novedades", "Encargado de limpieza", "Costo (COP)", "Fecha de la tarea", "Tareas en curso"),
+  // Gimnasio
+  socios: vc("Nombre del socio", "Plan, horario preferido, condiciones de salud y observaciones", "Contacto de emergencia", "Valor del plan (COP)", "Vence el plan", "Planes por renovar"),
+  clases: vc("Clase (nombre y horario)", "Cupos, instructor, inscritos y sala", "Instructor", "Valor de la clase (COP)", "Fecha y hora de la clase", "Clases por dictar"),
+  // Construcción
+  cotizaciones_obra: vc("Cotización (obra o trabajo)", "Alcance, materiales, mano de obra y condiciones", "Cliente", "Valor cotizado (COP)", "Próximo seguimiento", "Cotizaciones abiertas"),
+  contratistas: vc("Contratista o maestro y trabajo", "Obra, avance, porcentaje y retenciones", "Contratista", "Valor por pagar (COP)", "Fecha de pago", "Por pagar a contratistas"),
+  // Agro
+  insumos_agro: vc("Insumo (fertilizante, semilla, agroquímico)", "Cantidad, dosis, lote donde se usa y carencia", "Proveedor", "Costo por unidad (COP)", "Último ingreso", "Insumos por reponer"),
+  // Inmobiliaria
+  inmuebles: vc("Inmueble (dirección o nombre)", "Área, habitaciones, baños, estrato y matrícula inmobiliaria", "Propietario o interesado", "Precio de venta o canon (COP)", "Disponible desde", "Inmuebles en negociación"),
+  arrendatarios: vc("Contrato (inmueble y arrendatario)", "Canon, incremento, depósito y codeudor", "Arrendatario", "Canon mensual (COP)", "Vence el contrato", "Contratos por renovar"),
+  cobro_canon: vc("Canon del mes (inmueble y arrendatario)", "Mes cobrado, abonos, administración y servicios", "Arrendatario", "Valor adeudado (COP)", "Fecha límite de pago", "Cánones por cobrar"),
+  visitas: vc("Visita (inmueble e interesado)", "Observaciones, interés y seguimiento", "Interesado", "Precio del inmueble (COP)", "Fecha y hora de la visita", "Visitas por realizar"),
+  // Mascotas
+  mascotas_reg: vc("Nombre de la mascota", "Especie, raza, edad, peso, vacunas y alergias", "Dueño o responsable", "Valor de la consulta (COP)", "Fecha de atención", "Mascotas en atención"),
+  vacunacion: vc("Mascota y vacuna o desparasitación", "Dosis aplicada, lote y próxima dosis", "Dueño", "Costo (COP)", "Próxima dosis", "Dosis por aplicar"),
+  productos_vet: vc("Producto o alimento (marca y presentación)", "Cantidad, peso, lote y vencimiento", "Proveedor", "Precio de venta (COP)", "Último ingreso", "Productos por reponer"),
+  // Tecnología
+  proyectos_tec: vc("Proyecto (cliente y entregable)", "Alcance, tareas, responsables y avance", "Cliente", "Valor del proyecto (COP)", "Fecha de entrega", "Proyectos en curso"),
+  tickets: vc("Ticket (cliente y problema)", "Descripción, prioridad, responsable y solución", "Cliente", "Valor del soporte (COP)", "Fecha límite de respuesta", "Tickets abiertos",
+    est(["pendiente", "Abierto"], ["en_proceso", "En atención"], ["hecho", "Resuelto"])),
+  suscripciones_tec: vc("Suscripción (cliente y plan)", "Servicios incluidos, ciclo de cobro y medio de pago", "Cliente", "Valor mensual (COP)", "Próximo cobro", "Suscripciones por cobrar"),
+  // Transporte
+  conductores: vc("Conductor y viaje", "Licencia, vehículo, viajes realizados y descuentos", "Conductor", "Valor a liquidar (COP)", "Fecha de pago", "Por liquidar"),
+  combustible: vc("Tanqueo o gasto de ruta (placa)", "Galones, kilometraje, peajes y estación", "Conductor", "Valor del gasto (COP)", "Fecha del gasto", "Gastos por revisar"),
+  // Farmacia
+  productos_farm: vc("Medicamento o producto (nombre y presentación)", "Principio activo, laboratorio, registro INVIMA y venta con fórmula", "Laboratorio o proveedor", "Precio de venta (COP)", "Último ingreso", "Productos por reponer"),
+  // Eventos
+  entregas_evento: vc("Entrega (evento y material)", "Álbum, archivos o materiales y medio de entrega", "Cliente", "Saldo pendiente (COP)", "Fecha de entrega", "Entregas pendientes"),
+  // Profesional
+  honorarios: vc("Honorario (cliente y concepto)", "Valor pactado, abonos y forma de pago", "Cliente", "Saldo por cobrar (COP)", "Fecha de cobro", "Honorarios por cobrar"),
+  plazos: vc("Plazo o término (caso y obligación)", "Entidad, tipo de plazo y responsable", "Responsable", "Costo o sanción (COP)", "Fecha límite", "Plazos por cumplir"),
+  // Lavandería
+  entregas_lav: vc("Recogida o entrega (cliente y orden)", "Dirección, prendas o vehículo y horario", "Domiciliario", "Valor del servicio (COP)", "Fecha y hora", "Rutas por realizar"),
+  insumos_lav: vc("Insumo (jabón, químico, consumible)", "Cantidad, presentación y rendimiento", "Proveedor", "Costo por unidad (COP)", "Último ingreso", "Insumos por reponer"),
+};
+
 /** Módulos del catálogo que tenían la configuración genérica y ahora tienen un comportamiento acorde. */
 const COMPORTAMIENTO_EXTRA: Record<string, keyof typeof PRESETS> = {
   flota: "vencimiento",
@@ -606,6 +728,6 @@ const COMPORTAMIENTO_EXTRA: Record<string, keyof typeof PRESETS> = {
 export function configModulo(id: string): ConfigModulo {
   const preset = POR_MODULO[id] ?? COMPORTAMIENTO_EXTRA[id];
   const principal: ConfigModulo = preset ? { ...base, ...PRESETS[preset], tipo: preset } : base;
-  const vocab = VOCABULARIO[id];
+  const vocab = VOCABULARIO[id] ?? VOCABULARIO_EXTRA[id];
   return vocab ? { ...principal, ...vocab, tipo: principal.tipo } : principal;
 }
