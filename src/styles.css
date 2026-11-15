@@ -768,6 +768,81 @@ a:hover > .glass, button:hover > .glass, .glass:hover {
 }
 .rise { animation: tick-in 0.7s var(--ease-emphasized) both; }
 
+/* =====================================================================
+   MODO CLARO: legibilidad. Las superficies de vidrio y los textos blancos
+   estaban pensados para fondo oscuro y se perdían sobre fondo claro.
+   ===================================================================== */
+.light {
+  --foreground: oklch(0.18 0.02 250);
+  --muted-foreground: oklch(0.42 0.02 255);
+  --card: oklch(1 0 0);
+  --popover: oklch(1 0 0);
+  --secondary: oklch(0.94 0.01 250);
+  --secondary-foreground: oklch(0.2 0.02 250);
+  --muted: oklch(0.95 0.006 250);
+  --accent: oklch(0.93 0.04 175);
+  --accent-foreground: oklch(0.2 0.03 175);
+  --border: oklch(0.2 0.03 255 / 0.14);
+  --input: oklch(0.2 0.03 255 / 0.18);
+  --glass: oklch(1 0 0 / 0.85);
+  --glass-strong: oklch(1 0 0 / 0.95);
+  --glass-border: oklch(0.2 0.03 255 / 0.16);
+  --shadow-glass: 0 1px 2px 0 oklch(0.2 0.03 255 / 0.08), 0 12px 32px -16px oklch(0.2 0.03 255 / 0.22);
+}
+.light .glass,
+.light .glass-strong,
+.light .surface-card,
+.light .readable-glass-surface {
+  background: oklch(1 0 0 / 0.92);
+  border: 1px solid oklch(0.2 0.03 255 / 0.16);
+  box-shadow: var(--shadow-glass);
+  color: var(--foreground);
+}
+.light .glass-inner {
+  background: oklch(0.96 0.006 250);
+  border: 1px solid oklch(0.2 0.03 255 / 0.12);
+}
+.light .field-glass {
+  background: oklch(1 0 0);
+  border: 1px solid oklch(0.2 0.03 255 / 0.25);
+  color: var(--foreground);
+}
+.light .field-glass:hover { border-color: oklch(0.2 0.03 255 / 0.4); }
+.light .field-glass:focus,
+.light .field-glass:focus-visible,
+.light .field-glass:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px oklch(0.55 0.15 165 / 0.2); }
+.light .btn-ghost-pro { background: oklch(1 0 0); border-color: oklch(0.2 0.03 255 / 0.2); color: var(--foreground); }
+.light .btn-ghost-pro:hover { background: oklch(0.95 0.01 250); border-color: oklch(0.2 0.03 255 / 0.35); }
+.light .hex-frame::after { background: oklch(1 0 0); }
+.light .PhoneInputInput, .light .PhoneInputCountry { background: #fff; border-color: oklch(0.2 0.03 255 / 0.25); }
+.light .text-eyebrow { color: oklch(0.42 0.13 165); }
+.light .hero-grid {
+  background-image:
+    linear-gradient(oklch(0.2 0.03 255 / 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.2 0.03 255 / 0.06) 1px, transparent 1px);
+}
+.light .text-brand-gradient {
+  background: linear-gradient(110deg, oklch(0.42 0.13 165), oklch(0.45 0.13 200) 55%, oklch(0.45 0.14 250));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.light .text-spectrum, .light .text-serif-accent { filter: brightness(0.7) saturate(1.2); }
+
+/* Textos blancos (o casi) y fondos/bordes blancos translúcidos -> oscuros en modo claro,
+   salvo dentro de botones/insignias con fondo de color. */
+.light [class*="text-white"]:not([class*="bg-primary"]):not([class*="btn-pro"]):not([class*="bg-gradient"]):not([class*="bg-emerald"]):not([class*="bg-destructive"]):not([class*="bg-red"]):not([class*="bg-black"]):not([class*="bg-slate-9"]):not([class*="bg-green"]):not([class*="bg-blue"]):not([class*="bg-amber"]) {
+  color: oklch(0.25 0.02 255);
+}
+.light [class*="text-white/"]:not([class*="bg-primary"]):not([class*="btn-pro"]):not([class*="bg-gradient"]):not([class*="bg-emerald"]):not([class*="bg-destructive"]):not([class*="bg-red"]):not([class*="bg-black"]):not([class*="bg-slate-9"]):not([class*="bg-green"]):not([class*="bg-blue"]):not([class*="bg-amber"]) {
+  color: oklch(0.38 0.02 255);
+}
+.light [class*="bg-white/"] { background-color: oklch(0.2 0.03 255 / 0.06); }
+.light [class*="border-white/"] { border-color: oklch(0.2 0.03 255 / 0.18); }
+.light [class*="divide-white/"] > * + * { border-color: oklch(0.2 0.03 255 / 0.14); }
+.light .text-muted-foreground { color: oklch(0.42 0.02 255); }
+.light .btn-pro, .light .btn-pro * { color: oklch(0.15 0.03 180); }
+.light [data-slot="button"][class*="bg-primary"], .light [class*="bg-primary"] > svg { color: var(--primary-foreground); }
+.light select { background-color: #fff; color: var(--foreground); }
+
 /* GoIDE: oculta la insignia "Edit with Lovable" (v2) */
 #lovable-badge, [id^="lovable-badge"], [id*="lovable-badge"], [class*="lovable-badge"], aside[id*="lovable" i], a[href*="utm_source=lovable-badge"], a[href*="lovable.dev"][href*="utm_campaign=lovable-badge"] { display:none !important; visibility:hidden !important; opacity:0 !important; pointer-events:none !important }
 /* /GoIDE */
