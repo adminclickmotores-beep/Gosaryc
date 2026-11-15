@@ -587,7 +587,7 @@ function EditorReceta({
     <GlassPanel className="space-y-3 p-5">
       <h3 className="font-medium text-foreground">Receta de {producto.nombre}</h3>
 
-      <div className="grid grid-cols-3 gap-2 text-center">
+      <div className="grid grid-cols-1 gap-2 text-center sm:grid-cols-3">
         <div className="rounded-lg border border-glass-border p-2">
           <p className="text-xs text-muted-foreground">Costo por porción</p>
           <p className="truncate text-sm font-medium text-foreground">{dinero(costo)}</p>
