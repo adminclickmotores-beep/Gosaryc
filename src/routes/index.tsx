@@ -4,6 +4,7 @@ import {
   UtensilsCrossed, ChefHat, Bike, Boxes, Wallet, MessageCircle, Download, ArrowRight, Store, Scissors,
   Stethoscope, GraduationCap, BedDouble, Dumbbell, Hammer, Sprout, Building2, PawPrint, Laptop, Truck, Car,
   Smartphone, Palette, ShieldCheck, Sparkles, Check, Users, Receipt, BarChart3, Layers, Clock, TrendingUp, Bot,
+  Cake, Coffee, Wrench, Pill, PartyPopper, Briefcase, Shirt, Gem, Banknote, FileText, Gift, CalendarDays,
 } from "lucide-react";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
@@ -36,6 +37,9 @@ const MODULOS: { Icon: Icono; label: string; desc: string; to: RutaLanding; gran
   { Icon: Users, label: "Equipo y nómina", desc: "Organiza a tu equipo, sus permisos y sus pagos.", to: "/login" },
   { Icon: Receipt, label: "Caja, fiados y cobros", desc: "Lo que entra, lo que sale y lo que te deben.", to: "/login" },
   { Icon: BarChart3, label: "Reportes y metas", desc: "Mira cómo va tu negocio y fija metas de ventas.", to: "/login" },
+  { Icon: FileText, label: "Cotizaciones y documentos", desc: "Crea cotizaciones, controla vencimientos y guarda los documentos de tu negocio.", to: "/login" },
+  { Icon: Gift, label: "Combos, puntos y recompensas", desc: "Promociones y puntos para que tus clientes vuelvan.", to: "/login" },
+  { Icon: CalendarDays, label: "Agenda, reservas y pedidos recurrentes", desc: "Citas, reservas y pedidos que se repiten, sin olvidar ninguno.", to: "/login" },
 ];
 
 const POR_QUE: { Icon: Icono; titulo: string; desc: string }[] = [
@@ -51,6 +55,12 @@ const NEGOCIOS: { Icon: Icono; label: string }[] = [
   { Icon: Dumbbell, label: "Gimnasios" }, { Icon: Hammer, label: "Construcción" }, { Icon: Sprout, label: "Agro" },
   { Icon: Building2, label: "Inmobiliarias" }, { Icon: PawPrint, label: "Veterinarias" }, { Icon: Laptop, label: "Tecnología" },
   { Icon: Truck, label: "Transporte" }, { Icon: Car, label: "Vehículos" },
+  { Icon: Cake, label: "Panaderías y pastelerías" }, { Icon: Coffee, label: "Cafeterías y bares" },
+  { Icon: Wrench, label: "Talleres" }, { Icon: Pill, label: "Farmacias" },
+  { Icon: PartyPopper, label: "Eventos y catering" }, { Icon: Briefcase, label: "Servicios profesionales" },
+  { Icon: Shirt, label: "Lavanderías y moda" }, { Icon: Gem, label: "Joyerías" },
+  { Icon: Banknote, label: "Préstamos" }, { Icon: Smartphone, label: "Celulares" },
+  { Icon: Building2, label: "Condominios" }, { Icon: Layers, label: "Textil y papelería" },
 ];
 
 const VENTAJAS: { Icon: Icono; titulo: string; desc: string }[] = [
@@ -67,7 +77,7 @@ const PASOS = [
 ];
 
 const CIFRAS = [
-  { valor: "21", texto: "tipos de negocio" },
+  { valor: "31", texto: "tipos de negocio" },
   { valor: "100%", texto: "desde el celular" },
   { valor: "24/7", texto: "agente con IA" },
   { valor: "1", texto: "solo panel para todo" },
