@@ -79,14 +79,35 @@ Reglas:
         })),
     ];
 
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: modelo, messages }),
-    });
-    if (!res.ok) {
-      if (res.status === 429) throw new Error("El asistente está ocupado o llegó al límite gratuito de hoy. Intenta de nuevo en un momento.");
-      if (res.status === 402) throw new Error("Se agotaron los créditos de IA del proyecto.");
+    // Proveedores en orden: si la llave de Gemini falla (llave inválida, modelo no disponible),
+    // se prueba la IA integrada de Lovable antes de rendirse.
+    const proveedores: Array<{ endpoint: string; key: string; model: string }> = [];
+    if (geminiKey) proveedores.push({ endpoint: GEMINI_ENDPOINT, key: geminiKey, model: GEMINI_MODEL });
+    if (process.env.LOVABLE_API_KEY) proveedores.push({ endpoint: GATEWAY, key: process.env.LOVABLE_API_KEY, model: MODEL });
+    if (proveedores.length === 0) proveedores.push({ endpoint, key: apiKey, model: modelo });
+
+    let res: Response | null = null;
+    let ultimoEstado = 0;
+    for (const p of proveedores) {
+      try {
+        const r = await fetch(p.endpoint, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${p.key}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ model: p.model, messages }),
+        });
+        if (r.ok) {
+          res = r;
+          break;
+        }
+        ultimoEstado = r.status;
+        console.error("Asistente virtual: proveedor falló", p.model, r.status, (await r.text()).slice(0, 300));
+      } catch (e) {
+        console.error("Asistente virtual: error de red", e);
+      }
+    }
+    if (!res) {
+      if (ultimoEstado === 429) throw new Error("El asistente está ocupado o llegó al límite gratuito de hoy. Intenta de nuevo en un momento.");
+      if (ultimoEstado === 402) throw new Error("Se agotaron los créditos de IA del proyecto.");
       throw new Error("El asistente no respondió. Intenta de nuevo.");
     }
 
