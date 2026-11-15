@@ -241,6 +241,19 @@ svg.text-slate-950 {
   }
 }
 
+/* Barra de desplazamiento bien visible (sin capa, para ganar a cualquier otra regla). */
+html, body, * { scrollbar-width: auto; scrollbar-color: var(--primary) color-mix(in oklab, var(--foreground) 12%, transparent); }
+::-webkit-scrollbar { width: 14px; height: 14px; }
+::-webkit-scrollbar-track { background: color-mix(in oklab, var(--foreground) 12%, transparent); border-radius: 999px; }
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+  min-height: 48px;
+}
+::-webkit-scrollbar-thumb:hover { background: color-mix(in oklab, var(--primary) 80%, var(--foreground)); background-clip: padding-box; }
+
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 

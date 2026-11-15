@@ -1,13 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Download, Share, MoreVertical, Smartphone, Monitor, CheckCircle2 } from "lucide-react";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { useNegocio } from "@/hooks/use-negocio";
+import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 
 export const Route = createFileRoute("/instalar")({
   head: () => ({
     meta: [
-      { title: "Instalar la app del restaurante" },
-      { name: "description", content: "Instala la app en tu computador o celular directamente desde esta página, sin tiendas de aplicaciones." },
+      { title: "Instalar la app de tu negocio" },
+      { name: "description", content: "Instala la app de tu negocio en tu computador o celular, con el módulo que vayas a usar, sin tiendas de aplicaciones." },
     ],
   }),
   component: InstalarPage,
@@ -19,6 +21,21 @@ type EventoInstalacion = Event & {
 };
 
 function InstalarPage() {
+  const { negocio } = useNegocio();
+  const tipo = resolverTipoNegocio(negocio?.tipo_negocio);
+  const nombre = negocio?.nombre?.trim() || tipo.panel;
+  const opciones = useMemo(() => {
+    const vistas = new Set<string>();
+    const lista: { ruta: string; titulo: string }[] = [{ ruta: "/dashboard", titulo: "Panel completo del negocio" }];
+    for (const m of tipo.modulos) {
+      if (!m.ruta || vistas.has(m.ruta)) continue;
+      vistas.add(m.ruta);
+      lista.push({ ruta: m.ruta, titulo: m.titulo });
+    }
+    return lista;
+  }, [tipo]);
+
+  const [destino, setDestino] = useState("/dashboard");
   const [evento, setEvento] = useState<EventoInstalacion | null>(null);
   const [instalada, setInstalada] = useState(false);
   const [esIos, setEsIos] = useState(false);
@@ -39,6 +56,40 @@ function InstalarPage() {
     };
   }, []);
 
+  // La app instalada lleva el nombre del negocio y abre directo el módulo elegido.
+  useEffect(() => {
+    const tituloModulo = opciones.find((o) => o.ruta === destino)?.titulo ?? "";
+    const corto = destino === "/dashboard" ? nombre : `${nombre} · ${tituloModulo}`;
+    const manifiesto = {
+      name: corto,
+      short_name: (destino === "/dashboard" ? nombre : tituloModulo).slice(0, 12),
+      description: `App de ${nombre}`,
+      start_url: destino,
+      scope: "/",
+      display: "standalone",
+      background_color: "#0b0b14",
+      theme_color: negocio?.color_principal && /^#[0-9a-f]{6}$/i.test(negocio.color_principal) ? negocio.color_principal : "#2dd4a0",
+      icons: [
+        { src: `${window.location.origin}/icono-app.svg`, sizes: "any", type: "image/svg+xml", purpose: "any" },
+      ],
+    };
+    if (negocio?.logo_url) manifiesto.icons = [{ src: negocio.logo_url, sizes: "512x512", type: "image/png", purpose: "any" }];
+    const url = URL.createObjectURL(new Blob([JSON.stringify(manifiesto)], { type: "application/manifest+json" }));
+    let enlace = document.querySelector<HTMLLinkElement>('link[rel="manifest"]');
+    if (!enlace) {
+      enlace = document.createElement("link");
+      enlace.rel = "manifest";
+      document.head.appendChild(enlace);
+    }
+    const anterior = enlace.href;
+    enlace.href = url;
+    document.title = `Instalar ${corto}`;
+    return () => {
+      if (enlace && anterior) enlace.href = anterior;
+      URL.revokeObjectURL(url);
+    };
+  }, [destino, nombre, negocio?.color_principal, negocio?.logo_url, opciones]);
+
   const instalar = async () => {
     if (!evento) return;
     await evento.prompt();
@@ -50,12 +101,32 @@ function InstalarPage() {
   return (
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col justify-center gap-6 px-4 py-10">
       <div className="text-center">
-        <img src="/icono-app.svg" alt="Icono de la app" className="mx-auto h-20 w-20 rounded-2xl" />
-        <h1 className="mt-5 font-display text-3xl text-foreground">Instala tu restaurante en un toque</h1>
+        <img src={negocio?.logo_url || "/icono-app.svg"} alt={`Icono de ${nombre}`} className="mx-auto h-20 w-20 rounded-2xl object-cover" />
+        <h1 className="mt-5 font-display text-3xl text-foreground">Instala {nombre} en un toque</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Funciona como una app nativa en computador, Android y iPhone. Sin Play Store ni App Store.
+          Funciona como una app en computador (Windows, Mac), Android y iPhone. Sin Play Store ni App Store.
         </p>
       </div>
+
+      <GlassPanel className="space-y-3 p-5">
+        <label className="block space-y-1">
+          <span className="text-xs text-muted-foreground">¿Qué módulo vas a usar en esta app?</span>
+          <select
+            className="w-full rounded-lg border border-glass-border bg-glass/40 px-3 py-2.5 text-base text-foreground outline-none focus:border-primary/50"
+            value={destino}
+            onChange={(e) => setDestino(e.target.value)}
+          >
+            {opciones.map((o) => (
+              <option key={o.ruta} value={o.ruta}>
+                {o.titulo}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="text-xs text-muted-foreground">
+          La app se instala con el nombre de tu negocio y abre directo en ese módulo. Puedes instalar una app distinta por cada módulo.
+        </p>
+      </GlassPanel>
 
       <GlassPanel className="p-6 text-center">
         {instalada ? (
@@ -81,14 +152,14 @@ function InstalarPage() {
           <Monitor className="h-5 w-5 text-primary" />
           <h2 className="mt-3 font-medium text-foreground">Computador (Chrome / Edge)</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Pulsa el icono de instalar que aparece al final de la barra de direcciones, o el botón de arriba.
+            Pulsa el icono de instalar al final de la barra de direcciones, o el botón de arriba. Queda como un programa de Windows con su propio acceso directo.
           </p>
         </GlassPanel>
         <GlassPanel className="p-5">
           <Smartphone className="h-5 w-5 text-primary" />
           <h2 className="mt-3 font-medium text-foreground">Android (Chrome)</h2>
           <p className="mt-1 flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
-            Abre el menú <MoreVertical className="h-4 w-4" /> y elige “Instalar aplicación”.
+            Abre el menú <MoreVertical className="h-4 w-4" /> y elige “Instalar aplicación”. Android la instala como una app más.
           </p>
         </GlassPanel>
         <GlassPanel className={`p-5 sm:col-span-2 ${esIos ? "ring-1 ring-primary/50" : ""}`}>
@@ -101,8 +172,10 @@ function InstalarPage() {
       </div>
 
       <div className="flex justify-center gap-4 text-sm">
-        <Link to="/menu" className="text-primary hover:underline">Ver menú digital</Link>
-        <Link to="/restaurante" className="text-primary hover:underline">Panel del restaurante</Link>
+        {tipo.usaPedidos && (
+          <Link to="/menu" className="text-primary hover:underline">Ver menú digital</Link>
+        )}
+        <Link to="/dashboard" className="text-primary hover:underline">Ir al panel de {nombre}</Link>
       </div>
     </div>
   );

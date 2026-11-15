@@ -56,6 +56,49 @@ const CAMPOS: { clave: keyof Form; etiqueta: string; ejemplo: string; largo?: bo
   { clave: "aviso_entrega", etiqueta: "Aviso de entrega", ejemplo: "Ej: El domicilio se cobra aparte según el sector" },
 ];
 
+type Ajuste = { etiqueta?: string; ejemplo?: string };
+
+/** Qué campos se piden según el tipo de negocio (solo lo que ese negocio necesita). */
+function camposDelTipo(clave: string, usaPedidos: boolean): Set<keyof Form> {
+  const s = new Set<keyof Form>(["nombre", "eslogan", "descripcion", "ciudad", "telefono_pedidos", "instagram", "sitio_web", "horarios"]);
+  if (usaPedidos || ["tienda", "farmacia", "lavanderia", "transporte"].includes(clave)) {
+    s.add("cobertura");
+    s.add("aviso_entrega");
+  }
+  if (["salud", "profesional"].includes(clave)) s.delete("eslogan");
+  if (["tecnologia", "agro", "construccion", "transporte", "inmobiliaria", "profesional"].includes(clave)) s.delete("horarios");
+  if (["agro", "transporte", "salud", "educacion"].includes(clave)) s.delete("instagram");
+  if (["agro", "concesionario", "salud"].includes(clave)) s.delete("sitio_web");
+  return s;
+}
+
+const AJUSTES: Record<string, Partial<Record<keyof Form, Ajuste>>> = {
+  restaurante: { telefono_pedidos: { etiqueta: "WhatsApp / teléfono de pedidos" } },
+  concesionario: {
+    descripcion: { ejemplo: "Ej: Vehículos nuevos y usados con garantía y financiación." },
+    telefono_pedidos: { etiqueta: "WhatsApp de la sala de ventas", ejemplo: "Ej: 300 123 4567" },
+    horarios: { etiqueta: "Horario de la sala de ventas (una línea por día)" },
+  },
+  tienda: { cobertura: { etiqueta: "Zonas de envío", ejemplo: "Ej: Envíos a toda la ciudad" }, aviso_entrega: { etiqueta: "Aviso de envíos y cambios", ejemplo: "Ej: Cambios dentro de 8 días con factura" } },
+  farmacia: { cobertura: { etiqueta: "Zona de domicilios" }, aviso_entrega: { etiqueta: "Aviso para domicilios", ejemplo: "Ej: Domicilio gratis en compras desde $30.000" } },
+  lavanderia: { cobertura: { etiqueta: "Zona de recogida y entrega" }, aviso_entrega: { etiqueta: "Aviso de recogida y entrega", ejemplo: "Ej: Entrega en 48 horas" } },
+  transporte: { cobertura: { etiqueta: "Rutas y zonas que cubres", ejemplo: "Ej: Cali - Bogotá - Medellín" }, aviso_entrega: { etiqueta: "Condiciones del servicio", ejemplo: "Ej: Carga asegurada, pago contra entrega" } },
+  salud: { telefono_pedidos: { etiqueta: "WhatsApp / teléfono para citas" }, horarios: { etiqueta: "Horario de atención (una línea por día)" } },
+  belleza: { telefono_pedidos: { etiqueta: "WhatsApp para reservar citas" }, horarios: { etiqueta: "Horario de atención (una línea por día)" } },
+  servicios: { telefono_pedidos: { etiqueta: "WhatsApp para reservar citas" }, horarios: { etiqueta: "Horario de atención (una línea por día)" } },
+  mascotas: { telefono_pedidos: { etiqueta: "WhatsApp / teléfono para citas" } },
+  taller: { telefono_pedidos: { etiqueta: "WhatsApp para citas y cotizaciones" } },
+  educacion: { telefono_pedidos: { etiqueta: "WhatsApp de inscripciones" } },
+  hospedaje: { telefono_pedidos: { etiqueta: "WhatsApp de reservas" }, descripcion: { ejemplo: "Ej: Habitaciones cómodas cerca al centro, desayuno incluido." } },
+  gimnasio: { telefono_pedidos: { etiqueta: "WhatsApp de inscripciones" } },
+  inmobiliaria: { telefono_pedidos: { etiqueta: "WhatsApp de asesores" } },
+  profesional: { telefono_pedidos: { etiqueta: "WhatsApp / teléfono de contacto" } },
+  eventos: { telefono_pedidos: { etiqueta: "WhatsApp para cotizar eventos" } },
+  construccion: { telefono_pedidos: { etiqueta: "WhatsApp para cotizaciones" } },
+  agro: { telefono_pedidos: { etiqueta: "WhatsApp de pedidos y ventas" } },
+  tecnologia: { telefono_pedidos: { etiqueta: "WhatsApp comercial" } },
+};
+
 export function NegocioConfig() {
   const { negocio, recargar } = useNegocio();
   const navegar = useNavigate();
@@ -259,19 +302,12 @@ export function NegocioConfig() {
         </div>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
-        {CAMPOS.filter((c) => {
-          const entrega = tipoActual.usaPedidos || ["tienda", "farmacia", "lavanderia", "transporte"].includes(tipoActual.clave);
-          if (c.clave === "cobertura" || c.clave === "aviso_entrega") return entrega;
-          if (c.clave === "horarios") return tipoActual.clave !== "tecnologia";
-          return true;
-        }).map((c) => (
+        {CAMPOS.filter((c) => camposDelTipo(tipoActual.clave, tipoActual.usaPedidos).has(c.clave)).map((raw) => {
+          const c = { ...raw, ...(AJUSTES[tipoActual.clave]?.[raw.clave] ?? {}) };
+          return (
           <label key={c.clave} className={`block space-y-1 ${c.largo ? "md:col-span-2" : ""}`}>
             <span className="text-xs text-muted-foreground">
-              {c.clave === "telefono_pedidos" && !tipoActual.usaPedidos
-                ? "WhatsApp / teléfono de contacto"
-                : c.clave === "horarios" && ["salud", "belleza", "servicios", "mascotas", "profesional", "taller"].includes(tipoActual.clave)
-                  ? "Horario de atención (una línea por día)"
-                  : c.etiqueta}
+              {c.etiqueta}
             </span>
             {c.largo ? (
               <textarea
@@ -290,7 +326,8 @@ export function NegocioConfig() {
               />
             )}
           </label>
-        ))}
+          );
+        })}
       </div>
       <button
         disabled={guardando}
