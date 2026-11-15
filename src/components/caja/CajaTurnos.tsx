@@ -270,7 +270,7 @@ ${t.notas_cierre ? `<hr><p>Notas: ${esc(t.notas_cierre)}</p>` : ""}<br><br><p cl
                   <div className="min-w-0 flex-1">
                     <p className={`break-words text-sm text-foreground ${m.anulado ? "line-through" : ""}`}>{m.concepto}</p>
                     <p className="break-words text-xs text-muted-foreground">
-                      {TIPOS.find((t) => t.clave === m.tipo)?.texto} · {METODOS.find((x) => x.clave === m.metodo)?.clave} {m.categoria ? `· ${m.categoria}` : ""} · {new Date(m.created_at).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" })}
+                      {TIPOS.find((t) => t.clave === m.tipo)?.texto} · {(METODOS.find((x) => x.clave === m.metodo)?.texto ?? m.metodo).split(" (")[0]} {m.categoria ? `· ${m.categoria}` : ""} · {new Date(m.created_at).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" })}
                       {m.anulado && m.motivo_anulacion ? ` · Anulado: ${m.motivo_anulacion}` : ""}
                     </p>
                   </div>
