@@ -88,6 +88,7 @@ Reglas:
 
     let res: Response | null = null;
     let ultimoEstado = 0;
+    let detalle = "";
     for (const p of proveedores) {
       try {
         const r = await fetch(p.endpoint, {
@@ -100,15 +101,20 @@ Reglas:
           break;
         }
         ultimoEstado = r.status;
-        console.error("Asistente virtual: proveedor falló", p.model, r.status, (await r.text()).slice(0, 300));
+        const cuerpo = (await r.text()).slice(0, 200).replace(/\s+/g, " ");
+        detalle = `${p.model} → ${r.status} ${cuerpo}`;
+        console.error("Asistente virtual: proveedor falló", detalle);
       } catch (e) {
+        detalle = `${p.model} → sin conexión`;
         console.error("Asistente virtual: error de red", e);
       }
     }
     if (!res) {
       if (ultimoEstado === 429) throw new Error("El asistente está ocupado o llegó al límite gratuito de hoy. Intenta de nuevo en un momento.");
       if (ultimoEstado === 402) throw new Error("Se agotaron los créditos de IA del proyecto.");
-      throw new Error("El asistente no respondió. Intenta de nuevo.");
+      if (ultimoEstado === 401 || ultimoEstado === 403 || ultimoEstado === 400)
+        throw new Error(`La llave de IA del proyecto no es válida o no tiene permiso (${detalle}). Revisa el secreto GEMINI_API_KEY en Lovable Cloud.`);
+      throw new Error(`El asistente no respondió (${detalle || "sin detalle"}).`);
     }
 
     const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
