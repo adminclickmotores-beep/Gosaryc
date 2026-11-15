@@ -264,6 +264,7 @@ const POR_MODULO: Record<string, keyof typeof PRESETS> = {
   insumos_barra: "stock", productos_belleza: "stock", repuestos_taller: "stock", inventario_farm: "stock",
   productos_farm: "stock", insumos_lav: "stock",
   cotizaciones_taller: "venta",
+  consultorios: "proyecto",consentimientos: "vencimiento",
   apartados_generales: "reserva", proyectos_generales: "proyecto",
 };
 
@@ -494,6 +495,26 @@ const VOCABULARIO: Record<string, Partial<ConfigModulo>> = {
     etiquetaMonto: "Valor de la consulta (COP)",
     etiquetaFecha: "Próximo control",
     resumen: "Historias en seguimiento",
+  },
+  consultorios: {
+    estados: est(["pendiente", "Disponible"], ["en_proceso", "En consulta"], ["hecho", "Fuera de servicio"]),
+    cerrados: ["pendiente"],
+    placeholderTitulo: "Consultorio o profesional (ej. Consultorio 2 · Dra. Pérez)",
+    placeholderDetalle: "Especialidad, horario de atención y equipos",
+    etiquetaContacto: "Profesional responsable",
+    etiquetaMonto: "Valor de la consulta (COP)",
+    etiquetaFecha: "Disponible desde",
+    resumen: "En consulta o sin servicio",
+  },
+  consentimientos: {
+    estados: est(["pendiente", "Por firmar"], ["hecho", "Firmado"], ["vencido", "Vencido"]),
+    cerrados: ["hecho"],
+    placeholderTitulo: "Paciente y procedimiento autorizado",
+    placeholderDetalle: "Tipo de consentimiento, versión del documento y quién lo firmó",
+    etiquetaContacto: "Paciente o acudiente",
+    etiquetaMonto: "Valor asociado (COP)",
+    etiquetaFecha: "Vigente hasta",
+    resumen: "Por firmar",
   },
   // Farmacia
   vencimientos_farm: {

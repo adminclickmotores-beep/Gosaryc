@@ -277,6 +277,8 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       AGENDA,
       m("historia_clinica", "Historias y evoluciones", "Notas de cada consulta o tratamiento.", ClipboardList),
       m("tratamientos", "Tratamientos y presupuestos", "Planes de tratamiento con su valor y avance.", FileText),
+      m("consultorios", "Consultorios y profesionales", "Consultorios, profesionales y su disponibilidad.", Landmark),
+      m("consentimientos", "Consentimientos", "Consentimientos informados firmados por cada paciente, con fecha y vigencia.", ClipboardList),
       m("insumos_salud", "Insumos y medicamentos", "Existencias y alertas de faltantes.", Package),
       m("autorizaciones", "Autorizaciones y EPS", "Seguimiento de autorizaciones y cobros a aseguradoras.", Landmark),
       CLIENTES, FACTURAS, PAGOS, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
