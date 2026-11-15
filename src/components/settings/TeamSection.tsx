@@ -254,7 +254,7 @@ export function TeamSection({ orgId }: { orgId: string | null }) {
               onKeyDown={(e) => {
                 if (e.key === "Enter") sendInvite();
               }}
-              className="flex-1 rounded-lg border border-glass-border bg-background/40 px-3 py-2 text-sm focus:border-primary/60 focus:outline-none"
+              className="flex-1 rounded-lg border border-glass-border bg-background/40 px-3 py-2 text-base focus:border-primary/60 focus:outline-none"
             />
             <Select value={newRole} onValueChange={(v) => setNewRole(v as OrgRole)}>
               <SelectTrigger className="w-full sm:w-36">
