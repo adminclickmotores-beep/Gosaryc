@@ -8,7 +8,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json, Tables, TablesUpdate } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
-import { buscarModulo } from "@/lib/modulos-negocio";
+import { buscarModulo, resolverTipoNegocio } from "@/lib/modulos-negocio";
+import { useNegocio } from "@/hooks/use-negocio";
 import { configModulo } from "@/lib/modulos-config";
 
 type Registro = Tables<"modulo_registros">;
@@ -61,7 +62,10 @@ const fmtFechaHora = (iso: string) => {
 };
 
 export function ModuloOperativo({ id }: { id: string }) {
-  const modulo = buscarModulo(id);
+  const { negocio } = useNegocio();
+  // Se toma el módulo del tipo de negocio actual (varios tipos comparten ids con textos distintos).
+  const modulo =
+    resolverTipoNegocio(negocio?.tipo_negocio).modulos.find((x) => x.id === id) ?? buscarModulo(id);
   const cfg = configModulo(id);
   const tipo = cfg.tipo;
   const conSaldo = TIPOS_SALDO.includes(tipo);

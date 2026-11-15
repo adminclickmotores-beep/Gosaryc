@@ -264,7 +264,12 @@ const POR_MODULO: Record<string, keyof typeof PRESETS> = {
   insumos_barra: "stock", productos_belleza: "stock", repuestos_taller: "stock", inventario_farm: "stock",
   productos_farm: "stock", insumos_lav: "stock",
   cotizaciones_taller: "venta",
-  consultorios: "proyecto",consentimientos: "vencimiento",
+  inspecciones_veh: "proyecto", prospectos_veh: "venta", garantias: "proyecto", devoluciones: "pago",
+  catalogo_whatsapp: "stock", tarifas_servicios: "stock", profesionales: "proyecto", disponibilidad: "cita",
+  prospectos_serv: "venta", anticipos_serv: "cartera", especialidades: "stock", consultas_diagnosticos: "paciente",
+  procedimientos: "paciente", ordenes_medicas: "proyecto", convenios_salud: "cartera", auditoria_clinica: "proyecto",
+  vehiculos_clientes: "stock", servicios_extra: "cartera", historial: "proyecto", catalogo_servicios: "stock",
+  tarifas_lavado: "stock", documentos_prof: "vencimiento", habitaciones: "proyecto", control_acceso: "proyecto",  consultorios: "proyecto",consentimientos: "vencimiento",
 };
 
 const est = (...pares: [string, string][]): EstadoModulo[] => pares.map(([clave, texto]) => ({ clave, texto }));
