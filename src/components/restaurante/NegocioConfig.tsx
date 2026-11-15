@@ -149,7 +149,23 @@ export function NegocioConfig() {
               if (negocio && resolverTipoNegocio(negocio.tipo_negocio).clave !== nuevo) {
                 const { data: ok, error: errTipo } = await supabase
                   .from("negocio_config")
-                  .update({ tipo_negocio: nuevo, updated_at: new Date().toISOString() })
+                  .update({
+                    tipo_negocio: nuevo,
+                    // Otro tipo de negocio: se borran de la base los datos del anterior.
+                    nombre: `Mi ${resolverTipoNegocio(nuevo).etiqueta.toLowerCase()}`,
+                    eslogan: null,
+                    descripcion: null,
+                    ciudad: null,
+                    cobertura: null,
+                    telefono_pedidos: null,
+                    instagram: null,
+                    sitio_web: null,
+                    horarios: null,
+                    aviso_entrega: null,
+                    logo_url: null,
+                    portada_url: null,
+                    updated_at: new Date().toISOString(),
+                  })
                   .eq("id", negocio.id)
                   .select("id");
                 if (errTipo || !ok || ok.length === 0) {
@@ -190,14 +206,23 @@ export function NegocioConfig() {
           </select>
         </label>
         <p className="text-xs text-muted-foreground">
-          Módulos de este tipo: {tipoActual.modulos.map((m) => m.titulo).join(" · ")}. Guarda para activarlos en el menú.
+          Módulos de este tipo: {tipoActual.modulos.map((m) => m.titulo).join(" · ")}. Puedes editar o borrar cualquier dato (logo, portada, horarios…) y pulsar Guardar.
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <span className="text-xs text-muted-foreground">Logo de tu negocio</span>
           {form.logo_url ? (
-            <img src={form.logo_url} alt="Logo" className="h-20 w-20 rounded-xl border border-glass-border object-cover" />
+            <div className="flex items-center gap-3">
+              <img src={form.logo_url} alt="Logo" className="h-20 w-20 rounded-xl border border-glass-border object-cover" />
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, logo_url: "" })}
+                className="rounded-lg border border-glass-border px-3 py-2 text-xs text-destructive"
+              >
+                Quitar logo
+              </button>
+            </div>
           ) : null}
           <input
             type="file"
@@ -209,7 +234,16 @@ export function NegocioConfig() {
         <div className="space-y-2">
           <span className="text-xs text-muted-foreground">Imagen de portada</span>
           {form.portada_url ? (
-            <img src={form.portada_url} alt="Portada" className="h-20 w-full max-w-xs rounded-xl border border-glass-border object-cover" />
+            <div className="space-y-2">
+              <img src={form.portada_url} alt="Portada" className="h-20 w-full max-w-xs rounded-xl border border-glass-border object-cover" />
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, portada_url: "" })}
+                className="rounded-lg border border-glass-border px-3 py-2 text-xs text-destructive"
+              >
+                Quitar portada
+              </button>
+            </div>
           ) : null}
           <input
             type="file"
