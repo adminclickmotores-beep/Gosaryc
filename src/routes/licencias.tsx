@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { CalendarPlus, Copy, Download, KeyRound, MessageCircle, Plus, RefreshCw, ShieldCheck } from "lucide-react";
+import { ArrowLeft, CalendarPlus, Copy, Download, KeyRound, MessageCircle, Plus, RefreshCw, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -194,6 +194,12 @@ function LicenciasPage() {
         <p className="text-sm text-muted-foreground">Instala esta pantalla en tu celular o computador para abrirla como una app propia.</p>
         <button onClick={instalar} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:opacity-90">
           <Download className="h-4 w-4" /> {instalador ? "Instalar esta app" : "Cómo instalar la app"}
+        </button>
+        <button
+          onClick={() => (window.history.length > 1 ? window.history.back() : nav({ to: "/superadmin" }))}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-glass-border px-4 py-3 text-sm text-foreground hover:bg-glass/60"
+        >
+          <ArrowLeft className="h-4 w-4" /> Volver
         </button>
       </GlassPanel>
 
