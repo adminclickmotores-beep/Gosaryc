@@ -148,9 +148,36 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   useEffect(() => {
-    if (import.meta.env.PROD && "serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(() => undefined);
-    }
+    if (!import.meta.env.PROD || !("serviceWorker" in navigator)) return;
+    const sw = navigator.serviceWorker;
+    const habiaControl = !!sw.controller;
+    let recargado = false;
+    // Cuando sale una versión nueva, la app instalada se recarga sola para usarla.
+    const alCambiar = () => {
+      if (!habiaControl || recargado) return;
+      recargado = true;
+      window.location.reload();
+    };
+    sw.addEventListener("controllerchange", alCambiar);
+    let registro: ServiceWorkerRegistration | null = null;
+    sw.register("/sw.js", { updateViaCache: "none" })
+      .then((r) => {
+        registro = r;
+        void r.update();
+      })
+      .catch(() => undefined);
+    const buscar = () => {
+      if (document.visibilityState === "visible" && navigator.onLine) registro?.update().catch(() => undefined);
+    };
+    document.addEventListener("visibilitychange", buscar);
+    window.addEventListener("online", buscar);
+    const t = window.setInterval(buscar, 15 * 60 * 1000);
+    return () => {
+      sw.removeEventListener("controllerchange", alCambiar);
+      document.removeEventListener("visibilitychange", buscar);
+      window.removeEventListener("online", buscar);
+      window.clearInterval(t);
+    };
   }, []);
   return (
     <QueryClientProvider client={queryClient}>

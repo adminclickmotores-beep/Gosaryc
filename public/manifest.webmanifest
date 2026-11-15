@@ -2,10 +2,11 @@
   "name": "Gosaryc — Sistema integral",
   "short_name": "Gosaryc",
   "description": "Pedidos, menú digital, cocina, domicilios, inventario y finanzas en una sola app.",
-  "start_url": "/restaurante",
+  "start_url": "/dashboard",
   "scope": "/",
+  "id": "/",
   "display": "standalone",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "background_color": "#14101f",
   "theme_color": "#5b21b6",
   "lang": "es",
@@ -15,6 +16,6 @@
   ],
   "shortcuts": [
     { "name": "Menú digital", "url": "/menu" },
-    { "name": "Panel de pedidos", "url": "/restaurante" }
+    { "name": "Panel del negocio", "url": "/dashboard" }
   ]
 }
