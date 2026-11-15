@@ -387,8 +387,8 @@ const VOCABULARIO: Record<string, Partial<ConfigModulo>> = {
   viajes: {
     estados: est(["pendiente", "Programado"], ["en_proceso", "En ruta"], ["hecho", "Entregado"]),
     cerrados: ["hecho"],
-    placeholderTitulo: "Origen → destino y carga",
-    placeholderDetalle: "Vehículo, peso, guía y novedades de la entrega",
+    placeholderTitulo: "Ruta: origen → destino y carga",
+    placeholderDetalle: "Vehículo, conductor, peso, guía, combustible y peajes del viaje, novedades de la entrega",
     etiquetaContacto: "Cliente o remitente",
     etiquetaMonto: "Flete (COP)",
     etiquetaFecha: "Fecha de salida",
@@ -484,6 +484,35 @@ const VOCABULARIO: Record<string, Partial<ConfigModulo>> = {
     etiquetaMonto: "Valor del tratamiento (COP)",
     etiquetaFecha: "Próxima sesión",
     resumen: "En tratamiento",
+  },
+  historia_clinica: {
+    estados: est(["pendiente", "Abierta"], ["en_proceso", "En seguimiento"], ["hecho", "Cerrada"]),
+    cerrados: ["hecho"],
+    placeholderTitulo: "Paciente y motivo de la consulta",
+    placeholderDetalle: "Antecedentes, diagnóstico, procedimiento, formulación y evolución",
+    etiquetaContacto: "Profesional que atendió",
+    etiquetaMonto: "Valor de la consulta (COP)",
+    etiquetaFecha: "Próximo control",
+    resumen: "Historias en seguimiento",
+  },
+  // Farmacia
+  vencimientos_farm: {
+    estados: est(["pendiente", "Vigente"], ["por_vencer", "Por vencer"], ["vencido", "Vencido"], ["hecho", "Retirado o devuelto"]),
+    cerrados: ["hecho"],
+    placeholderTitulo: "Medicamento y número de lote",
+    placeholderDetalle: "Principio activo, presentación, cantidad del lote y proveedor",
+    etiquetaContacto: "Proveedor",
+    etiquetaMonto: "Costo del lote (COP)",
+    etiquetaFecha: "Fecha de vencimiento del lote",
+    resumen: "Lotes por rotar",
+  },
+  inventario_farm: {
+    placeholderTitulo: "Medicamento o producto (nombre y presentación)",
+    placeholderDetalle: "Cantidad, lote, ubicación y principio activo",
+    etiquetaContacto: "Laboratorio o proveedor",
+    etiquetaMonto: "Precio de venta (COP)",
+    etiquetaFecha: "Último ingreso",
+    resumen: "A reponer",
   },
   // Educación
   cursos: {
