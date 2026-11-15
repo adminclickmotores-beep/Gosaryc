@@ -1,0 +1,12 @@
+{
+  "appId": "com.gosaryc.app",
+  "appName": "Gosaryc",
+  "webDir": "www",
+  "server": {
+    "url": "https://gosaryc.lovable.app",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
