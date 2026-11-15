@@ -42,19 +42,20 @@ function CarteraFiadosPage() {
   }, [cargar]);
 
   const deudores = useMemo(() => {
-    const mapa = new Map<string, { contacto: string | null; telefono: string | null; debe: number }>();
+    const mapa = new Map<string, { contacto: string | null; telefono: string | null; debe: number; abonado: number }>();
     for (const f of filas) {
       if (f.anulado || f.estado === "pagado") continue;
       const saldo = f.monto - f.abonado;
       if (saldo <= 0) continue;
       const clave = (f.contacto ?? f.titulo).trim() || f.titulo;
-      const actual = mapa.get(clave) ?? { contacto: f.contacto, telefono: f.telefono, debe: 0 };
+      const actual = mapa.get(clave) ?? { contacto: f.contacto, telefono: f.telefono, debe: 0, abonado: 0 };
       actual.debe += saldo;
+      actual.abonado += f.abonado;
       if (!actual.telefono && f.telefono) actual.telefono = f.telefono;
       mapa.set(clave, actual);
     }
     return Array.from(mapa.entries())
-      .map(([nombre, v]) => ({ nombre, contacto: v.contacto, telefono: v.telefono, debe: v.debe }))
+      .map(([nombre, v]) => ({ nombre, contacto: v.contacto, telefono: v.telefono, debe: v.debe, abonado: v.abonado }))
       .sort((a, b) => b.debe - a.debe);
   }, [filas]);
 
@@ -84,7 +85,7 @@ function CarteraFiadosPage() {
 
       {!cargando && (
         <>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <GlassPanel className="p-4">
               <p className="text-xs text-muted-foreground">Por cobrar</p>
               <p className="truncate font-display text-xl text-foreground">{dinero(totalPorCobrar)}</p>
@@ -119,7 +120,10 @@ function CarteraFiadosPage() {
                     Recordar por WhatsApp
                   </a>
                 )}
-                <span className="shrink-0 text-sm text-foreground">{dinero(d.debe)}</span>
+                <div className="shrink-0 text-right">
+                  <p className="text-sm text-foreground">{dinero(d.debe)}</p>
+                  {d.abonado > 0 && <p className="text-xs text-muted-foreground">Ha abonado {dinero(d.abonado)}</p>}
+                </div>
               </GlassPanel>
             ))}
           </div>

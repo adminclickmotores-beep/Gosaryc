@@ -71,7 +71,7 @@ function EquipoNominaPage() {
 
       {!cargando && (
         <>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <GlassPanel className="p-4">
               <p className="text-xs text-muted-foreground">Por pagar</p>
               <p className="truncate font-display text-xl text-foreground">{dinero(totalPorPagar)}</p>
