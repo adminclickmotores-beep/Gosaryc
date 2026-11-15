@@ -427,7 +427,6 @@ const comida = (
 TIPOS_NEGOCIO.push(
   comida("panaderia", "Panadería / pastelería / repostería", "Panadería", [
     m("encargos_tortas", "Encargos de tortas y pasteles", "Pedidos por fecha: sabor, tamaño, decoración y anticipo.", Cake),
-    m("produccion_dia", "Producción del día", "Qué hornear hoy y cuántas unidades por producto.", ChefHat),
   ], ["mesas", "propinas", "suscripciones"]),
   comida("cafeteria", "Cafetería / bar / heladería", "Cafetería", [
     m("insumos_barra", "Barra y bebidas", "Control de botellas, tragos, café y mermas de la barra.", Coffee),
