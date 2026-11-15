@@ -2,7 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertAiQuota } from "@/lib/ai-quota.server";
 import { tarifasComoTexto } from "@/lib/tarifas-domicilio";
-import { resolverTipoNegocio } from "@/lib/modulos-negocio";
+import { resolverTipoNegocio, TIPOS_NEGOCIO } from "@/lib/modulos-negocio";
+import { GUIAS_NEGOCIO, PASOS_GENERALES } from "@/lib/guia-negocio";
+import { CURSO_GOSARYC } from "@/lib/academia-curso";
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-2.5-flash";
@@ -102,6 +104,28 @@ ${tarifasComoTexto()}
       .map((m) => `- ${m.titulo}: ${m.descripcion}`)
       .join("\n");
 
+    // Manual completo del programa: curso oficial + guía del giro + lista de tipos de negocio.
+    const manualCurso = CURSO_GOSARYC.modulos
+      .map(
+        (mod) =>
+          `## ${mod.titulo}: ${mod.resumen}\n` +
+          mod.lecciones
+            .map(
+              (l) =>
+                `### ${l.titulo} — ${l.descripcion}\n${l.pasos.map((p, i) => `${i + 1}. ${p}`).join("\n")}${
+                  l.practica ? `\n(Se practica en: ${l.practica.etiqueta})` : ""
+                }`,
+            )
+            .join("\n"),
+      )
+      .join("\n\n");
+    const guiaGiro = (GUIAS_NEGOCIO as Record<string, { frase: string; pasos: { titulo: string; texto: string }[] } | undefined>)[giro.clave];
+    const guiaGiroTxt = guiaGiro
+      ? guiaGiro.pasos.map((p, i) => `${i + 1}. ${p.titulo}: ${p.texto}`).join("\n")
+      : "";
+    const pasosGenerales = PASOS_GENERALES.map((p, i) => `${i + 1}. ${p.titulo}: ${p.texto}`).join("\n");
+    const tiposTxt = TIPOS_NEGOCIO.map((t) => t.etiqueta).join("; ");
+
     const system = `Eres el asistente de ayuda de Gosaryc, el programa con el que "${cfg?.nombre || "este negocio"}" (tipo: ${tipo}) administra su negocio. Hablas con quienes USAN el programa (dueño y equipo): tu trabajo principal es resolver sus dudas de uso y guiarlos paso a paso en la configuración.
 Tu negocio es del giro "${giro.panel}". Habla con el vocabulario propio de ese giro (no de restaurante a menos que lo sea).
 Responde en español de México, con tono amable y directo, en frases cortas y con pasos numerados cuando expliques cómo hacer algo.
@@ -118,7 +142,21 @@ Cómo está organizado el programa (úsalo para explicar dónde se hace cada cos
 Módulos disponibles para este tipo de negocio:
 ${modulosGuia || modulosTxt || "gestión general"}
 
+Pasos generales para empezar:
+${pasosGenerales}
+
+Guía de arranque para este giro:
+${guiaGiroTxt || "(sin guía específica)"}
+
+Tipos de negocio que soporta el programa (${TIPOS_NEGOCIO.length}): ${tiposTxt}. El tipo se cambia en el panel principal, en el selector de tipo de negocio, y eso activa los módulos correspondientes.
+
+MANUAL OFICIAL DEL PROGRAMA (curso de la Academia; es tu fuente principal para responder cualquier pregunta de uso):
+${manualCurso}
+
 Cómo ayudar:
+- Responde CUALQUIER pregunta sobre el programa (instalación, cuenta, configuración, módulos, ventas, caja, inventario, equipo, permisos, menú público, pagos, reportes, licencia, etc.) apoyándote primero en el manual de arriba y en los módulos del negocio. Sé completo pero ordenado.
+- Si la pregunta es sobre algo del programa que no aparece en el manual ni en los módulos, no inventes: di lo que sí sabes, sugiere la Academia o el buscador del menú, y recomienda contactar a soporte.
+- Si la pregunta no tiene nada que ver con el programa ni con el negocio, responde brevemente que estás para ayudar con el programa y redirige.
 - Si preguntan "cómo hago X", explica el paso a paso con los nombres exactos del menú y los módulos de arriba. Si no estás seguro de dónde está algo, dilo y sugiere el buscador del menú o la Academia en vez de inventar.
 - Si faltan datos por configurar (ver "NO CONFIGURADO" abajo), menciónalo y dile qué completar y dónde, empezando por lo más importante.
 - Si te piden redactar algo (respuesta a un cliente, descripción de producto, promoción), hazlo usando los datos reales del negocio.
