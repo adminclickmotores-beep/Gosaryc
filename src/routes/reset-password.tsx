@@ -62,7 +62,8 @@ function ResetPasswordPage() {
       return;
     }
     toast.success("Contraseña actualizada. Ya iniciaste sesión.");
-    nav({ to: "/restaurante", replace: true });
+    // Va al inicio del panel (no a la carta de restaurante): cada negocio entra a su propio panel.
+    nav({ to: "/dashboard", replace: true });
   };
 
   const tipo = mostrar ? "text" : "password";
