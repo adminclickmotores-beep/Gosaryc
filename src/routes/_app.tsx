@@ -415,6 +415,18 @@ function AppShell() {
               </button>
             </div>
           </header>
+          {/* En ventana completa no hay menú: botón para volver al menú de inicio. */}
+          {completaFinal && !enRutaPanel && (
+            <div className="pointer-events-none fixed left-3 top-3 z-40 md:left-5 md:top-4">
+              <Link
+                to={rutaPanel as never}
+                className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-glass-border bg-background/80 px-3 py-1.5 text-sm text-foreground backdrop-blur-xl transition hover:bg-glass/60"
+              >
+                <IconChevronLeft size={16} />
+                <span>Menú de inicio</span>
+              </Link>
+            </div>
+          )}
           {/* Single user-control mount for both mobile and desktop. */}
           <div className="pointer-events-none fixed right-4 top-3 z-40 flex items-center gap-2 md:right-5 md:top-4">
             <div className="pointer-events-auto hidden md:block">
