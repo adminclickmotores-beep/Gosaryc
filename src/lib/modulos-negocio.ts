@@ -237,12 +237,10 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
     panel: "Tienda",
     usaPedidos: false,
     modulos: [
-      m("productos", "Catálogo de productos", "Productos, precios y categorías.", ShoppingBag),
-      m("inventario", "Inventario y reposición", "Existencias y alertas de bajo stock.", Package),
+      m("productos", "Productos e inventario", "Productos, precios, existencias y alertas de bajo stock.", ShoppingBag),
       m("apartados", "Apartados (plan separe)", "Abonos y entrega de productos separados.", Tag),
-      m("catalogo_whatsapp", "Catálogo para WhatsApp", "Comparte tu catálogo con un enlace.", QrCode),
       m("devoluciones", "Cambios y devoluciones", "Control de cambios y notas crédito.", Repeat),
-      CLIENTES, SOLICITUDES, GARANTIAS,
+      CLIENTES,
       FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
@@ -253,7 +251,6 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
     usaPedidos: false,
     modulos: [
       m("catalogo_servicios", "Catálogo de servicios", "Servicios, duración y precio.", Scissors),
-      m("tarifas_servicios", "Tarifas", "Precios por servicio, profesional o tipo de cliente.", Tag),
       m("profesionales", "Profesionales y recursos", "Quién atiende, sus servicios, horarios y los recursos que usa (sala, equipo).", BadgeCheck),
       m("disponibilidad", "Disponibilidad", "Horarios y bloqueos de cada profesional y recurso para evitar reservas duplicadas.", CalendarClock),
       AGENDA,
@@ -264,8 +261,8 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("historial", "Historial del cliente", "Notas y trabajos realizados por cliente.", ClipboardList),
       m("lista_espera", "Lista de espera", "Clientes por atender cuando se libere un cupo.", Bell),
       m("comisiones", "Comisiones del personal", "Pago por servicio realizado.", Percent),
-      CLIENTES, SOLICITUDES,
-      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES,
+      FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -279,8 +276,6 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("historia_clinica", "Historias y evoluciones", "Notas de cada consulta o tratamiento.", ClipboardList),
       m("tratamientos", "Tratamientos y presupuestos", "Planes de tratamiento con su valor y avance.", FileText),
       m("consultorios", "Consultorios y profesionales", "Consultorios, profesionales y su disponibilidad.", Landmark),
-      m("especialidades", "Especialidades", "Especialidades médicas que ofrece el centro y qué profesionales las atienden.", BadgeCheck),
-      m("consultas_diagnosticos", "Consultas y diagnósticos", "Motivo de consulta, diagnóstico y conducta de cada atención.", Stethoscope),
       m("procedimientos", "Procedimientos", "Procedimientos realizados a cada paciente, con su valor.", Scissors),
       m("ordenes_medicas", "Órdenes médicas", "Exámenes y remisiones indicados por el profesional.", FileText),
       m("formulas", "Fórmulas", "Medicamentos formulados a cada paciente.", Pill),
@@ -289,7 +284,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("auditoria_clinica", "Auditoría de accesos", "Registro de quién consultó o modificó información clínica.", ShieldCheck),
       m("insumos_salud", "Insumos y medicamentos", "Existencias y alertas de faltantes.", Package),
       m("autorizaciones", "Autorizaciones y EPS", "Seguimiento de autorizaciones y cobros a aseguradoras.", Landmark),
-      CLIENTES, FACTURAS, PAGOS, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      FACTURAS, PAGOS, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -535,7 +530,7 @@ TIPOS_NEGOCIO.push(
 
 // Se agrega el módulo de cotizaciones a los tipos que cotizan y no tienen uno propio.
 // Salud (presupuestos de tratamiento), educación, hospedaje, gimnasio, mascotas, agro, farmacia y lavandería no cotizan así.
-const SIN_COTIZACIONES: TipoNegocioClave[] = ["restaurante", "cafeteria", "comida_rapida","salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro", "farmacia", "lavanderia", "belleza"];
+const SIN_COTIZACIONES: TipoNegocioClave[] = ["tienda","restaurante", "cafeteria", "comida_rapida","salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro", "farmacia", "lavanderia", "belleza"];
 for (const t of TIPOS_NEGOCIO) {
   if (SIN_COTIZACIONES.includes(t.clave)) continue;
   if (t.modulos.some((x) => x.id === COTIZACIONES.id || x.id.startsWith("cotizaciones_"))) continue;
