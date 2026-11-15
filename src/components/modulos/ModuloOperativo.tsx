@@ -43,6 +43,14 @@ const leerHistorial = (j: Json): Entrada[] => {
   return salida;
 };
 
+/** Campos extra guardados en el registro, en una sola línea. */
+const textoExtras = (j: Json): string => {
+  if (!j || typeof j !== "object" || Array.isArray(j)) return "";
+  return Object.values(j)
+    .filter((v): v is string => typeof v === "string" && v.trim() !== "")
+    .join(" · ");
+};
+
 /** "Vehículo (placa, marca y modelo)" -> "Vehículo". */
 const etiquetaCorta = (s: string) => s.replace(/\s*\(.*$/, "").trim() || s;
 
@@ -85,6 +93,7 @@ export function ModuloOperativo({ id }: { id: string }) {
   const [contacto, setContacto] = useState("");
   const [telefono, setTelefono] = useState("");
   const [monto, setMonto] = useState("");
+  const [extras, setExtras] = useState<Record<string, string>>({});
   const [fecha, setFecha] = useState("");
   const [abonoInicial, setAbonoInicial] = useState("");
   const [cantidadIni, setCantidadIni] = useState("");
@@ -226,10 +235,13 @@ export function ModuloOperativo({ id }: { id: string }) {
       cantidad,
       minimo,
       historial: hist as unknown as Json,
+      datos: Object.fromEntries(
+        Object.entries(extras).filter(([k, v]) => v.trim() && (cfg.campos ?? []).some((c) => c.clave === k)),
+      ) as Json,
     });
     if (error) return toast.error("No se pudo guardar el registro.");
     await registrarEnCaja(abonado, `abono inicial · ${titulo.trim()}`);
-    setTitulo(""); setDetalle(""); setContacto(""); setTelefono(""); setMonto(""); setFecha("");
+    setTitulo(""); setDetalle(""); setContacto(""); setTelefono(""); setMonto(""); setFecha(""); setExtras({});
     setAbonoInicial(""); setCantidadIni(""); setMinimoIni("");
     toast.success("Registro guardado.");
     cargar();
@@ -477,6 +489,28 @@ export function ModuloOperativo({ id }: { id: string }) {
             <span className="text-xs text-muted-foreground">{etiquetaCorta(cfg.placeholderTitulo)} *</span>
             <input className={campo} placeholder={cfg.placeholderTitulo} value={titulo} onChange={(e) => setTitulo(e.target.value)} />
           </label>
+          {(cfg.campos ?? []).map((c) => (
+            <label key={c.clave} className="block space-y-1">
+              <span className="text-xs text-muted-foreground">{c.etiqueta}</span>
+              {c.tipo === "select" ? (
+                <select className={campo} value={extras[c.clave] ?? ""} onChange={(e) => setExtras((x) => ({ ...x, [c.clave]: e.target.value }))}>
+                  <option value="">Seleccionar…</option>
+                  {(c.opciones ?? []).map((o) => (
+                    <option key={o} value={o}>{o}</option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  className={campo}
+                  type={c.tipo}
+                  inputMode={c.tipo === "tel" ? "tel" : undefined}
+                  placeholder={c.placeholder ?? c.etiqueta}
+                  value={extras[c.clave] ?? ""}
+                  onChange={(e) => setExtras((x) => ({ ...x, [c.clave]: e.target.value }))}
+                />
+              )}
+            </label>
+          ))}
           <label className="block space-y-1">
             <span className="text-xs text-muted-foreground">Detalle</span>
             <textarea className={campo} rows={2} placeholder={cfg.placeholderDetalle} value={detalle} onChange={(e) => setDetalle(e.target.value)} />
@@ -576,6 +610,9 @@ export function ModuloOperativo({ id }: { id: string }) {
                       return (
                         <div key={r.id} className="space-y-1.5 rounded-lg border border-glass-border bg-background/60 p-3">
                           <p className="break-words text-sm font-medium text-foreground">{r.titulo}</p>
+                          {textoExtras(r.datos) && (
+                            <p className="break-words text-xs text-muted-foreground">{textoExtras(r.datos)}</p>
+                          )}
                           {(r.contacto || r.fecha) && (
                             <p className="break-words text-xs text-muted-foreground">{[r.contacto, r.fecha].filter(Boolean).join(" · ")}</p>
                           )}

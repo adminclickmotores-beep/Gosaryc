@@ -1534,6 +1534,7 @@ export type Database = {
           id: string
           minimo: number
           modulo: string
+          datos: Json
           monto: number
           motivo_anulacion: string | null
           telefono: string | null
@@ -1552,6 +1553,7 @@ export type Database = {
           id?: string
           minimo?: number
           modulo: string
+          datos?: Json
           monto?: number
           motivo_anulacion?: string | null
           telefono?: string | null
@@ -1570,6 +1572,7 @@ export type Database = {
           id?: string
           minimo?: number
           modulo?: string
+          datos?: Json
           monto?: number
           motivo_anulacion?: string | null
           telefono?: string | null

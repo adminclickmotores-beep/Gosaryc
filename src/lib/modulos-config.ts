@@ -15,6 +15,58 @@ export type ConfigModulo = {
   exigeFecha?: boolean;
   /** Familia operativa del módulo (define qué acciones reales tiene). */
   tipo: string;
+  /** Campos adicionales propios del módulo (se guardan en `datos`). */
+  campos?: CampoExtra[];
+};
+
+export type CampoExtra = {
+  clave: string;
+  etiqueta: string;
+  tipo: "text" | "tel" | "email" | "date" | "select";
+  opciones?: string[];
+  placeholder?: string;
+};
+
+const FORMAS_PAGO = ["Efectivo", "Transferencia", "Nequi", "Daviplata", "Tarjeta"];
+
+/** Datos que cada negocio necesita capturar además de los campos básicos. */
+const CAMPOS_EXTRA: Record<string, CampoExtra[]> = {
+  socios: [
+    { clave: "documento", etiqueta: "Documento de identidad", tipo: "text", placeholder: "Cédula o documento" },
+    { clave: "telefono_socio", etiqueta: "Teléfono del socio", tipo: "tel", placeholder: "Celular del socio" },
+    { clave: "correo", etiqueta: "Correo electrónico", tipo: "email", placeholder: "correo@ejemplo.com" },
+    { clave: "nacimiento", etiqueta: "Fecha de nacimiento", tipo: "date" },
+    { clave: "direccion", etiqueta: "Dirección", tipo: "text", placeholder: "Dirección o barrio" },
+    { clave: "plan", etiqueta: "Plan", tipo: "select", opciones: ["Pase diario", "Semanal", "Mensual", "Trimestral", "Semestral", "Anual", "Personalizado"] },
+    { clave: "inicio_plan", etiqueta: "Inicio del plan", tipo: "date" },
+    { clave: "horario", etiqueta: "Horario preferido", tipo: "text", placeholder: "Ej. 6:00 a 8:00 a. m." },
+    { clave: "eps", etiqueta: "EPS", tipo: "text", placeholder: "EPS o seguro médico" },
+    { clave: "salud", etiqueta: "Condiciones de salud o lesiones", tipo: "text", placeholder: "Opcional" },
+    { clave: "forma_pago", etiqueta: "Forma de pago", tipo: "select", opciones: FORMAS_PAGO },
+  ],
+  pacientes: [
+    { clave: "documento", etiqueta: "Documento de identidad", tipo: "text" },
+    { clave: "nacimiento", etiqueta: "Fecha de nacimiento", tipo: "date" },
+    { clave: "telefono_paciente", etiqueta: "Teléfono del paciente", tipo: "tel" },
+    { clave: "correo", etiqueta: "Correo electrónico", tipo: "email" },
+    { clave: "eps", etiqueta: "EPS o aseguradora", tipo: "text" },
+    { clave: "alergias", etiqueta: "Alergias", tipo: "text" },
+  ],
+  estudiantes: [
+    { clave: "documento", etiqueta: "Documento del estudiante", tipo: "text" },
+    { clave: "nacimiento", etiqueta: "Fecha de nacimiento", tipo: "date" },
+    { clave: "grado", etiqueta: "Grado o curso", tipo: "text" },
+    { clave: "correo", etiqueta: "Correo del acudiente", tipo: "email" },
+    { clave: "direccion", etiqueta: "Dirección", tipo: "text" },
+  ],
+  huespedes: [
+    { clave: "documento", etiqueta: "Documento o pasaporte", tipo: "text" },
+    { clave: "nacionalidad", etiqueta: "Nacionalidad", tipo: "text" },
+    { clave: "correo", etiqueta: "Correo electrónico", tipo: "email" },
+    { clave: "habitacion", etiqueta: "Habitación", tipo: "text" },
+    { clave: "salida", etiqueta: "Fecha de salida", tipo: "date" },
+    { clave: "forma_pago", etiqueta: "Forma de pago", tipo: "select", opciones: FORMAS_PAGO },
+  ],
 };
 
 const base: ConfigModulo = {
@@ -768,5 +820,7 @@ export function configModulo(id: string): ConfigModulo {
   const preset = POR_MODULO[id] ?? COMPORTAMIENTO_EXTRA[id];
   const principal: ConfigModulo = preset ? { ...base, ...PRESETS[preset], tipo: preset } : base;
   const vocab = VOCABULARIO[id] ?? VOCABULARIO_EXTRA[id];
-  return vocab ? { ...principal, ...vocab, tipo: principal.tipo } : principal;
+  const resultado = vocab ? { ...principal, ...vocab, tipo: principal.tipo } : principal;
+  const campos = CAMPOS_EXTRA[id];
+  return campos ? { ...resultado, campos } : resultado;
 }
