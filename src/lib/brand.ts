@@ -14,7 +14,7 @@ export const BRAND = {
   tagline: "Gestión y ventas para tu negocio",
   /** Short marketing description for meta tags and onboarding. */
   description:
-    "Gosaryc es el sistema todo en uno para administrar tu negocio: vende, recibe pedidos, controla inventario, caja, fiados, equipo y finanzas, y atiende a tus clientes con un agente virtual de IA. Sirve para tiendas, restaurantes, talleres, salones y servicios, y funciona en la web o instalado en tu celular y computador.",
+    "Gosaryc es el sistema todo en uno para administrar tu negocio: vende, recibe pedidos, controla inventario, caja, fiados, equipo y finanzas, y cuenta con un asistente de ayuda para tu equipo. Sirve para tiendas, restaurantes, talleres, salones y servicios, y funciona en la web o instalado en tu celular y computador.",
   /**
    * Placeholder domain used in example URLs (Commander AI input hints, etc.).
    * Keep this neutral — it should NOT match the email-sending domain.

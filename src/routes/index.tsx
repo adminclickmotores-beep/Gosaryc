@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { ComponentType } from "react";
 import {
-  UtensilsCrossed, ChefHat, Bike, Boxes, Wallet, MessageCircle, Download, ArrowRight, Store, Scissors,
+  UtensilsCrossed, ChefHat, Bike, Boxes, Wallet, Download, ArrowRight, Store, Scissors,
   Stethoscope, GraduationCap, BedDouble, Dumbbell, Hammer, Sprout, Building2, PawPrint, Laptop, Truck, Car,
-  Smartphone, Palette, ShieldCheck, Sparkles, Check, Users, Receipt, BarChart3, Layers, Clock, TrendingUp, Bot,
+  Smartphone, Palette, ShieldCheck, Sparkles, Check, Users, Receipt, BarChart3, Layers, Clock, TrendingUp,
   Cake, Coffee, Wrench, Pill, PartyPopper, Briefcase, Shirt, Gem, Banknote, FileText, Gift, CalendarDays,
 } from "lucide-react";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
@@ -33,7 +33,6 @@ const MODULOS: { Icon: Icono; label: string; desc: string; to: RutaLanding; gran
   { Icon: Bike, label: "Entregas y clientes", desc: "Organiza entregas y conoce a tus clientes frecuentes.", to: "/domicilios" },
   { Icon: Boxes, label: "Inventarios y recetas", desc: "Controla existencias, costos y márgenes de lo que vendes.", to: "/restaurante" },
   { Icon: Wallet, label: "Finanzas y rentabilidad", desc: "Caja, cartera y utilidad en un vistazo, con reportes claros para decidir mejor.", to: "/restaurante", grande: true },
-  { Icon: MessageCircle, label: "Agente virtual con IA", desc: "Responde dudas y toma pedidos o citas, adaptado a tu tipo de negocio.", to: "/agente" },
   { Icon: Users, label: "Equipo y nómina", desc: "Organiza a tu equipo, sus permisos y sus pagos.", to: "/login" },
   { Icon: Receipt, label: "Caja, fiados y cobros", desc: "Lo que entra, lo que sale y lo que te deben.", to: "/login" },
   { Icon: BarChart3, label: "Reportes y metas", desc: "Mira cómo va tu negocio y fija metas de ventas.", to: "/login" },
@@ -46,7 +45,7 @@ const POR_QUE: { Icon: Icono; titulo: string; desc: string }[] = [
   { Icon: Layers, titulo: "Todo en un solo lugar", desc: "Ventas, inventario, clientes y finanzas juntos, sin cuadernos ni hojas de cálculo." },
   { Icon: Clock, titulo: "Ahorra tiempo cada día", desc: "Automatiza pedidos, cobros y reportes para dedicarte a crecer." },
   { Icon: TrendingUp, titulo: "Decide con datos", desc: "Conoce tus costos, márgenes y utilidad reales." },
-  { Icon: Bot, titulo: "Atención con IA", desc: "Un agente virtual atiende a tus clientes y te ayuda a tomar pedidos." },
+  { Icon: ShieldCheck, titulo: "Uso exclusivo de tu empresa", desc: "Solo tu equipo autorizado entra al programa y a la información de tu negocio." },
 ];
 
 const NEGOCIOS: { Icon: Icono; label: string }[] = [
@@ -79,7 +78,7 @@ const PASOS = [
 const CIFRAS = [
   { valor: "31", texto: "tipos de negocio" },
   { valor: "100%", texto: "desde el celular" },
-  { valor: "24/7", texto: "agente con IA" },
+  { valor: "24/7", texto: "disponible siempre" },
   { valor: "1", texto: "solo panel para todo" },
 ];
 
