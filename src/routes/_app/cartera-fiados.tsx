@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Coins } from "lucide-react";
+import { ArrowLeft, Coins, Send } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
@@ -41,6 +41,62 @@ function CarteraFiadosPage() {
   useEffect(() => {
     cargar();
   }, [cargar]);
+
+  // Clave de la API local de WhatsApp: se guarda solo en este navegador.
+  const [claveWa, setClaveWa] = useState("");
+  const [enviando, setEnviando] = useState(false);
+
+  useEffect(() => {
+    setClaveWa(localStorage.getItem("whatsapp_local_token") ?? "");
+  }, []);
+
+  const guardarClave = (valor: string) => {
+    setClaveWa(valor);
+    localStorage.setItem("whatsapp_local_token", valor);
+  };
+
+  const enviarVencidos = async () => {
+    const lista = vencidos.flatMap((d) =>
+      d.telefono
+        ? [
+            {
+              telefono: d.telefono,
+              mensaje: `Hola ${d.contacto ?? d.nombre}, tu saldo de ${dinero(d.debe)} venció el ${d.vencido}. Por favor ponte al día. ¡Gracias!`,
+            },
+          ]
+        : [],
+    );
+    if (lista.length === 0) {
+      toast.error("Ningún cobro vencido tiene teléfono registrado.");
+      return;
+    }
+    if (!claveWa.trim()) {
+      toast.error("Pega la clave de la API de WhatsApp.");
+      return;
+    }
+    if (!window.confirm(`Se enviarán ${lista.length} recordatorios por WhatsApp. ¿Continuar?`)) return;
+
+    setEnviando(true);
+    try {
+      const res = await fetch("http://localhost:3001/enviar-lote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${claveWa.trim()}` },
+        body: JSON.stringify({ mensajes: lista }),
+      });
+      if (!res.ok) {
+        const cuerpo = (await res.json().catch(() => ({}))) as { error?: string };
+        toast.error(cuerpo.error ?? "La API de WhatsApp no respondió bien.");
+        return;
+      }
+      const { resultados } = (await res.json()) as { resultados: { ok: boolean }[] };
+      const enviados = resultados.filter((r) => r.ok).length;
+      toast.success(`Recordatorios enviados: ${enviados} de ${resultados.length}.`);
+    } catch {
+      toast.error("No se pudo conectar con WhatsApp. Revisa que la API local esté corriendo.");
+    } finally {
+      setEnviando(false);
+    }
+  };
 
   const deudores = useMemo(() => {
     const hoy = new Date().toISOString().slice(0, 10);
@@ -141,6 +197,25 @@ function CarteraFiadosPage() {
                   )}
                 </div>
               ))}
+              <div className="flex flex-wrap items-center gap-3 border-t border-glass-border pt-3">
+                <input
+                  type="password"
+                  autoComplete="off"
+                  value={claveWa}
+                  onChange={(e) => guardarClave(e.target.value)}
+                  placeholder="Clave de la API de WhatsApp"
+                  className="min-w-0 flex-1 rounded-md border border-glass-border bg-transparent px-3 py-2 text-base text-foreground"
+                />
+                <button
+                  type="button"
+                  onClick={enviarVencidos}
+                  disabled={enviando}
+                  className="inline-flex shrink-0 items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-60"
+                >
+                  <Send className="h-4 w-4" />
+                  {enviando ? "Enviando…" : "Enviar recordatorios a todos"}
+                </button>
+              </div>
             </GlassPanel>
           )}
 
