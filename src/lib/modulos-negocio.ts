@@ -298,7 +298,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       AGENDA,
       m("mensualidades", "Pensiones y mensualidades", "Pagos pendientes y recordatorios de cobro.", Coins),
       m("asistencia", "Asistencia y notas", "Seguimiento del avance de cada estudiante.", BadgeCheck),
-      CLIENTES, FACTURAS, PAGOS, RESENAS,CAJA, EMPLEADOS, METAS, FINANZAS,
+      FACTURAS, PAGOS, RESENAS,CAJA, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -325,7 +325,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("clases", "Clases y cupos", "Horarios de clases con cupos y asistentes.", CalendarDays),
       m("control_acceso", "Control de ingreso", "Registro de asistencia de los socios.", QrCode),
       m("planes_entreno", "Rutinas y seguimiento", "Planes y medidas de cada socio.", ClipboardList),
-      CLIENTES, FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {
@@ -377,7 +377,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       AGENDA,
       m("vacunacion", "Vacunas y desparasitación", "Próximas dosis y recordatorios.", ShieldCheck),
       m("productos_vet", "Productos y alimentos", "Inventario y ventas.", ShoppingBag),
-      CLIENTES, FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
   {

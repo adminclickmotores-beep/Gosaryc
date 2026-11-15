@@ -229,13 +229,13 @@ svg.text-slate-950 {
   ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
-    background: oklch(0.2 0.02 255 / 0.15);
+    background: color-mix(in oklab, var(--primary) 70%, transparent);
     border-radius: 999px;
     border: 2px solid transparent;
     background-clip: padding-box;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.2 0.02 255 / 0.3);
+    background: var(--primary);
     background-clip: padding-box;
     border: 2px solid transparent;
   }

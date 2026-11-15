@@ -134,7 +134,9 @@ export function NegocioConfig() {
       <div>
         <h2 className="font-medium text-foreground">Datos de tu negocio</h2>
         <p className="text-sm text-muted-foreground">
-          Se muestran en el menú digital y los usa el asistente. Cámbialos cuando quieras.
+          {tipoActual.usaPedidos
+            ? "Se muestran en el menú digital y los usa el asistente. Cámbialos cuando quieras."
+            : "Son los datos con los que tus clientes te identifican y contactan. Cámbialos cuando quieras."}
         </p>
       </div>
       <div className="space-y-2">
@@ -257,9 +259,20 @@ export function NegocioConfig() {
         </div>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
-        {CAMPOS.map((c) => (
+        {CAMPOS.filter((c) => {
+          const entrega = tipoActual.usaPedidos || ["tienda", "farmacia", "lavanderia", "transporte"].includes(tipoActual.clave);
+          if (c.clave === "cobertura" || c.clave === "aviso_entrega") return entrega;
+          if (c.clave === "horarios") return tipoActual.clave !== "tecnologia";
+          return true;
+        }).map((c) => (
           <label key={c.clave} className={`block space-y-1 ${c.largo ? "md:col-span-2" : ""}`}>
-            <span className="text-xs text-muted-foreground">{c.etiqueta}</span>
+            <span className="text-xs text-muted-foreground">
+              {c.clave === "telefono_pedidos" && !tipoActual.usaPedidos
+                ? "WhatsApp / teléfono de contacto"
+                : c.clave === "horarios" && ["salud", "belleza", "servicios", "mascotas", "profesional", "taller"].includes(tipoActual.clave)
+                  ? "Horario de atención (una línea por día)"
+                  : c.etiqueta}
+            </span>
             {c.largo ? (
               <textarea
                 className={campo}
