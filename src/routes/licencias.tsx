@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, CalendarPlus, Copy, Download, KeyRound, MessageCircle, Plus, RefreshCw, ShieldCheck } from "lucide-react";
+import { ArrowLeft, CalendarPlus, Copy, Download, KeyRound, MessageCircle, Plus, RefreshCw, ShieldCheck, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -13,6 +13,7 @@ export const Route = createFileRoute("/licencias")({
 });
 
 type Licencia = Tables<"licencias">;
+type Solicitud = Tables<"solicitudes_licencia">;
 type EventoInstalar = Event & { prompt: () => Promise<void> };
 
 const campo =
@@ -37,6 +38,7 @@ function LicenciasPage() {
   const nav = useNavigate();
   const [permitido, setPermitido] = useState<boolean | null>(null);
   const [lista, setLista] = useState<Licencia[]>([]);
+  const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
   const [hoy, setHoy] = useState("");
   const [busca, setBusca] = useState("");
   const [cliente, setCliente] = useState("");
@@ -79,7 +81,38 @@ function LicenciasPage() {
     const { data, error } = await supabase.from("licencias").select("*").order("vence_el", { ascending: true });
     if (error) toast.error("No se pudieron cargar las licencias.");
     setLista(data ?? []);
+    const { data: sol } = await supabase
+      .from("solicitudes_licencia")
+      .select("*")
+      .eq("estado", "pendiente")
+      .order("created_at", { ascending: true });
+    setSolicitudes(sol ?? []);
   }, []);
+
+  // Aprueba la solicitud de un equipo: crea su licencia de prueba (30 días) o de 1 año.
+  const aprobar = async (s: Solicitud, tipo: "prueba" | "anual") => {
+    const { error } = await supabase.rpc("aprobar_solicitud_licencia", { p_id: s.id, p_tipo: tipo });
+    if (error) return toast.error(error.message || "No se pudo aprobar la solicitud.");
+    toast.success(tipo === "prueba" ? "Prueba de 30 días aprobada." : "Licencia de 1 año aprobada.");
+    cargar();
+  };
+
+  const rechazar = async (s: Solicitud) => {
+    const { error } = await supabase
+      .from("solicitudes_licencia")
+      .update({ estado: "rechazada", updated_at: new Date().toISOString() })
+      .eq("id", s.id);
+    if (error) return toast.error("No se pudo rechazar la solicitud.");
+    toast.success("Solicitud rechazada.");
+    cargar();
+  };
+
+  // Las solicitudes nuevas aparecen solas mientras la pantalla está abierta.
+  useEffect(() => {
+    if (!permitido) return;
+    const t = setInterval(() => cargar(), 20000);
+    return () => clearInterval(t);
+  }, [permitido, cargar]);
 
   useEffect(() => {
     if (permitido) cargar();
@@ -223,6 +256,36 @@ function LicenciasPage() {
         ))}
       </div>
 
+      {solicitudes.length > 0 && (
+        <GlassPanel className="space-y-3 p-4">
+          <h2 className="flex items-center gap-2 font-medium text-foreground">
+            <Smartphone className="h-4 w-4" /> Solicitudes de licencia ({solicitudes.length})
+          </h2>
+          {solicitudes.map((s) => (
+            <div key={s.id} className="space-y-2 rounded-lg border border-glass-border bg-glass/30 p-3">
+              <p className="break-words font-medium text-foreground">{s.cliente}</p>
+              <p className="break-all text-sm text-foreground">{s.correo}</p>
+              <p className="break-words text-xs text-muted-foreground">
+                {[s.telefono, s.sistema].filter(Boolean).join(" · ") || "Sin más datos"}
+              </p>
+              <p className="break-all font-mono text-xs text-muted-foreground">Equipo: {s.equipo_id}</p>
+              <p className="text-xs text-muted-foreground">
+                {new Date(s.created_at).toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" })}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => aprobar(s, "prueba")} className="rounded-lg bg-primary px-3 py-2.5 text-xs font-medium text-primary-foreground">
+                  Prueba 30 días
+                </button>
+                <button onClick={() => aprobar(s, "anual")} className="rounded-lg bg-primary px-3 py-2.5 text-xs font-medium text-primary-foreground">
+                  Licencia 1 año
+                </button>
+                <button onClick={() => rechazar(s)} className={botonSec}>Rechazar</button>
+              </div>
+            </div>
+          ))}
+        </GlassPanel>
+      )}
+
       <GlassPanel className="space-y-3 p-4">
         <h2 className="flex items-center gap-2 font-medium text-foreground"><Plus className="h-4 w-4" /> Nueva licencia</h2>
         <label className="block space-y-1">
@@ -275,6 +338,8 @@ function LicenciasPage() {
                   <p className="break-words text-xs text-muted-foreground">
                     {[l.ciudad, l.telefono].filter(Boolean).join(" · ") || "Sin datos de contacto"}
                   </p>
+                  {l.correo && <p className="break-all text-xs text-muted-foreground">{l.correo}</p>}
+                  {l.equipo_id && <p className="break-all font-mono text-[11px] text-muted-foreground">Equipo: {l.equipo_id}</p>}
                 </div>
                 <span className="shrink-0 rounded-full border border-glass-border px-2.5 py-0.5 text-xs text-muted-foreground">
                   {l.tipo === "anual" ? "Anual" : "Prueba"}

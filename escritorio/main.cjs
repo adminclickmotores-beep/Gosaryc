@@ -1,7 +1,56 @@
 // Gosaryc - envoltorio de escritorio (Electron).
 // Abre la web publicada de Gosaryc dentro de una ventana propia.
 // Para apuntar a otra dirección: GOSARYC_URL=https://tu-dominio.com npm run iniciar
-const { app, BrowserWindow, shell } = require("electron");
+const { app, BrowserWindow, shell, ipcMain } = require("electron");
+const os = require("os");
+const path = require("path");
+const fs = require("fs");
+const crypto = require("crypto");
+const { execFileSync } = require("child_process");
+
+// Código interno del equipo: sale del identificador propio de cada computadora (no cambia al reinstalar).
+function leerIdentificadorEquipo() {
+  try {
+    if (process.platform === "win32") {
+      const salida = execFileSync(
+        "reg",
+        ["query", "HKLM\\SOFTWARE\\Microsoft\\Cryptography", "/v", "MachineGuid"],
+        { encoding: "utf8", windowsHide: true },
+      );
+      const m = salida.match(/MachineGuid\s+REG_SZ\s+(\S+)/i);
+      if (m) return m[1];
+    } else if (process.platform === "darwin") {
+      const salida = execFileSync("ioreg", ["-rd1", "-c", "IOPlatformExpertDevice"], { encoding: "utf8" });
+      const m = salida.match(/"IOPlatformUUID"\s*=\s*"([^"]+)"/);
+      if (m) return m[1];
+    } else {
+      for (const ruta of ["/etc/machine-id", "/var/lib/dbus/machine-id"]) {
+        if (fs.existsSync(ruta)) return fs.readFileSync(ruta, "utf8").trim();
+      }
+    }
+  } catch {
+    /* se usa el respaldo */
+  }
+  const macs = Object.values(os.networkInterfaces())
+    .flat()
+    .filter((i) => i && !i.internal && i.mac && i.mac !== "00:00:00:00:00:00")
+    .map((i) => i.mac)
+    .sort()
+    .join("|");
+  return `${os.hostname()}|${macs}|${os.cpus()[0]?.model ?? ""}`;
+}
+
+function codigoEquipo() {
+  const hash = crypto.createHash("sha256").update(`gosaryc|${leerIdentificadorEquipo()}`).digest("hex");
+  return hash.slice(0, 16).toUpperCase().match(/.{4}/g).join("-");
+}
+
+ipcMain.handle("gosaryc:id-equipo", () => codigoEquipo());
+ipcMain.handle("gosaryc:info-equipo", () => ({
+  id: codigoEquipo(),
+  nombre: os.hostname(),
+  sistema: `${os.type()} ${os.release()} (${os.arch()})`,
+}));
 
 const URL_APP = (process.env.GOSARYC_URL || "https://gosaryc.lovable.app").replace(/\/+$/, "");
 const ORIGEN_APP = new URL(URL_APP).origin;
@@ -29,6 +78,7 @@ function crearVentana() {
     autoHideMenuBar: true,
     show: false,
     webPreferences: {
+      preload: path.join(__dirname, "preload.cjs"),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,

@@ -25,7 +25,9 @@ Antes, publica la web (botón "Publish") o define `GOSARYC_URL` con tu direcció
 
 La app abre https://gosaryc.lovable.app. Cada vez que publiques cambios en la web,
 los usuarios los ven al abrir el programa, sin reinstalar. Si no hay internet muestra un aviso con botón "Reintentar".
-Al abrirse por primera vez pide el código de licencia (se crean en la pantalla de Licencias).
+Al abrirse por primera vez muestra el código interno del equipo y pide el correo y el nombre del negocio.
+La solicitud te llega a la pantalla de Licencias en tu celular: ahí aprietas "Prueba 30 días" o "Licencia 1 año"
+y el programa se activa solo en ese equipo. Cada licencia queda ligada a su equipo.
 
 ## Tu firma (código firmado)
 

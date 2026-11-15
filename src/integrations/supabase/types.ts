@@ -3787,6 +3787,8 @@ export type Database = {
           ciudad: string | null
           cliente: string
           codigo: string
+          correo: string | null
+          equipo_id: string | null
           created_at: string
           estado: string
           id: string
@@ -3802,6 +3804,8 @@ export type Database = {
           ciudad?: string | null
           cliente: string
           codigo?: string
+          correo?: string | null
+          equipo_id?: string | null
           created_at?: string
           estado?: string
           id?: string
@@ -3817,6 +3821,8 @@ export type Database = {
           ciudad?: string | null
           cliente?: string
           codigo?: string
+          correo?: string | null
+          equipo_id?: string | null
           created_at?: string
           estado?: string
           id?: string
@@ -3829,6 +3835,53 @@ export type Database = {
           vence_el?: string
         }
         Relationships: []
+      }
+      solicitudes_licencia: {
+        Row: {
+          cliente: string
+          correo: string
+          created_at: string
+          equipo_id: string
+          estado: string
+          id: string
+          licencia_id: string | null
+          sistema: string | null
+          telefono: string | null
+          updated_at: string
+        }
+        Insert: {
+          cliente: string
+          correo: string
+          created_at?: string
+          equipo_id: string
+          estado?: string
+          id?: string
+          licencia_id?: string | null
+          sistema?: string | null
+          telefono?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cliente?: string
+          correo?: string
+          created_at?: string
+          equipo_id?: string
+          estado?: string
+          id?: string
+          licencia_id?: string | null
+          sistema?: string | null
+          telefono?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solicitudes_licencia_licencia_id_fkey"
+            columns: ["licencia_id"]
+            isOneToOne: false
+            referencedRelation: "licencias"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       suscripciones_negocio: {
         Row: {
@@ -4543,6 +4596,13 @@ export type Database = {
       accept_org_invite: { Args: { _token: string }; Returns: string }
       es_superadmin: { Args: never; Returns: boolean }
       verificar_licencia: { Args: { p_codigo: string }; Returns: Json }
+      verificar_licencia_equipo: { Args: { p_codigo: string; p_equipo: string }; Returns: Json }
+      consultar_licencia_equipo: { Args: { p_equipo: string }; Returns: Json }
+      solicitar_licencia: {
+        Args: { p_equipo: string; p_correo: string; p_cliente: string; p_telefono?: string; p_sistema?: string }
+        Returns: Json
+      }
+      aprobar_solicitud_licencia: { Args: { p_id: string; p_tipo: string }; Returns: string }
       mi_acceso: { Args: never; Returns: Json }
       mi_negocio_id: { Args: never; Returns: string }
       ret_permiso: { Args: { p: string }; Returns: boolean }

@@ -20,7 +20,7 @@
     "appId": "com.gosaryc.app",
     "productName": "Gosaryc",
     "copyright": "Copyright © 2026 Gosaryc",
-    "files": ["main.cjs", "package.json"],
+    "files": ["main.cjs", "preload.cjs", "package.json"],
     "directories": { "output": "instaladores" },
     "win": {
       "target": ["nsis"],
