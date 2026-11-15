@@ -530,7 +530,7 @@ TIPOS_NEGOCIO.push(
 
 // Se agrega el módulo de cotizaciones a los tipos que cotizan y no tienen uno propio.
 // Salud (presupuestos de tratamiento), educación, hospedaje, gimnasio, mascotas, agro, farmacia y lavandería no cotizan así.
-const SIN_COTIZACIONES: TipoNegocioClave[] = ["tienda","restaurante", "cafeteria", "comida_rapida","salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro", "farmacia", "lavanderia", "belleza"];
+const SIN_COTIZACIONES: TipoNegocioClave[] = ["tienda","restaurante", "cafeteria", "comida_rapida","salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro", "farmacia", "lavanderia", "belleza", "inmobiliaria", "tecnologia"];
 for (const t of TIPOS_NEGOCIO) {
   if (SIN_COTIZACIONES.includes(t.clave)) continue;
   if (t.modulos.some((x) => x.id === COTIZACIONES.id || x.id.startsWith("cotizaciones_"))) continue;
