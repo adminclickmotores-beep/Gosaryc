@@ -141,7 +141,18 @@ function LicenciasPage() {
 
   const instalar = async () => {
     if (!instalador) {
-      toast.info("En el celular abre el menú del navegador y elige «Instalar aplicación» o «Agregar a pantalla de inicio».");
+      let enMarco = true;
+      try {
+        enMarco = window.self !== window.top;
+      } catch {
+        enMarco = true;
+      }
+      if (enMarco) {
+        window.open(window.location.href, "_blank", "noopener");
+        toast.info("Se abrió en una pestaña nueva. Ahí pulsa de nuevo «Instalar app».");
+        return;
+      }
+      toast.info("Abre el menú del navegador y elige «Instalar aplicación» o «Agregar a pantalla de inicio».");
       return;
     }
     await instalador.prompt();
@@ -193,7 +204,7 @@ function LicenciasPage() {
         <h2 className="flex items-center gap-2 font-medium text-foreground"><Download className="h-4 w-4" /> Instalador de la app de licencias</h2>
         <p className="text-sm text-muted-foreground">Instala esta pantalla en tu celular o computador para abrirla como una app propia.</p>
         <button onClick={instalar} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:opacity-90">
-          <Download className="h-4 w-4" /> {instalador ? "Instalar esta app" : "Cómo instalar la app"}
+          <Download className="h-4 w-4" /> Instalar app
         </button>
         <button
           onClick={() => (window.history.length > 1 ? window.history.back() : nav({ to: "/superadmin" }))}

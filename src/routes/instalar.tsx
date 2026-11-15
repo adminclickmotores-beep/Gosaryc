@@ -4,6 +4,7 @@ import { esCuentaMaestra } from "@/lib/cuenta-maestra";
 import { useEffect, useMemo, useState } from "react";
 import { Download, Share, MoreVertical, Smartphone, Monitor, CheckCircle2 } from "lucide-react";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { InstallButton } from "@/components/app/InstallButton";
 import { useNegocio } from "@/hooks/use-negocio";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 
@@ -146,9 +147,12 @@ function InstalarPage() {
             <Download className="h-4 w-4" /> Instalar ahora
           </button>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            Si no ves el botón de instalar, sigue los pasos de tu dispositivo aquí abajo.
-          </p>
+          <div className="space-y-3">
+            <InstallButton />
+            <p className="text-sm text-muted-foreground">
+              Si no se instala, sigue los pasos de tu dispositivo aquí abajo.
+            </p>
+          </div>
         )}
       </GlassPanel>
 
