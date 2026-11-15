@@ -58,8 +58,10 @@ function Welcome() {
 
   // Las personas del equipo y la cuenta maestra no configuran el negocio: entran directo a lo suyo.
   useEffect(() => {
-    const saltaBienvenida = esCuentaMaestra(user?.email) || !esAdmin;
-    if (!user || cargandoPermisos || !saltaBienvenida) return;
+    const maestra = esCuentaMaestra(user?.email);
+    const saltaBienvenida = maestra || !esAdmin;
+    // La cuenta maestra no espera a que carguen los permisos.
+    if (!user || (!maestra && cargandoPermisos) || !saltaBienvenida) return;
     let cancelado = false;
     (async () => {
       await terminarOnboarding();
@@ -99,6 +101,11 @@ function Welcome() {
     await terminarOnboarding();
     nav({ to: "/restaurante", replace: true });
   };
+
+  // La cuenta maestra nunca ve esta pantalla, ni un instante: se redirige de inmediato.
+  if (esCuentaMaestra(user?.email)) {
+    return <div className="min-h-screen bg-[color:var(--color-ink)]" />;
+  }
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[color:var(--color-ink)] text-foreground">
