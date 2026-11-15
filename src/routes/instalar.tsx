@@ -1,4 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { useAuth } from "@/contexts/AuthContext";
+import { esCuentaMaestra } from "@/lib/cuenta-maestra";
 import { useEffect, useMemo, useState } from "react";
 import { Download, Share, MoreVertical, Smartphone, Monitor, CheckCircle2 } from "lucide-react";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
@@ -22,20 +24,23 @@ type EventoInstalacion = Event & {
 
 function InstalarPage() {
   const { negocio } = useNegocio();
+  const { user } = useAuth();
+  const esAdmin = esCuentaMaestra(user?.email);
   const tipo = resolverTipoNegocio(negocio?.tipo_negocio);
   const nombre = negocio?.nombre?.trim() || tipo.panel;
   const opciones = useMemo(() => {
     const vistas = new Set<string>();
-    const lista: { ruta: string; titulo: string }[] = [{ ruta: "/dashboard", titulo: "Panel completo del negocio" }];
+    const lista: { ruta: string; titulo: string }[] = esAdmin ? [{ ruta: "/dashboard", titulo: "Panel completo del negocio" }] : [];
     for (const m of tipo.modulos) {
       if (!m.ruta || vistas.has(m.ruta)) continue;
       vistas.add(m.ruta);
       lista.push({ ruta: m.ruta, titulo: m.titulo });
     }
     return lista;
-  }, [tipo]);
+  }, [tipo, esAdmin]);
 
-  const [destino, setDestino] = useState("/dashboard");
+  const [destinoElegido, setDestino] = useState<string | null>(null);
+  const destino = destinoElegido && opciones.some((o) => o.ruta === destinoElegido) ? destinoElegido : (opciones[0]?.ruta ?? "/dashboard");
   const [evento, setEvento] = useState<EventoInstalacion | null>(null);
   const [instalada, setInstalada] = useState(false);
   const [esIos, setEsIos] = useState(false);
@@ -171,12 +176,6 @@ function InstalarPage() {
         </GlassPanel>
       </div>
 
-      <div className="flex justify-center gap-4 text-sm">
-        {tipo.usaPedidos && (
-          <Link to="/menu" className="text-primary hover:underline">Ver menú digital</Link>
-        )}
-        <Link to="/dashboard" className="text-primary hover:underline">Ir al panel de {nombre}</Link>
-      </div>
     </div>
   );
 }

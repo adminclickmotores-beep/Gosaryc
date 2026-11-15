@@ -101,7 +101,6 @@ function LandingPage() {
             <span className="truncate font-display text-xl">{BRAND.name}</span>
           </Link>
           <div className="flex shrink-0 items-center gap-2">
-            <Link to="/menu" className="btn-ghost-pro hidden rounded-full px-4 py-2 text-sm text-foreground sm:inline-flex">Ver catálogo</Link>
             <Link to="/login" className="btn-pro inline-flex rounded-full px-5 py-2.5 text-sm font-semibold">Iniciar sesión</Link>
           </div>
         </div>
@@ -121,9 +120,6 @@ function LandingPage() {
             <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link to="/login" className="btn-pro inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold">
                 Crear mi cuenta <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link to="/menu" className="btn-ghost-pro inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm text-foreground">
-                Ver catálogo y pedir
               </Link>
               <Link to="/instalar" className="btn-ghost-pro inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm text-foreground">
                 <Download className="h-4 w-4" /> Instalar app
