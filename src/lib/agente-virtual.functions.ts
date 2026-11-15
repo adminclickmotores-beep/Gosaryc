@@ -49,22 +49,58 @@ export const runAgenteVirtual = createServerFn({ method: "POST" })
             .join("\n")
         : "No hay productos cargados en el catálogo. Si preguntan por precios o productos, di que consulten con una persona del equipo.";
 
-    const tipo = typeof data.tipoNegocio === "string" && data.tipoNegocio.trim()
-      ? data.tipoNegocio.trim().slice(0, 80)
-      : "general";
+    // Datos configurados del negocio del usuario autenticado (RLS: solo el propio).
+    const { data: cfg } = await context.supabase
+      .from("negocio_config")
+      .select("nombre,tipo_negocio,eslogan,descripcion,horarios,ciudad,cobertura,aviso_entrega,telefono_pedidos,whatsapp_cocina,instagram,sitio_web,moneda")
+      .order("created_at")
+      .limit(1)
+      .maybeSingle();
 
-    const system = `Eres el asistente virtual de un negocio (tipo: ${tipo}). Atiendes a clientes y al equipo por chat.
-Responde en español de México, con tono amable y directo, en frases cortas.
-Ayuda a: responder dudas sobre productos o servicios, explicar precios y formas de pago si se te indican, orientar al cliente para agendar, pedir o cotizar, y redactar mensajes de respuesta.
-${catalogo}
+    const tipo = (cfg?.tipo_negocio || (typeof data.tipoNegocio === "string" ? data.tipoNegocio : "") || "general")
+      .trim()
+      .slice(0, 80);
+    const dato = (etiqueta: string, v: string | null | undefined) =>
+      `- ${etiqueta}: ${v && v.trim() ? v.trim().slice(0, 500) : "NO CONFIGURADO"}`;
+    const perfil = [
+      dato("Nombre del negocio", cfg?.nombre),
+      dato("Tipo de negocio", tipo),
+      dato("Eslogan", cfg?.eslogan),
+      dato("Descripción", cfg?.descripcion),
+      dato("Horarios de atención", cfg?.horarios),
+      dato("Ciudad", cfg?.ciudad),
+      dato("Cobertura / zonas de servicio", cfg?.cobertura),
+      dato("Aviso de entrega", cfg?.aviso_entrega),
+      dato("Teléfono de pedidos", cfg?.telefono_pedidos),
+      dato("WhatsApp", cfg?.whatsapp_cocina),
+      dato("Instagram", cfg?.instagram),
+      dato("Sitio web", cfg?.sitio_web),
+      `- Moneda: ${cfg?.moneda ?? "COP"}`,
+    ].join("\n");
 
-Costo del domicilio según el barrio o zona de entrega (tarifas unificadas Yumbo 2026, zona centro; servicio de 8am a 11pm todos los días). Si el pedido es a domicilio, pregunta el barrio, di cuánto cuesta el envío y súmalo al total:
+    // Las tarifas de domicilio de Yumbo solo aplican a restaurantes o negocios de Yumbo.
+    const usaTarifas = /restaur|comida|pizz|cafe|panader/i.test(tipo) || /yumbo/i.test(cfg?.ciudad ?? "");
+    const domicilio = usaTarifas
+      ? `Tarifas de domicilio configuradas (por barrio o zona). Si el pedido es a domicilio, pregunta el barrio, di cuánto cuesta el envío y súmalo al total:
 ${tarifasComoTexto()}
 - Las carreras 25 a 27 cuestan $10.000, 27 a 31 $12.000, 32 a 34 $13.000, 35 a 37 $14.000 y 38 a 39 $15.000.
-- Si el barrio no está en la lista, di que el costo lo confirma una persona del equipo.
+- Si el barrio no está en la lista, di que el costo lo confirma una persona del equipo.`
+      : "No hay tarifas de domicilio configuradas para este negocio.";
+
+    const system = `Eres el asistente virtual de "${cfg?.nombre || "este negocio"}" (tipo: ${tipo}). Atiendes a clientes y al equipo por chat.
+Responde en español de México, con tono amable y directo, en frases cortas.
+Usa EXCLUSIVAMENTE la información configurada del negocio que aparece abajo. Mantén siempre el mismo nombre, horarios, precios y tarifas en toda la conversación.
+
+Datos configurados del negocio:
+${perfil}
+
+${catalogo}
+
+${domicilio}
 
 Reglas:
-- No inventes precios, horarios, direcciones ni disponibilidad. Los precios solo salen del catálogo y de las tarifas de domicilio de arriba. Si no tienes el dato, dilo y sugiere hablar con una persona del equipo.
+- No inventes precios, horarios, direcciones, productos, servicios ni disponibilidad. Si un dato dice NO CONFIGURADO o no está arriba, NO improvises: di que ese dato aún no está configurado, y si quien pregunta es el dueño o el equipo, indícale que lo complete en Mi negocio (configuración del negocio) y sugiere hablar con una persona del equipo mientras tanto.
+- Si preguntan "¿tienen servicio hoy?" o por horarios, responde solo con los horarios configurados; si no hay, dilo.
 - Para pedidos o citas, pide solo lo necesario: qué necesita, fecha u hora si aplica, nombre y teléfono.
 - No pidas ni guardes datos sensibles como contraseñas o números de tarjeta.
 - No uses emojis salvo que el usuario los use primero.`;
