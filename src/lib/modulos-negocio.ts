@@ -214,6 +214,10 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
     modulos: [
       m("vehiculos", "Inventario de vehículos", "Placa, marca, modelo, precio y estado de cada vehículo.", Car),
       m("vehiculos_usados", "Retomas, compras y consignación", "Registra usados que retomas, compras o recibes en consignación, con peritaje y precio de retoma.", Handshake),
+      m("compras_veh", "Compras de vehículos", "Negociaciones, ofertas, aprobaciones, órdenes de compra, recepción y pagos a proveedores o vendedores particulares.", ShoppingBag),
+      m("consignaciones_veh", "Consignaciones", "Contrato, precio acordado, comisión, vigencia, gastos autorizados y liquidación al propietario.", FileText),
+      m("inspecciones_veh", "Inspecciones y peritajes", "Estado mecánico, exterior e interior, reparaciones, repuestos y evidencias antes del alistamiento.", ClipboardList),
+      m("prospectos_veh", "Prospectos y seguimientos", "Prospectos por asesor, seguimientos y contratos hasta cerrar la venta.", Users),
       CLIENTES,
       m("seguimiento_leads", "Seguimiento de interesados", "Recordatorios para cerrar cada venta.", Bell),
       m("pruebas_manejo", "Pruebas de manejo", "Agenda de test drives con seguimiento.", KeyRound),
