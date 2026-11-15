@@ -269,6 +269,13 @@ const POR_MODULO: Record<string, keyof typeof PRESETS> = {
   prospectos_serv: "venta", anticipos_serv: "cartera", especialidades: "stock", consultas_diagnosticos: "paciente",
   procedimientos: "paciente", ordenes_medicas: "proyecto", convenios_salud: "cartera", auditoria_clinica: "proyecto",
   vehiculos_clientes: "stock", servicios_extra: "cartera", historial: "proyecto", catalogo_servicios: "stock",
+  unidades_cond: "inmueble", cuotas_cond: "cartera", areas_comunes: "reserva", mantenimiento_cond: "proyecto", comunicados_cond: "proyecto",
+  prestamos_reg: "cartera", cronograma_cuotas: "cartera", cobranza_diaria: "cartera", garantias_prest: "vencimiento",
+  cortes_tela: "proyecto", ordenes_confeccion: "proyecto", destajo: "pago", insumos_textil: "stock",
+  piezas_joyeria: "stock", certificados_joy: "vencimiento", taller_joyeria: "proyecto",
+  equipos_imei: "stock", reparaciones_cel: "proyecto", accesorios_cel: "stock",
+  productos_papel: "stock", copias_impresiones: "pago", lista_escolar: "reserva",
+  prendas_talla: "stock", temporadas: "proyecto", vitrina: "stock",
   tarifas_lavado: "stock", documentos_prof: "vencimiento", habitaciones: "proyecto", control_acceso: "proyecto",  consultorios: "proyecto",consentimientos: "vencimiento",
 };
 
@@ -708,6 +715,38 @@ const VOCABULARIO_EXTRA: Record<string, Partial<ConfigModulo>> = {
   // Profesional
   honorarios: vc("Honorario (cliente y concepto)", "Valor pactado, abonos y forma de pago", "Cliente", "Saldo por cobrar (COP)", "Fecha de cobro", "Honorarios por cobrar"),
   plazos: vc("Plazo o término (caso y obligación)", "Entidad, tipo de plazo y responsable", "Responsable", "Costo o sanción (COP)", "Fecha límite", "Plazos por cumplir"),
+  // Condominio
+  unidades_cond: vc("Unidad (torre y apartamento o casa)", "Área, parqueadero, coeficiente y observaciones", "Propietario o inquilino", "Cuota mensual (COP)", "Fecha de ingreso", "Unidades en negociación"),
+  cuotas_cond: vc("Cuota de administración (unidad y mes)", "Mes cobrado, abonos, intereses de mora y cuotas extra", "Propietario", "Valor adeudado (COP)", "Fecha límite de pago", "Cuotas por cobrar"),
+  areas_comunes: vc("Reserva de área común (salón, piscina, BBQ)", "Residente, número de personas y depósito", "Residente", "Valor del alquiler (COP)", "Fecha y hora de la reserva", "Reservas por atender"),
+  mantenimiento_cond: vc("Tarea de mantenimiento (zona y trabajo)", "Proveedor, materiales, costo y avance", "Proveedor o encargado", "Costo (COP)", "Fecha programada", "Tareas en curso"),
+  comunicados_cond: vc("Comunicado o solicitud de residente", "Asunto, unidad, respuesta y seguimiento", "Residente", "Valor (COP)", "Fecha límite de respuesta", "Solicitudes abiertas"),
+  // Préstamos y cobranza
+  prestamos_reg: vc("Préstamo (cliente y destino)", "Monto prestado, interés, plazo y forma de pago", "Cliente deudor", "Saldo del préstamo (COP)", "Próxima cuota", "Préstamos por cobrar"),
+  cronograma_cuotas: vc("Cuota (cliente y número de cuota)", "Capital, interés y abonos recibidos", "Cliente deudor", "Valor de la cuota (COP)", "Fecha de la cuota", "Cuotas por cobrar"),
+  cobranza_diaria: vc("Cobro (cliente y ruta)", "Resultado de la gestión, promesa de pago y mora", "Cliente deudor", "Valor a cobrar (COP)", "Fecha de la visita o llamada", "Cobros por gestionar"),
+  garantias_prest: vc("Garantía (bien o aval)", "Descripción, avalúo, documentos y custodia", "Cliente o avalista", "Valor de la garantía (COP)", "Vence la garantía", "Garantías por revisar"),
+  // Textil
+  cortes_tela: vc("Corte (referencia y tela)", "Metros usados, tallas, colores y rendimiento", "Cortador", "Costo de la tela (COP)", "Fecha del corte", "Cortes en proceso"),
+  ordenes_confeccion: vc("Orden (cliente y prenda)", "Tallas, colores, cantidades y especificaciones", "Cliente", "Valor de la orden (COP)", "Fecha de entrega", "Órdenes en confección"),
+  destajo: vc("Pago por destajo (operario y operación)", "Prendas terminadas, valor por prenda y descuentos", "Operario", "Valor a pagar (COP)", "Fecha de pago", "Pagos por liquidar"),
+  insumos_textil: vc("Tela o insumo (referencia y color)", "Metros o unidades, ancho y ubicación", "Proveedor", "Costo por unidad (COP)", "Último ingreso", "Insumos por reponer"),
+  // Joyería
+  piezas_joyeria: vc("Pieza (tipo y referencia)", "Material, quilataje, peso, talla y certificado", "Proveedor", "Precio de venta (COP)", "Fecha de ingreso", "Piezas por vender"),
+  certificados_joy: vc("Certificado o garantía (pieza y cliente)", "Número de certificado, material y condiciones", "Cliente", "Valor de la pieza (COP)", "Vence la garantía", "Garantías vigentes"),
+  taller_joyeria: vc("Trabajo de taller (pieza y arreglo)", "Daño, trabajo a realizar y materiales", "Cliente", "Valor del trabajo (COP)", "Fecha de entrega", "Trabajos en taller"),
+  // Celulares
+  equipos_imei: vc("Equipo (marca, modelo e IMEI)", "Capacidad, color, estado y accesorios incluidos", "Proveedor o cliente", "Precio de venta (COP)", "Fecha de ingreso", "Equipos por vender"),
+  reparaciones_cel: vc("Reparación (equipo e IMEI)", "Falla, diagnóstico, repuestos y técnico", "Cliente", "Valor de la reparación (COP)", "Fecha de entrega", "Equipos en reparación"),
+  accesorios_cel: vc("Accesorio (fundas, cargadores, vidrios)", "Cantidad, compatibilidad y ubicación", "Proveedor", "Precio de venta (COP)", "Último ingreso", "Accesorios por reponer"),
+  // Papelería
+  productos_papel: vc("Útil o libro (nombre o ISBN)", "Cantidad, editorial, marca y ubicación", "Proveedor", "Precio de venta (COP)", "Último ingreso", "Productos por reponer"),
+  copias_impresiones: vc("Servicio (copias, impresión, anillado)", "Cantidad de hojas, tamaño y color", "Cliente", "Valor cobrado (COP)", "Fecha del servicio", "Servicios por cobrar"),
+  lista_escolar: vc("Lista escolar (colegio y grado)", "Útiles pedidos, anticipo y condiciones", "Acudiente", "Valor de la lista (COP)", "Fecha de entrega", "Listas por entregar"),
+  // Moda y calzado
+  prendas_talla: vc("Prenda o calzado (referencia)", "Tallas, colores, marca y cantidades por talla", "Proveedor", "Precio de venta (COP)", "Último ingreso", "Productos por reponer"),
+  temporadas: vc("Colección o temporada", "Marcas, referencias y metas de rotación", "Proveedor o marca", "Inversión (COP)", "Fin de temporada", "Colecciones en curso"),
+  vitrina: vc("Exhibición en vitrina (referencia)", "Ubicación, fecha de montaje y rotación", "Responsable", "Precio exhibido (COP)", "Cambiar el", "Exhibiciones por renovar"),
   // Lavandería
   entregas_lav: vc("Recogida o entrega (cliente y orden)", "Dirección, prendas o vehículo y horario", "Domiciliario", "Valor del servicio (COP)", "Fecha y hora", "Rutas por realizar"),
   insumos_lav: vc("Insumo (jabón, químico, consumible)", "Cantidad, presentación y rendimiento", "Proveedor", "Costo por unidad (COP)", "Último ingreso", "Insumos por reponer"),
