@@ -112,7 +112,7 @@ function SuperAdminPage() {
   }).length;
 
   const tarjetas = [
-    { t: "Empresas", v: empresas.length },
+    { t: "Personas registradas", v: empresas.length },
     { t: "Activas", v: activas },
     { t: "Suspendidas", v: suspendidas },
     { t: "Vencen en 7 días", v: porVencer },
@@ -192,6 +192,12 @@ function SuperAdminPage() {
           const estado = s?.estado ?? "activo";
           const vence = s?.vence_el ?? "";
           const base = vence && vence > hoy ? vence : hoy;
+          const diasRestantes =
+            vence && hoy
+              ? Math.round((new Date(`${vence}T00:00:00`).getTime() - new Date(`${hoy}T00:00:00`).getTime()) / 86400000)
+              : null;
+          const planTexto = PLANES.find((p) => p.clave === plan)?.texto ?? plan;
+          const contacto = [e.telefono_pedidos, e.whatsapp_cocina, e.instagram, e.sitio_web].filter(Boolean).join(" · ");
           return (
             <GlassPanel key={e.id} className="space-y-3 p-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
@@ -209,6 +215,28 @@ function SuperAdminPage() {
                 >
                   {estado === "suspendido" ? "Suspendida por falta de pago" : vencida(s) ? "Vencida" : "Activa"}
                 </span>
+              </div>
+              <div className="grid gap-1 rounded-lg border border-glass-border bg-glass/30 p-3 text-sm sm:grid-cols-2">
+                <p className="break-words text-foreground">
+                  <span className="text-xs text-muted-foreground">Contacto: </span>
+                  {contacto || "Sin datos de contacto"}
+                </p>
+                <p className="text-foreground">
+                  <span className="text-xs text-muted-foreground">Licencia: </span>
+                  {planTexto}
+                </p>
+                <p className={diasRestantes !== null && diasRestantes < 0 ? "text-destructive" : "text-foreground"}>
+                  <span className="text-xs text-muted-foreground">Días de licencia: </span>
+                  {diasRestantes === null
+                    ? "Sin fecha"
+                    : diasRestantes < 0
+                      ? `Venció hace ${-diasRestantes} ${-diasRestantes === 1 ? "día" : "días"}`
+                      : `${diasRestantes} ${diasRestantes === 1 ? "día" : "días"}`}
+                </p>
+                <p className="text-foreground">
+                  <span className="text-xs text-muted-foreground">Vence el: </span>
+                  {vence || "Sin fecha"}
+                </p>
               </div>
               <div className="flex flex-wrap items-end gap-3">
                 <label className="space-y-1">
