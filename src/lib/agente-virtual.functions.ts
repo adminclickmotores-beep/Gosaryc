@@ -5,6 +5,8 @@ import { tarifasComoTexto } from "@/lib/tarifas-domicilio";
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-2.5-flash";
+const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+const GEMINI_MODEL = "gemini-2.5-flash";
 
 export type AgenteMensaje = { role: "user" | "assistant"; content: string };
 
@@ -15,8 +17,12 @@ export const runAgenteVirtual = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAiQuota(context.supabase, "agente-virtual");
 
-    const apiKey = process.env.LOVABLE_API_KEY;
+    // Si hay llave gratuita de Google Gemini, se usa esa; si no, la IA integrada de Lovable.
+    const geminiKey = process.env.GEMINI_API_KEY;
+    const apiKey = geminiKey || process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("El asistente todavía no está configurado.");
+    const endpoint = geminiKey ? GEMINI_ENDPOINT : GATEWAY;
+    const modelo = geminiKey ? GEMINI_MODEL : MODEL;
 
     // Catálogo real del negocio (RLS aplica: solo lo que este usuario puede ver).
     const [{ data: productos }, { data: categorias }] = await Promise.all([
@@ -73,13 +79,13 @@ Reglas:
         })),
     ];
 
-    const res = await fetch(GATEWAY, {
+    const res = await fetch(endpoint, {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: MODEL, messages }),
+      body: JSON.stringify({ model: modelo, messages }),
     });
     if (!res.ok) {
-      if (res.status === 429) throw new Error("El asistente está ocupado. Intenta de nuevo en un momento.");
+      if (res.status === 429) throw new Error("El asistente está ocupado o llegó al límite gratuito de hoy. Intenta de nuevo en un momento.");
       if (res.status === 402) throw new Error("Se agotaron los créditos de IA del proyecto.");
       throw new Error("El asistente no respondió. Intenta de nuevo.");
     }
