@@ -23,11 +23,15 @@ En las migraciones revisadas no encontré políticas abiertas vigentes sobre las
 |---|---|---|---|---|
 | Compras de vehículos | implementado sin probar | Tablas propias (compra, negociación, gastos, pagos, aprobaciones, historial, documentos). Valores económicos protegidos con permiso `com_economico`; cualquier cambio económico invalida la aprobación; la recepción crea o vincula el vehículo (sin duplicar placa/VIN) y guarda el precio en la tabla protegida de costos. | Ninguna (sin cuentas por rol) | Probar con asesor / administrador |
 | Compras → Caja, cuentas por pagar y contabilidad | pendiente | Los pagos quedan registrados en la compra pero no se descuentan solos de caja ni se contabilizan. Los documentos quedan en la compra, no se copian a la ficha del vehículo. | — | Conectar pagos con caja y asientos |
-| Consignaciones | pendiente | Siguen como registro genérico. | — | Tablas propias (propietario, precio mínimo, comisión, contrato, vigencia, liquidación) |
+| Consignaciones | implementado sin probar | Tablas propias (`consignaciones_vehiculos`, `consignaciones_economico`), vigencia con alertas, valores protegidos con `com_economico`, cambio de estado con `com_aprobar`, liquidación calculada en el servidor (`consignacion_liquidar`). Pendiente: vínculo con inventario, caja y contabilidad. | Ninguna | Probar con 3 roles; conectar liquidación a caja |
 | Inspecciones/peritajes, prospectos, comisiones, costos por vehículo, cartera | pendiente | Registros genéricos. | — | Después de consignaciones |
 
 ## Bloque 3 — Procesos (pendiente)
 Compra→Inventario→Venta→Cobro→Caja→Contabilidad; Retoma→Avalúo→Aprobación→Inventario; Reserva→Servicio→Factura→Pago (con control de disponibilidad); Pedido→Cocina→Inventario→Caja→Contabilidad.
+
+### Checkpoint (orden maestra)
+- Servicios y citas: el servidor rechaza una segunda cita activa del mismo cliente el mismo día en el mismo módulo (implementado sin probar). Pendiente: disponibilidad por hora y por profesional, órdenes de servicio, pagos y comisiones.
+- Siguiente paquete: conectar pagos de compras y liquidaciones con caja y contabilidad; luego prospectos, comisiones y cartera del concesionario; luego restaurante y servicios.
 
 ## Bloque 4 — 21 sectores (pendiente)
 Restaurante: implementado sin probar. Concesionario: parcial. Resto: módulos genéricos, pendientes de especializar.
