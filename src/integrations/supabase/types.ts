@@ -269,6 +269,69 @@ export type Database = {
         }
         Relationships: []
       }
+      vehiculo_gastos: {
+        Row: {
+          categoria: string
+          created_at: string
+          descripcion: string
+          fecha: string
+          id: string
+          monto: number
+          owner_id: string | null
+          proveedor: string | null
+          vehiculo_id: string
+        }
+        Insert: {
+          categoria?: string
+          created_at?: string
+          descripcion: string
+          fecha?: string
+          id?: string
+          monto?: number
+          owner_id?: string | null
+          proveedor?: string | null
+          vehiculo_id: string
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          descripcion?: string
+          fecha?: string
+          id?: string
+          monto?: number
+          owner_id?: string | null
+          proveedor?: string | null
+          vehiculo_id?: string
+        }
+        Relationships: []
+      }
+      vehiculo_movimientos: {
+        Row: {
+          created_at: string
+          detalle: string
+          id: string
+          owner_id: string | null
+          tipo: string
+          vehiculo_id: string
+        }
+        Insert: {
+          created_at?: string
+          detalle: string
+          id?: string
+          owner_id?: string | null
+          tipo: string
+          vehiculo_id: string
+        }
+        Update: {
+          created_at?: string
+          detalle?: string
+          id?: string
+          owner_id?: string | null
+          tipo?: string
+          vehiculo_id?: string
+        }
+        Relationships: []
+      }
       turnos_caja: {
         Row: {
           abierto_en: string
@@ -609,8 +672,28 @@ export type Database = {
           separado_abono: number | null
           separado_fecha: string | null
           separado_notas: string | null
+          linea: string | null
+          chasis: string | null
+          procedencia: string
+          propietario_nombre: string | null
+          propietario_documento: string | null
+          propietario_telefono: string | null
+          propietario_email: string | null
+          fecha_ingreso: string | null
+          fecha_venta: string | null
+          precio_venta_final: number | null
         }
         Insert: {
+          linea?: string | null
+          chasis?: string | null
+          procedencia?: string
+          propietario_nombre?: string | null
+          propietario_documento?: string | null
+          propietario_telefono?: string | null
+          propietario_email?: string | null
+          fecha_ingreso?: string | null
+          fecha_venta?: string | null
+          precio_venta_final?: number | null
           anio?: number | null
           carroceria?: string | null
           ciudad_matricula?: string | null
@@ -648,6 +731,16 @@ export type Database = {
           separado_notas?: string | null
         }
         Update: {
+          linea?: string | null
+          chasis?: string | null
+          procedencia?: string
+          propietario_nombre?: string | null
+          propietario_documento?: string | null
+          propietario_telefono?: string | null
+          propietario_email?: string | null
+          fecha_ingreso?: string | null
+          fecha_venta?: string | null
+          precio_venta_final?: number | null
           anio?: number | null
           carroceria?: string | null
           ciudad_matricula?: string | null

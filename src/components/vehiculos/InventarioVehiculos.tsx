@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Car, FileText, ImagePlus, Pencil, Trash2, X } from "lucide-react";
+import { ArrowLeft, Car, Eye, FileText, ImagePlus, LayoutGrid, Pencil, Table2, Trash2, X } from "lucide-react";
+import { FichaVehiculo, PROCEDENCIAS, calcularCostos } from "@/components/vehiculos/FichaVehiculo";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -16,12 +17,21 @@ const campo =
   "w-full rounded-lg border border-glass-border bg-glass/40 px-3 py-2.5 text-base text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary/50";
 
 const ESTADOS = [
+  { clave: "ingreso", texto: "Ingreso" },
+  { clave: "inspeccion", texto: "Inspección" },
+  { clave: "alistamiento", texto: "Alistamiento" },
   { clave: "disponible", texto: "Disponible" },
-  { clave: "separado", texto: "Separado" },
+  { clave: "separado", texto: "Reservado" },
   { clave: "vendido", texto: "Vendido" },
+  { clave: "entregado", texto: "Entregado" },
+  { clave: "retirado", texto: "Retirado" },
 ];
+const textoEstado = (c: string) => ESTADOS.find((e) => e.clave === c)?.texto ?? c;
+const hoyISO = () => new Date().toISOString().slice(0, 10);
 
 type Form = {
+  linea: string; chasis: string; procedencia: string; propietario_nombre: string; propietario_documento: string;
+  propietario_telefono: string; propietario_email: string; fecha_ingreso: string; precio_venta_final: string;
   tipo: string; condicion: string; estado: string; marca: string; modelo: string; version: string;
   anio: string; placa: string; color: string; kilometraje: string; combustible: string; transmision: string;
   cilindraje: string; carroceria: string; puertas: string; traccion: string; ciudad_matricula: string;
@@ -30,6 +40,8 @@ type Form = {
 };
 
 const VACIO: Form = {
+  linea: "", chasis: "", procedencia: "compra", propietario_nombre: "", propietario_documento: "",
+  propietario_telefono: "", propietario_email: "", fecha_ingreso: "", precio_venta_final: "",
   tipo: "carro", condicion: "usado", estado: "disponible", marca: "", modelo: "", version: "",
   anio: "", placa: "", color: "", kilometraje: "", combustible: "", transmision: "",
   cilindraje: "", carroceria: "", puertas: "", traccion: "", ciudad_matricula: "",
@@ -60,15 +72,23 @@ export function InventarioVehiculos() {
   const [fTipo, setFTipo] = useState("todos");
   const [fEstado, setFEstado] = useState("todos");
   const [fMarca, setFMarca] = useState("todas");
+  const [fModelo, setFModelo] = useState("todos");
+  const [fProc, setFProc] = useState("todas");
+  const [fDisp, setFDisp] = useState("todos");
+  const [vista, setVista] = useState<"tarjetas" | "tabla">("tarjetas");
+  const [gastosPorVeh, setGastosPorVeh] = useState<Record<string, number>>({});
+  const [ficha, setFicha] = useState<string | null>(null);
 
   const cargar = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("vehiculos_inventario")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(500);
+    const [{ data, error }, g] = await Promise.all([
+      supabase.from("vehiculos_inventario").select("*").order("created_at", { ascending: false }).limit(500),
+      supabase.from("vehiculo_gastos").select("vehiculo_id, monto").limit(5000),
+    ]);
     if (error) toast.error("No se pudo cargar el inventario.");
     setLista(data ?? []);
+    const mapa: Record<string, number> = {};
+    for (const x of g.data ?? []) mapa[x.vehiculo_id] = (mapa[x.vehiculo_id] ?? 0) + x.monto;
+    setGastosPorVeh(mapa);
     setCargando(false);
   }, []);
 
@@ -107,15 +127,35 @@ export function InventarioVehiculos() {
     const precio = num(form.precio);
     if (!form.marca.trim() || !form.modelo.trim()) return toast.error("Escribe la marca y el modelo.");
     if (precio === null || precio < 0) return toast.error("Escribe un precio válido.");
+    const placaN = txt(form.placa)?.toUpperCase().replace(/[\s-]/g, "") ?? null;
+    const vinN = txt(form.vin)?.toUpperCase().replace(/\s/g, "") ?? null;
+    if (placaN && !/^[A-Z0-9]{5,7}$/.test(placaN)) return toast.error("La placa debe tener entre 5 y 7 letras o números.");
+    if (vinN && !/^[A-Z0-9]{8,20}$/.test(vinN)) return toast.error("El VIN debe tener entre 8 y 20 letras o números (sin I, O ni Q en un VIN estándar de 17).");
+    if (placaN && lista.some((x) => x.id !== editando && (x.placa ?? "").toUpperCase().replace(/[\s-]/g, "") === placaN))
+      return toast.error("Ya existe un vehículo con esa placa.");
+    if (vinN && lista.some((x) => x.id !== editando && (x.vin ?? "").toUpperCase().replace(/\s/g, "") === vinN))
+      return toast.error("Ya existe un vehículo con ese VIN.");
+    if (form.procedencia === "consignacion" && !form.propietario_nombre.trim())
+      return toast.error("Un vehículo en consignación necesita los datos del propietario.");
+    const finalVenta = num(form.precio_venta_final);
+    if ((form.estado === "vendido" || form.estado === "entregado") && finalVenta === null)
+      return toast.error("Escribe el precio final de venta para calcular la utilidad real.");
+    const previo = editando ? lista.find((x) => x.id === editando) : undefined;
     setGuardando(true);
     const datos = {
+      linea: txt(form.linea), chasis: txt(form.chasis), procedencia: form.procedencia,
+      propietario_nombre: txt(form.propietario_nombre), propietario_documento: txt(form.propietario_documento),
+      propietario_telefono: txt(form.propietario_telefono), propietario_email: txt(form.propietario_email),
+      fecha_ingreso: form.fecha_ingreso || (editando ? previo?.fecha_ingreso ?? null : hoyISO()),
+      precio_venta_final: finalVenta,
+      fecha_venta: form.estado === "vendido" || form.estado === "entregado" ? previo?.fecha_venta ?? hoyISO() : null,
       tipo: form.tipo, condicion: form.condicion, estado: form.estado,
       marca: form.marca.trim(), modelo: form.modelo.trim(), version: txt(form.version),
-      anio: num(form.anio), placa: txt(form.placa)?.toUpperCase() ?? null, color: txt(form.color),
+      anio: num(form.anio), placa: placaN, color: txt(form.color),
       kilometraje: num(form.kilometraje), combustible: txt(form.combustible), transmision: txt(form.transmision),
       cilindraje: txt(form.cilindraje), carroceria: txt(form.carroceria), puertas: num(form.puertas),
       traccion: txt(form.traccion), ciudad_matricula: txt(form.ciudad_matricula),
-      num_propietarios: num(form.num_propietarios), vin: txt(form.vin), motor_numero: txt(form.motor_numero),
+      num_propietarios: num(form.num_propietarios), vin: vinN, motor_numero: txt(form.motor_numero),
       precio, precio_compra: num(form.precio_compra),
       soat_vence: form.soat_vence || null, tecnomecanica_vence: form.tecnomecanica_vence || null,
       equipamiento: txt(form.equipamiento), observaciones: txt(form.observaciones), fotos,
@@ -124,7 +164,11 @@ export function InventarioVehiculos() {
       ? await supabase.from("vehiculos_inventario").update(datos).eq("id", editando)
       : await supabase.from("vehiculos_inventario").insert(datos);
     setGuardando(false);
-    if (error) return toast.error("No se pudo guardar el vehículo.");
+    if (error) {
+      if (error.message.includes("PLACA_DUPLICADA")) return toast.error("Ya existe un vehículo con esa placa.");
+      if (error.message.includes("VIN_DUPLICADO")) return toast.error("Ya existe un vehículo con ese VIN.");
+      return toast.error("No se pudo guardar el vehículo.");
+    }
     toast.success(editando ? "Vehículo actualizado." : "Vehículo guardado.");
     limpiar();
     cargar();
@@ -133,6 +177,9 @@ export function InventarioVehiculos() {
   const editar = (v: Vehiculo) => {
     const s = (x: string | number | null) => (x === null || x === undefined ? "" : String(x));
     setForm({
+      linea: s(v.linea), chasis: s(v.chasis), procedencia: v.procedencia, propietario_nombre: s(v.propietario_nombre),
+      propietario_documento: s(v.propietario_documento), propietario_telefono: s(v.propietario_telefono),
+      propietario_email: s(v.propietario_email), fecha_ingreso: s(v.fecha_ingreso), precio_venta_final: s(v.precio_venta_final),
       tipo: v.tipo, condicion: v.condicion, estado: v.estado, marca: v.marca, modelo: v.modelo, version: s(v.version),
       anio: s(v.anio), placa: s(v.placa), color: s(v.color), kilometraje: s(v.kilometraje),
       combustible: s(v.combustible), transmision: s(v.transmision), cilindraje: s(v.cilindraje),
@@ -148,13 +195,22 @@ export function InventarioVehiculos() {
   };
 
   const cambiarEstado = async (v: Vehiculo, estado: string) => {
-    const { error } = await supabase.from("vehiculos_inventario").update({ estado }).eq("id", v.id);
+    if ((estado === "vendido" || estado === "entregado") && v.precio_venta_final === null) {
+      toast.error("Para marcarlo como vendido, edita el vehículo y escribe el precio final de venta.");
+      editar({ ...v, estado });
+      return;
+    }
+    const cambios = {
+      estado,
+      fecha_venta: estado === "vendido" || estado === "entregado" ? v.fecha_venta ?? hoyISO() : null,
+    };
+    const { error } = await supabase.from("vehiculos_inventario").update(cambios).eq("id", v.id);
     if (error) return toast.error("No se pudo actualizar.");
     cargar();
   };
 
   const borrar = async (v: Vehiculo) => {
-    if (!window.confirm(`¿Eliminar ${v.marca} ${v.modelo}?`)) return;
+    if (!window.confirm(`¿Eliminar ${v.marca} ${v.modelo}? Se borrarán también sus gastos e historial. Si solo salió del negocio, mejor márcalo como “Retirado”.`)) return;
     const { error } = await supabase.from("vehiculos_inventario").delete().eq("id", v.id);
     if (error) return toast.error("No se pudo eliminar.");
     cargar();
@@ -162,22 +218,33 @@ export function InventarioVehiculos() {
 
   const marcas = useMemo(() => Array.from(new Set(lista.map((v) => v.marca))).sort(), [lista]);
 
+  const modelos = useMemo(
+    () => Array.from(new Set(lista.filter((v) => fMarca === "todas" || v.marca === fMarca).map((v) => v.modelo))).sort(),
+    [lista, fMarca],
+  );
+
   const visibles = useMemo(() => {
     const q = busca.trim().toLowerCase();
     return lista.filter((v) => {
       if (fTipo !== "todos" && v.tipo !== fTipo) return false;
       if (fEstado !== "todos" && v.estado !== fEstado) return false;
       if (fMarca !== "todas" && v.marca !== fMarca) return false;
+      if (fModelo !== "todos" && v.modelo !== fModelo) return false;
+      if (fProc !== "todas" && v.procedencia !== fProc) return false;
+      if (fDisp === "venta" && !(v.estado === "disponible")) return false;
+      if (fDisp === "no_disponible" && v.estado === "disponible") return false;
       if (!q) return true;
-      return [v.marca, v.modelo, v.version, v.placa, v.color, v.anio].some((x) => String(x ?? "").toLowerCase().includes(q));
+      return [v.marca, v.modelo, v.linea, v.version, v.placa, v.vin, v.chasis, v.motor_numero, v.color, v.anio].some((x) => String(x ?? "").toLowerCase().includes(q));
     });
-  }, [lista, busca, fTipo, fEstado, fMarca]);
+  }, [lista, busca, fTipo, fEstado, fMarca, fModelo, fProc, fDisp]);
+
+  const fichaVeh = ficha ? lista.find((v) => v.id === ficha) ?? null : null;
 
   const disponibles = lista.filter((v) => v.estado === "disponible");
   const valorDisponible = disponibles.reduce((s, v) => s + v.precio, 0);
 
   const generarCatalogo = () => {
-    const base = visibles.filter((v) => v.estado !== "vendido");
+    const base = visibles.filter((v) => v.estado === "disponible" || v.estado === "separado");
     if (base.length === 0) return toast.error("No hay vehículos disponibles para el catálogo.");
     const color = negocio?.color_principal && /^#[0-9a-f]{6}$/i.test(negocio.color_principal) ? negocio.color_principal : "#0e7490";
     const nombre = negocio?.nombre || "Catálogo de vehículos";
@@ -270,6 +337,10 @@ ${tarjetas}
             <h2 className="font-medium text-foreground">{editando ? "Editar vehículo" : "Nuevo vehículo"}</h2>
             {editando && <button onClick={limpiar} className="text-xs text-primary">Cancelar edición</button>}
           </div>
+          <label className="block space-y-1"><span className="text-xs text-muted-foreground">Procedencia</span>
+            <select className={campo} value={form.procedencia} onChange={(e) => set("procedencia", e.target.value)}>
+              {Object.entries(PROCEDENCIAS).map(([k, t]) => <option key={k} value={k}>{t}</option>)}
+            </select></label>
           <div className="grid grid-cols-2 gap-3">
             <label className="space-y-1"><span className="text-xs text-muted-foreground">Tipo</span>
               <select className={campo} value={form.tipo} onChange={(e) => set("tipo", e.target.value)}>
@@ -283,6 +354,7 @@ ${tarjetas}
           <div className="grid grid-cols-2 gap-3">
             <input className={campo} placeholder="Marca *" value={form.marca} onChange={(e) => set("marca", e.target.value)} />
             <input className={campo} placeholder="Modelo / línea *" value={form.modelo} onChange={(e) => set("modelo", e.target.value)} />
+            <input className={campo} placeholder="Línea" value={form.linea} onChange={(e) => set("linea", e.target.value)} />
             <input className={campo} placeholder="Versión" value={form.version} onChange={(e) => set("version", e.target.value)} />
             <input className={campo} placeholder="Año" inputMode="numeric" value={form.anio} onChange={(e) => set("anio", e.target.value)} />
             <input className={campo} placeholder="Placa" value={form.placa} onChange={(e) => set("placa", e.target.value)} />
@@ -300,10 +372,14 @@ ${tarjetas}
             {form.tipo === "carro" && <input className={campo} placeholder="Tracción (4x2, 4x4…)" value={form.traccion} onChange={(e) => set("traccion", e.target.value)} />}
             <input className={campo} placeholder="Ciudad de matrícula" value={form.ciudad_matricula} onChange={(e) => set("ciudad_matricula", e.target.value)} />
             <input className={campo} placeholder="N.º de propietarios" inputMode="numeric" value={form.num_propietarios} onChange={(e) => set("num_propietarios", e.target.value)} />
-            <input className={campo} placeholder="VIN / chasis" value={form.vin} onChange={(e) => set("vin", e.target.value)} />
+            <input className={campo} placeholder="VIN" value={form.vin} onChange={(e) => set("vin", e.target.value)} />
+            <input className={campo} placeholder="N.º de chasis" value={form.chasis} onChange={(e) => set("chasis", e.target.value)} />
             <input className={campo} placeholder="N.º de motor" value={form.motor_numero} onChange={(e) => set("motor_numero", e.target.value)} />
             <input className={campo} placeholder="Precio de venta (COP) *" inputMode="decimal" value={form.precio} onChange={(e) => set("precio", e.target.value)} />
-            <input className={campo} placeholder="Precio de compra (COP)" inputMode="decimal" value={form.precio_compra} onChange={(e) => set("precio_compra", e.target.value)} />
+            <input className={campo} placeholder="Precio de adquisición (COP)" inputMode="decimal" value={form.precio_compra} onChange={(e) => set("precio_compra", e.target.value)} />
+            <input className={campo} placeholder="Precio final de venta (COP)" inputMode="decimal" value={form.precio_venta_final} onChange={(e) => set("precio_venta_final", e.target.value)} />
+            <label className="space-y-1"><span className="text-xs text-muted-foreground">Fecha de ingreso</span>
+              <input className={campo} type="date" value={form.fecha_ingreso} onChange={(e) => set("fecha_ingreso", e.target.value)} /></label>
             <label className="space-y-1"><span className="text-xs text-muted-foreground">SOAT vence</span>
               <input className={campo} type="date" value={form.soat_vence} onChange={(e) => set("soat_vence", e.target.value)} /></label>
             <label className="space-y-1"><span className="text-xs text-muted-foreground">Tecnomecánica vence</span>
@@ -313,6 +389,15 @@ ${tarjetas}
             <select className={campo} value={form.estado} onChange={(e) => set("estado", e.target.value)}>
               {ESTADOS.map((e) => <option key={e.clave} value={e.clave}>{e.texto}</option>)}
             </select></label>
+          <div className="space-y-2">
+            <span className="text-xs text-muted-foreground">Propietario {form.procedencia === "consignacion" ? "(obligatorio en consignación)" : "o vendedor anterior"}</span>
+            <div className="grid grid-cols-2 gap-3">
+              <input className={campo} placeholder="Nombre" value={form.propietario_nombre} onChange={(e) => set("propietario_nombre", e.target.value)} />
+              <input className={campo} placeholder="Documento" value={form.propietario_documento} onChange={(e) => set("propietario_documento", e.target.value)} />
+              <input className={campo} placeholder="Teléfono" inputMode="tel" value={form.propietario_telefono} onChange={(e) => set("propietario_telefono", e.target.value)} />
+              <input className={campo} placeholder="Correo" type="email" value={form.propietario_email} onChange={(e) => set("propietario_email", e.target.value)} />
+            </div>
+          </div>
           <textarea className={campo} rows={2} placeholder="Equipamiento (aire, cámara, ABS, rines…)" value={form.equipamiento} onChange={(e) => set("equipamiento", e.target.value)} />
           <textarea className={campo} rows={2} placeholder="Observaciones" value={form.observaciones} onChange={(e) => set("observaciones", e.target.value)} />
 
@@ -340,7 +425,22 @@ ${tarjetas}
         </GlassPanel>
 
         <div className="min-w-0 space-y-3">
-          <input className={campo} placeholder="Buscar por marca, modelo, placa, color o año" value={busca} onChange={(e) => setBusca(e.target.value)} />
+          <input className={campo} placeholder="Buscar por placa, VIN, marca, modelo, motor o color" value={busca} onChange={(e) => setBusca(e.target.value)} />
+          <div className="grid grid-cols-2 gap-2">
+            <select className={campo} value={fProc} onChange={(e) => setFProc(e.target.value)}>
+              <option value="todas">Toda procedencia</option>
+              {Object.entries(PROCEDENCIAS).map(([k, t]) => <option key={k} value={k}>{t}</option>)}
+            </select>
+            <select className={campo} value={fDisp} onChange={(e) => setFDisp(e.target.value)}>
+              <option value="todos">Toda disponibilidad</option>
+              <option value="venta">En venta ahora</option>
+              <option value="no_disponible">No disponible</option>
+            </select>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => setVista("tarjetas")} className={`${chip(vista === "tarjetas")} inline-flex items-center gap-1.5`}><LayoutGrid className="h-4 w-4" /> Tarjetas</button>
+            <button onClick={() => setVista("tabla")} className={`${chip(vista === "tabla")} inline-flex items-center gap-1.5`}><Table2 className="h-4 w-4" /> Tabla</button>
+          </div>
           <div className="flex flex-wrap gap-2">
             {[{ c: "todos", t: "Todos" }, { c: "carro", t: "Carros" }, { c: "moto", t: "Motos" }].map((x) => (
               <button key={x.c} onClick={() => setFTipo(x.c)} className={chip(fTipo === x.c)}>{x.t}</button>
@@ -351,16 +451,52 @@ ${tarjetas}
             ))}
           </div>
           {marcas.length > 0 && (
-            <select className={campo} value={fMarca} onChange={(e) => setFMarca(e.target.value)}>
-              <option value="todas">Todas las marcas</option>
-              {marcas.map((m) => <option key={m} value={m}>{m}</option>)}
-            </select>
+            <div className="grid grid-cols-2 gap-2">
+              <select className={campo} value={fMarca} onChange={(e) => { setFMarca(e.target.value); setFModelo("todos"); }}>
+                <option value="todas">Todas las marcas</option>
+                {marcas.map((m) => <option key={m} value={m}>{m}</option>)}
+              </select>
+              <select className={campo} value={fModelo} onChange={(e) => setFModelo(e.target.value)}>
+                <option value="todos">Todos los modelos</option>
+                {modelos.map((m) => <option key={m} value={m}>{m}</option>)}
+              </select>
+            </div>
           )}
 
           {cargando && <p className="text-sm text-muted-foreground">Cargando inventario…</p>}
           {!cargando && visibles.length === 0 && <p className="text-sm text-muted-foreground">Aún no hay vehículos con esos filtros.</p>}
 
-          {visibles.map((v) => (
+          {vista === "tabla" && visibles.length > 0 && (
+            <GlassPanel className="overflow-x-auto p-0">
+              <table className="w-full min-w-[640px] text-left text-sm">
+                <thead className="text-xs text-muted-foreground">
+                  <tr>
+                    <th className="p-3">Vehículo</th><th className="p-3">Placa</th><th className="p-3">Procedencia</th>
+                    <th className="p-3">Estado</th><th className="p-3">Costo</th><th className="p-3">Precio</th><th className="p-3">Utilidad</th><th className="p-3" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {visibles.map((v) => {
+                    const c = calcularCostos(v, gastosPorVeh[v.id] ?? 0);
+                    return (
+                      <tr key={v.id} className="border-t border-glass-border text-foreground">
+                        <td className="p-3">{v.marca} {v.modelo} {v.anio ?? ""}</td>
+                        <td className="p-3">{v.placa ?? "—"}</td>
+                        <td className="p-3">{PROCEDENCIAS[v.procedencia] ?? v.procedencia}</td>
+                        <td className="p-3">{textoEstado(v.estado)}</td>
+                        <td className="p-3">{dinero(c.costoTotal)}</td>
+                        <td className="p-3">{dinero(c.vendido ? v.precio_venta_final ?? v.precio : v.precio)}</td>
+                        <td className={`p-3 ${c.utilidad < 0 ? "text-destructive" : ""}`}>{dinero(c.utilidad)}</td>
+                        <td className="p-3"><button onClick={() => setFicha(v.id)} className="text-primary">Ficha</button></td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </GlassPanel>
+          )}
+
+          {vista === "tarjetas" && visibles.map((v) => (
             <GlassPanel key={v.id} className="flex flex-wrap gap-3 p-4">
               {v.fotos?.[0] ? (
                 <img src={v.fotos[0]} alt="" className="h-24 w-32 rounded-lg object-cover" />
@@ -378,7 +514,12 @@ ${tarjetas}
                   {v.transmision ? ` · ${v.transmision}` : ""}{v.combustible ? ` · ${v.combustible}` : ""}
                 </p>
                 <p className="text-sm font-medium text-foreground">{dinero(v.precio)}</p>
+                <p className="text-xs text-muted-foreground">
+                  {PROCEDENCIAS[v.procedencia] ?? v.procedencia} · Costo {dinero(calcularCostos(v, gastosPorVeh[v.id] ?? 0).costoTotal)} ·{" "}
+                  {calcularCostos(v, gastosPorVeh[v.id] ?? 0).vendido ? "Utilidad" : "Utilidad proyectada"} {dinero(calcularCostos(v, gastosPorVeh[v.id] ?? 0).utilidad)}
+                </p>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <button onClick={() => setFicha(v.id)} className="inline-flex items-center gap-1 text-xs text-primary"><Eye className="h-3 w-3" /> Ficha</button>
                   <select className="rounded-lg border border-glass-border bg-glass/40 px-2 py-1 text-base text-foreground" value={v.estado} onChange={(e) => cambiarEstado(v, e.target.value)}>
                     {ESTADOS.map((e) => <option key={e.clave} value={e.clave}>{e.texto}</option>)}
                   </select>
@@ -390,6 +531,14 @@ ${tarjetas}
           ))}
         </div>
       </div>
+      {fichaVeh && (
+        <FichaVehiculo
+          vehiculo={fichaVeh}
+          onCerrar={() => setFicha(null)}
+          onEditar={() => { const v = fichaVeh; setFicha(null); editar(v); }}
+          onCambio={cargar}
+        />
+      )}
     </div>
   );
 }
