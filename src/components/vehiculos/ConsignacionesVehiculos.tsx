@@ -228,7 +228,7 @@ export function ConsignacionesVehiculos() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <Link to="/restaurante" className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+        <Link to="/dashboard" className="inline-flex items-center gap-1 text-xs text-muted-foreground">
           <ArrowLeft className="h-3 w-3" /> Volver al panel
         </Link>
         <h1 className="flex items-center gap-2 font-display text-3xl text-foreground">
