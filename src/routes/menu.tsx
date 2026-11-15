@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Json, Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
+import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 
 export const Route = createFileRoute("/menu")({
   head: () => ({
@@ -332,6 +333,22 @@ function MenuPage() {
       </GlassPanel>
     );
   };
+
+  // Un negocio que no vende por pedidos (concesionario, clínica, etc.) no tiene menú digital.
+  if (negocio && !resolverTipoNegocio(negocio.tipo_negocio).usaPedidos) {
+    return (
+      <div className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-4 px-4 text-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/15">
+          <UtensilsCrossed className="h-10 w-10 text-primary" />
+        </div>
+        <h1 className="font-display text-2xl text-foreground">{negocio.nombre}</h1>
+        <p className="text-muted-foreground">Este negocio no tiene menú digital de pedidos.</p>
+        <Link to="/" className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90">
+          Ir al inicio
+        </Link>
+      </div>
+    );
+  }
 
   if (paso === "listo") {
     return (
