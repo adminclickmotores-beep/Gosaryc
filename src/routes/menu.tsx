@@ -72,8 +72,7 @@ function MenuPage() {
   const { n } = Route.useSearch();
   const { negocio, cargando: cargandoNegocio } = useNegocio(n);
   // Negocio al que pertenece este menú: el del enlace (?n=) o, si no hay, el que cargó.
-  const dueno = n ?? negocio?.owner_id ?? null;
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const dueno = n ?? negocio?.owner_id ?? null;  const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [productos, setProductos] = useState<Producto[]>([]);
   const [cargando, setCargando] = useState(true);
   const [carrito, setCarrito] = useState<Linea[]>([]);

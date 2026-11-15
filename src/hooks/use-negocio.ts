@@ -12,6 +12,16 @@ export function useNegocio(duenoId?: string | null) {
   const recargar = useCallback(async () => {
     // Con sesión, las reglas de la base solo devuelven el negocio propio.
     // Sin sesión (menú público) se puede indicar de qué negocio se trata.
+    // Sin sesión y sin negocio indicado, nunca se muestra el negocio de otra persona
+    // (antes se tomaba el primero de la lista, que era Crokante).
+    if (!duenoId) {
+      const { data: sesion } = await supabase.auth.getSession();
+      if (!sesion.session) {
+        setNegocio(null);
+        setCargando(false);
+        return;
+      }
+    }
     let consulta = supabase.from("negocio_config").select("*");
     if (duenoId) consulta = consulta.eq("owner_id", duenoId);
     const { data } = await consulta.order("created_at").limit(1).maybeSingle();
