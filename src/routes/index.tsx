@@ -1,5 +1,5 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, type ComponentType } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import type { ComponentType } from "react";
 import {
   UtensilsCrossed, ChefHat, Bike, Boxes, Wallet, MessageCircle, Download, ArrowRight, Store, Scissors,
   Stethoscope, GraduationCap, BedDouble, Dumbbell, Hammer, Sprout, Building2, PawPrint, Laptop, Truck, Car,
@@ -74,14 +74,9 @@ const CIFRAS = [
 ];
 
 function LandingPage() {
-  const { session, loading } = useAuth();
-  const navigate = useNavigate();
+  const { loading } = useAuth();
 
-  useEffect(() => {
-    if (!loading && session) navigate({ to: "/restaurante", replace: true });
-  }, [session, loading, navigate]);
-
-  if (loading || session) {
+  if (loading) {
     return (
       <div className="relative min-h-screen overflow-hidden">
         <GradientMesh />
