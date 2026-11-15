@@ -4,7 +4,7 @@ import { Download, ExternalLink, Trash2 } from "lucide-react";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { PasoAPaso } from "@/components/restaurante/PasoAPaso";
-import { resolverTipoNegocio, TIPOS_NEGOCIO } from "@/lib/modulos-negocio";
+import { resolverTipoNegocio, mismoTipoNegocio, TIPOS_NEGOCIO } from "@/lib/modulos-negocio";
 import { toast } from "sonner";
 import { GuiaRapida } from "@/components/app/GuiaRapida";
 import { GUIAS_NEGOCIO } from "@/lib/guia-negocio";
@@ -473,6 +473,7 @@ function RestaurantePage() {
 }
 
 function GestionMenu() {
+  const { negocio: negocioActual } = useNegocio();
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [productos, setProductos] = useState<Producto[]>([]);
   const [nombre, setNombre] = useState("");
@@ -487,9 +488,9 @@ function GestionMenu() {
       supabase.from("restaurante_categorias").select("*").order("orden"),
       supabase.from("restaurante_productos").select("*").order("nombre"),
     ]);
-    setCategorias(c.data ?? []);
-    setProductos(p.data ?? []);
-  }, []);
+    setCategorias((c.data ?? []).filter((x) => mismoTipoNegocio(x.tipo_negocio, negocioActual?.tipo_negocio)));
+    setProductos((p.data ?? []).filter((x) => mismoTipoNegocio(x.tipo_negocio, negocioActual?.tipo_negocio)));
+  }, [negocioActual?.tipo_negocio]);
 
   useEffect(() => {
     cargar();

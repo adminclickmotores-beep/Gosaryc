@@ -8,7 +8,7 @@ import { consejosPara } from "@/lib/consejos-cocina";
 import { sugerirReceta } from "@/lib/recetas-sugerir.functions";
 import { buscarRecetaBase } from "@/data/recetas-biblioteca";
 import { useNegocio } from "@/hooks/use-negocio";
-import { resolverTipoNegocio } from "@/lib/modulos-negocio";
+import { resolverTipoNegocio, mismoTipoNegocio } from "@/lib/modulos-negocio";
 
 type Insumo = Tables<"restaurante_insumos">;
 type Receta = Tables<"restaurante_recetas">;
@@ -45,8 +45,8 @@ export function RecetarioInventario() {
     setInsumos(a.data ?? []);
     setRecetas(b.data ?? []);
     setIngredientes(c.data ?? []);
-    setProductos(d.data ?? []);
-  }, []);
+    setProductos((d.data ?? []).filter((x) => mismoTipoNegocio(x.tipo_negocio, negocio?.tipo_negocio)));
+  }, [negocio?.tipo_negocio]);
 
   useEffect(() => {
     cargar();

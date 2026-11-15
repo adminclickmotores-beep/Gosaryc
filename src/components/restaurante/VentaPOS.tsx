@@ -6,6 +6,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { TARIFAS_DOMICILIO, buscarTarifa } from "@/lib/tarifas-domicilio";
 import { useNegocio } from "@/hooks/use-negocio";
+import { mismoTipoNegocio } from "@/lib/modulos-negocio";
 
 type Producto = Tables<"restaurante_productos">;
 type Categoria = Tables<"restaurante_categorias">;
@@ -155,10 +156,11 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
       supabase.from("restaurante_productos").select("*").eq("activo", true).order("nombre"),
       supabase.from("restaurante_mesas").select("*").order("numero"),
     ]);
-    setCategorias(c.data ?? []);
-    setProductos((p.data ?? []).filter((x) => x.activo === true));
+    const tipoActual = negocio?.tipo_negocio;
+    setCategorias((c.data ?? []).filter((x) => mismoTipoNegocio(x.tipo_negocio, tipoActual)));
+    setProductos((p.data ?? []).filter((x) => x.activo === true && mismoTipoNegocio(x.tipo_negocio, tipoActual)));
     setMesas(m.data ?? []);
-  }, []);
+  }, [negocio?.tipo_negocio]);
 
   useEffect(() => {
     cargar();

@@ -1765,6 +1765,7 @@ export type Database = {
           nombre: string
           orden: number
           owner_id: string | null
+          tipo_negocio: string | null
         }
         Insert: {
           activa?: boolean
@@ -1773,6 +1774,7 @@ export type Database = {
           nombre: string
           orden?: number
           owner_id?: string | null
+          tipo_negocio?: string | null
         }
         Update: {
           activa?: boolean
@@ -1781,6 +1783,7 @@ export type Database = {
           nombre?: string
           orden?: number
           owner_id?: string | null
+          tipo_negocio?: string | null
         }
         Relationships: []
       }
@@ -1949,6 +1952,7 @@ export type Database = {
           nombre: string
           owner_id: string | null
           precio: number
+          tipo_negocio: string | null
         }
         Insert: {
           activo?: boolean
@@ -1961,6 +1965,7 @@ export type Database = {
           nombre: string
           owner_id?: string | null
           precio?: number
+          tipo_negocio?: string | null
         }
         Update: {
           activo?: boolean
@@ -1973,6 +1978,7 @@ export type Database = {
           nombre?: string
           owner_id?: string | null
           precio?: number
+          tipo_negocio?: string | null
         }
         Relationships: [
           {

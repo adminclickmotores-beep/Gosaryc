@@ -20,7 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Json, Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
-import { resolverTipoNegocio } from "@/lib/modulos-negocio";
+import { resolverTipoNegocio, mismoTipoNegocio } from "@/lib/modulos-negocio";
 
 export const Route = createFileRoute("/menu")({
   head: () => ({
@@ -135,12 +135,12 @@ function MenuPage() {
         supabase.from("restaurante_productos").select("*").eq("owner_id", dueno).eq("activo", true).order("nombre"),
         supabase.from("restaurante_producto_opciones").select("*").eq("owner_id", dueno).eq("activa", true).order("created_at"),
       ]);
-      setCategorias(c.data ?? []);
-      setProductos(p.data ?? []);
+      setCategorias((c.data ?? []).filter((x) => mismoTipoNegocio(x.tipo_negocio, negocio?.tipo_negocio)));
+      setProductos((p.data ?? []).filter((x) => mismoTipoNegocio(x.tipo_negocio, negocio?.tipo_negocio)));
       setOpcionesTodas(o.data ?? []);
       setCargando(false);
     })();
-  }, [dueno, cargandoNegocio]);
+  }, [dueno, cargandoNegocio, negocio?.tipo_negocio]);
 
   const lineas = carrito;
   const total = lineas.reduce((s, l) => s + precioLinea(l) * l.cantidad, 0);

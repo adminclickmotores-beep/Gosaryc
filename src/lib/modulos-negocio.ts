@@ -583,6 +583,12 @@ export function buscarModulo(id: string): ModuloNegocio | undefined {
 
 const sinAcentos = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
+/** ¿Un producto/categoría guardado con ese tipo pertenece al tipo de negocio actual? (sin tipo = restaurante) */
+export function mismoTipoNegocio(filaTipo: string | null | undefined, negocioTipo: string | null | undefined): boolean {
+  const fila = filaTipo ? resolverTipoNegocio(filaTipo).clave : "restaurante";
+  return fila === resolverTipoNegocio(negocioTipo).clave;
+}
+
 /** Convierte el texto guardado en "tipo_negocio" (clave o texto libre) en un tipo conocido. */
 export function resolverTipoNegocio(valor: string | null | undefined): TipoNegocio {
   const t = sinAcentos((valor ?? "").trim());
