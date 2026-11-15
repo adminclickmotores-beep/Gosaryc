@@ -12,7 +12,7 @@
 
 @theme inline {
   --font-display: "Sora", "Urbanist", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Manrope", "Epilogue", "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", "Manrope", "Epilogue", "Inter Tight", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
   --font-mono: "Geist Mono", ui-monospace, "SF Mono", monospace;
 
@@ -77,8 +77,8 @@
   --popover-foreground: oklch(0.96 0.01 260);
 
   /* Cian neón sobre noche profunda */
-  --primary: oklch(0.84 0.15 200);
-  --primary-foreground: oklch(0.16 0.03 275);
+  --primary: oklch(0.65 0.11 80);
+  --primary-foreground: oklch(0.16 0.02 80);
 
   --secondary: oklch(0.27 0.05 290);
   --secondary-foreground: oklch(0.95 0.02 290);
@@ -94,7 +94,7 @@
 
   --border: oklch(1 0 0 / 0.09);
   --input: oklch(1 0 0 / 0.12);
-  --ring: oklch(0.84 0.15 200 / 0.5);
+  --ring: oklch(0.65 0.11 80 / 0.5);
 
   --mint: oklch(0.84 0.15 200);
   --mint-foreground: oklch(0.16 0.03 275);
@@ -146,8 +146,8 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.18 0.02 240);
 
-  --primary: oklch(0.55 0.2 275);
-  --primary-foreground: oklch(0.99 0.01 275);
+  --primary: oklch(0.65 0.11 80);
+  --primary-foreground: oklch(0.16 0.02 80);
 
   --secondary: oklch(0.62 0.18 340);
   --secondary-foreground: oklch(0.99 0.01 340);
@@ -160,7 +160,7 @@
 
   --border: oklch(0.2 0.03 270 / 0.1);
   --input: oklch(0.2 0.03 270 / 0.06);
-  --ring: oklch(0.55 0.2 275 / 0.5);
+  --ring: oklch(0.65 0.11 80 / 0.5);
 
   --glass: oklch(0.2 0.03 270 / 0.04);
   --glass-strong: oklch(0.2 0.03 270 / 0.07);
