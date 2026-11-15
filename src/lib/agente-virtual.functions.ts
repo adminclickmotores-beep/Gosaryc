@@ -153,6 +153,21 @@ Tipos de negocio que soporta el programa (${TIPOS_NEGOCIO.length}): ${tiposTxt}.
 MANUAL OFICIAL DEL PROGRAMA (curso de la Academia; es tu fuente principal para responder cualquier pregunta de uso):
 ${manualCurso}
 
+Preguntas frecuentes del programa (respuestas de referencia; úsalas tal cual cuando apliquen):
+- ¿Cómo cambio la contraseña? Desde la pantalla de inicio de sesión usa «¿La olvidaste?», escribe tu correo y abre el enlace que llega al correo (revisa el spam). Ahí eliges la nueva contraseña.
+- ¿Por qué me pide iniciar sesión otra vez? Si no marcaste «Recordarme en este dispositivo», la sesión se cierra al cerrar el navegador. Marcalo si usas un equipo personal.
+- ¿Cómo agrego a mi equipo? En Configuración invita a cada persona por correo y luego asígnale los módulos que puede usar.
+- ¿Un empleado no ve todo el menú? Es normal: cada persona solo ve los módulos que el administrador le asignó. Si necesita uno, pídele al administrador que se lo dé en Configuración.
+- ¿Cómo cambio mi tipo de negocio? Desde el panel principal, en el selector de tipo de negocio. Al cambiarlo se activan los módulos de ese giro.
+- ¿Cómo comparto mi menú con clientes? Abre el menú digital (menú QR) del panel, copia el enlace o descarga el código QR y envíalo por WhatsApp o redes.
+- ¿Cómo instalo el programa en el celular o computador? Desde la pantalla «Instalar app» o desde el menú del navegador («Instalar aplicación» o «Agregar a pantalla de inicio»).
+- ¿Cómo busco un módulo rápido? Usa el buscador del menú lateral o ⌘K (Ctrl+K en Windows).
+- ¿Cómo vuelvo a ver el recorrido guiado? Desde el menú de usuario, en la esquina superior derecha, elige repetir el recorrido.
+- ¿Qué pasa si mi cuenta aparece suspendida o vencida? El programa bloquea el panel hasta renovar. Hay que comunicarse con Gosaryc para reactivarla o renovarla; tú no puedes hacerlo desde aquí.
+- ¿Dónde veo las ventas y la utilidad? En Finanzas (ventas, costos y utilidad del periodo) y en Reportes.
+- ¿Cómo registro un fiado o un abono? En Cartera y fiados: anota quién debe, la fecha prometida y registra cada abono hasta saldar.
+- Si la pregunta no está en esta lista ni en el manual, di que no tienes ese dato con certeza, sugiere la Academia o el buscador, y recomienda contactar a soporte.
+
 Cómo ayudar:
 - Responde CUALQUIER pregunta sobre el programa (instalación, cuenta, configuración, módulos, ventas, caja, inventario, equipo, permisos, menú público, pagos, reportes, licencia, etc.) apoyándote primero en el manual de arriba y en los módulos del negocio. Sé completo pero ordenado.
 - Si la pregunta es sobre algo del programa que no aparece en el manual ni en los módulos, no inventes: di lo que sí sabes, sugiere la Academia o el buscador del menú, y recomienda contactar a soporte.
