@@ -63,7 +63,7 @@ function MetasPage() {
 
       {!cargando && (
         <>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <GlassPanel className="p-4">
               <p className="text-xs text-muted-foreground">En curso</p>
               <p className="font-display text-xl text-foreground">{enCurso.length}</p>

@@ -298,7 +298,7 @@ export function RetomasVehiculos() {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Registros</p><p className="text-lg font-medium text-foreground">{lista.length}</p></GlassPanel>
         <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">En evaluación</p><p className="text-lg font-medium text-foreground">{enEvaluacion}</p></GlassPanel>
         <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Retomados</p><p className="text-lg font-medium text-foreground">{retomados}</p></GlassPanel>

@@ -129,7 +129,7 @@ export function SeparacionesVehiculos() {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Separados</p><p className="text-lg font-medium text-foreground">{separados.length}</p></GlassPanel>
         <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Abonos recibidos</p><p className="truncate text-lg font-medium text-foreground">{dinero(abonos)}</p></GlassPanel>
         <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Por cobrar</p><p className="truncate text-lg font-medium text-foreground">{dinero(porCobrar)}</p></GlassPanel>

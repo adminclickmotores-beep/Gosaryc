@@ -241,7 +241,7 @@ export function ConsignacionesVehiculos() {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Vigentes</p><p className="text-lg font-medium text-foreground">{vigentes}</p></GlassPanel>
         <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Por vencer (15 días)</p><p className="text-lg font-medium text-foreground">{porVencer}</p></GlassPanel>
         <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Por liquidar</p><p className="text-lg font-medium text-foreground">{porLiquidar}</p></GlassPanel>

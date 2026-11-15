@@ -220,7 +220,7 @@ export function CotizacionesVehiculos() {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Cotizaciones</p><p className="text-lg font-medium text-foreground">{lista.length}</p></GlassPanel>
         <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Por cerrar</p><p className="text-lg font-medium text-foreground">{abiertas}</p></GlassPanel>
         <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Aceptadas</p><p className="text-lg font-medium text-foreground">{aceptadas}</p></GlassPanel>
