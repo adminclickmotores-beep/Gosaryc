@@ -305,6 +305,27 @@ export type Database = {
         }
         Relationships: []
       }
+      vehiculo_costos: {
+        Row: {
+          owner_id: string | null
+          precio_compra: number | null
+          updated_at: string
+          vehiculo_id: string
+        }
+        Insert: {
+          owner_id?: string | null
+          precio_compra?: number | null
+          updated_at?: string
+          vehiculo_id: string
+        }
+        Update: {
+          owner_id?: string | null
+          precio_compra?: number | null
+          updated_at?: string
+          vehiculo_id?: string
+        }
+        Relationships: []
+      }
       vehiculo_movimientos: {
         Row: {
           created_at: string

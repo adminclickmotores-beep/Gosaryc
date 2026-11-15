@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { FotoPrivada } from "@/components/vehiculos/FotoPrivada";
 
 type Vehiculo = Tables<"vehiculos_inventario">;
 
@@ -167,7 +168,7 @@ export function SeparacionesVehiculos() {
             <GlassPanel key={v.id} className="space-y-4 p-4">
               <div className="flex gap-3">
                 {v.fotos?.[0] ? (
-                  <img src={v.fotos[0]} alt="" className="h-24 w-32 shrink-0 rounded-lg object-cover" />
+                  <FotoPrivada valor={v.fotos[0]} className="h-24 w-32 shrink-0 rounded-lg object-cover" />
                 ) : (
                   <div className="flex h-24 w-32 shrink-0 items-center justify-center rounded-lg bg-glass/40 text-muted-foreground">
                     <Icono className="h-8 w-8" />
@@ -186,7 +187,7 @@ export function SeparacionesVehiculos() {
               {(v.fotos?.length ?? 0) > 1 && (
                 <div className="flex gap-2 overflow-x-auto">
                   {v.fotos.slice(1).map((u) => (
-                    <img key={u} src={u} alt="" className="h-14 w-20 shrink-0 rounded-md object-cover" />
+                    <FotoPrivada key={u} valor={u} className="h-14 w-20 shrink-0 rounded-md object-cover" />
                   ))}
                 </div>
               )}

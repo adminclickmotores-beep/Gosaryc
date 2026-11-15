@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FotoPrivada } from "@/components/vehiculos/FotoPrivada";
+import { migrarFotosAntiguas, subirFotoPrivada, urlsFirmadas } from "@/lib/fotos-vehiculos";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Car, Eye, FileText, ImagePlus, LayoutGrid, Pencil, Table2, Trash2, X } from "lucide-react";
 import { usePermisosVehiculos } from "@/hooks/use-permisos-vehiculos";
@@ -28,6 +30,8 @@ const ESTADOS = [
   { clave: "retirado", texto: "Retirado" },
 ];
 const errorLegible = (msg: string, defecto: string): string => {
+  if (msg.includes("vehiculos_placa_unica_idx")) return "Ya existe un vehículo con esa placa.";
+  if (msg.includes("vehiculos_vin_unico_idx")) return "Ya existe un vehículo con ese VIN.";
   if (msg.includes("PLACA_DUPLICADA")) return "Ya existe un vehículo con esa placa.";
   if (msg.includes("VIN_DUPLICADO")) return "Ya existe un vehículo con ese VIN.";
   if (msg.includes("SIN_PERMISO_ESTADOS")) return "No tienes permiso para cambiar estados.";
@@ -93,12 +97,16 @@ export function InventarioVehiculos() {
   const [ficha, setFicha] = useState<string | null>(null);
 
   const cargar = useCallback(async () => {
-    const [{ data, error }, g] = await Promise.all([
+    const [{ data, error }, g, co] = await Promise.all([
       supabase.from("vehiculos_inventario").select("*").order("created_at", { ascending: false }).limit(500),
       supabase.from("vehiculo_gastos").select("vehiculo_id, monto").limit(5000),
+      supabase.from("vehiculo_costos").select("vehiculo_id, precio_compra").limit(5000),
     ]);
     if (error) toast.error("No se pudo cargar el inventario.");
-    setLista(data ?? []);
+    // El precio de adquisición vive en una tabla aparte: la base solo lo entrega a quien tiene permiso de costos.
+    const costos = new Map<string, number | null>();
+    for (const c of co.data ?? []) costos.set(c.vehiculo_id, c.precio_compra);
+    setLista((data ?? []).map((v) => ({ ...v, precio_compra: costos.get(v.id) ?? null })));
     const mapa: Record<string, number> = {};
     for (const x of g.data ?? []) mapa[x.vehiculo_id] = (mapa[x.vehiculo_id] ?? 0) + x.monto;
     setGastosPorVeh(mapa);
@@ -118,13 +126,11 @@ export function InventarioVehiculos() {
     const { data: negocioId } = await supabase.rpc("mi_negocio_id");
     if (!negocioId) { toast.error("No se pudo identificar tu negocio."); setSubiendo(false); return; }
     for (const archivo of Array.from(archivos)) {
-      if (!archivo.type.startsWith("image/")) { toast.error("Elige solo imágenes."); continue; }
+      if (!["image/jpeg", "image/png", "image/webp"].includes(archivo.type)) { toast.error(`${archivo.name}: usa JPG, PNG o WEBP.`); continue; }
       if (archivo.size > 4 * 1024 * 1024) { toast.error(`${archivo.name} pesa más de 4 MB.`); continue; }
-      const ext = (archivo.name.split(".").pop() ?? "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-      const ruta = `${negocioId}/vehiculo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-      const { error } = await supabase.storage.from("negocios").upload(ruta, archivo, { upsert: true });
-      if (error) { toast.error("No se pudo subir una foto."); continue; }
-      nuevas.push(supabase.storage.from("negocios").getPublicUrl(ruta).data.publicUrl);
+      const ruta = await subirFotoPrivada(archivo, negocioId, "nuevos");
+      if (!ruta) { toast.error("No se pudo subir una foto."); continue; }
+      nuevas.push(ruta);
     }
     setFotos((f) => [...f, ...nuevas]);
     setSubiendo(false);
@@ -171,15 +177,30 @@ export function InventarioVehiculos() {
       cilindraje: txt(form.cilindraje), carroceria: txt(form.carroceria), puertas: num(form.puertas),
       traccion: txt(form.traccion), ciudad_matricula: txt(form.ciudad_matricula),
       num_propietarios: num(form.num_propietarios), vin: vinN, motor_numero: txt(form.motor_numero),
-      precio, precio_compra: num(form.precio_compra),
+      precio,
       soat_vence: form.soat_vence || null, tecnomecanica_vence: form.tecnomecanica_vence || null,
       equipamiento: txt(form.equipamiento), observaciones: txt(form.observaciones), fotos,
     };
-    const { error } = editando
-      ? await supabase.from("vehiculos_inventario").update(datos).eq("id", editando)
-      : await supabase.from("vehiculos_inventario").insert(datos);
+    let vehiculoId = editando;
+    let error: { message: string } | null = null;
+    if (editando) {
+      error = (await supabase.from("vehiculos_inventario").update(datos).eq("id", editando)).error;
+    } else {
+      const r = await supabase.from("vehiculos_inventario").insert(datos).select("id").single();
+      error = r.error;
+      vehiculoId = r.data?.id ?? null;
+    }
+    if (error) {
+      setGuardando(false);
+      return toast.error(errorLegible(error.message, "No se pudo guardar el vehículo."));
+    }
+    // Precio de adquisición: tabla protegida, solo con permiso de precios y de costos.
+    const compra = num(form.precio_compra);
+    if (vehiculoId && perm.precios && perm.costos && compra !== (previo?.precio_compra ?? null) && (compra !== null || previo)) {
+      const { error: eC } = await supabase.from("vehiculo_costos").upsert({ vehiculo_id: vehiculoId, precio_compra: compra });
+      if (eC) toast.error("El vehículo se guardó, pero no se pudo guardar el precio de adquisición.");
+    }
     setGuardando(false);
-    if (error) return toast.error(errorLegible(error.message, "No se pudo guardar el vehículo."));
     toast.success(editando ? "Vehículo actualizado." : "Vehículo guardado.");
     limpiar();
     cargar();
@@ -275,14 +296,35 @@ export function InventarioVehiculos() {
   const disponibles = lista.filter((v) => v.estado === "disponible" && !v.eliminado_en);
   const valorDisponible = disponibles.reduce((s, v) => s + v.precio, 0);
 
-  const generarCatalogo = () => {
+  // Fotos antiguas públicas: se pasan solas al almacenamiento privado cuando abre quien puede editar.
+  const migrado = useRef(false);
+  useEffect(() => {
+    if (migrado.current || cargando || perm.cargando || !perm.editar) return;
+    const pendientes = lista.filter((v) => (v.fotos ?? []).some((f) => /^https?:\/\/.*\/object\/public\/negocios\//i.test(f)));
+    migrado.current = true;
+    if (pendientes.length === 0) return;
+    (async () => {
+      const { data: negocioId } = await supabase.rpc("mi_negocio_id");
+      if (!negocioId) return;
+      let alguno = false;
+      for (const v of pendientes) {
+        const nuevas = await migrarFotosAntiguas(v.id, v.fotos ?? [], negocioId);
+        if (nuevas) alguno = true;
+      }
+      if (alguno) cargar();
+    })();
+  }, [lista, cargando, perm.cargando, perm.editar, cargar]);
+
+  const generarCatalogo = async () => {
     const base = visibles.filter((v) => v.estado === "disponible" || v.estado === "separado");
     if (base.length === 0) return toast.error("No hay vehículos disponibles para el catálogo.");
+    const w = window.open("", "_blank");
+    if (!w) return toast.error("Permite las ventanas emergentes para generar el PDF.");
     const color = negocio?.color_principal && /^#[0-9a-f]{6}$/i.test(negocio.color_principal) ? negocio.color_principal : "#0e7490";
     const nombre = negocio?.nombre || "Catálogo de vehículos";
     const contacto = [negocio?.telefono_pedidos, negocio?.instagram, negocio?.sitio_web, negocio?.ciudad].filter(Boolean).join("  ·  ");
     const fecha = new Date().toLocaleDateString("es-CO", { year: "numeric", month: "long", day: "numeric" });
-    const tarjetas = base.map((v) => {
+    const tarjetas = (await Promise.all(base.map(async (v) => {
       const datos: [string, string | number | null][] = [
         ["Año", v.anio], ["Kilometraje", v.kilometraje !== null ? `${v.kilometraje.toLocaleString("es-CO")} km` : null],
         ["Color", v.color], ["Combustible", v.combustible], ["Transmisión", v.transmision],
@@ -292,7 +334,7 @@ export function InventarioVehiculos() {
       ];
       const filas = datos.filter(([, x]) => x !== null && x !== "")
         .map(([k, x]) => `<tr><td>${esc(k)}</td><td>${esc(x)}</td></tr>`).join("");
-      const imgs = (v.fotos ?? []).slice(0, 3);
+      const imgs = (await urlsFirmadas((v.fotos ?? []).slice(0, 3))).filter((u): u is string => !!u);
       const principal = imgs[0] ? `<img class="principal" src="${esc(imgs[0])}" alt="">` : `<div class="sinfoto">Sin foto</div>`;
       const extra = imgs.slice(1).map((u) => `<img src="${esc(u)}" alt="">`).join("");
       return `<section class="tarjeta">
@@ -305,7 +347,7 @@ export function InventarioVehiculos() {
           ${v.equipamiento ? `<p><b>Equipamiento:</b> ${esc(v.equipamiento)}</p>` : ""}
           ${v.observaciones ? `<p>${esc(v.observaciones)}</p>` : ""}
         </div></section>`;
-    }).join("");
+    }))).join("");
     const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Catálogo - ${esc(nombre)}</title>
 <style>
 @page{size:A4;margin:14mm}
@@ -329,8 +371,6 @@ ${tarjetas}
 <footer>${esc(contacto)}<br>Precios y disponibilidad sujetos a cambio sin previo aviso.</footer>
 <script>window.onload=function(){setTimeout(function(){window.print()},600)}</script>
 </body></html>`;
-    const w = window.open("", "_blank");
-    if (!w) return toast.error("Permite las ventanas emergentes para generar el PDF.");
     w.document.open();
     w.document.write(html);
     w.document.close();
@@ -408,7 +448,7 @@ ${tarjetas}
             <input className={campo} placeholder="N.º de chasis" value={form.chasis} onChange={(e) => set("chasis", e.target.value)} />
             <input className={campo} placeholder="N.º de motor" value={form.motor_numero} onChange={(e) => set("motor_numero", e.target.value)} />
             <input className={campo} placeholder="Precio de venta (COP) *" inputMode="decimal" value={form.precio} onChange={(e) => set("precio", e.target.value)} />
-            <input className={campo} placeholder="Precio de adquisición (COP)" inputMode="decimal" value={form.precio_compra} onChange={(e) => set("precio_compra", e.target.value)} />
+            {perm.costos && <input className={campo} placeholder="Precio de adquisición (COP)" inputMode="decimal" value={form.precio_compra} onChange={(e) => set("precio_compra", e.target.value)} />}
             <input className={campo} placeholder="Precio final de venta (COP)" inputMode="decimal" value={form.precio_venta_final} onChange={(e) => set("precio_venta_final", e.target.value)} />
             <label className="space-y-1"><span className="text-xs text-muted-foreground">Fecha de ingreso</span>
               <input className={campo} type="date" value={form.fecha_ingreso} onChange={(e) => set("fecha_ingreso", e.target.value)} /></label>
@@ -438,7 +478,7 @@ ${tarjetas}
             <div className="flex flex-wrap gap-2">
               {fotos.map((u, i) => (
                 <div key={u} className="relative">
-                  <img src={u} alt="" className="h-20 w-20 rounded-lg object-cover" />
+                  <FotoPrivada valor={u} className="h-20 w-20 rounded-lg object-cover" />
                   <button type="button" onClick={() => setFotos((f) => f.filter((_, j) => j !== i))} className="absolute -right-1 -top-1 rounded-full bg-destructive p-0.5 text-destructive-foreground" aria-label="Quitar foto">
                     <X className="h-3 w-3" />
                   </button>
@@ -446,7 +486,7 @@ ${tarjetas}
               ))}
               <label className="flex h-20 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-glass-border text-xs text-muted-foreground">
                 <ImagePlus className="h-5 w-5" />{subiendo ? "Subiendo…" : "Subir"}
-                <input type="file" accept="image/*" multiple className="hidden" disabled={subiendo} onChange={(e) => { subirFotos(e.target.files); e.target.value = ""; }} />
+                <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" disabled={subiendo} onChange={(e) => { subirFotos(e.target.files); e.target.value = ""; }} />
               </label>
             </div>
           </div>
@@ -534,7 +574,7 @@ ${tarjetas}
           {vista === "tarjetas" && visibles.map((v) => (
             <GlassPanel key={v.id} className="flex flex-wrap gap-3 p-4">
               {v.fotos?.[0] ? (
-                <img src={v.fotos[0]} alt="" className="h-24 w-32 rounded-lg object-cover" />
+                <FotoPrivada valor={v.fotos[0]} className="h-24 w-32 rounded-lg object-cover" />
               ) : (
                 <div className="flex h-24 w-32 items-center justify-center rounded-lg bg-glass/40 text-xs text-muted-foreground">Sin foto</div>
               )}

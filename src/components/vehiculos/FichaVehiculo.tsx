@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { FotoPrivada } from "@/components/vehiculos/FotoPrivada";
+import { quitarFotoPrivada, subirFotoPrivada, urlFirmada } from "@/lib/fotos-vehiculos";
 
 type Vehiculo = Tables<"vehiculos_inventario">;
 type Gasto = Tables<"vehiculo_gastos">;
@@ -131,11 +133,9 @@ export function FichaVehiculo({
     for (const a of Array.from(archivos)) {
       if (!["image/jpeg", "image/png", "image/webp"].includes(a.type)) { toast.error(`${a.name}: usa JPG, PNG o WEBP.`); continue; }
       if (a.size > 4 * 1024 * 1024) { toast.error(`${a.name} pesa más de 4 MB.`); continue; }
-      const ext = (a.name.split(".").pop() ?? "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-      const ruta = `${negocioId}/vehiculo-${vehiculo.id}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-      const { error } = await supabase.storage.from("negocios").upload(ruta, a);
-      if (error) { toast.error(`No se pudo subir ${a.name}.`); continue; }
-      nuevas.push(supabase.storage.from("negocios").getPublicUrl(ruta).data.publicUrl);
+      const ruta = await subirFotoPrivada(a, negocioId, vehiculo.id);
+      if (!ruta) { toast.error(`No se pudo subir ${a.name}.`); continue; }
+      nuevas.push(ruta);
     }
     if (nuevas.length > 0) {
       const lista = [...fotosLocal, ...nuevas];
@@ -152,6 +152,7 @@ export function FichaVehiculo({
     const lista = fotosLocal.filter((u) => u !== url);
     const { error } = await supabase.from("vehiculos_inventario").update({ fotos: lista }).eq("id", vehiculo.id);
     if (error) return toast.error("No se pudo quitar la foto.");
+    await quitarFotoPrivada(url);
     setFotosLocal(lista);
     onCambio();
   };
@@ -221,9 +222,9 @@ export function FichaVehiculo({
           <div className="flex gap-2 overflow-x-auto pb-1">
             {fotosLocal.map((u) => (
               <div key={u} className="relative shrink-0">
-                <a href={u} target="_blank" rel="noreferrer">
-                  <img src={u} alt="" className="h-28 w-40 rounded-lg object-cover" />
-                </a>
+                <button type="button" onClick={async () => { const s = await urlFirmada(u); if (s) window.open(s, "_blank", "noopener"); else toast.error("No se pudo abrir la foto."); }}>
+                  <FotoPrivada valor={u} className="h-28 w-40 rounded-lg object-cover" />
+                </button>
                 {perm.editar && (
                   <button onClick={() => quitarFoto(u)} aria-label="Quitar foto" className="absolute -right-1 -top-1 rounded-full bg-destructive p-0.5 text-destructive-foreground">
                     <X className="h-3 w-3" />

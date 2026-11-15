@@ -32,13 +32,16 @@ export function DashboardConcesionario() {
   useEffect(() => {
     let cancelado = false;
     (async () => {
-      const [v, c, r] = await Promise.all([
+      const [v0, co, c, r] = await Promise.all([
         supabase.from("vehiculos_inventario").select("*").limit(2000),
+        supabase.from("vehiculo_costos").select("vehiculo_id, precio_compra").limit(5000),
         supabase.from("solicitudes_credito").select("*").limit(2000),
         supabase.from("modulo_registros").select("*").in("modulo", MODULOS).eq("anulado", false).limit(2000),
       ]);
       if (cancelado) return;
-      setVehiculos(v.data ?? []);
+      const costos = new Map<string, number | null>();
+      for (const x of co.data ?? []) costos.set(x.vehiculo_id, x.precio_compra);
+      setVehiculos((v0.data ?? []).map((x) => ({ ...x, precio_compra: costos.get(x.id) ?? null })));
       setCreditos(c.data ?? []);
       setRegistros(r.data ?? []);
     })();

@@ -144,12 +144,16 @@ export function RetomasVehiculos() {
       .insert({
         tipo: r.tipo, condicion: "usado", estado: "disponible", marca: r.marca, modelo: r.modelo,
         version: r.version, anio: r.anio, placa: r.placa, color: r.color, kilometraje: r.kilometraje,
-        precio: precioVenta, precio_compra: r.operacion === "consignacion" ? null : r.precio_retoma,
+        precio: precioVenta,
         observaciones: nota || null, fotos: [],
       })
       .select("id")
       .single();
     if (error || !data) return toast.error("No se pudo pasar el vehículo al inventario.");
+    if (r.operacion !== "consignacion" && r.precio_retoma !== null) {
+      const { error: eC } = await supabase.from("vehiculo_costos").insert({ vehiculo_id: data.id, precio_compra: r.precio_retoma });
+      if (eC) toast.error("El vehículo entró al inventario, pero tu rol no puede guardar el precio de adquisición.");
+    }
     const { error: e2 } = await supabase
       .from("retomas_vehiculos")
       .update({ resultado: "retomado", vehiculo_id: data.id })
