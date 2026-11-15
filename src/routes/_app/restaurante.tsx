@@ -21,6 +21,7 @@ import { VentaPOS } from "@/components/restaurante/VentaPOS";
 import { OpcionesProducto } from "@/components/restaurante/OpcionesProducto";
 import { BotonVentanaCompleta } from "@/components/app/BotonVentanaCompleta";
 import { IndicadoresNegocio } from "@/components/app/IndicadoresNegocio";
+import { DashboardConcesionario } from "@/components/vehiculos/DashboardConcesionario";
 
 const VISTAS_VALIDAS = ["venta", "pedidos", "menu", "qr", "mesas", "caja", "reportes", "recetario", "negocio"] as const;
 type VistaClave = (typeof VISTAS_VALIDAS)[number];
@@ -303,7 +304,8 @@ function RestaurantePage() {
         </div>
       </div>
 
-      {!tipo.usaPedidos && <IndicadoresNegocio tipo={tipo} />}
+      {tipo.clave === "concesionario" && <DashboardConcesionario />}
+      {!tipo.usaPedidos && tipo.clave !== "concesionario" && <IndicadoresNegocio tipo={tipo} />}
 
       <GuiaRapida tipo={tipo.clave} />
 
