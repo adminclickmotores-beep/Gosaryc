@@ -140,7 +140,17 @@ function Welcome() {
                   <button
                     key={t.clave}
                     type="button"
-                    onClick={() => setTipo(t.clave)}
+                    onClick={async () => {
+                      setTipo(t.clave);
+                      // Se guarda al elegir para que el menú lateral cambie de inmediato.
+                      if (negocio && negocio.tipo_negocio !== t.clave) {
+                        const { error } = await supabase
+                          .from("negocio_config")
+                          .update({ tipo_negocio: t.clave, updated_at: new Date().toISOString() })
+                          .eq("id", negocio.id);
+                        if (!error) window.dispatchEvent(new Event("negocio:cambio"));
+                      }
+                    }}
                     className={`flex items-center justify-between gap-2 rounded-xl border px-4 py-3 text-left text-sm transition ${
                       activo
                         ? "border-primary/60 bg-primary/10 text-foreground"
