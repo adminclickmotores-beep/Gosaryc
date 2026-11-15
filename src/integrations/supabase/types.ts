@@ -52,6 +52,7 @@ export type Database = {
           created_at: string
           id: string
           modulo: string
+          owner_id: string | null
           registro_id: string | null
           titulo: string | null
         }
@@ -62,6 +63,7 @@ export type Database = {
           created_at?: string
           id?: string
           modulo: string
+          owner_id?: string | null
           registro_id?: string | null
           titulo?: string | null
         }
@@ -72,6 +74,7 @@ export type Database = {
           created_at?: string
           id?: string
           modulo?: string
+          owner_id?: string | null
           registro_id?: string | null
           titulo?: string | null
         }
