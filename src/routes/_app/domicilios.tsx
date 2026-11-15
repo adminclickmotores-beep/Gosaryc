@@ -169,15 +169,27 @@ function ListaClientes({ clientes }: { clientes: Cliente[] }) {
 function Repartidores({ repartidores, recargar }: { repartidores: Repartidor[]; recargar: () => void }) {
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
+  const [documento, setDocumento] = useState("");
+  const [vehiculo, setVehiculo] = useState("moto");
+  const [placa, setPlaca] = useState("");
 
   const agregar = async () => {
     if (!nombre.trim()) return toast.error("Escribe el nombre del repartidor.");
     const { error } = await supabase
       .from("restaurante_repartidores")
-      .insert({ nombre: nombre.trim(), telefono: telefono.trim() || null });
+      .insert({
+        nombre: nombre.trim(),
+        telefono: telefono.trim() || null,
+        documento: documento.trim() || null,
+        vehiculo,
+        placa: placa.trim().toUpperCase() || null,
+      });
     if (error) return toast.error("No se pudo guardar.");
     setNombre("");
     setTelefono("");
+    setDocumento("");
+    setVehiculo("moto");
+    setPlaca("");
     recargar();
   };
 
@@ -192,6 +204,16 @@ function Repartidores({ repartidores, recargar }: { repartidores: Repartidor[]; 
         <h2 className="font-medium text-foreground">Nuevo repartidor</h2>
         <input className={campo} placeholder="Nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} />
         <input className={campo} placeholder="Teléfono" inputMode="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
+        <input className={campo} placeholder="Documento de identidad (opcional)" value={documento} onChange={(e) => setDocumento(e.target.value)} />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <select className={campo} value={vehiculo} onChange={(e) => setVehiculo(e.target.value)} aria-label="Tipo de vehículo">
+            <option value="moto">Moto</option>
+            <option value="bicicleta">Bicicleta</option>
+            <option value="carro">Carro</option>
+            <option value="a_pie">A pie</option>
+          </select>
+          <input className={campo} placeholder="Placa (si tiene vehículo)" value={placa} onChange={(e) => setPlaca(e.target.value)} />
+        </div>
         <button onClick={agregar} className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90">
           Agregar repartidor
         </button>
@@ -203,6 +225,11 @@ function Repartidores({ repartidores, recargar }: { repartidores: Repartidor[]; 
             <div className="min-w-0 flex-1">
               <p className={`truncate text-sm font-medium ${r.activo ? "text-foreground" : "text-muted-foreground line-through"}`}>{r.nombre}</p>
               {r.telefono && <p className="text-xs text-muted-foreground">{r.telefono}</p>}
+              {(r.vehiculo || r.placa || r.documento) && (
+                <p className="break-words text-xs text-muted-foreground">
+                  {[r.documento && `Doc. ${r.documento}`, r.vehiculo && r.vehiculo.replace("_", " "), r.placa].filter(Boolean).join(" · ")}
+                </p>
+              )}
             </div>
             <button onClick={() => alternar(r)} className="shrink-0 rounded-full border border-glass-border px-3 py-1.5 text-xs text-foreground">
               {r.activo ? "Desactivar" : "Activar"}

@@ -1706,6 +1706,9 @@ export type Database = {
       restaurante_repartidores: {
         Row: {
           activo: boolean
+          documento: string | null
+          placa: string | null
+          vehiculo: string | null
           created_at: string
           id: string
           nombre: string
@@ -1713,6 +1716,9 @@ export type Database = {
         }
         Insert: {
           activo?: boolean
+          documento?: string | null
+          placa?: string | null
+          vehiculo?: string | null
           created_at?: string
           id?: string
           nombre: string
@@ -1720,6 +1726,9 @@ export type Database = {
         }
         Update: {
           activo?: boolean
+          documento?: string | null
+          placa?: string | null
+          vehiculo?: string | null
           created_at?: string
           id?: string
           nombre?: string
