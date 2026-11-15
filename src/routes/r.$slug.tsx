@@ -17,7 +17,18 @@ function ShortLinkRedirect() {
       if (cancelled) return;
       const row = Array.isArray(data) ? data[0] : null;
       if (error || !row) {
-        setError("This link doesn't exist or has been removed.");
+        setError("Este enlace no existe o fue eliminado.");
+        return;
+      }
+      // Solo se redirige a direcciones http(s): nunca javascript: ni otros esquemas.
+      let destino: URL | null = null;
+      try {
+        destino = new URL(String(row.target_url));
+      } catch {
+        destino = null;
+      }
+      if (!destino || (destino.protocol !== "https:" && destino.protocol !== "http:")) {
+        setError("Este enlace no es válido.");
         return;
       }
       // fire-and-forget click record
@@ -27,7 +38,7 @@ function ShortLinkRedirect() {
         _ua: typeof navigator !== "undefined" ? navigator.userAgent : "",
         _ref: typeof document !== "undefined" ? document.referrer || "" : "",
       });
-      window.location.replace(row.target_url);
+      window.location.replace(destino.toString());
     })();
     return () => {
       cancelled = true;
@@ -43,7 +54,7 @@ function ShortLinkRedirect() {
             <div className="mt-2 text-sm text-muted-foreground">{error}</div>
           </>
         ) : (
-          <div className="text-sm text-muted-foreground">Redirecting…</div>
+          <div className="text-sm text-muted-foreground">Redirigiendo…</div>
         )}
       </div>
     </div>

@@ -14,7 +14,10 @@ export const Route = createFileRoute("/login")({
   validateSearch: (
     s: Record<string, unknown>,
   ): { redirect?: string; mode?: "signin" | "signup" } => ({
-    ...(typeof s.redirect === "string" ? { redirect: s.redirect } : {}),
+    // Solo rutas internas: evita redirigir a sitios externos tras iniciar sesión.
+    ...(typeof s.redirect === "string" && s.redirect.startsWith("/") && !s.redirect.startsWith("//") && !s.redirect.includes("\\")
+      ? { redirect: s.redirect }
+      : {}),
     ...(s.mode === "signup" || s.mode === "signin" ? { mode: s.mode as "signin" | "signup" } : {}),
   }),
   component: LoginPage,
