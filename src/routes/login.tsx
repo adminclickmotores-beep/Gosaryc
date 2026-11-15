@@ -36,7 +36,7 @@ function LoginPage() {
 
   useEffect(() => {
     if (!loading && session) {
-      nav({ to: (search.redirect && search.redirect !== "/" ? search.redirect : "/restaurante") as "/restaurante", replace: true });
+      nav({ to: (search.redirect && search.redirect !== "/" ? search.redirect : "/dashboard") as "/dashboard", replace: true });
     }
   }, [session, loading, nav, search.redirect]);
 
@@ -121,7 +121,7 @@ function LoginPage() {
     setBusy(true);
     guardarPreferenciaSesion();
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}${search.redirect ?? "/restaurante"}`,
+      redirect_uri: `${window.location.origin}${search.redirect ?? "/dashboard"}`,
     });
     if (result.error) {
       toast.error(result.error.message);
