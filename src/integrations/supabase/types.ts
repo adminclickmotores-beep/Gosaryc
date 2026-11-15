@@ -44,6 +44,39 @@ export type Database = {
         }
         Relationships: []
       }
+      auditoria_clinica: {
+        Row: {
+          accion: string
+          actor_email: string | null
+          actor_id: string | null
+          created_at: string
+          id: string
+          modulo: string
+          registro_id: string | null
+          titulo: string | null
+        }
+        Insert: {
+          accion: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          modulo: string
+          registro_id?: string | null
+          titulo?: string | null
+        }
+        Update: {
+          accion?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          modulo?: string
+          registro_id?: string | null
+          titulo?: string | null
+        }
+        Relationships: []
+      }
       equipo_auditoria: {
         Row: {
           accion: string
