@@ -13,6 +13,7 @@ import {
   MessageCircle,
   UtensilsCrossed,
   ChevronLeft,
+  Store,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -348,14 +349,14 @@ function MenuPage() {
     return (
       <div className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-4 px-4 text-center">
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/15">
-          <UtensilsCrossed className="h-10 w-10 text-primary" />
+          <Store className="h-10 w-10 text-primary" />
         </div>
-        <h1 className="font-display text-2xl text-foreground">{negocio?.nombre ?? "Menú digital"}</h1>
+        <h1 className="font-display text-2xl text-foreground">{negocio?.nombre ?? "Catálogo"}</h1>
         <p className="text-muted-foreground">
-          {negocio ? "Este negocio no tiene menú digital de pedidos." : "Este menú no está disponible."}
+          {negocio ? "Este tipo de negocio no usa catálogo de pedidos en línea." : "Este catálogo no está disponible."}
         </p>
-        <Link to="/" className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90">
-          Ir al inicio
+        <Link to={negocio ? "/welcome" : "/"} className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90">
+          {negocio ? "Volver al panel" : "Ir al inicio"}
         </Link>
       </div>
     );
