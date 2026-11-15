@@ -246,12 +246,12 @@ const POR_MODULO: Record<string, keyof typeof PRESETS> = {
   documentos_veh: "vencimiento", arrendatarios: "vencimiento", autorizaciones: "vencimiento",
   insumos: "stock", inventario: "stock", materiales: "stock", productos: "stock", repuestos: "stock",
   insumos_salud: "stock", insumos_agro: "stock", productos_vet: "stock",
-  vehiculos: "stock", vehiculos_usados: "stock", combos: "stock", inventario_general: "stock",
+  vehiculos: "stock", vehiculos_usados: "stock", combos: "stock",
   proyectos_obra: "proyecto", proyectos_tec: "proyecto", tickets: "proyecto", viajes: "proyecto",
   taller: "proyecto", alistamiento: "proyecto", limpieza: "proyecto", cultivos: "proyecto", cursos: "proyecto",
   tratamientos: "proyecto", cosechas: "proyecto",
-  cotizaciones_veh: "venta", cotizaciones_obra: "venta", ventas_veh: "venta", seguimiento_leads: "venta",
-  permutas: "venta", creditos_veh: "venta", suscripciones: "venta", suscripciones_tec: "venta",
+  cotizaciones_veh: "venta", cotizaciones_obra: "venta", ventas_veh: "venta",
+  creditos_veh: "venta", suscripciones: "venta", suscripciones_tec: "venta",
   pagos_digitales: "pago", facturas: "pago", propinas: "pago", comisiones: "pago", repartidores: "pago",
   conductores: "pago", combustible: "pago", costos_veh: "pago", equipo_turnos: "pago", caja_diaria: "pago",
   proveedores: "pago", proveedores_veh: "pago",
@@ -265,7 +265,6 @@ const POR_MODULO: Record<string, keyof typeof PRESETS> = {
   productos_farm: "stock", insumos_lav: "stock",
   cotizaciones_taller: "venta",
   consultorios: "proyecto",consentimientos: "vencimiento",
-  apartados_generales: "reserva", proyectos_generales: "proyecto",
 };
 
 const est = (...pares: [string, string][]): EstadoModulo[] => pares.map(([clave, texto]) => ({ clave, texto }));
@@ -574,26 +573,16 @@ const VOCABULARIO: Record<string, Partial<ConfigModulo>> = {
     etiquetaFecha: "Entrega estimada",
     resumen: "Obras en curso",
   },
-  // Negocio general
-  catalogo: {
-    estados: est(["pendiente", "Activo"], ["hecho", "Pausado"]),
-    cerrados: ["pendiente", "hecho"],
-    placeholderTitulo: "Producto o servicio",
-    placeholderDetalle: "Descripción, referencia y condiciones",
-    etiquetaContacto: "Proveedor o responsable",
-    etiquetaMonto: "Precio (COP)",
-    etiquetaFecha: "Vigente hasta",
-    resumen: "Activos",
-  },
-  ventas_generales: {
-    estados: est(["pendiente", "Por entregar"], ["en_proceso", "En camino"], ["hecho", "Entregado"]),
+  // Servicios con cita
+  ordenes_serv_cita: {
+    estados: est(["pendiente", "Reservada"], ["en_proceso", "En atención"], ["hecho", "Finalizada"]),
     cerrados: ["hecho"],
-    placeholderTitulo: "Venta o pedido (producto y cliente)",
-    placeholderDetalle: "Cantidad, forma de pago y dirección",
+    placeholderTitulo: "Servicio y cliente",
+    placeholderDetalle: "Profesional asignado, recurso usado y notas del servicio",
     etiquetaContacto: "Cliente",
-    etiquetaMonto: "Valor de la venta (COP)",
-    etiquetaFecha: "Fecha de entrega",
-    resumen: "Por entregar",
+    etiquetaMonto: "Valor del servicio (COP)",
+    etiquetaFecha: "Fecha del servicio",
+    resumen: "Servicios por atender",
   },
 };
 
@@ -606,7 +595,7 @@ const COMPORTAMIENTO_EXTRA: Record<string, keyof typeof PRESETS> = {
   animales: "vencimiento",
   horas: "pago",
   paquetes_evento: "venta",
-  ventas_generales: "proyecto",
+  ordenes_serv_cita: "proyecto",
 };
 
 export function configModulo(id: string): ConfigModulo {
