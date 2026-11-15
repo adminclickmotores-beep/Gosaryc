@@ -34,6 +34,11 @@ function CotizacionesPage() {
   const [filtro, setFiltro] = useState("todos");
   const [cliente, setCliente] = useState("");
   const [telefono, setTelefono] = useState("");
+  const [documento, setDocumento] = useState("");
+  const [correo, setCorreo] = useState("");
+  const [direccion, setDireccion] = useState("");
+  const [formaPago, setFormaPago] = useState("");
+  const [plazoEntrega, setPlazoEntrega] = useState("");
   const [vigente, setVigente] = useState("");
   const [notas, setNotas] = useState("");
   const [descuento, setDescuento] = useState("");
@@ -73,6 +78,11 @@ function CotizacionesPage() {
       numero,
       cliente: cliente.trim(),
       telefono: telefono.trim() || null,
+      documento: documento.trim() || null,
+      correo: correo.trim() || null,
+      direccion: direccion.trim() || null,
+      forma_pago: formaPago.trim() || null,
+      plazo_entrega: plazoEntrega.trim() || null,
       items: lineasValidas,
       descuento: desc,
       total,
@@ -83,6 +93,11 @@ function CotizacionesPage() {
     toast.success(`Cotización #${numero} guardada.`);
     setCliente("");
     setTelefono("");
+    setDocumento("");
+    setCorreo("");
+    setDireccion("");
+    setFormaPago("");
+    setPlazoEntrega("");
     setVigente("");
     setNotas("");
     setDescuento("");
@@ -155,6 +170,13 @@ function CotizacionesPage() {
           <h2 className="font-medium text-foreground">Nueva cotización</h2>
           <input className={campo} placeholder="Cliente" value={cliente} onChange={(e) => setCliente(e.target.value)} />
           <input className={campo} placeholder="WhatsApp / teléfono" inputMode="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
+          <input className={campo} placeholder="Documento o NIT (opcional)" value={documento} onChange={(e) => setDocumento(e.target.value)} />
+          <input className={campo} inputMode="email" placeholder="Correo (opcional)" value={correo} onChange={(e) => setCorreo(e.target.value)} />
+          <input className={campo} placeholder="Dirección (opcional)" value={direccion} onChange={(e) => setDireccion(e.target.value)} />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <input className={campo} placeholder="Forma de pago (ej. 50% anticipo)" value={formaPago} onChange={(e) => setFormaPago(e.target.value)} />
+            <input className={campo} placeholder="Plazo de entrega (ej. 5 días)" value={plazoEntrega} onChange={(e) => setPlazoEntrega(e.target.value)} />
+          </div>
           <div className="space-y-2">
             <span className="text-xs text-muted-foreground">Productos o servicios</span>
             {lineas.map((l, i) => (

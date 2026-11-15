@@ -1430,6 +1430,11 @@ export type Database = {
       cotizaciones: {
         Row: {
           cliente: string
+          correo: string | null
+          direccion: string | null
+          documento: string | null
+          forma_pago: string | null
+          plazo_entrega: string | null
           contacto: string | null
           created_at: string
           descuento: number
@@ -1445,6 +1450,11 @@ export type Database = {
         }
         Insert: {
           cliente: string
+          correo?: string | null
+          direccion?: string | null
+          documento?: string | null
+          forma_pago?: string | null
+          plazo_entrega?: string | null
           contacto?: string | null
           created_at?: string
           descuento?: number
@@ -1460,6 +1470,11 @@ export type Database = {
         }
         Update: {
           cliente?: string
+          correo?: string | null
+          direccion?: string | null
+          documento?: string | null
+          forma_pago?: string | null
+          plazo_entrega?: string | null
           contacto?: string | null
           created_at?: string
           descuento?: number
