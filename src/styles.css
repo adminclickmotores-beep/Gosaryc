@@ -77,7 +77,7 @@
   --popover-foreground: oklch(0.96 0.01 260);
 
   /* Cian neón sobre noche profunda */
-  --primary: oklch(0.65 0.11 80);
+  --primary: oklch(0.78 0.16 165);
   --primary-foreground: oklch(0.16 0.02 80);
 
   --secondary: oklch(0.27 0.05 290);
@@ -94,9 +94,9 @@
 
   --border: oklch(1 0 0 / 0.09);
   --input: oklch(1 0 0 / 0.12);
-  --ring: oklch(0.65 0.11 80 / 0.5);
+  --ring: oklch(0.78 0.16 165 / 0.5);
 
-  --mint: oklch(0.84 0.15 200);
+  --mint: oklch(0.8 0.16 165);
   --mint-foreground: oklch(0.16 0.03 275);
   --amber: oklch(0.75 0.15 70);
   --amber-foreground: oklch(0.25 0.05 70);
@@ -112,8 +112,8 @@
   --shadow-glass:
     0 1px 0 0 oklch(1 0 0 / 0.07) inset,
     0 24px 60px -24px oklch(0 0 0 / 0.7);
-  --shadow-glow: 0 0 0 4px oklch(0.84 0.15 200 / 0.18);
-  --shadow-accent: 0 8px 30px -8px oklch(0.84 0.15 200 / 0.45);
+  --shadow-glow: 0 0 0 4px oklch(0.8 0.16 165 / 0.18);
+  --shadow-accent: 0 8px 30px -8px oklch(0.8 0.16 165 / 0.45);
 
   /* Editorial motion easings */
   --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
@@ -123,15 +123,15 @@
   /* Spectrum gradients */
   --gradient-spectrum: linear-gradient(
     100deg,
-    oklch(0.72 0.2 275) 0%,
+    oklch(0.8 0.16 165) 0%,
     oklch(0.78 0.18 305) 28%,
     oklch(0.78 0.18 340) 55%,
     oklch(0.78 0.16 35) 82%,
-    oklch(0.86 0.14 88) 100%
+    oklch(0.8 0.16 165) 100%
   );
-  --gradient-aurora: radial-gradient(60% 80% at 30% 20%, oklch(0.72 0.2 275 / 0.5), transparent 70%),
+  --gradient-aurora: radial-gradient(60% 80% at 30% 20%, oklch(0.8 0.16 165 / 0.5), transparent 70%),
     radial-gradient(50% 70% at 80% 0%, oklch(0.78 0.18 340 / 0.45), transparent 70%),
-    radial-gradient(70% 90% at 50% 100%, oklch(0.86 0.14 88 / 0.25), transparent 70%);
+    radial-gradient(70% 90% at 50% 100%, oklch(0.8 0.16 165 / 0.25), transparent 70%);
 }
 
 /* Light mode — opt-in via .light class on <html>. App is dark-first. */
@@ -146,7 +146,7 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.18 0.02 240);
 
-  --primary: oklch(0.65 0.11 80);
+  --primary: oklch(0.78 0.16 165);
   --primary-foreground: oklch(0.16 0.02 80);
 
   --secondary: oklch(0.62 0.18 340);
@@ -160,7 +160,7 @@
 
   --border: oklch(0.2 0.03 270 / 0.1);
   --input: oklch(0.2 0.03 270 / 0.06);
-  --ring: oklch(0.65 0.11 80 / 0.5);
+  --ring: oklch(0.78 0.16 165 / 0.5);
 
   --glass: oklch(0.2 0.03 270 / 0.04);
   --glass-strong: oklch(0.2 0.03 270 / 0.07);
@@ -277,8 +277,8 @@ svg.text-slate-950 {
 .field-glass:focus-visible,
 .field-glass:focus-within {
   outline: none;
-  border-color: oklch(0.84 0.15 200 / 0.75);
-  box-shadow: 0 0 0 3px oklch(0.84 0.15 200 / 0.18);
+  border-color: oklch(0.8 0.16 165 / 0.75);
+  box-shadow: 0 0 0 3px oklch(0.8 0.16 165 / 0.18);
 }
 
 @utility text-gradient {
@@ -289,7 +289,7 @@ svg.text-slate-950 {
 }
 
 @utility ring-glow {
-  box-shadow: 0 0 0 1px oklch(0.72 0.2 275 / 0.45), 0 0 30px -5px oklch(0.72 0.2 275 / 0.5);
+  box-shadow: 0 0 0 1px oklch(0.8 0.16 165 / 0.45), 0 0 30px -5px oklch(0.8 0.16 165 / 0.5);
 }
 
 /* ===== Gradient mesh background ===== */
@@ -354,16 +354,16 @@ svg.text-slate-950 {
   transform: translateY(-2px);
   box-shadow:
     var(--shadow-glass),
-    0 0 0 1px oklch(0.72 0.2 275 / 0.22),
+    0 0 0 1px oklch(0.8 0.16 165 / 0.22),
     var(--shadow-accent);
-  border-color: oklch(0.72 0.2 275 / 0.22);
+  border-color: oklch(0.8 0.16 165 / 0.22);
 }
 
 /* =====================================================================
    Hex design language (imported from the Tools honeycomb).
    Subtle, reusable utilities so KPIs, CTAs, empty states and route
    transitions all read as one system.
-   Gold accent: oklch(0.86 0.14 88) — same hue as the keystone.
+   Gold accent: oklch(0.8 0.16 165) — same hue as the keystone.
    ===================================================================== */
 
 /* Hex-clipped badge — wrap a KPI number or icon. */
@@ -386,7 +386,7 @@ svg.text-slate-950 {
   transition: background 0.35s ease, box-shadow 0.35s ease, opacity 0.35s ease;
 }
 .hex-frame::before {
-  background: oklch(0.86 0.14 88 / 0.28);
+  background: oklch(0.8 0.16 165 / 0.28);
   z-index: -2;
 }
 .hex-frame::after {
@@ -395,15 +395,15 @@ svg.text-slate-950 {
   z-index: -1;
 }
 .hex-frame:hover::before {
-  background: oklch(0.86 0.14 88 / 0.85);
+  background: oklch(0.8 0.16 165 / 0.85);
 }
 .hex-frame:hover::after {
   box-shadow:
-    inset 0 0 36px oklch(0.86 0.14 88 / 0.22),
+    inset 0 0 36px oklch(0.8 0.16 165 / 0.22),
     inset 0 1px 0 oklch(1 0 0 / 0.16),
     inset 0 -1px 0 oklch(0 0 0 / 0.45),
-    0 0 22px -2px oklch(0.86 0.14 88 / 0.55),
-    0 0 56px 4px oklch(0.86 0.14 88 / 0.28);
+    0 0 22px -2px oklch(0.8 0.16 165 / 0.55),
+    0 0 56px 4px oklch(0.8 0.16 165 / 0.28);
 }
 .hex-frame-lg { padding: 1.5em 1.3em; }
 
@@ -421,9 +421,9 @@ svg.text-slate-950 {
   border-radius: inherit;
   padding: 1px;
   background: linear-gradient(140deg,
-    oklch(0.86 0.14 88 / 0.85),
-    oklch(0.86 0.14 88 / 0.15) 45%,
-    oklch(0.86 0.14 88 / 0.85));
+    oklch(0.8 0.16 165 / 0.85),
+    oklch(0.8 0.16 165 / 0.15) 45%,
+    oklch(0.8 0.16 165 / 0.85));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
           mask-composite: exclude;
@@ -433,9 +433,9 @@ svg.text-slate-950 {
 }
 .btn-keystone:hover {
   box-shadow:
-    inset 0 0 24px oklch(0.86 0.14 88 / 0.35),
-    0 0 22px -2px oklch(0.86 0.14 88 / 0.55),
-    0 0 56px 4px oklch(0.86 0.14 88 / 0.25);
+    inset 0 0 24px oklch(0.8 0.16 165 / 0.35),
+    0 0 22px -2px oklch(0.8 0.16 165 / 0.55),
+    0 0 56px 4px oklch(0.8 0.16 165 / 0.25);
 }
 .btn-keystone:hover::before,
 .btn-keystone:focus-visible::before { opacity: 1; }
@@ -452,8 +452,8 @@ svg.text-slate-950 {
   inset: -10%;
   background-image:
     radial-gradient(circle at center,
-      oklch(0.86 0.14 88 / 0.16) 0,
-      oklch(0.86 0.14 88 / 0) 60%),
+      oklch(0.8 0.16 165 / 0.16) 0,
+      oklch(0.8 0.16 165 / 0) 60%),
     radial-gradient(circle, oklch(1 0 0 / 0.08) 1.2px, transparent 1.6px),
     radial-gradient(circle, oklch(1 0 0 / 0.08) 1.2px, transparent 1.6px);
   background-size: auto, 44px 76px, 44px 76px;
@@ -485,9 +485,9 @@ svg.text-slate-950 {
   inset: 0;
   background: linear-gradient(90deg,
     transparent 0%,
-    oklch(0.86 0.14 88 / 0) 20%,
-    oklch(0.86 0.14 88 / 0.85) 50%,
-    oklch(0.86 0.14 88 / 0) 80%,
+    oklch(0.8 0.16 165 / 0) 20%,
+    oklch(0.8 0.16 165 / 0.85) 50%,
+    oklch(0.8 0.16 165 / 0) 80%,
     transparent 100%);
   filter: blur(1px);
   animation: route-sheen 200ms cubic-bezier(0.2, 0.7, 0.2, 1);
@@ -551,8 +551,8 @@ select optgroup {
   outline: none;
 }
 .PhoneInputInput:focus {
-  border-color: oklch(0.72 0.2 275 / 0.55);
-  box-shadow: 0 0 0 3px oklch(0.72 0.2 275 / 0.18);
+  border-color: oklch(0.8 0.16 165 / 0.55);
+  box-shadow: 0 0 0 3px oklch(0.8 0.16 165 / 0.18);
 }
 
 @keyframes shimmer {
@@ -567,7 +567,7 @@ select optgroup {
   letter-spacing: 0.28em;
   text-transform: uppercase;
   font-weight: 500;
-  color: oklch(0.86 0.14 88 / 0.9);
+  color: oklch(0.8 0.16 165 / 0.9);
 }
 
 @utility text-display-xl {
@@ -584,9 +584,9 @@ select optgroup {
   letter-spacing: -0.01em;
 
   background: linear-gradient(120deg,
-    oklch(0.86 0.14 88) 0%,
+    oklch(0.8 0.16 165) 0%,
     oklch(0.78 0.18 340) 60%,
-    oklch(0.72 0.2 275) 100%);
+    oklch(0.8 0.16 165) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -608,7 +608,7 @@ select optgroup {
 .readable-glass-surface {
   background: oklch(0.19 0.03 275 / 0.85);
   backdrop-filter: blur(24px);
-  border: 1px solid oklch(0.84 0.15 200 / 0.3);
+  border: 1px solid oklch(0.8 0.16 165 / 0.3);
   box-shadow: 0 24px 60px -28px oklch(0 0 0 / 0.7);
 }
 
@@ -637,8 +637,8 @@ select optgroup {
   width: 6px;
   height: 6px;
   border-radius: 9999px;
-  background: oklch(0.86 0.14 88);
-  box-shadow: 0 0 12px oklch(0.86 0.14 88 / 0.7);
+  background: oklch(0.8 0.16 165);
+  box-shadow: 0 0 12px oklch(0.8 0.16 165 / 0.7);
   margin-right: 0.6em;
   vertical-align: middle;
 }
@@ -670,6 +670,90 @@ html, body { max-width: 100%; }
 @supports (overflow-x: clip) { html, body { overflow-x: clip; } }
 @supports not (overflow-x: clip) { body { overflow-x: hidden; } }
 /* /GoIDE zoom */
+
+/* =====================================================================
+   Rediseño profesional: grafito frío + esmeralda, tarjetas con relieve,
+   bordes finos y movimiento suave. Se define aquí para que un cambio de
+   paleta sea un solo lugar.
+   ===================================================================== */
+:root {
+  --radius: 18px;
+  --surface-0: oklch(0.13 0.015 255);
+  --surface-1: oklch(0.17 0.018 255);
+  --surface-2: oklch(0.21 0.02 255);
+  --background: oklch(0.13 0.015 255);
+  --ink: oklch(0.13 0.015 255);
+  --foreground: oklch(0.97 0.005 255);
+  --card: oklch(0.17 0.018 255);
+  --popover: oklch(0.2 0.02 255);
+  --secondary: oklch(0.25 0.025 255);
+  --muted: oklch(0.23 0.02 255);
+  --muted-foreground: oklch(0.72 0.02 255);
+  --accent: oklch(0.3 0.05 190 / 0.5);
+  --gradient-hero:
+    radial-gradient(ellipse 55% 45% at 85% -5%, oklch(0.78 0.16 165 / 0.22), transparent 60%),
+    radial-gradient(ellipse 50% 45% at -5% 105%, oklch(0.65 0.15 245 / 0.2), transparent 60%);
+  --shadow-glass:
+    0 1px 0 0 oklch(1 0 0 / 0.06) inset,
+    0 1px 2px 0 oklch(0 0 0 / 0.3),
+    0 20px 48px -24px oklch(0 0 0 / 0.65);
+}
+.light {
+  --primary: oklch(0.55 0.15 165);
+  --primary-foreground: oklch(0.99 0.01 165);
+  --ring: oklch(0.55 0.15 165 / 0.5);
+  --background: oklch(0.985 0.004 250);
+  --ink: oklch(0.97 0.006 250);
+}
+select option, select optgroup { background-color: oklch(0.2 0.02 255); }
+
+/* Tarjetas: esquina amplia y borde que se enciende al pasar el cursor */
+.glass, .glass-strong {
+  transition: border-color 0.3s var(--ease-emphasized), transform 0.3s var(--ease-emphasized), box-shadow 0.3s var(--ease-emphasized);
+}
+a:hover > .glass, button:hover > .glass, .glass:hover {
+  border-color: oklch(0.78 0.16 165 / 0.35);
+}
+.glass-strong { background: linear-gradient(160deg, oklch(1 0 0 / 0.1), oklch(1 0 0 / 0.03)); }
+
+/* Botón principal con degradado */
+.btn-pro {
+  background: linear-gradient(135deg, oklch(0.84 0.15 170), oklch(0.72 0.16 190));
+  color: oklch(0.15 0.03 180);
+  box-shadow: 0 8px 24px -8px oklch(0.78 0.16 165 / 0.6), inset 0 1px 0 oklch(1 0 0 / 0.35);
+  transition: transform 0.25s var(--ease-emphasized), box-shadow 0.25s var(--ease-emphasized), filter 0.25s;
+}
+.btn-pro:hover { transform: translateY(-1px); filter: brightness(1.06); box-shadow: 0 12px 30px -8px oklch(0.78 0.16 165 / 0.75), inset 0 1px 0 oklch(1 0 0 / 0.4); }
+.btn-ghost-pro {
+  border: 1px solid var(--glass-border);
+  background: oklch(1 0 0 / 0.04);
+  transition: background 0.25s, border-color 0.25s, transform 0.25s var(--ease-emphasized);
+}
+.btn-ghost-pro:hover { background: oklch(1 0 0 / 0.09); border-color: oklch(1 0 0 / 0.22); transform: translateY(-1px); }
+
+/* Fondo con cuadrícula fina para el inicio */
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(oklch(1 0 0 / 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(1 0 0 / 0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 0%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 0%, transparent 75%);
+  pointer-events: none;
+}
+.icon-chip {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: linear-gradient(145deg, oklch(0.78 0.16 165 / 0.22), oklch(0.78 0.16 165 / 0.06));
+  border: 1px solid oklch(0.78 0.16 165 / 0.28);
+  color: var(--primary);
+}
+.text-brand-gradient {
+  background: linear-gradient(110deg, oklch(0.9 0.12 165), oklch(0.78 0.16 190) 55%, oklch(0.75 0.14 235));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.rise { animation: tick-in 0.7s var(--ease-emphasized) both; }
 
 /* GoIDE: oculta la insignia "Edit with Lovable" (v2) */
 #lovable-badge, [id^="lovable-badge"], [id*="lovable-badge"], [class*="lovable-badge"], aside[id*="lovable" i], a[href*="utm_source=lovable-badge"], a[href*="lovable.dev"][href*="utm_campaign=lovable-badge"] { display:none !important; visibility:hidden !important; opacity:0 !important; pointer-events:none !important }

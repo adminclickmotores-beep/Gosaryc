@@ -12,7 +12,7 @@ export const GlassPanel = forwardRef<HTMLDivElement, GlassPanelProps>(
     return (
       <div
         ref={ref}
-        className={cn(tierCls, "rounded-2xl", glow && "ring-glow", className)}
+        className={cn(tierCls, "rounded-[22px]", glow && "ring-glow", className)}
         {...rest}
       >
         {children}
