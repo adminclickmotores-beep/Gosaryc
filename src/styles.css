@@ -789,6 +789,42 @@ a:hover > .glass, button:hover > .glass, .glass:hover {
   --glass-border: oklch(0.2 0.03 255 / 0.16);
   --shadow-glass: 0 1px 2px 0 oklch(0.2 0.03 255 / 0.08), 0 12px 32px -16px oklch(0.2 0.03 255 / 0.22);
 }
+/* Mayor especificidad para que ningún bloque :root posterior pise el modo claro */
+html.light {
+  color-scheme: light;
+  --background: oklch(0.985 0.004 250);
+  --ink: oklch(0.975 0.005 250);
+  --foreground: oklch(0.18 0.02 250);
+  --card-foreground: oklch(0.18 0.02 250);
+  --popover-foreground: oklch(0.18 0.02 250);
+  --muted-foreground: oklch(0.4 0.02 255);
+  --card: oklch(1 0 0);
+  --popover: oklch(1 0 0);
+  --muted: oklch(0.95 0.006 250);
+  --surface-0: oklch(0.985 0.004 250);
+  --surface-1: oklch(1 0 0);
+  --surface-2: oklch(0.97 0.005 250);
+  --primary: oklch(0.5 0.14 165);
+  --primary-foreground: oklch(0.99 0.01 165);
+  --glass: oklch(1 0 0 / 0.85);
+  --glass-strong: oklch(0.96 0.006 250);
+  --glass-border: oklch(0.2 0.03 255 / 0.16);
+  --border: oklch(0.2 0.03 255 / 0.14);
+  background-color: oklch(0.975 0.005 250);
+  color: oklch(0.18 0.02 250);
+}
+html.light body { color: oklch(0.18 0.02 250); }
+html.light h1, html.light h2, html.light h3, html.light h4 { color: oklch(0.15 0.02 250); }
+html.light .text-foreground { color: oklch(0.18 0.02 250); }
+html.light .text-muted-foreground { color: oklch(0.4 0.02 255); }
+html.light .text-primary { color: oklch(0.45 0.14 165); }
+html.light .bg-primary .text-primary { color: inherit; }
+html.light nav a, html.light aside a, html.light aside button { --tw-text-opacity: 1; }
+html.light aside, html.light aside * { text-shadow: none; }
+html.light aside a:not([class*="bg-primary"]), html.light aside button:not([class*="bg-primary"]) { color: oklch(0.28 0.02 255); }
+html.light input, html.light textarea { color: oklch(0.18 0.02 250); }
+html.light input::placeholder, html.light textarea::placeholder { color: oklch(0.5 0.02 255); }
+
 .light .glass,
 .light .glass-strong,
 .light .surface-card,
