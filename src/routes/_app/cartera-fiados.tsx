@@ -18,6 +18,7 @@ type Fila = {
   monto: number;
   abonado: number;
   anulado: boolean;
+  fecha: string | null;
 };
 
 const dinero = (n: number) =>
@@ -30,7 +31,7 @@ function CarteraFiadosPage() {
   const cargar = useCallback(async () => {
     const { data, error } = await supabase
       .from("modulo_registros")
-      .select("titulo, contacto, telefono, estado, monto, abonado, anulado")
+      .select("titulo, contacto, telefono, estado, monto, abonado, anulado, fecha")
       .eq("modulo", "fiados");
     if (error) toast.error("No se pudo cargar la cartera.");
     setFilas(data ?? []);
@@ -42,23 +43,36 @@ function CarteraFiadosPage() {
   }, [cargar]);
 
   const deudores = useMemo(() => {
-    const mapa = new Map<string, { contacto: string | null; telefono: string | null; debe: number; abonado: number }>();
+    const hoy = new Date().toISOString().slice(0, 10);
+    const mapa = new Map<
+      string,
+      { contacto: string | null; telefono: string | null; debe: number; abonado: number; vencido: string | null }
+    >();
     for (const f of filas) {
       if (f.anulado || f.estado === "pagado") continue;
       const saldo = f.monto - f.abonado;
       if (saldo <= 0) continue;
       const clave = (f.contacto ?? f.titulo).trim() || f.titulo;
-      const actual = mapa.get(clave) ?? { contacto: f.contacto, telefono: f.telefono, debe: 0, abonado: 0 };
+      const actual = mapa.get(clave) ?? { contacto: f.contacto, telefono: f.telefono, debe: 0, abonado: 0, vencido: null };
       actual.debe += saldo;
       actual.abonado += f.abonado;
       if (!actual.telefono && f.telefono) actual.telefono = f.telefono;
+      if (f.fecha && f.fecha < hoy && (!actual.vencido || f.fecha < actual.vencido)) actual.vencido = f.fecha;
       mapa.set(clave, actual);
     }
     return Array.from(mapa.entries())
-      .map(([nombre, v]) => ({ nombre, contacto: v.contacto, telefono: v.telefono, debe: v.debe, abonado: v.abonado }))
+      .map(([nombre, v]) => ({
+        nombre,
+        contacto: v.contacto,
+        telefono: v.telefono,
+        debe: v.debe,
+        abonado: v.abonado,
+        vencido: v.vencido,
+      }))
       .sort((a, b) => b.debe - a.debe);
   }, [filas]);
 
+  const vencidos = deudores.filter((d) => d.vencido !== null);
   const totalPorCobrar = deudores.reduce((s, d) => s + d.debe, 0);
   // Lo cobrado = abonos recibidos en fiados vigentes (los anulados no cuentan).
   const totalCobrado = filas.filter((f) => !f.anulado).reduce((s, f) => s + f.abonado, 0);
@@ -101,6 +115,34 @@ function CarteraFiadosPage() {
           </div>
 
           {deudores.length === 0 && <p className="text-sm text-muted-foreground">Nadie te debe por ahora.</p>}
+
+          {vencidos.length > 0 && (
+            <GlassPanel className="space-y-3 p-4">
+              <p className="text-sm font-medium text-foreground">Cobros vencidos ({vencidos.length})</p>
+              {vencidos.map((d) => (
+                <div key={`vencido-${d.nombre}`} className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="break-words text-sm text-foreground">{d.contacto ?? d.nombre}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Vencido desde {d.vencido} · {dinero(d.debe)}
+                    </p>
+                  </div>
+                  {d.telefono && (
+                    <a
+                      href={`https://wa.me/${d.telefono.replace(/\D/g, "")}?text=${encodeURIComponent(
+                        `Hola ${d.contacto ?? d.nombre}, tu saldo de ${dinero(d.debe)} venció el ${d.vencido}. Por favor ponte al día. ¡Gracias!`,
+                      )}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="shrink-0 rounded-full border border-glass-border px-3 py-1 text-xs text-primary"
+                    >
+                      Recordar por WhatsApp
+                    </a>
+                  )}
+                </div>
+              ))}
+            </GlassPanel>
+          )}
 
           <div className="space-y-2">
             {deudores.map((d) => (
