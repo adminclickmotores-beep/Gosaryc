@@ -49,12 +49,23 @@ function InstalarPage() {
 
   useEffect(() => {
     setEsIos(/iphone|ipad|ipod/i.test(navigator.userAgent));
-    if (window.matchMedia("(display-mode: standalone)").matches) setInstalada(true);
+    if (window.matchMedia("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone) {
+      // Ya estamos dentro de la app instalada: la pantalla de instalación no pinta nada aquí, entramos a la app.
+      setInstalada(true);
+      window.location.replace("/dashboard");
+      return;
+    }
     const alPrompt = (e: Event) => {
       e.preventDefault();
       setEvento(e as EventoInstalacion);
     };
-    const alInstalar = () => setInstalada(true);
+    const alInstalar = () => {
+      setInstalada(true);
+      // Al terminar de instalar, la ventana abre la app (no se queda en esta pantalla).
+      window.setTimeout(() => {
+        if (window.matchMedia("(display-mode: standalone)").matches) window.location.replace("/dashboard");
+      }, 800);
+    };
     window.addEventListener("beforeinstallprompt", alPrompt);
     window.addEventListener("appinstalled", alInstalar);
     return () => {
@@ -131,7 +142,7 @@ function InstalarPage() {
       <GlassPanel className="p-6 text-center">
         {instalada ? (
           <p className="flex items-center justify-center gap-2 text-foreground">
-            <CheckCircle2 className="h-5 w-5 text-primary" /> La app ya está instalada en este dispositivo.
+            <CheckCircle2 className="h-5 w-5 text-primary" /> La app ya está instalada. Ábrela desde su acceso directo.
           </p>
         ) : evento ? (
           <button
