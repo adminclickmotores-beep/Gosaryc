@@ -327,12 +327,19 @@ export function RestaurantePage() {
       />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-        {tipo.modulos.map(({ id, Icon, titulo, descripcion, estado, ruta }) => {
+        {tipo.modulos.map(({ id, Icon, titulo, descripcion, estado, ruta }, i: number) => {
+          const tonos = [165, 245, 300, 20, 75, 200, 340, 130];
           const contenido = (
-            <GlassPanel className="flex h-full items-center gap-3 p-4">
-              <Icon className="h-5 w-5 shrink-0 text-primary" />
+            <GlassPanel
+              hover="lift"
+              className="menu-card flex h-full items-center gap-3 p-4"
+              style={{ "--tono": tonos[i % tonos.length] } as React.CSSProperties}
+            >
+              <span className="menu-card-icon">
+                <Icon className="h-5 w-5 shrink-0" />
+              </span>
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-foreground">{titulo}</p>
+                <p className="truncate text-sm font-semibold text-foreground">{titulo}</p>
                 <p className="truncate text-xs text-muted-foreground">{estado === "Activo" ? descripcion : "Próximo"}</p>
               </div>
             </GlassPanel>
