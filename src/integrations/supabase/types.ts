@@ -682,8 +682,12 @@ export type Database = {
           fecha_ingreso: string | null
           fecha_venta: string | null
           precio_venta_final: number | null
+          eliminado_en: string | null
+          motivo_retiro: string | null
         }
         Insert: {
+          eliminado_en?: string | null
+          motivo_retiro?: string | null
           linea?: string | null
           chasis?: string | null
           procedencia?: string
@@ -731,6 +735,8 @@ export type Database = {
           separado_notas?: string | null
         }
         Update: {
+          eliminado_en?: string | null
+          motivo_retiro?: string | null
           linea?: string | null
           chasis?: string | null
           procedencia?: string

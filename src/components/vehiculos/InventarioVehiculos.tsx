@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Car, Eye, FileText, ImagePlus, LayoutGrid, Pencil, Table2, Trash2, X } from "lucide-react";
+import { usePermisosVehiculos } from "@/hooks/use-permisos-vehiculos";
 import { FichaVehiculo, PROCEDENCIAS, calcularCostos } from "@/components/vehiculos/FichaVehiculo";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +27,16 @@ const ESTADOS = [
   { clave: "entregado", texto: "Entregado" },
   { clave: "retirado", texto: "Retirado" },
 ];
+const errorLegible = (msg: string, defecto: string): string => {
+  if (msg.includes("PLACA_DUPLICADA")) return "Ya existe un vehículo con esa placa.";
+  if (msg.includes("VIN_DUPLICADO")) return "Ya existe un vehículo con ese VIN.";
+  if (msg.includes("SIN_PERMISO_ESTADOS")) return "No tienes permiso para cambiar estados.";
+  if (msg.includes("SIN_PERMISO_PRECIOS")) return "No tienes permiso para modificar precios.";
+  if (msg.includes("SIN_PERMISO_RETIRAR")) return "No tienes permiso para retirar vehículos.";
+  if (msg.includes("SIN_PERMISO_EDITAR")) return "No tienes permiso para editar vehículos.";
+  if (msg.toLowerCase().includes("row-level security")) return "No tienes permiso para esta acción.";
+  return defecto;
+};
 const textoEstado = (c: string) => ESTADOS.find((e) => e.clave === c)?.texto ?? c;
 const hoyISO = () => new Date().toISOString().slice(0, 10);
 
@@ -61,6 +72,8 @@ const esc = (s: string | number | null | undefined): string =>
 
 export function InventarioVehiculos() {
   const { negocio } = useNegocio();
+  const perm = usePermisosVehiculos();
+  const [verRetirados, setVerRetirados] = useState(false);
   const [lista, setLista] = useState<Vehiculo[]>([]);
   const [cargando, setCargando] = useState(true);
   const [form, setForm] = useState<Form>(VACIO);
@@ -125,15 +138,17 @@ export function InventarioVehiculos() {
 
   const guardar = async () => {
     const precio = num(form.precio);
+    if (editando ? !perm.editar && !perm.estados && !perm.precios : !perm.crear)
+      return toast.error(editando ? "No tienes permiso para editar vehículos." : "No tienes permiso para crear vehículos.");
     if (!form.marca.trim() || !form.modelo.trim()) return toast.error("Escribe la marca y el modelo.");
     if (precio === null || precio < 0) return toast.error("Escribe un precio válido.");
     const placaN = txt(form.placa)?.toUpperCase().replace(/[\s-]/g, "") ?? null;
     const vinN = txt(form.vin)?.toUpperCase().replace(/\s/g, "") ?? null;
     if (placaN && !/^[A-Z0-9]{5,7}$/.test(placaN)) return toast.error("La placa debe tener entre 5 y 7 letras o números.");
     if (vinN && !/^[A-Z0-9]{8,20}$/.test(vinN)) return toast.error("El VIN debe tener entre 8 y 20 letras o números (sin I, O ni Q en un VIN estándar de 17).");
-    if (placaN && lista.some((x) => x.id !== editando && (x.placa ?? "").toUpperCase().replace(/[\s-]/g, "") === placaN))
+    if (placaN && lista.some((x) => x.id !== editando && !x.eliminado_en && (x.placa ?? "").toUpperCase().replace(/[\s-]/g, "") === placaN))
       return toast.error("Ya existe un vehículo con esa placa.");
-    if (vinN && lista.some((x) => x.id !== editando && (x.vin ?? "").toUpperCase().replace(/\s/g, "") === vinN))
+    if (vinN && lista.some((x) => x.id !== editando && !x.eliminado_en && (x.vin ?? "").toUpperCase().replace(/\s/g, "") === vinN))
       return toast.error("Ya existe un vehículo con ese VIN.");
     if (form.procedencia === "consignacion" && !form.propietario_nombre.trim())
       return toast.error("Un vehículo en consignación necesita los datos del propietario.");
@@ -164,11 +179,7 @@ export function InventarioVehiculos() {
       ? await supabase.from("vehiculos_inventario").update(datos).eq("id", editando)
       : await supabase.from("vehiculos_inventario").insert(datos);
     setGuardando(false);
-    if (error) {
-      if (error.message.includes("PLACA_DUPLICADA")) return toast.error("Ya existe un vehículo con esa placa.");
-      if (error.message.includes("VIN_DUPLICADO")) return toast.error("Ya existe un vehículo con ese VIN.");
-      return toast.error("No se pudo guardar el vehículo.");
-    }
+    if (error) return toast.error(errorLegible(error.message, "No se pudo guardar el vehículo."));
     toast.success(editando ? "Vehículo actualizado." : "Vehículo guardado.");
     limpiar();
     cargar();
@@ -205,14 +216,34 @@ export function InventarioVehiculos() {
       fecha_venta: estado === "vendido" || estado === "entregado" ? v.fecha_venta ?? hoyISO() : null,
     };
     const { error } = await supabase.from("vehiculos_inventario").update(cambios).eq("id", v.id);
-    if (error) return toast.error("No se pudo actualizar.");
+    if (error) return toast.error(errorLegible(error.message, "No se pudo actualizar."));
     cargar();
   };
 
   const borrar = async (v: Vehiculo) => {
-    if (!window.confirm(`¿Eliminar ${v.marca} ${v.modelo}? Se borrarán también sus gastos e historial. Si solo salió del negocio, mejor márcalo como “Retirado”.`)) return;
-    const { error } = await supabase.from("vehiculos_inventario").delete().eq("id", v.id);
-    if (error) return toast.error("No se pudo eliminar.");
+    if (!perm.retirar) return toast.error("No tienes permiso para retirar vehículos.");
+    const motivo = window.prompt(
+      `Retirar ${v.marca} ${v.modelo} del inventario.\nSus gastos, documentos e historial se conservan. ¿Cuál es el motivo?`,
+      "",
+    );
+    if (motivo === null) return;
+    const { error } = await supabase
+      .from("vehiculos_inventario")
+      .update({ eliminado_en: new Date().toISOString(), motivo_retiro: motivo.trim() || null, estado: "retirado" })
+      .eq("id", v.id);
+    if (error) return toast.error(errorLegible(error.message, "No se pudo retirar el vehículo."));
+    toast.success("Vehículo retirado. Puedes verlo con “Mostrar retirados”.");
+    cargar();
+  };
+
+  const reingresar = async (v: Vehiculo) => {
+    if (!perm.retirar) return toast.error("No tienes permiso para reingresar vehículos.");
+    const { error } = await supabase
+      .from("vehiculos_inventario")
+      .update({ eliminado_en: null, motivo_retiro: null, estado: "ingreso" })
+      .eq("id", v.id);
+    if (error) return toast.error(errorLegible(error.message, "No se pudo reingresar el vehículo."));
+    toast.success("Vehículo reingresado al inventario.");
     cargar();
   };
 
@@ -226,6 +257,7 @@ export function InventarioVehiculos() {
   const visibles = useMemo(() => {
     const q = busca.trim().toLowerCase();
     return lista.filter((v) => {
+      if (!verRetirados && v.eliminado_en) return false;
       if (fTipo !== "todos" && v.tipo !== fTipo) return false;
       if (fEstado !== "todos" && v.estado !== fEstado) return false;
       if (fMarca !== "todas" && v.marca !== fMarca) return false;
@@ -236,11 +268,11 @@ export function InventarioVehiculos() {
       if (!q) return true;
       return [v.marca, v.modelo, v.linea, v.version, v.placa, v.vin, v.chasis, v.motor_numero, v.color, v.anio].some((x) => String(x ?? "").toLowerCase().includes(q));
     });
-  }, [lista, busca, fTipo, fEstado, fMarca, fModelo, fProc, fDisp]);
+  }, [lista, busca, fTipo, fEstado, fMarca, fModelo, fProc, fDisp, verRetirados]);
 
   const fichaVeh = ficha ? lista.find((v) => v.id === ficha) ?? null : null;
 
-  const disponibles = lista.filter((v) => v.estado === "disponible");
+  const disponibles = lista.filter((v) => v.estado === "disponible" && !v.eliminado_en);
   const valorDisponible = disponibles.reduce((s, v) => s + v.precio, 0);
 
   const generarCatalogo = () => {
@@ -439,6 +471,9 @@ ${tarjetas}
           </div>
           <div className="flex gap-2">
             <button onClick={() => setVista("tarjetas")} className={`${chip(vista === "tarjetas")} inline-flex items-center gap-1.5`}><LayoutGrid className="h-4 w-4" /> Tarjetas</button>
+            <label className="ml-auto inline-flex items-center gap-2 text-sm text-muted-foreground">
+              <input type="checkbox" checked={verRetirados} onChange={(e) => setVerRetirados(e.target.checked)} /> Mostrar retirados
+            </label>
             <button onClick={() => setVista("tabla")} className={`${chip(vista === "tabla")} inline-flex items-center gap-1.5`}><Table2 className="h-4 w-4" /> Tabla</button>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -484,9 +519,9 @@ ${tarjetas}
                         <td className="p-3">{v.placa ?? "—"}</td>
                         <td className="p-3">{PROCEDENCIAS[v.procedencia] ?? v.procedencia}</td>
                         <td className="p-3">{textoEstado(v.estado)}</td>
-                        <td className="p-3">{dinero(c.costoTotal)}</td>
+                        <td className="p-3">{perm.costos ? dinero(c.costoTotal) : "—"}</td>
                         <td className="p-3">{dinero(c.vendido ? v.precio_venta_final ?? v.precio : v.precio)}</td>
-                        <td className={`p-3 ${c.utilidad < 0 ? "text-destructive" : ""}`}>{dinero(c.utilidad)}</td>
+                        <td className={`p-3 ${c.utilidad < 0 ? "text-destructive" : ""}`}>{perm.costos ? dinero(c.utilidad) : "—"}</td>
                         <td className="p-3"><button onClick={() => setFicha(v.id)} className="text-primary">Ficha</button></td>
                       </tr>
                     );
@@ -515,16 +550,29 @@ ${tarjetas}
                 </p>
                 <p className="text-sm font-medium text-foreground">{dinero(v.precio)}</p>
                 <p className="text-xs text-muted-foreground">
-                  {PROCEDENCIAS[v.procedencia] ?? v.procedencia} · Costo {dinero(calcularCostos(v, gastosPorVeh[v.id] ?? 0).costoTotal)} ·{" "}
-                  {calcularCostos(v, gastosPorVeh[v.id] ?? 0).vendido ? "Utilidad" : "Utilidad proyectada"} {dinero(calcularCostos(v, gastosPorVeh[v.id] ?? 0).utilidad)}
+                  {PROCEDENCIAS[v.procedencia] ?? v.procedencia}
+                  {perm.costos && (
+                    <>
+                      {" "}· Costo {dinero(calcularCostos(v, gastosPorVeh[v.id] ?? 0).costoTotal)} ·{" "}
+                      {calcularCostos(v, gastosPorVeh[v.id] ?? 0).vendido ? "Utilidad" : "Utilidad proyectada"} {dinero(calcularCostos(v, gastosPorVeh[v.id] ?? 0).utilidad)}
+                    </>
+                  )}
+                  {v.eliminado_en ? ` · Retirado${v.motivo_retiro ? `: ${v.motivo_retiro}` : ""}` : ""}
                 </p>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <button onClick={() => setFicha(v.id)} className="inline-flex items-center gap-1 text-xs text-primary"><Eye className="h-3 w-3" /> Ficha</button>
-                  <select className="rounded-lg border border-glass-border bg-glass/40 px-2 py-1 text-base text-foreground" value={v.estado} onChange={(e) => cambiarEstado(v, e.target.value)}>
+                  <select className="rounded-lg border border-glass-border bg-glass/40 px-2 py-1 text-base text-foreground" value={v.estado} disabled={!perm.estados || !!v.eliminado_en} onChange={(e) => cambiarEstado(v, e.target.value)}>
                     {ESTADOS.map((e) => <option key={e.clave} value={e.clave}>{e.texto}</option>)}
                   </select>
-                  <button onClick={() => editar(v)} className="inline-flex items-center gap-1 text-xs text-primary"><Pencil className="h-3 w-3" /> Editar</button>
-                  <button onClick={() => borrar(v)} className="inline-flex items-center gap-1 text-xs text-destructive"><Trash2 className="h-3 w-3" /> Eliminar</button>
+                  {(perm.editar || perm.precios) && !v.eliminado_en && (
+                    <button onClick={() => editar(v)} className="inline-flex items-center gap-1 text-xs text-primary"><Pencil className="h-3 w-3" /> Editar</button>
+                  )}
+                  {perm.retirar && !v.eliminado_en && (
+                    <button onClick={() => borrar(v)} className="inline-flex items-center gap-1 text-xs text-destructive"><Trash2 className="h-3 w-3" /> Retirar</button>
+                  )}
+                  {perm.retirar && v.eliminado_en && (
+                    <button onClick={() => reingresar(v)} className="inline-flex items-center gap-1 text-xs text-primary">Reingresar</button>
+                  )}
                 </div>
               </div>
             </GlassPanel>
@@ -534,9 +582,11 @@ ${tarjetas}
       {fichaVeh && (
         <FichaVehiculo
           vehiculo={fichaVeh}
+          perm={perm}
           onCerrar={() => setFicha(null)}
           onEditar={() => { const v = fichaVeh; setFicha(null); editar(v); }}
           onCambio={cargar}
+          onRetirar={() => { const v = fichaVeh; setFicha(null); borrar(v); }}
         />
       )}
     </div>

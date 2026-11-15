@@ -7,6 +7,7 @@ import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
+import { PERMISOS_VEHICULOS } from "@/hooks/use-permisos-vehiculos";
 
 type Miembro = Tables<"equipo_negocio">;
 type Registro = Tables<"equipo_auditoria">;
@@ -22,6 +23,8 @@ const ROLES_RAPIDOS: { nombre: string; modulos: string[] }[] = [
   { nombre: "Domiciliario", modulos: ["domicilios"] },
   { nombre: "Contador/a", modulos: ["finanzas", "facturas", "caja_diaria"] },
   { nombre: "Bodega / compras", modulos: ["insumos", "proveedores"] },
+  { nombre: "Asesor de ventas (vehículos)", modulos: ["vehiculos", "veh_ver", "veh_estados"] },
+  { nombre: "Jefe de patio (vehículos)", modulos: ["vehiculos", "veh_ver", "veh_crear", "veh_editar", "veh_gastos", "veh_estados", "veh_costos"] },
   { nombre: "Agenda y clientes", modulos: ["agenda", "clientes", "cotizaciones"] },
 ];
 
@@ -29,7 +32,8 @@ export function EquipoPermisos() {
   const { negocio } = useNegocio();
   const { esAdmin, cargando } = usePermisos();
   const tipo = resolverTipoNegocio(negocio?.tipo_negocio);
-  const modulos = tipo.modulos;
+  const modulos: { id: string; titulo: string }[] =
+    tipo.clave === "concesionario" ? [...tipo.modulos, ...PERMISOS_VEHICULOS] : tipo.modulos;
 
   const [miembros, setMiembros] = useState<Miembro[]>([]);
   const [email, setEmail] = useState("");
