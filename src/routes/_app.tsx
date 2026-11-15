@@ -95,13 +95,15 @@ function AppShell() {
   const [bloqueo, setBloqueo] = useState<"suspendido" | "vencido" | null>(null);
   // Empleados (no administrador) en el panel: pantalla completa fija, sin menú lateral.
   // El administrador conserva el menú para probar módulo por módulo.
-  const completaFinal = completa || (!cargandoPermisos && !esAdmin && loc.pathname.startsWith("/restaurante"));
-  const anchoGrande = completaFinal || loc.pathname.startsWith("/restaurante");
+  const enRutaPanel = loc.pathname.startsWith("/restaurante") || loc.pathname.startsWith("/negocio/");
+  const rutaPanel = tipoNegocio.clave === "restaurante" ? "/restaurante" : `/negocio/${tipoNegocio.clave}`;
+  const completaFinal = completa || (!cargandoPermisos && !esAdmin && enRutaPanel);
+  const anchoGrande = completaFinal || enRutaPanel;
   const verPanel = ["pedidos", "cocina", "mesas", "caja_diaria", "insumos"].some((id) => puede(id));
   const modulosVisibles = tipoNegocio.modulos;
   const navItems: NavItem[] = [
     ...(verPanel || cargandoPermisos
-      ? [{ to: "/restaurante", label: tipoNegocio.panel, Icon: IconBolt } as NavItem]
+      ? [{ to: rutaPanel, label: tipoNegocio.panel, Icon: IconBolt } as NavItem]
       : []),
     ...modulosVisibles
       .filter((m) => m.ruta && m.ruta !== "/restaurante" && (cargandoPermisos || puede(m.id)))
@@ -116,12 +118,12 @@ function AppShell() {
   const modulosDeLaRuta = modulosVisibles.filter(
     (m) => m.ruta && m.ruta !== "/restaurante" && (loc.pathname === m.ruta || loc.pathname.startsWith(`${m.ruta}/`)),
   );
-  const enPanel = loc.pathname.startsWith("/restaurante");
+  const enPanel = enRutaPanel;
   const sinAcceso =
     !cargandoPermisos &&
     !esAdmin &&
     ((enPanel && !verPanel) || (modulosDeLaRuta.length > 0 && !modulosDeLaRuta.some((m) => puede(m.id))));
-  const primeraRutaPermitida = navItems.find((n) => n.to !== "/restaurante")?.to;
+  const primeraRutaPermitida = navItems.find((n) => n.to !== rutaPanel && n.to !== "/restaurante")?.to;
   useEffect(() => {
     if (!cargandoPermisos && !esAdmin && enPanel && !verPanel && primeraRutaPermitida) {
       nav({ to: primeraRutaPermitida as never, replace: true });

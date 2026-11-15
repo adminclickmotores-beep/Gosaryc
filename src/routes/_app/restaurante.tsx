@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useLocation, useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { Download, ExternalLink, Trash2 } from "lucide-react";
 import { useNegocio } from "@/hooks/use-negocio";
@@ -124,10 +124,20 @@ const SIGUIENTE = (p: Pedido): { estado: string; texto: string } | null => {
 const campo =
   "w-full rounded-lg border border-glass-border bg-glass/40 px-3 py-2.5 text-base text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary/50";
 
-function RestaurantePage() {
+export function RestaurantePage() {
   const { negocio } = useNegocio();
   const tipo = resolverTipoNegocio(negocio?.tipo_negocio);
-  const busqueda = Route.useSearch();
+  const busqueda = useSearch({ strict: false }) as { vista?: string; ventana?: string };
+  const navegar = useNavigate();
+  const { pathname } = useLocation();
+  // La dirección del panel sigue al tipo de negocio: /restaurante, /negocio/panaderia, /negocio/concesionario...
+  useEffect(() => {
+    if (!negocio) return;
+    const destino = tipo.clave === "restaurante" ? "/restaurante" : `/negocio/${tipo.clave}`;
+    if (pathname !== destino && (pathname === "/restaurante" || pathname.startsWith("/negocio/"))) {
+      navegar({ to: destino as never, search: busqueda as never, replace: true });
+    }
+  }, [negocio, tipo.clave, pathname, navegar, busqueda]);
   const { esAdmin, cargando: cargandoPermisos, puede } = usePermisos();
   const completa = busqueda.ventana === "completa" || (!cargandoPermisos && !esAdmin);
   const [vistaElegida, setVista] = useState<VistaClave>(
