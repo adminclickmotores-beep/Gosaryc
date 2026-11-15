@@ -212,6 +212,69 @@ export const GUIAS_NEGOCIO: Record<TipoNegocioClave, GuiaNegocio> = {
       { titulo: "Controla insumos", texto: "Lleva el consumo de jabones y químicos." },
     ],
   },
+  condominio: {
+    frase: "Una administración clara y vecinos al día.",
+    pasos: [
+      { titulo: "Registra las unidades", texto: "Agrega apartamentos o casas con su propietario y contacto." },
+      { titulo: "Cobra las cuotas", texto: "Lleva el control de administración, abonos y saldos pendientes." },
+      { titulo: "Atiende solicitudes", texto: "Registra reclamos y mantenimientos y dales seguimiento." },
+      { titulo: "Comunica novedades", texto: "Mantén informados a los residentes de avisos y reuniones." },
+    ],
+  },
+  prestamos: {
+    frase: "Cada préstamo y cada cuota bajo control.",
+    pasos: [
+      { titulo: "Registra a tus clientes", texto: "Guarda sus datos y contacto para ubicarlos fácil." },
+      { titulo: "Crea los préstamos", texto: "Define monto, interés y fecha de cada cuota." },
+      { titulo: "Anota los pagos", texto: "Registra cada abono y revisa el saldo pendiente." },
+      { titulo: "Revisa la cartera", texto: "Consulta quién está atrasado y haz el cobro a tiempo." },
+    ],
+  },
+  textil: {
+    frase: "Tus pedidos y telas siempre ordenados.",
+    pasos: [
+      { titulo: "Carga tu catálogo", texto: "Agrega prendas, telas y precios." },
+      { titulo: "Recibe pedidos", texto: "Registra cada pedido y sigue su producción hasta la entrega." },
+      { titulo: "Controla materiales", texto: "Lleva el inventario de telas e insumos." },
+      { titulo: "Cobra a tus clientes", texto: "Controla abonos y saldos por pedido." },
+    ],
+  },
+  joyeria: {
+    frase: "Cada pieza registrada y cada venta cuidada.",
+    pasos: [
+      { titulo: "Registra tus piezas", texto: "Agrega joyas con material, peso y precio." },
+      { titulo: "Vende y cotiza", texto: "Registra ventas y entrega cotizaciones a tus clientes." },
+      { titulo: "Atiende arreglos", texto: "Lleva el control de reparaciones y pedidos a medida." },
+      { titulo: "Controla tu inventario", texto: "Revisa qué tienes disponible y qué falta." },
+    ],
+  },
+  celulares: {
+    frase: "Ventas y reparaciones sin perder ningún equipo.",
+    pasos: [
+      { titulo: "Carga tu inventario", texto: "Agrega equipos, accesorios y repuestos con su precio." },
+      { titulo: "Registra ventas", texto: "Vende y lleva el control de cada cobro." },
+      { titulo: "Recibe reparaciones", texto: "Anota el equipo, la falla y el estado hasta entregarlo." },
+      { titulo: "Avisa a tus clientes", texto: "Comunica cuando su equipo esté listo." },
+    ],
+  },
+  papeleria: {
+    frase: "Tu papelería surtida y las ventas al día.",
+    pasos: [
+      { titulo: "Carga tus productos", texto: "Agrega artículos con precio y existencias." },
+      { titulo: "Vende rápido", texto: "Registra cada venta desde el punto de venta." },
+      { titulo: "Surte a tiempo", texto: "Revisa qué se está agotando y haz tus compras." },
+      { titulo: "Revisa tus ventas", texto: "Consulta los reportes del día y del mes." },
+    ],
+  },
+  moda: {
+    frase: "Tu colección ordenada y vendiendo todos los días.",
+    pasos: [
+      { titulo: "Carga tu colección", texto: "Agrega prendas con tallas, colores y precios." },
+      { titulo: "Registra ventas", texto: "Vende en tienda o por pedido y controla los cobros." },
+      { titulo: "Controla el inventario", texto: "Revisa existencias por talla y color." },
+      { titulo: "Fideliza clientes", texto: "Guarda sus datos y ofrece puntos o promociones." },
+    ],
+  },
 };
 
 /** Pasos que valen para cualquier tipo de negocio. */

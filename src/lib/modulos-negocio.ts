@@ -57,6 +57,8 @@ import {
   PartyPopper,
   Shirt,
   Scale,
+  Gem,
+  BookOpen,
   type LucideIcon,
 } from "lucide-react";
 
@@ -84,7 +86,14 @@ export type TipoNegocioClave =
   | "farmacia"
   | "eventos"
   | "profesional"
-  | "lavanderia";
+  | "lavanderia"
+  | "condominio"
+  | "prestamos"
+  | "textil"
+  | "joyeria"
+  | "celulares"
+  | "papeleria"
+  | "moda";
 
 export type ModuloNegocio = {
   id: string;
@@ -527,9 +536,104 @@ TIPOS_NEGOCIO.push(
   },
 );
 
+// ---- Tipos de negocio tomados del catálogo de packs de software ----
+TIPOS_NEGOCIO.push(
+  {
+    clave: "condominio",
+    etiqueta: "Condominio / administración de edificios",
+    panel: "Condominio",
+    usaPedidos: false,
+    modulos: [
+      m("unidades_cond", "Unidades y propietarios", "Apartamentos o casas con su propietario o inquilino.", Building2),
+      m("cuotas_cond", "Cuotas de administración", "Cuotas de mantenimiento, saldos y mora por unidad.", Coins),
+      m("areas_comunes", "Áreas comunes y reservas", "Salón social, piscina, parqueaderos y sus reservas.", CalendarClock),
+      m("mantenimiento_cond", "Mantenimiento del edificio", "Tareas, proveedores y reparaciones de zonas comunes.", Wrench),
+      m("comunicados_cond", "Comunicados y PQRS", "Avisos a residentes y solicitudes con seguimiento.", Bell),
+      CLIENTES, AGENDA, FACTURAS, PAGOS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "prestamos",
+    etiqueta: "Préstamos y cobranza",
+    panel: "Cobranza",
+    usaPedidos: false,
+    modulos: [
+      m("prestamos_reg", "Préstamos", "Monto, interés, plazo y estado de cada préstamo.", Banknote),
+      m("cronograma_cuotas", "Cronograma de cuotas", "Simulación de cuotas y fechas de pago.", CalendarDays),
+      m("cobranza_diaria", "Cobranza diaria y mensual", "Cuotas por cobrar hoy, en mora y promesas de pago.", Coins),
+      m("garantias_prest", "Garantías de préstamo", "Bienes o avales que respaldan cada préstamo.", ShieldCheck),
+      CLIENTES, AGENDA, FACTURAS, PAGOS, CAJA, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "textil",
+    etiqueta: "Taller textil / confección",
+    panel: "Taller textil",
+    usaPedidos: false,
+    modulos: [
+      m("cortes_tela", "Cortes de tela", "Lotes de corte, metros usados y rendimiento.", Scissors),
+      m("ordenes_confeccion", "Órdenes de confección", "Prendas por talla y color, estado y fecha de entrega.", Shirt),
+      m("destajo", "Pago por destajo", "Prendas terminadas por operario y valor a pagar.", Percent),
+      m("insumos_textil", "Telas e insumos", "Telas, hilos, botones y existencias.", Boxes),
+      CLIENTES, AGENDA, FIADOS, FACTURAS, PAGOS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "joyeria",
+    etiqueta: "Joyería / relojería",
+    panel: "Joyería",
+    usaPedidos: false,
+    modulos: [
+      m("piezas_joyeria", "Piezas y quilataje", "Piezas con peso, quilataje, material y precio.", Gem),
+      m("certificados_joy", "Certificados de autenticidad", "Certificados y garantías entregadas a cada cliente.", BadgeCheck),
+      m("taller_joyeria", "Taller y reparaciones", "Arreglos, relojes y trabajos por encargo.", Wrench),
+      m("apartados", "Apartados (plan separe)", "Abonos y entrega de piezas separadas.", Tag),
+      CLIENTES, FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "celulares",
+    etiqueta: "Tienda de celulares / reparaciones",
+    panel: "Celulares",
+    usaPedidos: false,
+    modulos: [
+      m("equipos_imei", "Equipos e IMEI", "Control de equipos por IMEI, estado y precio.", Smartphone),
+      m("reparaciones_cel", "Reparaciones", "Equipos en reparación, diagnóstico, repuestos y entrega.", Wrench),
+      m("accesorios_cel", "Accesorios e inventario", "Fundas, cargadores y existencias.", Package),
+      CLIENTES, GARANTIAS, FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "papeleria",
+    etiqueta: "Papelería / librería",
+    panel: "Papelería",
+    usaPedidos: false,
+    modulos: [
+      m("productos_papel", "Útiles y libros", "Inventario de útiles escolares y libros por ISBN.", BookOpen),
+      m("copias_impresiones", "Copias e impresiones", "Servicios de fotocopia, impresión y su cobro.", FileText),
+      m("lista_escolar", "Listas escolares", "Listas de útiles por colegio y pedidos de temporada.", ClipboardList),
+      CLIENTES, FIADOS, FACTURAS, PAGOS, FIDELIZACION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "moda",
+    etiqueta: "Tienda de moda / calzado",
+    panel: "Moda y calzado",
+    usaPedidos: false,
+    modulos: [
+      m("prendas_talla", "Prendas y calzado por talla/color", "Inventario por matriz de talla, número y color.", Shirt),
+      m("temporadas", "Temporadas y colecciones", "Colecciones, marcas y rotación por temporada.", Tag),
+      m("vitrina", "Exhibición en vitrina", "Qué está exhibido y qué falta reponer.", Armchair),
+      m("apartados", "Apartados (plan separe)", "Abonos y entrega de productos separados.", Tag),
+      m("devoluciones", "Cambios y devoluciones", "Control de cambios y notas crédito.", Repeat),
+      CLIENTES, FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+);
+
 // Se agrega el módulo de cotizaciones a los tipos que cotizan y no tienen uno propio.
 // Salud (presupuestos de tratamiento), educación, hospedaje, gimnasio, mascotas, agro, farmacia y lavandería no cotizan así.
-const SIN_COTIZACIONES: TipoNegocioClave[] = ["tienda","restaurante", "cafeteria", "comida_rapida","salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro", "farmacia", "lavanderia", "belleza", "inmobiliaria", "tecnologia"];
+const SIN_COTIZACIONES: TipoNegocioClave[] = ["tienda","restaurante", "cafeteria", "comida_rapida","salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro", "farmacia", "lavanderia", "belleza", "inmobiliaria", "tecnologia", "condominio", "prestamos", "papeleria"];
 for (const t of TIPOS_NEGOCIO) {
   if (SIN_COTIZACIONES.includes(t.clave)) continue;
   if (t.modulos.some((x) => x.id === COTIZACIONES.id || x.id.startsWith("cotizaciones_"))) continue;
@@ -561,6 +665,13 @@ export function resolverTipoNegocio(valor: string | null | undefined): TipoNegoc
   if (!t) return por("restaurante");
   const directo = TIPOS_NEGOCIO.find((x) => x.clave === t);
   if (directo) return directo;
+  if (/condominio|conjunto residencial|administracion de edificio|propiedad horizontal/.test(t)) return por("condominio");
+  if (/prestamo|cobranza|gota a gota|microcredito|financiera/.test(t)) return por("prestamos");
+  if (/textil|confeccion|costura|destajo/.test(t)) return por("textil");
+  if (/joyeri|relojeri|joya/.test(t)) return por("joyeria");
+  if (/celular|telefonia|movil/.test(t)) return por("celulares");
+  if (/papeleri|libreri/.test(t)) return por("papeleria");
+  if (/zapater|calzado|\bmoda\b|indumentaria/.test(t)) return por("moda");
   if (/farmac|drogueri|minimercado|supermercado/.test(t)) return por("farmacia");
   if (/belleza|peluquer|barberia|manicur|unas|spa\b|estetica|maquillaje|salon de belleza/.test(t)) return por("belleza");
   if (/evento|fotograf|boda|salon social|matrimonio|quince/.test(t)) return por("eventos");
