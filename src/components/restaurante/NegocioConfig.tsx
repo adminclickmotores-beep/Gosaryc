@@ -141,8 +141,20 @@ export function NegocioConfig() {
           <select
             className={campo}
             value={tipoActual.clave}
-            onChange={(e) => {
+            onChange={async (e) => {
               const nuevo = e.target.value;
+              // El tipo se guarda al instante para que el menú y los módulos cambien de inmediato.
+              if (negocio && resolverTipoNegocio(negocio.tipo_negocio).clave !== nuevo) {
+                const { data: ok, error: errTipo } = await supabase
+                  .from("negocio_config")
+                  .update({ tipo_negocio: nuevo, updated_at: new Date().toISOString() })
+                  .eq("id", negocio.id)
+                  .select("id");
+                if (errTipo || !ok || ok.length === 0) {
+                  return toast.error("No se pudo cambiar el tipo de negocio. Tu cuenta debe ser la del administrador.");
+                }
+                window.dispatchEvent(new Event("negocio:cambio"));
+              }
               const tipoPrevio = resolverTipoNegocio(negocio?.tipo_negocio ?? "").clave;
               if (negocio && nuevo !== tipoPrevio) {
                 // Otro tipo de negocio: se limpian los datos del negocio anterior para empezar de cero.
