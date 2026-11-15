@@ -12,7 +12,6 @@ import {
   Users,
   CalendarDays,
   ShoppingBag,
-  Store,
   Scissors,
   ClipboardList,
   Package,
@@ -85,8 +84,7 @@ export type TipoNegocioClave =
   | "farmacia"
   | "eventos"
   | "profesional"
-  | "lavanderia"
-  | "otro";
+  | "lavanderia";
 
 export type ModuloNegocio = {
   id: string;
@@ -420,21 +418,6 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       CLIENTES, AGENDA, FIADOS, FACTURAS, PAGOS, RESENAS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },
-  {
-    clave: "otro",
-    etiqueta: "Negocio general (se adapta a todos)",
-    panel: "Mi negocio",
-    usaPedidos: false,
-    modulos: [
-      m("catalogo", "Productos y servicios", "Todo lo que vendes u ofreces, con su precio.", Store),
-      m("inventario_general", "Inventario", "Existencias y alertas de faltantes.", Package),
-      m("ventas_generales", "Ventas y pedidos", "Registro de ventas, pedidos y entregas a clientes.", ShoppingBag),
-      m("proyectos_generales", "Trabajos y proyectos", "Tareas, responsables y fechas de entrega.", ClipboardList),
-      m("apartados_generales", "Apartados y anticipos", "Abonos y reservas de tus clientes.", Tag),
-      CLIENTES, AGENDA, SOLICITUDES, GARANTIAS,
-      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
-    ],
-  },
 ];
 
 // ---- Más tipos de negocio ----
@@ -556,12 +539,6 @@ TIPOS_NEGOCIO.push(
   },
 );
 
-// "Negocio general" siempre al final de la lista.
-{
-  const i = TIPOS_NEGOCIO.findIndex((x) => x.clave === "otro");
-  if (i >= 0) TIPOS_NEGOCIO.push(...TIPOS_NEGOCIO.splice(i, 1));
-}
-
 // Se agrega el módulo de cotizaciones a los tipos que cotizan y no tienen uno propio.
 // Salud (presupuestos de tratamiento), educación, hospedaje, gimnasio, mascotas, agro, farmacia y lavandería no cotizan así.
 const SIN_COTIZACIONES: TipoNegocioClave[] = ["salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro", "farmacia", "lavanderia", "belleza"];
@@ -593,7 +570,7 @@ export function mismoTipoNegocio(filaTipo: string | null | undefined, negocioTip
 export function resolverTipoNegocio(valor: string | null | undefined): TipoNegocio {
   const t = sinAcentos((valor ?? "").trim());
   const por = (c: TipoNegocioClave) => TIPOS_NEGOCIO.find((x) => x.clave === c) as TipoNegocio;
-  if (!t) return por("otro");
+  if (!t) return por("restaurante");
   const directo = TIPOS_NEGOCIO.find((x) => x.clave === t);
   if (directo) return directo;
   if (/farmac|drogueri|minimercado|supermercado/.test(t)) return por("farmacia");
@@ -620,5 +597,6 @@ export function resolverTipoNegocio(valor: string | null | undefined): TipoNegoc
   if (/comida|restaur|pollo|chuleta/.test(t)) return por("restaurante");
   if (/tienda|comercio|repuesto|retail|ropa|boutique/.test(t)) return por("tienda");
   if (/servicio|cita|salon|belleza|barber|clinic|dental|spa|taller/.test(t)) return por("servicios");
-  return por("otro");
+  // Texto que no corresponde a ningún tipo (por ejemplo el antiguo "negocio general"): se trata como restaurante.
+  return por("restaurante");
 }

@@ -151,19 +151,9 @@ export function NegocioConfig() {
                   .from("negocio_config")
                   .update({
                     tipo_negocio: nuevo,
-                    // Otro tipo de negocio: se borran de la base los datos del anterior.
-                    nombre: `Mi ${resolverTipoNegocio(nuevo).etiqueta.toLowerCase()}`,
-                    eslogan: null,
-                    descripcion: null,
-                    ciudad: null,
-                    cobertura: null,
-                    telefono_pedidos: null,
-                    instagram: null,
-                    sitio_web: null,
-                    horarios: null,
-                    aviso_entrega: null,
-                    logo_url: null,
-                    portada_url: null,
+                    // La base guarda los datos del negocio anterior y carga los de este tipo
+                    // (o los deja en blanco si es la primera vez que lo eliges).
+                    nombre: `Mi ${resolverTipoNegocio(nuevo).etiqueta.split("/")[0].trim().toLowerCase()}`,
                     updated_at: new Date().toISOString(),
                   })
                   .eq("id", negocio.id)
@@ -182,19 +172,11 @@ export function NegocioConfig() {
                   });
                 }
               }
-              const tipoPrevio = resolverTipoNegocio(negocio?.tipo_negocio ?? "").clave;
-              if (negocio && nuevo !== tipoPrevio) {
-                // Otro tipo de negocio: se limpian los datos del negocio anterior para empezar de cero.
-                const etiqueta = resolverTipoNegocio(nuevo).etiqueta;
-                setForm({
-                  ...VACIO,
-                  tipo_negocio: nuevo,
-                  nombre: `Mi ${etiqueta.toLowerCase()}`,
-                  color_principal: form.color_principal,
-                });
-                toast.info("Cambiaste el tipo de negocio: se limpiaron los datos anteriores. Completa los tuyos y guarda.");
-              } else {
-                setForm({ ...form, tipo_negocio: nuevo });
+              // Los datos del formulario se recargan solos desde la base con los del tipo elegido.
+              setForm((f) => ({ ...f, tipo_negocio: nuevo }));
+              if (negocio && resolverTipoNegocio(negocio.tipo_negocio).clave !== nuevo) {
+                recargar();
+                toast.info("Cambiaste de tipo de negocio: aquí solo ves los datos de este tipo. Completa los tuyos y guarda.");
               }
             }}
           >
