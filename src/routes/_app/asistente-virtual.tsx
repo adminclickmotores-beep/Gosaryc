@@ -18,7 +18,14 @@ export const Route = createFileRoute("/_app/asistente-virtual")({
 type Msg = { de: "bot" | "tu"; texto: string };
 
 const SALUDO =
-  "Hola, soy tu agente virtual. Pregúntame lo que necesites sobre tu negocio: productos, precios, cómo responder a un cliente o qué pasos seguir.";
+  "Hola, soy tu asistente de ayuda. Te explico cómo usar el programa y te guío paso a paso en la configuración de tu negocio. ¿Con qué te ayudo?";
+
+const SUGERENCIAS = [
+  "¿Cómo configuro mi negocio?",
+  "¿Cómo agrego mis productos?",
+  "¿Cómo invito a mi equipo?",
+  "¿Cómo instalo la app en el celular?",
+];
 
 const campo =
   "w-full rounded-lg border border-glass-border bg-glass/40 px-3 py-2.5 text-base text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary/50";
@@ -64,8 +71,8 @@ function AsistenteVirtualPage() {
           <Bot className="h-5 w-5" />
         </span>
         <div className="min-w-0">
-          <h1 className="font-display text-2xl text-foreground">Agente virtual</h1>
-          <p className="text-sm text-muted-foreground">Un asistente con IA para responder dudas y apoyar a tu equipo.</p>
+          <h1 className="font-display text-2xl text-foreground">Asistente de ayuda</h1>
+          <p className="text-sm text-muted-foreground">Resuelve tus dudas del programa y te guía en la configuración.</p>
         </div>
       </header>
 
@@ -91,6 +98,22 @@ function AsistenteVirtualPage() {
           )}
           <div ref={finRef} />
         </div>
+
+        {mensajes.length === 1 && (
+          <div className="flex flex-wrap gap-2">
+            {SUGERENCIAS.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => enviar(s)}
+                disabled={enviando}
+                className="rounded-full border border-glass-border px-3 py-1.5 text-xs text-foreground hover:bg-glass/60 disabled:opacity-40"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
 
         <form
           className="flex items-center gap-2 border-t border-glass-border pt-3"
