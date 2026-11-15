@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, Link, useLocation, useNavigate } from "@tansta
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock } from "lucide-react";
+import { Lock, GraduationCap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
@@ -358,6 +358,19 @@ function AppShell() {
               >
                 <IconSpark size={18} />
                 {!collapsed && <span>Agente virtual</span>}
+              </Link>
+              <Link
+                to={"/academia" as never}
+                preload="render"
+                title={collapsed ? "Academia" : undefined}
+                className={`flex items-center ${collapsed ? "justify-center px-0" : "gap-3 px-3"} rounded-xl py-2.5 text-sm transition-colors ${
+                  loc.pathname.startsWith("/academia")
+                    ? "bg-glass text-foreground"
+                    : "text-muted-foreground hover:bg-glass/50 hover:text-foreground"
+                }`}
+              >
+                <GraduationCap size={18} />
+                {!collapsed && <span>Academia</span>}
               </Link>
               <Link
                 to="/settings"
