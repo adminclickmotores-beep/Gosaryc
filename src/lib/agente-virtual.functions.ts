@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertAiQuota } from "@/lib/ai-quota.server";
 import { tarifasComoTexto } from "@/lib/tarifas-domicilio";
+import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-2.5-flash";
@@ -40,7 +41,7 @@ export const runAgenteVirtual = createServerFn({ method: "POST" })
     const listaProductos = productos ?? [];
     const catalogo =
       listaProductos.length > 0
-        ? "Catálogo actual (usa solo estos nombres y precios):\n" +
+        ? "Catálogo de productos/servicios cargado (usa solo estos nombres y precios):\n" +
           listaProductos
             .map((p) => {
               const cat = p.categoria_id ? nombreCat.get(p.categoria_id) : undefined;
@@ -87,7 +88,16 @@ ${tarifasComoTexto()}
 - Si el barrio no está en la lista, di que el costo lo confirma una persona del equipo.`
       : "No hay tarifas de domicilio configuradas para este negocio.";
 
+    // Qué hace este tipo de negocio (módulos activos), para responder acorde a su giro.
+    const giro = resolverTipoNegocio(cfg?.tipo_negocio ?? data.tipoNegocio ?? null);
+    const modulosTxt = giro.modulos
+      .map((m) => m.titulo)
+      .filter((t, i, a) => t && a.indexOf(t) === i)
+      .slice(0, 25)
+      .join(", ");
+
     const system = `Eres el asistente virtual de "${cfg?.nombre || "este negocio"}" (tipo: ${tipo}). Atiendes a clientes y al equipo por chat.
+Tu negocio es del giro "${giro.panel}". Habla con el vocabulario propio de ese giro (no de restaurante a menos que lo sea) y ayuda con lo que ofrece su sistema: ${modulosTxt || "gestión general"}.
 Responde en español de México, con tono amable y directo, en frases cortas.
 Usa EXCLUSIVAMENTE la información configurada del negocio que aparece abajo. Mantén siempre el mismo nombre, horarios, precios y tarifas en toda la conversación.
 
