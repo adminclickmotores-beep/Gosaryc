@@ -243,8 +243,10 @@ function LandingPage() {
           </GlassPanel>
         </section>
 
-        <footer className="mt-20 border-t border-glass-border/60 pt-6 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} {BRAND.name}
+        <footer className="mt-20 space-y-1 border-t border-glass-border/60 pt-6 pb-6 text-center text-xs text-muted-foreground">
+          <p>© 2026 {BRAND.name}. Todos los derechos reservados.</p>
+          <p>Prohibida su distribución.</p>
+          <p>Diseñado y creado por Jhonathan Gonzalez Cortes</p>
         </footer>
       </main>
     </div>
