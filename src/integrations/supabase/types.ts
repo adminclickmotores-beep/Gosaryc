@@ -450,6 +450,11 @@ export type Database = {
           created_at: string
           id: string
           kilometraje: number | null
+          creado_por: string | null
+          estado_aprobacion: string
+          aprobado_por: string | null
+          aprobado_en: string | null
+          aprobacion_notas: string | null
           marca: string
           modelo: string
           motivo_resultado: string | null
@@ -477,6 +482,11 @@ export type Database = {
           created_at?: string
           id?: string
           kilometraje?: number | null
+          creado_por?: string | null
+          estado_aprobacion?: string
+          aprobado_por?: string | null
+          aprobado_en?: string | null
+          aprobacion_notas?: string | null
           marca: string
           modelo: string
           motivo_resultado?: string | null
@@ -504,6 +514,11 @@ export type Database = {
           created_at?: string
           id?: string
           kilometraje?: number | null
+          creado_por?: string | null
+          estado_aprobacion?: string
+          aprobado_por?: string | null
+          aprobado_en?: string | null
+          aprobacion_notas?: string | null
           marca?: string
           modelo?: string
           motivo_resultado?: string | null
@@ -524,6 +539,141 @@ export type Database = {
           vendedor_nombre?: string | null
           vendedor_telefono?: string | null
           version?: string | null
+        }
+        Relationships: []
+      }
+      retomas_economico: {
+        Row: {
+          retoma_id: string
+          owner_id: string | null
+          precio_pedido: number | null
+          precio_retoma: number | null
+          precio_venta: number | null
+          costos_estimados: number | null
+          autorizado: Json | null
+          updated_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          retoma_id: string
+          owner_id?: string | null
+          precio_pedido?: number | null
+          precio_retoma?: number | null
+          precio_venta?: number | null
+          costos_estimados?: number | null
+          autorizado?: Json | null
+          updated_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          retoma_id?: string
+          owner_id?: string | null
+          precio_pedido?: number | null
+          precio_retoma?: number | null
+          precio_venta?: number | null
+          costos_estimados?: number | null
+          autorizado?: Json | null
+          updated_by?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      retomas_avaluos: {
+        Row: {
+          id: string
+          retoma_id: string
+          owner_id: string | null
+          valor: number
+          notas: string | null
+          creado_por: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          retoma_id: string
+          owner_id?: string | null
+          valor: number
+          notas?: string | null
+          creado_por?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          retoma_id?: string
+          owner_id?: string | null
+          valor?: number
+          notas?: string | null
+          creado_por?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      retomas_inspecciones: {
+        Row: {
+          id: string
+          retoma_id: string
+          owner_id: string | null
+          fecha: string
+          estado_general: string | null
+          observaciones: string
+          creado_por: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          retoma_id: string
+          owner_id?: string | null
+          fecha?: string
+          estado_general?: string | null
+          observaciones: string
+          creado_por?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          retoma_id?: string
+          owner_id?: string | null
+          fecha?: string
+          estado_general?: string | null
+          observaciones?: string
+          creado_por?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      retomas_historial: {
+        Row: {
+          id: string
+          retoma_id: string
+          owner_id: string | null
+          accion: string
+          detalle: string | null
+          economico: boolean
+          usuario_id: string | null
+          usuario_email: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          retoma_id: string
+          owner_id?: string | null
+          accion: string
+          detalle?: string | null
+          economico?: boolean
+          usuario_id?: string | null
+          usuario_email?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          retoma_id?: string
+          owner_id?: string | null
+          accion?: string
+          detalle?: string | null
+          economico?: boolean
+          usuario_id?: string | null
+          usuario_email?: string | null
+          created_at?: string
         }
         Relationships: []
       }
@@ -3827,6 +3977,9 @@ export type Database = {
       es_superadmin: { Args: never; Returns: boolean }
       mi_acceso: { Args: never; Returns: Json }
       mi_negocio_id: { Args: never; Returns: string }
+      ret_permiso: { Args: { p: string }; Returns: boolean }
+      retoma_decidir: { Args: { p_id: string; p_decision: string; p_notas?: string }; Returns: undefined }
+      retoma_a_inventario: { Args: { p_id: string }; Returns: string }
       reclamar_acceso: { Args: never; Returns: undefined }
       delete_email: {
         Args: { message_id: number; queue_name: string }

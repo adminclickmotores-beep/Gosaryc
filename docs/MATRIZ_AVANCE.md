@@ -19,6 +19,32 @@ Regla: implementado no significa probado.
 | 10 | Historial conservado | Sin política DELETE en vehículos; retiro lógico | Implementado sin probar |
 | 11 | Migraciones | `20261129130000_inventario_vehiculos_seguridad`, `20261129140000_retomas_precio_protegido` | No verificado que se aplicaran |
 
+## Retomas — permisos granulares (migración `20261202120000_retomas_permisos_granulares`)
+
+Reemplaza la medida conservadora del punto 4 (que bloqueaba a todo el que no tuviera `veh_costos`).
+
+| # | Punto | Corrección | Estado |
+|---|---|---|---|
+| R1 | Asesor: crear solicitud, datos del vehículo, fotos/documentos, ver estado de las suyas | Permisos base `ret_crear`/`ret_ver_propias` (quien ya tiene vehículos/pedidos/cocina/domicilios); RLS por `creado_por` | Implementado sin probar |
+| R2 | Asesor sin acceso a precio de adquisición, retoma, costos, utilidad | Valores en `retomas_economico` (RLS `ret_economico`); columnas antiguas vaciadas y bloqueadas por disparador; la pantalla ya no pide esas columnas | Implementado sin probar |
+| R3 | Jefe de patio: inspecciones, observaciones, avalúos técnicos | `retomas_inspecciones` (`ret_inspeccionar`), `retomas_avaluos` (`ret_avaluo`); solo se agregan, no se editan | Implementado sin probar |
+| R4 | Admin/autorizado: ver, modificar y aprobar valores | `ret_economico` (ver/modificar), `ret_aprobar` (aprobar, rechazar, pasar al inventario); función `retoma_decidir` | Implementado sin probar |
+| R5 | Aprobación con usuario, fecha, valores autorizados e historial | `aprobado_por`, `aprobado_en`, `autorizado` (valores congelados) y `retomas_historial` (filas con montos solo para `ret_economico`); si los valores cambian después, la aprobación se invalida | Implementado sin probar |
+| R6 | Sin exposición por consulta, API, relaciones o respuestas | RLS en las 5 tablas nuevas/ajustadas; historial sin FK a valores; sin vistas; archivos de peritaje solo para quien ve esa retoma | Implementado sin probar |
+| R7 | Integración con inventario conserva controles | `retoma_a_inventario`: exige `ret_aprobar` + `veh_crear` + retoma aprobada; el precio de adquisición va a `vehiculo_costos` (protegida) | Implementado sin probar |
+| R8 | Quien tenía `veh_costos` no pierde acceso | La migración le asigna los permisos `ret_*` equivalentes | Implementado sin probar |
+
+Pruebas pendientes de Retomas (requieren cuentas: administrador, asesor, jefe de patio y una segunda empresa):
+- [ ] Asesor: `select` sobre `retomas_economico`, `retomas_avaluos` y filas `economico = true` del historial devuelve 0 filas; insertar/actualizar ahí falla
+- [ ] Asesor: no ve solicitudes creadas por otros; no puede poner `resultado = 'retomado'`, ni cambiar `estado_aprobacion`, ni `vehiculo_id` (ni por API directa)
+- [ ] Asesor: no puede leer archivos de peritaje de solicitudes ajenas
+- [ ] Jefe de patio: registra inspección y avalúo; no ve `precio_retoma`; no aprueba
+- [ ] Administrador: edita valores, aprueba, rechaza, pasa al inventario; el historial muestra usuario, fecha y valores autorizados
+- [ ] Cambiar valores tras aprobar devuelve la solicitud a pendiente; tras pasar al inventario ya no se pueden cambiar
+- [ ] Vehículo creado por retoma: asesor no ve su costo; administrador sí
+- [ ] Empresa B no ve nada de empresa A
+- [ ] Confirmar que la migración se aplicó (tablas y funciones existen)
+
 ## Pruebas (todas pendientes: no hay pruebas automatizadas en el proyecto ni acceso a cuentas)
 
 Falta: una cuenta administradora, una de asesor de ventas, una de jefe de patio y una segunda empresa, con datos de prueba marcados.
@@ -42,4 +68,4 @@ Compras, retomas, consignaciones, avalúos, inspecciones: pendientes. No se decl
 
 ## Instrucción maestra
 
-El archivo recibido llegó cortado en el punto 4, "12. Cot…". No se puede reconstruir sin inventar: pendiente de que se reenvíe completo.
+El archivo recibido llegó cortado en el punto 4, "12. Cot���". No se puede reconstruir sin inventar: pendiente de que se reenvíe completo.
