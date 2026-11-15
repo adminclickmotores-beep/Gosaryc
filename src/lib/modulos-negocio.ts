@@ -262,7 +262,13 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
     usaPedidos: false,
     modulos: [
       m("catalogo_servicios", "Catálogo de servicios", "Servicios, duración y precio.", Scissors),
+      m("tarifas_servicios", "Tarifas", "Precios por servicio, profesional o tipo de cliente.", Tag),
+      m("profesionales", "Profesionales y recursos", "Quién atiende, sus servicios, horarios y los recursos que usa (sala, equipo).", BadgeCheck),
+      m("disponibilidad", "Disponibilidad", "Horarios y bloqueos de cada profesional y recurso para evitar reservas duplicadas.", CalendarClock),
       AGENDA,
+      m("prospectos_serv", "Prospectos", "Personas interesadas que aún no reservan, con seguimiento.", Users),
+      m("ordenes_servicio", "Órdenes de servicio", "Reserva, asignación, seguimiento y finalización del servicio hasta facturación y pago.", ClipboardList),
+      m("anticipos_serv", "Anticipos", "Anticipos de reservas y su aplicación al pago final.", Banknote),
       m("paquetes", "Paquetes y membresías", "Bonos de sesiones y planes mensuales.", Gift),
       m("historial", "Historial del cliente", "Notas y trabajos realizados por cliente.", ClipboardList),
       m("lista_espera", "Lista de espera", "Clientes por atender cuando se libere un cupo.", Bell),
