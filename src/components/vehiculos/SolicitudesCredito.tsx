@@ -268,7 +268,7 @@ ${s.observaciones ? `<h2>Observaciones</h2><p>${esc(s.observaciones)}</p>` : ""}
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Solicitudes</p><p className="text-lg font-medium text-foreground">{lista.length}</p></GlassPanel>
         <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">En estudio</p><p className="truncate text-lg font-medium text-foreground">{enEstudio.length} · {dinero(montoEstudio)}</p></GlassPanel>
         <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Aprobados</p><p className="text-lg font-medium text-foreground">{aprobados}</p></GlassPanel>
