@@ -126,6 +126,9 @@ function SuperAdminPage() {
           <ShieldCheck className="h-7 w-7 text-primary" /> Panel del dueño
         </h1>
         <p className="text-sm text-muted-foreground">Todas las empresas registradas, su plan y su estado de pago.</p>
+        <Link to="/licencias" className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
+          <ShieldCheck className="h-4 w-4" /> Licencias de instalaciones locales
+        </Link>
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">

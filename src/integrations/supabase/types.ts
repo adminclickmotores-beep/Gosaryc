@@ -3740,6 +3740,54 @@ export type Database = {
           },
         ]
       }
+      licencias: {
+        Row: {
+          ciudad: string | null
+          cliente: string
+          codigo: string
+          created_at: string
+          estado: string
+          id: string
+          inicio: string
+          notas: string | null
+          telefono: string | null
+          tipo: string
+          ultima_verificacion: string | null
+          updated_at: string
+          vence_el: string
+        }
+        Insert: {
+          ciudad?: string | null
+          cliente: string
+          codigo?: string
+          created_at?: string
+          estado?: string
+          id?: string
+          inicio?: string
+          notas?: string | null
+          telefono?: string | null
+          tipo?: string
+          ultima_verificacion?: string | null
+          updated_at?: string
+          vence_el?: string
+        }
+        Update: {
+          ciudad?: string | null
+          cliente?: string
+          codigo?: string
+          created_at?: string
+          estado?: string
+          id?: string
+          inicio?: string
+          notas?: string | null
+          telefono?: string | null
+          tipo?: string
+          ultima_verificacion?: string | null
+          updated_at?: string
+          vence_el?: string
+        }
+        Relationships: []
+      }
       suscripciones_negocio: {
         Row: {
           created_at: string
@@ -4452,6 +4500,7 @@ export type Database = {
     Functions: {
       accept_org_invite: { Args: { _token: string }; Returns: string }
       es_superadmin: { Args: never; Returns: boolean }
+      verificar_licencia: { Args: { p_codigo: string }; Returns: Json }
       mi_acceso: { Args: never; Returns: Json }
       mi_negocio_id: { Args: never; Returns: string }
       ret_permiso: { Args: { p: string }; Returns: boolean }

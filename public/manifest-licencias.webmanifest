@@ -1,0 +1,17 @@
+{
+  "name": "Licencias Gosaryc",
+  "short_name": "Licencias",
+  "description": "Crea pruebas, extiéndelas y renueva las licencias anuales de tus clientes.",
+  "start_url": "/licencias",
+  "scope": "/",
+  "id": "/licencias",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#14101f",
+  "theme_color": "#5b21b6",
+  "lang": "es",
+  "icons": [
+    { "src": "/icono-app.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icono-app.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
