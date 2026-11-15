@@ -102,6 +102,11 @@ type Contact = {
   last_activity_on: string;
   created_at: string;
   is_sample?: boolean;
+  phone?: string | null;
+  city?: string | null;
+  document?: string | null;
+  estimated_value?: number | null;
+  next_follow_up_on?: string | null;
 };
 
 function LeadsPage() {
@@ -862,6 +867,11 @@ function ContactFormDialog({
     channel: "",
     notes: "",
     last_activity_on: today,
+    phone: "",
+    city: "",
+    document: "",
+    estimated_value: "",
+    next_follow_up_on: "",
   };
   const [form, setForm] = useState(empty);
   const [saving, setSaving] = useState(false);
@@ -879,6 +889,11 @@ function ContactFormDialog({
         channel: contact.channel ?? "",
         notes: contact.notes ?? "",
         last_activity_on: contact.last_activity_on ?? today,
+        phone: contact.phone ?? "",
+        city: contact.city ?? "",
+        document: contact.document ?? "",
+        estimated_value: contact.estimated_value != null ? String(contact.estimated_value) : "",
+        next_follow_up_on: contact.next_follow_up_on ?? "",
       });
     } else {
       setForm(empty);
@@ -911,6 +926,11 @@ function ContactFormDialog({
       channel: form.channel.trim() || null,
       notes: form.notes.trim() || null,
       last_activity_on: form.last_activity_on || today,
+      phone: form.phone.trim() || null,
+      city: form.city.trim() || null,
+      document: form.document.trim() || null,
+      estimated_value: form.estimated_value.trim() && !isNaN(Number(form.estimated_value)) ? Number(form.estimated_value) : null,
+      next_follow_up_on: form.next_follow_up_on || null,
     };
     const { error } = isEdit
       ? await supabase.from("contacts").update(payload).eq("id", contact!.id)
@@ -953,6 +973,34 @@ function ContactFormDialog({
               type="email"
               value={form.email}
               onChange={(e) => set("email")(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Teléfono o WhatsApp</Label>
+            <Input type="tel" value={form.phone} onChange={(e) => set("phone")(e.target.value)} />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Documento o NIT</Label>
+            <Input value={form.document} onChange={(e) => set("document")(e.target.value)} />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Ciudad</Label>
+            <Input value={form.city} onChange={(e) => set("city")(e.target.value)} />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Valor estimado (COP)</Label>
+            <Input
+              inputMode="numeric"
+              value={form.estimated_value}
+              onChange={(e) => set("estimated_value")(e.target.value)}
+            />
+          </div>
+          <div className="col-span-2 space-y-1">
+            <Label className="text-xs text-muted-foreground">Próximo seguimiento</Label>
+            <Input
+              type="date"
+              value={form.next_follow_up_on}
+              onChange={(e) => set("next_follow_up_on")(e.target.value)}
             />
           </div>
           <div className="space-y-1">

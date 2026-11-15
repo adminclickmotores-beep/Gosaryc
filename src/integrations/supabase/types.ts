@@ -2690,15 +2690,20 @@ export type Database = {
       contacts: {
         Row: {
           channel: string | null
+          city: string | null
           company: string | null
           created_at: string
           created_by: string
+          document: string | null
           email: string | null
+          estimated_value: number | null
           full_name: string
           id: string
           is_sample: boolean
           last_activity_on: string
+          next_follow_up_on: string | null
           notes: string | null
+          phone: string | null
           org_id: string
           source: string | null
           stage: string
@@ -2707,16 +2712,21 @@ export type Database = {
         }
         Insert: {
           channel?: string | null
+          city?: string | null
           company?: string | null
           created_at?: string
           created_by: string
+          document?: string | null
           email?: string | null
+          estimated_value?: number | null
           full_name: string
           id?: string
           is_sample?: boolean
           last_activity_on?: string
+          next_follow_up_on?: string | null
           notes?: string | null
           org_id: string
+          phone?: string | null
           source?: string | null
           stage?: string
           title?: string | null
@@ -2724,16 +2734,21 @@ export type Database = {
         }
         Update: {
           channel?: string | null
+          city?: string | null
           company?: string | null
           created_at?: string
           created_by?: string
+          document?: string | null
           email?: string | null
+          estimated_value?: number | null
           full_name?: string
           id?: string
           is_sample?: boolean
           last_activity_on?: string
+          next_follow_up_on?: string | null
           notes?: string | null
           org_id?: string
+          phone?: string | null
           source?: string | null
           stage?: string
           title?: string | null
