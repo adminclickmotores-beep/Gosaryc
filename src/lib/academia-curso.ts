@@ -7,8 +7,6 @@ export type Leccion = {
   pasos: string[];
   /** Ruta de la app donde se practica la lección. */
   practica?: { ruta: string; etiqueta: string };
-  /** Enlace de video (YouTube/Vimeo embed). Si está vacío, solo se muestran los pasos. */
-  videoUrl?: string;
 };
 
 export type ModuloCurso = {

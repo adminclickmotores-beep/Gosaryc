@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { CheckCircle2, Circle, Clock, GraduationCap, PlayCircle } from "lucide-react";
+import { CheckCircle2, Circle, Clock, GraduationCap } from "lucide-react";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { CURSO_GOSARYC, TOTAL_LECCIONES, type Leccion } from "@/lib/academia-curso";
 
@@ -105,23 +105,6 @@ function AcademiaPage() {
         </GlassPanel>
 
         <GlassPanel className="min-w-0 p-5 sm:p-6">
-          {activa.videoUrl ? (
-            <div className="mb-5 aspect-video w-full overflow-hidden rounded-2xl bg-black">
-              <iframe
-                src={activa.videoUrl}
-                title={activa.titulo}
-                className="h-full w-full"
-                allow="accelerometer; autoplay; encrypted-media; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-          ) : (
-            <div className="mb-5 flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-2xl border border-glass-border bg-glass/30 text-center">
-              <PlayCircle className="h-10 w-10 text-primary/80" />
-              <p className="px-4 text-sm text-muted-foreground">Lección guiada paso a paso</p>
-            </div>
-          )}
-
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1">
               <Clock className="h-3.5 w-3.5" /> {activa.minutos} min
