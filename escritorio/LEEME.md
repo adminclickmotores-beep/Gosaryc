@@ -17,6 +17,16 @@ npm run instalador:linux     # .AppImage y .deb (hazlo en Linux)
 Los archivos salen en `escritorio/instaladores/`.
 Antes, publica la web (botón "Publish") o define `GOSARYC_URL` con tu dirección.
 
+## Crear el .exe paso a paso (Windows)
+
+1. Instala Node.js desde https://nodejs.org (versión LTS).
+2. Abre la carpeta `escritorio` y haz doble clic en `crear-instalador-windows.bat`.
+3. Al terminar se abre la carpeta `instaladores` con `Gosaryc Setup 1.0.0.exe`.
+
+La app abre https://gosaryc.lovable.app. Cada vez que publiques cambios en la web,
+los usuarios los ven al abrir el programa, sin reinstalar. Si no hay internet muestra un aviso con botón "Reintentar".
+Al abrirse por primera vez pide el código de licencia (se crean en la pantalla de Licencias).
+
 ## Tu firma (código firmado)
 
 Sin firma el instalador funciona, pero Windows y Mac muestran "editor desconocido".
