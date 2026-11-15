@@ -31,7 +31,7 @@ function InstalarPage() {
   const nombre = negocio?.nombre?.trim() || tipo.panel;
   const opciones = useMemo(() => {
     const vistas = new Set<string>();
-    const lista: { ruta: string; titulo: string }[] = esAdmin ? [{ ruta: "/dashboard", titulo: "Panel completo del negocio" }] : [];
+    const lista: { ruta: string; titulo: string }[] = esAdmin ? [{ ruta: `/negocio/${tipo.clave}`, titulo: "Panel completo del negocio" }] : [];
     for (const m of tipo.modulos) {
       if (!m.ruta || vistas.has(m.ruta)) continue;
       vistas.add(m.ruta);
@@ -41,7 +41,7 @@ function InstalarPage() {
   }, [tipo, esAdmin]);
 
   const [destinoElegido, setDestino] = useState<string | null>(null);
-  const destino = destinoElegido && opciones.some((o) => o.ruta === destinoElegido) ? destinoElegido : (opciones[0]?.ruta ?? "/dashboard");
+  const destino = destinoElegido && opciones.some((o) => o.ruta === destinoElegido) ? destinoElegido : (opciones[0]?.ruta ?? `/negocio/${tipo.clave}`);
   const [evento, setEvento] = useState<EventoInstalacion | null>(null);
   const [instalada, setInstalada] = useState(false);
   const [esIos, setEsIos] = useState(false);
@@ -65,22 +65,16 @@ function InstalarPage() {
   // La app instalada lleva el nombre del negocio y abre directo el módulo elegido.
   useEffect(() => {
     const tituloModulo = opciones.find((o) => o.ruta === destino)?.titulo ?? "";
-    const corto = destino === "/dashboard" ? nombre : `${nombre} · ${tituloModulo}`;
-    const manifiesto = {
-      name: corto,
-      short_name: (destino === "/dashboard" ? nombre : tituloModulo).slice(0, 12),
-      description: `App de ${nombre}`,
-      start_url: destino,
-      scope: "/",
-      display: "standalone",
-      background_color: "#0b0b14",
-      theme_color: negocio?.color_principal && /^#[0-9a-f]{6}$/i.test(negocio.color_principal) ? negocio.color_principal : "#2dd4a0",
-      icons: [
-        { src: `${window.location.origin}/icono-app.svg`, sizes: "any", type: "image/svg+xml", purpose: "any" },
-      ],
-    };
-    if (negocio?.logo_url) manifiesto.icons = [{ src: negocio.logo_url, sizes: "512x512", type: "image/png", purpose: "any" }];
-    const url = URL.createObjectURL(new Blob([JSON.stringify(manifiesto)], { type: "application/manifest+json" }));
+    const corto = destino.startsWith("/negocio/") ? nombre : `${nombre} · ${tituloModulo}`;
+    // Manifiesto real (URL propia): el navegador instala con el nombre y módulo del negocio elegido.
+    const params = new URLSearchParams({
+      destino,
+      nombre: corto,
+      corto: (destino.startsWith("/negocio/") ? nombre : tituloModulo).slice(0, 12),
+      color: negocio?.color_principal ?? "",
+      logo: negocio?.logo_url ?? "",
+    });
+    const url = `/manifiesto?${params.toString()}`;
     let enlace = document.querySelector<HTMLLinkElement>('link[rel="manifest"]');
     if (!enlace) {
       enlace = document.createElement("link");
@@ -92,7 +86,6 @@ function InstalarPage() {
     document.title = `Instalar ${corto}`;
     return () => {
       if (enlace && anterior) enlace.href = anterior;
-      URL.revokeObjectURL(url);
     };
   }, [destino, nombre, negocio?.color_principal, negocio?.logo_url, opciones]);
 
