@@ -69,6 +69,129 @@ const CAMPOS_EXTRA: Record<string, CampoExtra[]> = {
   ],
 };
 
+const TEL: CampoExtra = { clave: "telefono", etiqueta: "Teléfono o WhatsApp", tipo: "tel", placeholder: "Celular de contacto" };
+const CORREO: CampoExtra = { clave: "correo", etiqueta: "Correo electrónico", tipo: "email", placeholder: "correo@ejemplo.com" };
+const DOC: CampoExtra = { clave: "documento", etiqueta: "Documento o NIT", tipo: "text", placeholder: "Cédula o NIT" };
+const DIR: CampoExtra = { clave: "direccion", etiqueta: "Dirección", tipo: "text", placeholder: "Dirección o barrio" };
+const PAGO: CampoExtra = { clave: "forma_pago", etiqueta: "Forma de pago", tipo: "select", opciones: FORMAS_PAGO };
+const RESP: CampoExtra = { clave: "responsable", etiqueta: "Responsable interno", tipo: "text", placeholder: "Quién lo atiende" };
+const REF: CampoExtra = { clave: "referencia", etiqueta: "Referencia o número", tipo: "text", placeholder: "Código, factura u orden" };
+const PRIORIDAD: CampoExtra = { clave: "prioridad", etiqueta: "Prioridad", tipo: "select", opciones: ["Baja", "Media", "Alta", "Urgente"] };
+const CANAL: CampoExtra = { clave: "canal", etiqueta: "Canal de origen", tipo: "select", opciones: ["Mostrador", "WhatsApp", "Teléfono", "Redes sociales", "Recomendado", "Web"] };
+
+/** Campos por familia operativa: aplican a todo módulo que no tenga campos propios. */
+const CAMPOS_POR_TIPO: Record<string, CampoExtra[]> = {
+  general: [TEL, CORREO, REF, RESP],
+  cartera: [DOC, TEL, DIR, PAGO, { clave: "interes", etiqueta: "Interés o recargo (%)", tipo: "text", placeholder: "Ej. 2" }, REF],
+  reserva: [TEL, CORREO, { clave: "personas", etiqueta: "Cantidad (personas o unidades)", tipo: "text" }, { clave: "anticipo", etiqueta: "Anticipo recibido (COP)", tipo: "text" }, PAGO, CANAL],
+  cita: [DOC, TEL, CORREO, { clave: "hora", etiqueta: "Hora", tipo: "text", placeholder: "Ej. 3:30 p. m." }, { clave: "duracion", etiqueta: "Duración", tipo: "text", placeholder: "Ej. 45 min" }, RESP, CANAL],
+  vencimiento: [REF, { clave: "entidad", etiqueta: "Entidad o proveedor", tipo: "text" }, { clave: "emision", etiqueta: "Fecha de emisión", tipo: "date" }, { clave: "aviso", etiqueta: "Avisar con (días)", tipo: "text", placeholder: "Ej. 30" }, RESP, TEL],
+  stock: [
+    { clave: "codigo", etiqueta: "Código o referencia", tipo: "text" },
+    { clave: "cantidad", etiqueta: "Cantidad disponible", tipo: "text" },
+    { clave: "unidad", etiqueta: "Unidad de medida", tipo: "select", opciones: ["Unidad", "Kilo", "Gramo", "Litro", "Caja", "Paquete", "Metro"] },
+    { clave: "minimo", etiqueta: "Stock mínimo", tipo: "text" },
+    { clave: "costo", etiqueta: "Costo de compra (COP)", tipo: "text" },
+    { clave: "ubicacion", etiqueta: "Ubicación", tipo: "text", placeholder: "Bodega, estante o sede" },
+    { clave: "telefono_proveedor", etiqueta: "Teléfono del proveedor", tipo: "tel" },
+  ],
+  proyecto: [DOC, TEL, CORREO, DIR, RESP, PRIORIDAD, { clave: "anticipo", etiqueta: "Anticipo recibido (COP)", tipo: "text" }, PAGO, { clave: "inicio", etiqueta: "Fecha de inicio", tipo: "date" }],
+  venta: [DOC, TEL, CORREO, CANAL, PAGO, { clave: "descuento", etiqueta: "Descuento (%)", tipo: "text" }, RESP],
+  pago: [DOC, TEL, PAGO, REF, { clave: "banco", etiqueta: "Banco o cuenta", tipo: "text" }, { clave: "soporte", etiqueta: "Soporte o comprobante", tipo: "text", placeholder: "Número o enlace" }],
+  socio: [],
+  paciente: [DOC, TEL, CORREO, DIR, { clave: "nacimiento", etiqueta: "Fecha de nacimiento", tipo: "date" }, { clave: "eps", etiqueta: "EPS o aseguradora", tipo: "text" }, { clave: "alergias", etiqueta: "Alergias", tipo: "text" }, { clave: "profesional", etiqueta: "Profesional asignado", tipo: "text" }],
+  estudiante: [],
+  huesped: [],
+  mascota: [
+    { clave: "especie", etiqueta: "Especie", tipo: "select", opciones: ["Perro", "Gato", "Ave", "Roedor", "Reptil", "Otro"] },
+    { clave: "raza", etiqueta: "Raza", tipo: "text" },
+    { clave: "edad", etiqueta: "Edad", tipo: "text", placeholder: "Ej. 3 años" },
+    { clave: "peso", etiqueta: "Peso (kg)", tipo: "text" },
+    { clave: "sexo", etiqueta: "Sexo", tipo: "select", opciones: ["Macho", "Hembra"] },
+    { clave: "alergias", etiqueta: "Alergias o condiciones", tipo: "text" },
+    { clave: "telefono_dueno", etiqueta: "Teléfono del dueño", tipo: "tel" },
+    { clave: "documento", etiqueta: "Documento del dueño", tipo: "text" },
+  ],
+  inmueble: [
+    { clave: "tipo_inmueble", etiqueta: "Tipo de inmueble", tipo: "select", opciones: ["Apartamento", "Casa", "Local", "Oficina", "Bodega", "Lote", "Finca"] },
+    { clave: "negocio", etiqueta: "Operación", tipo: "select", opciones: ["Venta", "Arriendo", "Venta y arriendo"] },
+    { clave: "area", etiqueta: "Área (m²)", tipo: "text" },
+    { clave: "habitaciones", etiqueta: "Habitaciones", tipo: "text" },
+    { clave: "banos", etiqueta: "Baños", tipo: "text" },
+    { clave: "estrato", etiqueta: "Estrato", tipo: "text" },
+    { clave: "matricula", etiqueta: "Matrícula inmobiliaria", tipo: "text" },
+    { clave: "telefono_propietario", etiqueta: "Teléfono del propietario", tipo: "tel" },
+  ],
+};
+
+/** Campos propios de módulos concretos (tienen prioridad sobre los de su familia). */
+const CAMPOS_ESPECIFICOS: Record<string, CampoExtra[]> = {
+  vehiculos: [
+    { clave: "placa", etiqueta: "Placa", tipo: "text" },
+    { clave: "marca", etiqueta: "Marca", tipo: "text" },
+    { clave: "modelo", etiqueta: "Modelo / año", tipo: "text" },
+    { clave: "color", etiqueta: "Color", tipo: "text" },
+    { clave: "kilometraje", etiqueta: "Kilometraje", tipo: "text" },
+    { clave: "combustible", etiqueta: "Combustible", tipo: "select", opciones: ["Gasolina", "Diésel", "Gas", "Híbrido", "Eléctrico"] },
+    { clave: "transmision", etiqueta: "Transmisión", tipo: "select", opciones: ["Mecánica", "Automática"] },
+    { clave: "vin", etiqueta: "VIN / chasis", tipo: "text" },
+  ],
+  vehiculos_clientes: [
+    { clave: "placa", etiqueta: "Placa", tipo: "text" },
+    { clave: "marca", etiqueta: "Marca y modelo", tipo: "text" },
+    { clave: "kilometraje", etiqueta: "Kilometraje", tipo: "text" },
+    { clave: "telefono", etiqueta: "Teléfono del dueño", tipo: "tel" },
+    { clave: "documento", etiqueta: "Documento del dueño", tipo: "text" },
+    { clave: "correo", etiqueta: "Correo electrónico", tipo: "email" },
+  ],
+  ordenes_servicio: [
+    { clave: "placa", etiqueta: "Placa", tipo: "text" },
+    { clave: "kilometraje", etiqueta: "Kilometraje de ingreso", tipo: "text" },
+    { clave: "telefono", etiqueta: "Teléfono del dueño", tipo: "tel" },
+    { clave: "mecanico", etiqueta: "Mecánico asignado", tipo: "text" },
+    { clave: "anticipo", etiqueta: "Anticipo recibido (COP)", tipo: "text" },
+    PAGO,
+  ],
+  clases: [
+    { clave: "instructor", etiqueta: "Instructor", tipo: "text" },
+    { clave: "cupos", etiqueta: "Cupos disponibles", tipo: "text" },
+    { clave: "sala", etiqueta: "Sala o zona", tipo: "text" },
+    { clave: "hora", etiqueta: "Hora", tipo: "text" },
+    { clave: "nivel", etiqueta: "Nivel", tipo: "select", opciones: ["Principiante", "Intermedio", "Avanzado", "Todos"] },
+  ],
+  mensualidades: [
+    { clave: "documento", etiqueta: "Documento del acudiente", tipo: "text" },
+    { clave: "telefono", etiqueta: "Teléfono del acudiente", tipo: "tel" },
+    { clave: "correo", etiqueta: "Correo del acudiente", tipo: "email" },
+    { clave: "mes", etiqueta: "Mes cobrado", tipo: "text" },
+    PAGO,
+  ],
+  facturas: [
+    { clave: "numero", etiqueta: "Número de factura", tipo: "text" },
+    { clave: "documento", etiqueta: "NIT o documento del cliente", tipo: "text" },
+    { clave: "telefono", etiqueta: "Teléfono", tipo: "tel" },
+    { clave: "correo", etiqueta: "Correo para enviar", tipo: "email" },
+    PAGO,
+    { clave: "iva", etiqueta: "IVA (%)", tipo: "text" },
+  ],
+  profesionales: [
+    { clave: "documento", etiqueta: "Documento", tipo: "text" },
+    { clave: "telefono", etiqueta: "Teléfono", tipo: "tel" },
+    { clave: "correo", etiqueta: "Correo electrónico", tipo: "email" },
+    { clave: "especialidad", etiqueta: "Especialidad", tipo: "text" },
+    { clave: "horario", etiqueta: "Horario de atención", tipo: "text" },
+    { clave: "registro", etiqueta: "Registro profesional", tipo: "text" },
+  ],
+  equipo_turnos: [
+    { clave: "documento", etiqueta: "Documento", tipo: "text" },
+    { clave: "telefono", etiqueta: "Teléfono", tipo: "tel" },
+    { clave: "cargo", etiqueta: "Cargo", tipo: "text" },
+    { clave: "contrato", etiqueta: "Tipo de contrato", tipo: "select", opciones: ["Indefinido", "Fijo", "Prestación de servicios", "Por días"] },
+    { clave: "ingreso", etiqueta: "Fecha de ingreso", tipo: "date" },
+    { clave: "eps", etiqueta: "EPS", tipo: "text" },
+  ],
+};
+
 const base: ConfigModulo = {
   tipo: "general",
   estados: [
@@ -821,6 +944,7 @@ export function configModulo(id: string): ConfigModulo {
   const principal: ConfigModulo = preset ? { ...base, ...PRESETS[preset], tipo: preset } : base;
   const vocab = VOCABULARIO[id] ?? VOCABULARIO_EXTRA[id];
   const resultado = vocab ? { ...principal, ...vocab, tipo: principal.tipo } : principal;
-  const campos = CAMPOS_EXTRA[id];
+  const campos = CAMPOS_EXTRA[id] ?? CAMPOS_ESPECIFICOS[id] ?? CAMPOS_POR_TIPO[principal.tipo];
+  if (!campos || campos.length === 0) return resultado;
   return campos ? { ...resultado, campos } : resultado;
 }
