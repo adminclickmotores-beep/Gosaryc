@@ -45,6 +45,19 @@ Pruebas pendientes de Retomas (requieren cuentas: administrador, asesor, jefe de
 - [ ] Empresa B no ve nada de empresa A
 - [ ] Confirmar que la migración se aplicó (tablas y funciones existen)
 
+## Checkpoint — separación de negocios y acceso a módulos
+
+| # | Punto | Corrección | Estado |
+|---|---|---|---|
+| S1 | Crokante y JG Motors mezclados (la cuenta con la carta de comida aparecía como "jg motors") | Migración `20261130120000_separar_crokante_jg_motors`: devuelve esa configuración a Crokante/restaurante | Implementado sin probar; no verificado que se aplicara |
+| S2 | JG Motors debe tener su propia cuenta | Debe registrarse con su correo y elegir tipo "Concesionario" (si comparte cuenta con Crokante, no se puede separar sin otra cuenta) | Pendiente (acción del dueño) |
+| S3 | Menú público `/menu` de un negocio que no vende por pedidos | Muestra aviso "sin menú digital" en vez de la carta | Implementado sin probar |
+| S4 | Acceso a módulos por tipo de negocio y permiso | Sección inexistente o sin asignar muestra "sin acceso" aunque se escriba la dirección | Implementado sin probar |
+| S5 | Cambio de contraseña desde el correo caía siempre en restaurante | Corregido el destino tras el cambio | Implementado sin probar |
+| S6 | Auditoría de seguridad general | Primera pasada sin fallas explotables halladas; faltan pantallas una por una y pruebas con cuentas reales | Pendiente |
+
+Siguiente paquete: cerrar las pruebas con cuentas (administrador, asesor, jefe de patio, segunda empresa), y luego Compras, consignaciones y avalúos del concesionario.
+
 ## Pruebas (todas pendientes: no hay pruebas automatizadas en el proyecto ni acceso a cuentas)
 
 Falta: una cuenta administradora, una de asesor de ventas, una de jefe de patio y una segunda empresa, con datos de prueba marcados.
