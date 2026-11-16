@@ -30,9 +30,8 @@ function CarteraFiadosPage() {
 
   const cargar = useCallback(async () => {
     const { data, error } = await supabase
-      .from("modulo_registros")
-      .select("titulo, contacto, telefono, estado, monto, abonado, anulado, fecha")
-      .eq("modulo", "fiados");
+      .from("fiados")
+      .select("titulo, contacto, telefono, estado, monto, abonado, anulado, fecha");
     if (error) toast.error("No se pudo cargar la cartera.");
     setFilas(data ?? []);
     setCargando(false);
