@@ -1685,8 +1685,8 @@ const VOCABULARIO_EXTRA: Record<string, Partial<ConfigModulo>> = {
   recordatorio_mant: vc("Mantenimiento (placa y servicio)", "Kilometraje de la próxima revisión y servicio sugerido", "Dueño del vehículo", "Costo estimado (COP)", "Fecha del próximo servicio", "Mantenimientos por avisar"),
   citas_taller: vc("Cita (placa y servicio)", "Falla reportada y observaciones", "Dueño del vehículo", "Valor estimado (COP)", "Fecha y hora de la cita", "Citas por atender"),
   // Servicios, belleza
-  profesionales: vc("Profesional o recurso (nombre o sala)", "Servicios que presta, horario y especialidad", "Contacto", "Comisión o tarifa (COP)", "Disponible desde", "Profesionales activos"),
-  disponibilidad: vc("Bloqueo o disponibilidad (profesional o recurso)", "Horario, motivo del bloqueo y observaciones", "Profesional", "Valor (COP)", "Fecha del bloqueo", "Bloqueos vigentes"),
+  profesionales: vc("Quién atiende o recurso (nombre, sala o equipo)", "Servicios que presta, horario y especialidad", "Contacto", "Comisión o tarifa (COP)", "Disponible desde", "Personal y recursos activos"),
+  disponibilidad: vc("Bloqueo o disponibilidad (persona o recurso)", "Horario, motivo del bloqueo y observaciones", "Persona a cargo", "Valor (COP)", "Fecha del bloqueo", "Bloqueos vigentes"),
   prospectos_serv: vc("Interesado y servicio que busca", "Medio de contacto, presupuesto y seguimiento", "Persona interesada", "Valor estimado (COP)", "Próximo seguimiento", "Prospectos activos"),
   anticipos_serv: vc("Anticipo (cliente y servicio)", "Reserva asociada y forma de pago", "Cliente", "Valor del anticipo (COP)", "Fecha del servicio", "Anticipos por aplicar"),
   lista_espera: vc("Cliente en espera y servicio", "Horarios preferidos y profesional deseado", "Cliente", "Valor estimado (COP)", "Fecha preferida", "Clientes en espera"),

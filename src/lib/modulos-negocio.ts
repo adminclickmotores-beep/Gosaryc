@@ -410,8 +410,8 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
     usaPedidos: false,
     modulos: [
       m("catalogo_servicios", "Catálogo de servicios", "Servicios, duración y precio.", Scissors),
-      m("profesionales", "Profesionales y recursos", "Quién atiende, sus servicios, horarios y los recursos que usa (sala, equipo).", BadgeCheck),
-      m("disponibilidad", "Disponibilidad", "Horarios y bloqueos de cada profesional y recurso para evitar reservas duplicadas.", CalendarClock),
+      m("profesionales", "Profesionales y recursos", "Quién presta cada servicio (profesional, técnico, instructor o terapeuta), su horario y el recurso que usa (sala, equipo o vehículo).", BadgeCheck),
+      m("disponibilidad", "Disponibilidad", "Horarios y bloqueos de cada persona y recurso para evitar reservas duplicadas.", CalendarClock),
       AGENDA,
       m("prospectos_serv", "Prospectos", "Personas interesadas que aún no reservan, con seguimiento.", Users),
       m("ordenes_serv_cita", "Órdenes de servicio", "Reserva, asignación, seguimiento y finalización del servicio hasta facturación y pago.", ClipboardList),
@@ -604,6 +604,8 @@ TIPOS_NEGOCIO.push(
     usaPedidos: false,
     modulos: [
       m("catalogo_servicios", "Catálogo de servicios", "Cortes, tintes, manicure, masajes: duración y precio.", Scissors),
+      m("estilistas_belleza", "Estilistas y cabinas", "Quién atiende, su especialidad (corte, color, uñas, masajes), comisión y la silla o cabina que usa.", BadgeCheck),
+      m("disponibilidad_belleza", "Turnos y disponibilidad", "Horario de cada estilista, descansos y bloqueo de sillas o cabinas para evitar citas cruzadas.", CalendarClock),
       AGENDA,
       m("paquetes", "Paquetes y membresías", "Bonos de sesiones y planes mensuales.", Gift),
       m("historial", "Historial del cliente", "Fórmulas, alergias y trabajos realizados.", ClipboardList),

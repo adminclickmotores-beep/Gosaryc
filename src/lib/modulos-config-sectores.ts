@@ -29,6 +29,7 @@ const est = (...pares: [string, string][]): EstadoModulo[] => pares.map(([clave,
 
 /** Comportamiento (preset) de cada módulo nuevo. */
 export const PRESET_SECTORES: Record<string, string> = {
+  estilistas_belleza: "proyecto", disponibilidad_belleza: "cita",
   referencias_ferr: "stock", despachos_ferr: "proyecto", cotizaciones_ferr: "venta", listas_precios_ferr: "stock",
   productos_super: "stock", vencimientos_super: "vencimiento", promociones_super: "venta", reposicion_super: "stock",
   cortes_carne: "stock", mermas_fresco: "pago", pedidos_fresco: "reserva", cadena_frio: "vencimiento",
@@ -45,6 +46,10 @@ export const PRESET_SECTORES: Record<string, string> = {
 
 /** Textos y etiquetas propios de cada módulo. */
 export const VOCAB_SECTORES: Record<string, Partial<ConfigModulo>> = {
+  // Belleza
+  estilistas_belleza: vc("Estilista o cabina (nombre)", "Especialidades (corte, color, uñas, masajes), silla o cabina asignada y observaciones", "Teléfono del estilista", "Comisión por servicio (%)", "Trabaja con nosotros desde", "Estilistas y cabinas activos",
+    est(["pendiente", "Activo"], ["en_proceso", "De vacaciones o incapacidad"], ["hecho", "Retirado"])),
+  disponibilidad_belleza: vc("Turno o bloqueo (estilista, silla o cabina)", "Horario, descanso o motivo del bloqueo (capacitación, mantenimiento, permiso)", "Estilista", "Sin valor", "Fecha del bloqueo", "Bloqueos vigentes"),
   // Ferretería
   referencias_ferr: vc("Referencia (ej. tubo PVC 1/2, cemento gris 50 kg)", "Marca, medida, unidad de venta, ubicación en bodega y proveedor", "Proveedor", "Precio de venta (COP)", "Último ingreso", "Referencias por reponer"),
   despachos_ferr: vc("Despacho a obra (cliente y obra)", "Materiales enviados, remisión, conductor y quién recibe", "Cliente o maestro de obra", "Valor del despacho (COP)", "Fecha de entrega", "Despachos por entregar",
@@ -125,6 +130,21 @@ export const VOCAB_SECTORES: Record<string, Partial<ConfigModulo>> = {
 
 /** Campos propios de cada módulo nuevo (se guardan en `datos`). */
 export const CAMPOS_SECTORES: Record<string, CampoExtra[]> = {
+  estilistas_belleza: [
+    t("documento", "Documento"), tel("telefono", "Teléfono o WhatsApp"),
+    sel("especialidad", "Especialidad", ["Corte y peinado", "Color y mechas", "Barbería", "Manicure y pedicure", "Cejas y pestañas", "Masajes y spa", "Maquillaje", "Depilación", "Tratamientos faciales", "Varias"]),
+    t("servicios_que_presta", "Servicios que presta", "Ej. corte dama, tinte, keratina"),
+    t("puesto", "Silla, puesto o cabina asignada", "Ej. Silla 2, Cabina 1"),
+    sel("tipo_pago", "Forma de pago", ["Comisión por servicio", "Alquiler de silla", "Salario fijo", "Mixto"]),
+    t("comision", "Comisión por servicio (%)", "Ej. 40"),
+    t("comision_productos", "Comisión por venta de productos (%)", "Ej. 10"),
+    t("horario", "Horario habitual", "Ej. Mar a sáb 9:00 a. m. a 6:00 p. m."),
+  ],
+  disponibilidad_belleza: [
+    t("estilista", "Estilista"), t("puesto", "Silla o cabina"), d("fecha", "Fecha"),
+    t("hora_inicio", "Desde", "Ej. 2:00 p. m."), t("hora_fin", "Hasta", "Ej. 4:00 p. m."),
+    sel("motivo", "Motivo", ["Almuerzo o descanso", "Día libre", "Permiso", "Capacitación", "Mantenimiento de silla o cabina", "Cita especial (novia, evento)", "Otro"]),
+  ],
   referencias_ferr: [
     t("codigo", "Código o referencia"), t("marca", "Marca"),
     sel("unidad", "Unidad de venta", ["Unidad", "Metro", "Kilo", "Bulto", "Galón", "Caja", "Rollo", "Lámina"]),

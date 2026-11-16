@@ -42,7 +42,8 @@ export const SECTORES: Sector[] = [
     { titulo: "Fiados y caja diaria", texto: "Anota quién te debe y cierra tu caja cada día." },
   ]),
   s("belleza-y-servicios", "Belleza y servicios", Scissors, "Organiza tu agenda, tus servicios y la fidelidad de tus clientes.", [
-    { titulo: "Agenda de citas", texto: "Registra las citas del día sin cruces de horarios." },
+    { titulo: "Estilistas y cabinas", texto: "Registra a cada profesional con su especialidad, comisión y la silla o cabina que usa." },
+    { titulo: "Agenda sin cruces", texto: "Cada cita se asigna a un estilista, con sus turnos, descansos y bloqueos." },
     { titulo: "Catálogo de servicios", texto: "Define duración y precio de cada servicio." },
     { titulo: "Paquetes y fidelización", texto: "Vende paquetes y premia a tus clientes frecuentes." },
   ]),
@@ -189,12 +190,12 @@ export const SECTORES: Sector[] = [
     { titulo: "Entregas", texto: "Organiza las rutas de entrega del día." },
   ]),
   s("barberias", "Barberías y peluquerías", Scissors, "Agenda, servicios y comisiones por barbero.", [
-    { titulo: "Agenda de citas", texto: "Organiza el turno de cada barbero sin cruces." },
+    { titulo: "Barberos y sillas", texto: "Registra a cada barbero con su comisión, su silla y sus turnos para que la agenda no se cruce." },
     { titulo: "Servicios y precios", texto: "Define cada corte o servicio con su valor." },
     { titulo: "Comisiones del equipo", texto: "Calcula lo que le corresponde a cada persona." },
   ]),
   s("spas-y-estetica", "Spas y centros de estética", Sparkles, "Citas, paquetes y fidelización de tus clientes.", [
-    { titulo: "Agenda de tratamientos", texto: "Reserva cabinas y profesionales por horario." },
+    { titulo: "Terapeutas y cabinas", texto: "Registra a cada terapeuta y cabina, con sus turnos y bloqueos, y reserva tratamientos sin cruces." },
     { titulo: "Paquetes y sesiones", texto: "Vende paquetes y lleva el control de sesiones usadas." },
     { titulo: "Puntos y recompensas", texto: "Premia a tus clientes frecuentes." },
   ]),

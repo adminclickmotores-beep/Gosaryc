@@ -173,9 +173,11 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
     frase: "Que cada cita termine en una sonrisa.",
     pasos: [
       { titulo: "Define tus servicios", texto: "En “Catálogo de servicios” agrega duración y precio de cada uno." },
-      { titulo: "Organiza la agenda", texto: "Registra las citas y usa la lista de espera para llenar cupos." },
+      { titulo: "Registra a tus estilistas", texto: "En “Estilistas y cabinas” anota cada profesional con su especialidad, comisión y la silla o cabina que usa." },
+      { titulo: "Define sus turnos", texto: "En “Turnos y disponibilidad” marca horarios, descansos y bloqueos para que la agenda no cruce citas." },
+      { titulo: "Organiza la agenda", texto: "Registra las citas con su estilista y usa la lista de espera para llenar cupos." },
       { titulo: "Guarda el historial", texto: "Anota fórmulas, alergias y trabajos de cada cliente." },
-      { titulo: "Paga comisiones", texto: "Liquida a tu equipo por servicio realizado." },
+      { titulo: "Paga comisiones", texto: "Liquida a tu equipo por servicio realizado y por productos vendidos." },
     ],
   },
   taller: {
