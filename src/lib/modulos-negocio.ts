@@ -172,6 +172,11 @@ const PAGOS_TIENDA = m("pagos_tienda", "Pagos digitales de la tienda", "Concilia
 const PERSONAL_TIENDA = m("personal_tienda", "Vendedores, turnos y comisiones", "Turnos de vendedores, comisiones y pagos del personal de la tienda.", Briefcase);
 const METAS_TIENDA = m("metas_tienda", "Metas de venta por vendedor", "Metas semanales de venta y seguimiento por vendedor.", Target);
 const RESENAS_TIENDA = m("resenas_tienda", "Cambios, quejas y reseñas", "Quejas, reclamos y opiniones de clientes de la tienda con seguimiento.", Star);
+const CLIENTES_SERVICIOS = m("clientes_servicios", "Clientes del negocio", "Clientes que reservan, sus citas, preferencias y saldos.", Users);
+const PAGOS_SERVICIOS = m("pagos_servicios", "Pagos digitales y anticipos", "Concilia pagos con Nequi, Daviplata y Bre-B de cada cita o servicio.", Smartphone);
+const RESENAS_SERVICIOS = m("resenas_servicios", "Quejas y reseñas de clientes", "Opiniones, quejas y reclamos sobre el servicio, con seguimiento.", Star);
+const PERSONAL_SERVICIOS = m("personal_servicios", "Personal, turnos y comisiones", "Turnos de profesionales, comisiones por servicio y pagos del personal.", Briefcase);
+const METAS_SERVICIOS = m("metas_servicios", "Metas de citas y ventas", "Metas semanales de servicios realizados y seguimiento por profesional.", Target);
 const AGENDA: ModuloNegocio = {
   id: "agenda",
   titulo: "Agenda y calendario",
@@ -282,8 +287,8 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("historial", "Historial del cliente", "Notas y trabajos realizados por cliente.", ClipboardList),
       m("lista_espera", "Lista de espera", "Clientes por atender cuando se libere un cupo.", Bell),
       m("comisiones", "Comisiones del personal", "Pago por servicio realizado.", Percent),
-      CLIENTES,
-      FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES_SERVICIOS,
+      FACTURAS, PAGOS_SERVICIOS, FIDELIZACION, RESENAS_SERVICIOS, CAJA, PERSONAL_SERVICIOS, METAS_SERVICIOS, FINANZAS,
     ],
   },
   {
