@@ -1553,6 +1553,315 @@ export type Database = {
         }
         Relationships: []
       }
+      pan_recetas: {
+        Row: {
+          activo: boolean
+          created_at: string
+          gramaje_unidad: number
+          id: string
+          nombre: string
+          notas: string | null
+          owner_id: string | null
+          precio_venta: number
+          tipo_negocio: string | null
+          unidades_por_lote: number
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string
+          gramaje_unidad?: number
+          id?: string
+          nombre: string
+          notas?: string | null
+          owner_id?: string | null
+          precio_venta?: number
+          tipo_negocio?: string | null
+          unidades_por_lote?: number
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string
+          gramaje_unidad?: number
+          id?: string
+          nombre?: string
+          notas?: string | null
+          owner_id?: string | null
+          precio_venta?: number
+          tipo_negocio?: string | null
+          unidades_por_lote?: number
+        }
+        Relationships: []
+      }
+      pan_receta_items: {
+        Row: {
+          cantidad: number
+          created_at: string
+          id: string
+          insumo_id: string
+          owner_id: string | null
+          receta_id: string
+          tipo_negocio: string | null
+        }
+        Insert: {
+          cantidad: number
+          created_at?: string
+          id?: string
+          insumo_id: string
+          owner_id?: string | null
+          receta_id: string
+          tipo_negocio?: string | null
+        }
+        Update: {
+          cantidad?: number
+          created_at?: string
+          id?: string
+          insumo_id?: string
+          owner_id?: string | null
+          receta_id?: string
+          tipo_negocio?: string | null
+        }
+        Relationships: []
+      }
+      pan_producciones: {
+        Row: {
+          anulado: boolean
+          anulado_en: string | null
+          anulado_por: string | null
+          costo_total: number
+          costo_unitario: number
+          created_at: string
+          fecha: string
+          horneado_por: string | null
+          id: string
+          lotes: number
+          motivo_anulacion: string | null
+          nombre: string
+          notas: string | null
+          owner_id: string | null
+          receta_id: string | null
+          tipo_negocio: string | null
+          unidades: number
+        }
+        Insert: {
+          anulado?: boolean
+          anulado_en?: string | null
+          anulado_por?: string | null
+          costo_total?: number
+          costo_unitario?: number
+          created_at?: string
+          fecha?: string
+          horneado_por?: string | null
+          id?: string
+          lotes: number
+          motivo_anulacion?: string | null
+          nombre: string
+          notas?: string | null
+          owner_id?: string | null
+          receta_id?: string | null
+          tipo_negocio?: string | null
+          unidades?: number
+        }
+        Update: {
+          anulado?: boolean
+          anulado_en?: string | null
+          anulado_por?: string | null
+          costo_total?: number
+          costo_unitario?: number
+          created_at?: string
+          fecha?: string
+          horneado_por?: string | null
+          id?: string
+          lotes?: number
+          motivo_anulacion?: string | null
+          nombre?: string
+          notas?: string | null
+          owner_id?: string | null
+          receta_id?: string | null
+          tipo_negocio?: string | null
+          unidades?: number
+        }
+        Relationships: []
+      }
+      pan_mermas: {
+        Row: {
+          anulado: boolean
+          anulado_en: string | null
+          anulado_por: string | null
+          cantidad: number
+          causa: string
+          clase: string
+          costo_total: number
+          created_at: string
+          fecha: string
+          id: string
+          insumo_id: string | null
+          motivo: string
+          motivo_anulacion: string | null
+          nombre: string
+          owner_id: string | null
+          receta_id: string | null
+          registrado_por: string | null
+          tipo_negocio: string | null
+        }
+        Insert: {
+          anulado?: boolean
+          anulado_en?: string | null
+          anulado_por?: string | null
+          cantidad: number
+          causa: string
+          clase: string
+          costo_total?: number
+          created_at?: string
+          fecha?: string
+          id?: string
+          insumo_id?: string | null
+          motivo: string
+          motivo_anulacion?: string | null
+          nombre: string
+          owner_id?: string | null
+          receta_id?: string | null
+          registrado_por?: string | null
+          tipo_negocio?: string | null
+        }
+        Update: {
+          anulado?: boolean
+          anulado_en?: string | null
+          anulado_por?: string | null
+          cantidad?: number
+          causa?: string
+          clase?: string
+          costo_total?: number
+          created_at?: string
+          fecha?: string
+          id?: string
+          insumo_id?: string | null
+          motivo?: string
+          motivo_anulacion?: string | null
+          nombre?: string
+          owner_id?: string | null
+          receta_id?: string | null
+          registrado_por?: string | null
+          tipo_negocio?: string | null
+        }
+        Relationships: []
+      }
+      pan_encargos: {
+        Row: {
+          abonado: number
+          anulado: boolean
+          anulado_en: string | null
+          anulado_por: string | null
+          cliente: string
+          created_at: string
+          dedicatoria: string | null
+          descripcion: string
+          entrega_en: string
+          estado: string
+          foto_path: string | null
+          id: string
+          motivo_anulacion: string | null
+          notas: string | null
+          owner_id: string | null
+          sabor: string | null
+          tamano: string | null
+          telefono: string | null
+          tipo_negocio: string | null
+          total: number
+        }
+        Insert: {
+          abonado?: number
+          anulado?: boolean
+          anulado_en?: string | null
+          anulado_por?: string | null
+          cliente: string
+          created_at?: string
+          dedicatoria?: string | null
+          descripcion: string
+          entrega_en: string
+          estado?: string
+          foto_path?: string | null
+          id?: string
+          motivo_anulacion?: string | null
+          notas?: string | null
+          owner_id?: string | null
+          sabor?: string | null
+          tamano?: string | null
+          telefono?: string | null
+          tipo_negocio?: string | null
+          total?: number
+        }
+        Update: {
+          abonado?: number
+          anulado?: boolean
+          anulado_en?: string | null
+          anulado_por?: string | null
+          cliente?: string
+          created_at?: string
+          dedicatoria?: string | null
+          descripcion?: string
+          entrega_en?: string
+          estado?: string
+          foto_path?: string | null
+          id?: string
+          motivo_anulacion?: string | null
+          notas?: string | null
+          owner_id?: string | null
+          sabor?: string | null
+          tamano?: string | null
+          telefono?: string | null
+          tipo_negocio?: string | null
+          total?: number
+        }
+        Relationships: []
+      }
+      pan_turnos: {
+        Row: {
+          created_at: string
+          estado: string
+          fecha: string
+          hora_fin: string | null
+          hora_inicio: string | null
+          id: string
+          meta_venta: number
+          notas: string | null
+          owner_id: string | null
+          persona: string
+          rol: string
+          tipo_negocio: string | null
+          venta_real: number
+        }
+        Insert: {
+          created_at?: string
+          estado?: string
+          fecha?: string
+          hora_fin?: string | null
+          hora_inicio?: string | null
+          id?: string
+          meta_venta?: number
+          notas?: string | null
+          owner_id?: string | null
+          persona: string
+          rol?: string
+          tipo_negocio?: string | null
+          venta_real?: number
+        }
+        Update: {
+          created_at?: string
+          estado?: string
+          fecha?: string
+          hora_fin?: string | null
+          hora_inicio?: string | null
+          id?: string
+          meta_venta?: number
+          notas?: string | null
+          owner_id?: string | null
+          persona?: string
+          rol?: string
+          tipo_negocio?: string | null
+          venta_real?: number
+        }
+        Relationships: []
+      }
       costos_veh: {
         Row: {
           abonado: number
@@ -5755,6 +6064,41 @@ export type Database = {
       mi_licencia_vigente: { Args: never; Returns: Json }
       mi_acceso: { Args: never; Returns: Json }
       mi_negocio_id: { Args: never; Returns: string }
+      pan_registrar_horneada: {
+        Args: { p_receta: string; p_lotes: number; p_horneado_por: string; p_notas: string }
+        Returns: string
+      }
+      pan_registrar_merma: {
+        Args: {
+          p_clase: string
+          p_receta: string | null
+          p_insumo: string | null
+          p_cantidad: number
+          p_causa: string
+          p_motivo: string
+          p_registrado_por: string
+        }
+        Returns: string
+      }
+      pan_crear_encargo: {
+        Args: {
+          p_cliente: string
+          p_telefono: string
+          p_descripcion: string
+          p_sabor: string
+          p_tamano: string
+          p_dedicatoria: string
+          p_entrega: string
+          p_total: number
+          p_abono: number
+          p_metodo: string
+          p_foto: string | null
+          p_notas: string
+        }
+        Returns: string
+      }
+      pan_abonar_encargo: { Args: { p_id: string; p_monto: number; p_metodo: string }; Returns: number }
+      pan_entregar_encargo: { Args: { p_id: string; p_metodo: string }; Returns: number }
       ret_permiso: { Args: { p: string }; Returns: boolean }
       com_permiso: { Args: { p: string }; Returns: boolean }
       compra_aprobar: { Args: { p_compra: string }; Returns: undefined }

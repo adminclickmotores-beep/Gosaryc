@@ -611,10 +611,28 @@ const comida = (
   return { clave, etiqueta, panel, usaPedidos: true, modulos: mods };
 };
 
+// Jerga propia de la panadería: renombra los módulos compartidos con el restaurante.
+// Si un módulo no existe, simplemente no se renombra (nunca falla).
+const VOCAB_PANADERIA: Record<string, { titulo: string; descripcion: string }> = {
+  pedidos: { titulo: "Vitrina / POS rápido", descripcion: "Ventas de mostrador y pedidos del día." },
+  cocina: { titulo: "Tablero del horno", descripcion: "Qué se está preparando y horneando ahora." },
+  insumos: { titulo: "Materia prima / Harinas", descripcion: "Harinas, levaduras, mantequilla y demás insumos con alertas de faltantes." },
+  equipo_turnos: { titulo: "Equipo y nómina", descripcion: "Pagos y novedades de panaderos, hornero y vendedores." },
+};
+const panaderia = comida("panaderia", "Panadería / pastelería / repostería", "Panadería", [
+  m("pan_produccion", "Horneadas / Producción diaria", "Registra lo que se horneó: descuenta la materia prima y calcula el costo real de cada unidad.", ChefHat),
+  m("pan_recetas", "Recetas y gramajes", "Ingredientes por lote, gramaje, rendimiento y costo por unidad.", ScrollText),
+  m("pan_mermas", "Mermas y vencimientos", "Pan quemado, dañado o vencido con su motivo; la pérdida pasa sola a Contabilidad.", Trash2),
+  m("encargos_tortas", "Pedidos especiales / Tortas por encargo", "Entrega, abono, saldo, sabor, dedicatoria y foto de referencia.", Cake),
+  m("pan_turnos", "Turnos y metas del personal", "Turnos de panaderos, horneros y mostrador con meta diaria de venta.", CalendarClock),
+], ["mesas", "propinas", "suscripciones", "mermas_rest"]);
+panaderia.modulos = panaderia.modulos.map((x): ModuloNegocio => {
+  const v = VOCAB_PANADERIA[x.id];
+  return v ? { ...x, titulo: v.titulo, descripcion: v.descripcion } : x;
+});
+
 TIPOS_NEGOCIO.push(
-  comida("panaderia", "Panadería / pastelería / repostería", "Panadería", [
-    m("encargos_tortas", "Encargos de tortas y pasteles", "Pedidos por fecha: sabor, tamaño, decoración y anticipo.", Cake),
-  ], ["mesas", "propinas", "suscripciones"]),
+  panaderia,
   comida("cafeteria", "Cafetería / bar / heladería", "Cafetería", [
     m("insumos_barra", "Barra y bebidas", "Control de botellas, tragos, café y mermas de la barra.", Coffee),
   ], ["suscripciones"]),

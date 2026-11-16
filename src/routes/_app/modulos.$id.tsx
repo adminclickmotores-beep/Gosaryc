@@ -11,6 +11,7 @@ import { SolicitudesCredito } from "@/components/vehiculos/SolicitudesCredito";
 import { CotizacionesVehiculos } from "@/components/vehiculos/CotizacionesVehiculos";
 import { DocumentosVehiculos } from "@/components/vehiculos/DocumentosVehiculos";
 import { VencimientosVehiculos } from "@/components/vehiculos/VencimientosVehiculos";
+import { EncargosPan, MermasPan, ProduccionPan, RecetasPan, TurnosPan } from "@/components/panaderia/PanaderiaModulos";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
@@ -63,6 +64,11 @@ function ModuloPage() {
     );
   }
 
+  if (id === "pan_produccion") return <ProduccionPan />;
+  if (id === "pan_recetas") return <RecetasPan />;
+  if (id === "pan_mermas") return <MermasPan />;
+  if (id === "encargos_tortas") return <EncargosPan />;
+  if (id === "pan_turnos") return <TurnosPan />;
   if (id === "vehiculos") return <InventarioVehiculos />;
   if (id === "caja_diaria") return <CajaTurnos />;
   if (id === "compras_veh") return <ComprasVehiculos />;

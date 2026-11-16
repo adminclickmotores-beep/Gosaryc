@@ -137,9 +137,11 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
     frase: "Pan fresco cada mañana, clientes que vuelven.",
     pasos: [
       { titulo: "Arma tu menú", texto: "Crea tus categorías (panes, tortas, postres) y agrega cada producto con su precio y porción." },
-      { titulo: "Recibe encargos", texto: "En “Encargos de tortas y pasteles” anota sabor, tamaño, fecha de entrega y anticipo." },
-      { titulo: "Planea la producción", texto: "En “Producción del día” define qué hornear y cuántas unidades." },
-      { titulo: "Calcula tus costos", texto: "En “Recetario e inventario” carga ingredientes y recetas para conocer tu margen." },
+      { titulo: "Carga tu materia prima y tus recetas", texto: "En “Materia prima / Harinas” registra tus insumos y en “Recetas y gramajes” arma cada receta por lote para conocer su costo por unidad." },
+      { titulo: "Registra las horneadas", texto: "En “Horneadas / Producción diaria” anota lo que salió del horno: se descuenta la materia prima y queda el costo real de cada unidad." },
+      { titulo: "Controla las mermas", texto: "En “Mermas y vencimientos” registra el pan quemado, dañado o vencido con su motivo; la pérdida pasa sola a Contabilidad." },
+      { titulo: "Recibe tortas por encargo", texto: "En “Pedidos especiales / Tortas por encargo” anota sabor, dedicatoria, foto, fecha de entrega y abono; el saldo se cobra al entregar." },
+      { titulo: "Organiza turnos y metas", texto: "En “Turnos y metas del personal” asigna panaderos, horneros y mostrador con su meta diaria de venta." },
     ],
   },
   cafeteria: {
