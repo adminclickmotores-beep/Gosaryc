@@ -1595,6 +1595,51 @@ export type Database = {
         }
         Relationships: []
       }
+      tickets_soporte: {
+        Row: {
+          asunto: string
+          categoria: string
+          correo: string | null
+          created_at: string
+          descripcion: string
+          estado: string
+          id: string
+          negocio: string | null
+          pagina: string | null
+          respuesta: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          asunto: string
+          categoria?: string
+          correo?: string | null
+          created_at?: string
+          descripcion: string
+          estado?: string
+          id?: string
+          negocio?: string | null
+          pagina?: string | null
+          respuesta?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          asunto?: string
+          categoria?: string
+          correo?: string | null
+          created_at?: string
+          descripcion?: string
+          estado?: string
+          id?: string
+          negocio?: string | null
+          pagina?: string | null
+          respuesta?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       agente_memoria: {
         Row: {
           contenido: string

@@ -18,6 +18,7 @@ export const MANUAL_FIJO = `
 - En computador hay un menú lateral con el logo, el buscador de módulos («Buscar módulo…», atajo ⌘K o Ctrl+K), los módulos del negocio y el menú de usuario. El menú lateral se puede contraer con la flecha.
 - En el celular hay una barra superior con el logo y una barra inferior de atajos (Pedidos y otros).
 - Arriba a la derecha aparece el indicador «Setup 2/3» (lista de primeros pasos) y el menú del usuario (nombre/correo): desde ahí se puede repetir el recorrido guiado, ir a configuración y cerrar sesión.
+- Soporte: en el menú lateral está «Soporte». Primero se recomienda preguntar al agente virtual o revisar la Academia; si algo sigue fallando, se crea un ticket (tipo, asunto y descripción) y el equipo de soporte responde ahí mismo, donde se ve el estado (abierto, en proceso, resuelto).
 - Cada módulo tiene un pequeño instructivo («cómo usar esta pantalla») con pasos y consejo.
 - Hay un recorrido guiado por el panel (5 pasos) la primera vez: conoce tu panel, tu pantalla de cada día, tu negocio/equipo/cuenta, tres pasos para arrancar y ahora a vender. Se puede repetir desde el menú del usuario.
 - Los módulos se pueden abrir en «ventana completa» con un botón junto a cada pestaña del panel (útil para dejarlos fijos en una pantalla de caja o cocina).
