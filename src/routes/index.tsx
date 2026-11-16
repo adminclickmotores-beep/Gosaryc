@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { ComponentType } from "react";
 import {
-  UtensilsCrossed, ChefHat, Bike, Boxes, Wallet, Download, ArrowRight, Store, Scissors,
-  Stethoscope, GraduationCap, BedDouble, Dumbbell, Hammer, Sprout, Building2, PawPrint, Laptop, Truck, Car,
+  UtensilsCrossed, ChefHat, Bike, Boxes, Wallet, Download, ArrowRight,
   Smartphone, Palette, ShieldCheck, Sparkles, Check, Users, Receipt, BarChart3, Layers, Clock, TrendingUp,
-  Cake, Coffee, Wrench, Pill, PartyPopper, Briefcase, Shirt, Gem, Banknote, FileText, Gift, CalendarDays,
+  FileText, Gift, CalendarDays,
   Bot, MessageCircle, Brain, Headphones,
 } from "lucide-react";
+import { SECTORES } from "@/lib/sectores";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useAuth } from "@/contexts/AuthContext";
@@ -47,20 +47,6 @@ const POR_QUE: { Icon: Icono; titulo: string; desc: string }[] = [
   { Icon: Clock, titulo: "Ahorra tiempo cada día", desc: "Automatiza pedidos, cobros y reportes para dedicarte a crecer." },
   { Icon: TrendingUp, titulo: "Decide con datos", desc: "Conoce tus costos, márgenes y utilidad reales." },
   { Icon: ShieldCheck, titulo: "Uso exclusivo de tu empresa", desc: "Solo tu equipo autorizado entra al programa y a la información de tu negocio." },
-];
-
-const NEGOCIOS: { Icon: Icono; label: string }[] = [
-  { Icon: UtensilsCrossed, label: "Restaurantes" }, { Icon: Store, label: "Tiendas" }, { Icon: Scissors, label: "Belleza y servicios" },
-  { Icon: Stethoscope, label: "Salud" }, { Icon: GraduationCap, label: "Educación" }, { Icon: BedDouble, label: "Hoteles" },
-  { Icon: Dumbbell, label: "Gimnasios" }, { Icon: Hammer, label: "Construcción" }, { Icon: Sprout, label: "Agro" },
-  { Icon: Building2, label: "Inmobiliarias" }, { Icon: PawPrint, label: "Veterinarias" }, { Icon: Laptop, label: "Tecnología" },
-  { Icon: Truck, label: "Transporte" }, { Icon: Car, label: "Vehículos" },
-  { Icon: Cake, label: "Panaderías y pastelerías" }, { Icon: Coffee, label: "Cafeterías y bares" },
-  { Icon: Wrench, label: "Talleres" }, { Icon: Pill, label: "Farmacias" },
-  { Icon: PartyPopper, label: "Eventos y catering" }, { Icon: Briefcase, label: "Servicios profesionales" },
-  { Icon: Shirt, label: "Lavanderías y moda" }, { Icon: Gem, label: "Joyerías" },
-  { Icon: Banknote, label: "Préstamos" }, { Icon: Smartphone, label: "Celulares" },
-  { Icon: Building2, label: "Condominios" }, { Icon: Layers, label: "Textil y papelería" },
 ];
 
 const VENTAJAS: { Icon: Icono; titulo: string; desc: string }[] = [
@@ -225,12 +211,14 @@ function LandingPage() {
           <h2 id="para-quien" className="mt-3 text-center font-display text-3xl sm:text-4xl">Hecho para todo tipo de negocio</h2>
           <p className="mx-auto mt-3 max-w-xl text-center text-sm text-muted-foreground">Cada negocio recibe los módulos y los textos que necesita.</p>
           <ul className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7">
-            {NEGOCIOS.map(({ Icon, label }) => (
-              <li key={label}>
-                <GlassPanel className="flex h-full flex-col items-center gap-3 p-4 text-center">
-                  <span className="icon-chip h-11 w-11 rounded-2xl"><Icon className="h-5 w-5" /></span>
-                  <span className="text-xs font-medium text-foreground sm:text-sm">{label}</span>
-                </GlassPanel>
+            {SECTORES.map(({ Icon, label, slug }) => (
+              <li key={slug}>
+                <Link to="/sectores/$slug" params={{ slug }} className="group block h-full">
+                  <GlassPanel className="flex h-full flex-col items-center gap-3 p-4 text-center transition-transform duration-300 group-hover:-translate-y-1">
+                    <span className="icon-chip h-11 w-11 rounded-2xl"><Icon className="h-5 w-5" /></span>
+                    <span className="text-xs font-medium text-foreground sm:text-sm">{label}</span>
+                  </GlassPanel>
+                </Link>
               </li>
             ))}
           </ul>
