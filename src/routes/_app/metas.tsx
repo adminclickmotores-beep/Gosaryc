@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_app/metas")({
   component: MetasPage,
 });
 
-type Registro = Tables<"modulo_registros">;
+type Registro = Tables<"metas_registros">;
 
 const ETIQUETAS: Record<string, string> = { pendiente: "Pendiente", en_proceso: "En curso", hecho: "Cumplida" };
 
@@ -24,9 +24,8 @@ function MetasPage() {
 
   const cargar = useCallback(async () => {
     const { data, error } = await supabase
-      .from("modulo_registros")
+      .from("metas_registros")
       .select("*")
-      .eq("modulo", "metas")
       .order("fecha", { ascending: true });
     if (error) toast.error("No se pudieron cargar las metas.");
     setMetas(data ?? []);

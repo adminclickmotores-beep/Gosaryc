@@ -1742,6 +1742,42 @@ export type Database = {
         }
         Relationships: []
       }
+      metas_registros: {
+        Row: {
+          anulado: boolean
+          created_at: string
+          estado: string
+          fecha: string | null
+          id: string
+          monto: number
+          owner_id: string | null
+          tipo_negocio: string | null
+          titulo: string
+        }
+        Insert: {
+          anulado?: boolean
+          created_at?: string
+          estado?: string
+          fecha?: string | null
+          id?: string
+          monto?: number
+          owner_id?: string | null
+          tipo_negocio?: string | null
+          titulo: string
+        }
+        Update: {
+          anulado?: boolean
+          created_at?: string
+          estado?: string
+          fecha?: string | null
+          id?: string
+          monto?: number
+          owner_id?: string | null
+          tipo_negocio?: string | null
+          titulo?: string
+        }
+        Relationships: []
+      }
       tickets_soporte: {
         Row: {
           asunto: string
