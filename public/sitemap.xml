@@ -3,4 +3,54 @@
   <url><loc>https://gosaryc.lovable.app/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
   <url><loc>https://gosaryc.lovable.app/menu</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://gosaryc.lovable.app/instalar</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/restaurantes</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/tiendas</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/belleza-y-servicios</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/salud</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/educacion</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/hoteles</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/gimnasios</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/construccion</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/agro</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/inmobiliarias</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/veterinarias</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/tecnologia</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/transporte</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/vehiculos</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/panaderias-y-pastelerias</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/cafeterias-y-bares</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/talleres</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/farmacias</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/eventos-y-catering</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/servicios-profesionales</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/lavanderias-y-moda</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/joyerias</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/prestamos</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/celulares</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/condominios</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/textil-y-papeleria</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/ferreterias</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/supermercados</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/carnicerias-y-fruver</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/licoreras</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/floristerias</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/barberias</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/spas-y-estetica</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/odontologia</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/opticas</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/colegios-y-academias</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/guarderias</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/lavaderos-de-autos</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/mecanica-y-repuestos</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/alquiler-de-vehiculos</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/mensajeria-y-domicilios</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/hostales-y-cabanas</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/restaurantes-de-comida-rapida</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/heladerias-y-dulces</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/fotografia-y-produccion</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/abogados-y-contadores</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/seguridad-y-aseo</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/ganaderia-y-avicola</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/ong-y-fundaciones</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://gosaryc.lovable.app/sectores/iglesias-y-clubes</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
 </urlset>

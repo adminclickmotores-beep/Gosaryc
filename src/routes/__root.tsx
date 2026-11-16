@@ -80,7 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "keywords",
         content:
-          "software para negocios, punto de venta, pos, inventario, facturación, pedidos en línea, menú digital, domicilios, recetario, control de costos, Gosaryc",
+          "software para negocios Colombia, punto de venta, pos, inventario, facturación DIAN, nómina Colombia, software para restaurantes, software para concesionarios, software para consultorios, software para tiendas, software para salones de belleza, software para talleres, software para hoteles, pedidos en línea, menú digital, domicilios, control de costos, Gosaryc",
       },
       { property: "og:url", content: "https://gosaryc.lovable.app/" },
       { property: "og:image", content: "https://gosaryc.lovable.app/og-image.svg" },

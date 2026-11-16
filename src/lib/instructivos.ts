@@ -52,12 +52,15 @@ const POR_RUTA: Record<string, Instructivo> = {
   },
   "/equipo-nomina": {
     titulo: "Equipo, turnos y nómina",
-    paraQue: "Llevar turnos, pagos y novedades de tu personal.",
+    paraQue: "Llevar turnos, pagos y novedades de tu personal, y liquidar la nómina con las reglas de Colombia.",
     pasos: [
-      "Registra a cada persona de tu equipo con su cargo.",
-      "Anota turnos, pagos y novedades como horas extra o descuentos.",
+      "Registra a cada persona de tu equipo con su cargo, contrato, EPS y fondo de pensión.",
+      "Anota turnos, horas extra, recargos, incapacidades y descuentos.",
+      "Usa el liquidador de nómina: calcula el neto del empleado, los aportes del empleador (PILA), las provisiones de cesantías, intereses, prima y vacaciones, y el costo total de cada persona.",
+      "Revisa el calendario de obligaciones (PILA, retención, nómina electrónica, cesantías, primas y SG-SST) para no pagar multas.",
       "Marca como pagado lo que ya cancelaste para saber lo que falta.",
     ],
+    consejo: "El salario mínimo y el auxilio de transporte son valores editables: confírmalos cada enero con tu contador. El liquidador es una guía de cálculo, no una liquidación oficial.",
   },
   "/finanzas": {
     titulo: "Finanzas y rentabilidad",

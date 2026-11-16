@@ -16,9 +16,9 @@ export const Route = createFileRoute("/")({
   component: LandingPage,
   head: () => ({
     meta: [
-      { title: `${BRAND.name} — Software para todo tipo de negocio | Ventas, inventario y clientes` },
+      { title: `${BRAND.name} — Software para negocios en Colombia | Restaurantes, tiendas, salud, concesionarios y más` },
       { name: "description", content: BRAND.description },
-      { property: "og:title", content: `${BRAND.name} — ${BRAND.tagline}` },
+      { property: "og:title", content: `${BRAND.name} — Software para negocios en Colombia, con módulos propios para cada giro` },
       { property: "og:description", content: BRAND.description },
       { property: "og:type", content: "website" },
     ],
@@ -34,8 +34,9 @@ const MODULOS: { Icon: Icono; label: string; desc: string; to: RutaLanding; gran
   { Icon: Bike, label: "Entregas y clientes", desc: "Organiza entregas y conoce a tus clientes frecuentes.", to: "/domicilios" },
   { Icon: Boxes, label: "Inventarios y recetas", desc: "Controla existencias, costos y márgenes de lo que vendes.", to: "/restaurante" },
   { Icon: Wallet, label: "Finanzas y rentabilidad", desc: "Caja, cartera y utilidad en un vistazo, con reportes claros para decidir mejor.", to: "/restaurante", grande: true },
-  { Icon: Users, label: "Equipo y nómina", desc: "Organiza a tu equipo, sus permisos y sus pagos.", to: "/login" },
-  { Icon: Receipt, label: "Caja, fiados y cobros", desc: "Lo que entra, lo que sale y lo que te deben.", to: "/login" },
+  { Icon: Users, label: "Equipo y nómina en Colombia", desc: "Liquida salud, pensión, prima, cesantías y PILA con las reglas colombianas, y no olvides ninguna fecha de obligaciones.", to: "/login" },
+  { Icon: ShieldCheck, label: "Hecho para tu giro", desc: "Restaurante con Rappi, mermas y sanidad; salud con RIPS, glosas y habilitación; concesionario, tienda, taller y más, cada uno con sus propios formularios.", to: "/login" },
+  { Icon: Receipt, label: "Caja, fiados y facturación DIAN", desc: "Lo que entra, lo que sale, lo que te deben y el control de tus facturas electrónicas.", to: "/login" },
   { Icon: BarChart3, label: "Reportes y metas", desc: "Mira cómo va tu negocio y fija metas de ventas.", to: "/login" },
   { Icon: FileText, label: "Cotizaciones y documentos", desc: "Crea cotizaciones, controla vencimientos y guarda los documentos de tu negocio.", to: "/login" },
   { Icon: Gift, label: "Combos, puntos y recompensas", desc: "Promociones y puntos para que tus clientes vuelvan.", to: "/login" },

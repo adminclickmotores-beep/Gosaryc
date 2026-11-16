@@ -9,13 +9,24 @@ export const Route = createFileRoute("/sectores/$slug")({
   component: PaginaSector,
   head: ({ params }) => {
     const sector = buscarSector(params.slug);
-    const titulo = sector ? `${sector.label} — ${BRAND.name}` : BRAND.name;
+    const titulo = sector ? `Software para ${sector.label.toLowerCase()} en Colombia — ${BRAND.name}` : BRAND.name;
+    const descripcion = sector
+      ? `${sector.resumen} Módulos propios para ${sector.label.toLowerCase()}: ${sector.acciones.slice(0, 3).map((a) => a.titulo.toLowerCase()).join(", ")}.`
+      : BRAND.description;
+    const url = `https://gosaryc.lovable.app/sectores/${params.slug}`;
     return {
       meta: [
         { title: titulo },
-        { name: "description", content: sector?.resumen ?? BRAND.description },
+        { name: "description", content: descripcion },
+        { name: "keywords", content: sector ? `software para ${sector.label.toLowerCase()}, programa para ${sector.label.toLowerCase()} Colombia, ${sector.label.toLowerCase()} administración, Gosaryc` : "Gosaryc" },
         { property: "og:title", content: titulo },
+        { property: "og:description", content: descripcion },
+        { property: "og:url", content: url },
+        { property: "og:type", content: "website" },
+        { name: "twitter:title", content: titulo },
+        { name: "twitter:description", content: descripcion },
       ],
+      links: [{ rel: "canonical", href: url }],
     };
   },
 });

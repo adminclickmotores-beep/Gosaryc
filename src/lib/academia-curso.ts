@@ -218,6 +218,54 @@ export const CURSO_GOSARYC = {
         },
       ],
     },
+    {
+      id: "tu-giro",
+      titulo: "Módulo 5 · Tu giro y el cumplimiento en Colombia",
+      resumen: "Cada negocio tiene sus propios módulos y formularios. Aprende los de tu sector y cumple con la ley.",
+      lecciones: [
+        {
+          id: "modulos-de-tu-giro",
+          titulo: "Los módulos propios de tu tipo de negocio",
+          minutos: 7,
+          descripcion: "Gosaryc tiene más de 50 sectores; cada uno trae formularios, estados y alertas diferentes.",
+          pasos: [
+            "Abre tu panel: las tarjetas de módulos cambian según tu tipo de negocio. Cada una tiene su pequeño instructivo.",
+            "Restaurante: pedidos y cocina, mesas, combos, insumos, repartidores, propinas, «Rappi, DiDi Food y apps» (venta bruta, comisión y lo que te consignan), «Mermas y desperdicios», «Sanidad y buenas prácticas» y «Permisos y licencias» (concepto sanitario, bomberos, SAYCO-ACINPRO).",
+            "Salud: pacientes, historias, consentimientos, convenios, «Facturación y RIPS», «Glosas y cartera con EPS», «Habilitación y calidad» y «Residuos hospitalarios».",
+            "Concesionario: inventario de vehículos, compras, consignaciones, retomas, créditos, separaciones, vencimientos de SOAT y tecnomecánica, y taller.",
+            "Tiendas, servicios y demás giros: cada uno tiene sus clientes, pagos digitales, personal, metas y reseñas con campos propios (por ejemplo tallas y colores en moda, o profesionales y anticipos en citas).",
+            "Si cambias de tipo de negocio (solo la cuenta administradora puede), el menú cambia y tus datos se conservan.",
+          ],
+          practica: { ruta: "/welcome", etiqueta: "Ver mis módulos" },
+        },
+        {
+          id: "nomina-colombia",
+          titulo: "Nómina con las reglas de Colombia",
+          minutos: 8,
+          descripcion: "Liquida a tu equipo: salud, pensión, solidaridad, auxilio de transporte, horas extra y provisiones.",
+          pasos: [
+            "En «Equipo, turnos y nómina» crea a cada empleado con su salario, tipo de contrato, EPS y pensión.",
+            "Abre el liquidador: calcula el neto, los aportes del empleador (PILA) y las provisiones del mes (cesantías, intereses, prima y vacaciones).",
+            "Revisa el costo total de cada persona para ti: es lo que realmente te cuesta, más que su salario.",
+            "Actualiza el salario mínimo y el auxilio de transporte cada enero (son valores editables) y confírmalos con tu contador.",
+          ],
+          practica: { ruta: "/equipo-nomina", etiqueta: "Abrir nómina" },
+        },
+        {
+          id: "calendario-obligaciones",
+          titulo: "Fechas y obligaciones que no puedes olvidar",
+          minutos: 5,
+          descripcion: "PILA, retención en la fuente, nómina electrónica, cesantías, primas, vacaciones y SG-SST.",
+          pasos: [
+            "En el calendario de obligaciones mira lo que vence este mes: PILA, retención, nómina electrónica, cesantías, primas y vacaciones.",
+            "En módulos de permisos o vencimientos de tu giro (sanidad, habilitación, SOAT, tecnomecánica) guarda cada fecha de renovación para recibir la alerta a tiempo.",
+            "Lleva la facturación electrónica en «Facturación DIAN»: número, cliente, valor y estado de cobro.",
+            "Consulta siempre a tu contador: Gosaryc es una guía de control, no reemplaza la asesoría contable ni la liquidación oficial.",
+          ],
+          practica: { ruta: "/equipo-nomina", etiqueta: "Ver calendario" },
+        },
+      ],
+    },
   ] as ModuloCurso[],
 };
 
