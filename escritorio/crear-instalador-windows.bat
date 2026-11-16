@@ -21,9 +21,21 @@ REM Algunas versiones nuevas de npm bloquean el script que descarga Electron. Lo
 if not exist "node_modules\electron\path.txt" (
   echo Descargando Electron...
   node node_modules\electron\install.js
-  if errorlevel 1 goto error
+  echo Codigo de salida: %errorlevel%
 )
-if not exist "node_modules\electron\path.txt" goto error
+if not exist "node_modules\electron\path.txt" (
+  echo Reintentando la descarga de Electron...
+  call npm rebuild electron --foreground-scripts
+)
+if not exist "node_modules\electron\path.txt" (
+  echo.
+  echo No se pudo descargar Electron. Version de Node instalada:
+  node -v
+  echo Instala Node.js LTS ^(version 22 o 24^) desde https://nodejs.org, borra la carpeta node_modules y vuelve a ejecutar este archivo.
+  echo Revisa tambien tu conexion a internet, antivirus o firewall: la descarga viene de github.com.
+  pause
+  exit /b 1
+)
 
 echo [3/3] Creando el instalador de Windows...
 call npm run instalador:windows
