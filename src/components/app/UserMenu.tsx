@@ -11,6 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { IconLogout, IconSettings } from "@/components/ui-custom/CustomIcon";
+import { KeyRound } from "lucide-react";
+import { esCuentaMaestra } from "@/lib/cuenta-maestra";
 
 function initialsFor(name: string | null | undefined, email: string | null | undefined) {
   const source = (name || "").trim();
@@ -102,6 +104,14 @@ export function UserMenu() {
             <span>Configuración</span>
           </Link>
         </DropdownMenuItem>
+        {esCuentaMaestra(user.email) && (
+          <DropdownMenuItem asChild className="cursor-pointer">
+            <Link to={"/licencias" as never} className="flex items-center gap-2">
+              <KeyRound size={14} />
+              <span>Generador de licencias</span>
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onSelect={async (e) => {

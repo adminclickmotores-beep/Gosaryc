@@ -1,0 +1,33 @@
+{
+  "name": "gosaryc-licencias",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Gosaryc Licencias: generador de códigos de activación (solo para la cuenta maestra).",
+  "author": "Gosaryc",
+  "main": "main.cjs",
+  "scripts": {
+    "iniciar": "electron .",
+    "start": "electron .",
+    "icono": "electron generar-icono.cjs",
+    "instalador:windows": "npm run icono && electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "app.gosaryc.licencias",
+    "productName": "Gosaryc Licencias",
+    "directories": { "output": "instaladores" },
+    "files": ["main.cjs", "package.json", "build/icon.png"],
+    "win": { "target": "nsis", "icon": "build/icon.png" },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "Gosaryc Licencias",
+      "runAfterFinish": true
+    }
+  }
+}
