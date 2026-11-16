@@ -1030,6 +1030,26 @@ for (const clave of ["tienda", "supermercado", "ferreteria", "carniceria"] as co
   ];
 }
 
+// ---- Lotes/FIFO, cotizador de ferretería y desposte de frescos ----
+// Se insertan justo después de "Productos y precios". Si un tipo no existe, no se toca (nunca falla el arranque).
+const EXTRAS_COMERCIO: Record<string, ModuloNegocio[]> = {
+  tienda: [m("com_lotes", "Lotes y vencimientos", "Número de lote y vencimiento al recibir mercancía; el POS vende primero lo que vence antes (FIFO) y avisa a 7, 15 y 30 días.", CalendarClock)],
+  supermercado: [m("com_lotes", "Lotes y vencimientos", "Número de lote y vencimiento al recibir mercancía; el POS vende primero lo que vence antes (FIFO) y avisa a 7, 15 y 30 días.", CalendarClock)],
+  ferreteria: [m("com_cotizador", "Cotizador de materiales", "Lista de materiales para maestros y contratistas con descuento e impuestos, por WhatsApp o PDF, y se convierte en venta con un clic.", FileText)],
+  carniceria: [
+    m("com_lotes", "Lotes y vencimientos", "Número de lote y vencimiento al recibir mercancía; el POS vende primero lo que vence antes (FIFO) y avisa a 7, 15 y 30 días.", CalendarClock),
+    m("com_desposte", "Desposte y rendimiento", "Entra una canal o bulto y sale dividido en cortes con su peso, hueso y merma; calcula el costo real por kilo limpio.", Beef),
+  ],
+};
+for (const [clave, extras] of Object.entries(EXTRAS_COMERCIO)) {
+  const tipoExtra = TIPOS_NEGOCIO.find((x) => x.clave === clave);
+  if (!tipoExtra) continue;
+  const nuevos = extras.filter((e) => !tipoExtra.modulos.some((x) => x.id === e.id));
+  if (nuevos.length === 0) continue;
+  const pos = tipoExtra.modulos.findIndex((x) => x.id === "com_productos");
+  tipoExtra.modulos.splice(pos >= 0 ? pos + 1 : 0, 0, ...nuevos);
+}
+
 // Se agrega el módulo de cotizaciones a los tipos que cotizan y no tienen uno propio.
 // Salud (presupuestos de tratamiento), educación, hospedaje, gimnasio, mascotas, agro, farmacia y lavandería no cotizan así.
 const SIN_COTIZACIONES: TipoNegocioClave[] = ["tienda","restaurante", "cafeteria", "comida_rapida","salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro", "farmacia", "lavanderia", "belleza", "inmobiliaria", "tecnologia", "condominio", "prestamos", "papeleria", "supermercado", "carniceria", "licorera", "floristeria", "optica", "guarderia", "ganaderia", "fundacion", "iglesia", "seguridad_aseo", "alquiler_vehiculos"];

@@ -184,7 +184,44 @@ const POR_RUTA: Record<string, Instructivo> = {
   },
 };
 
-const GENERICO = "Para guardar cambios toca el botón de guardar; todo queda registrado en tu cuenta.";
+/** Instructivos de los módulos comerciales con pantalla propia, por id de módulo. */
+const POR_MODULO: Record<string, Instructivo> = {
+  com_lotes: {
+    titulo: "Lotes y vencimientos",
+    paraQue: "Saber qué lote vence primero y vender siempre lo más viejo antes (FIFO).",
+    pasos: [
+      "Al recibir mercancía, elige el producto, escribe el número de lote, la fecha de vencimiento y la cantidad.",
+      "Toca “Registrar lote”: el stock del producto sube solo.",
+      "Arriba ves cuántos lotes están vencidos o vencen en 7, 15 y 30 días.",
+      "En el POS, cada venta descuenta primero del lote que vence antes y el producto muestra su alerta.",
+    ],
+    consejo: "Los lotes no se borran: cuando se agotan salen de la lista.",
+  },
+  com_cotizador: {
+    titulo: "Cotizador de materiales",
+    paraQue: "Cotizar rápido a maestros de obra y contratistas y convertir la cotización en venta.",
+    pasos: [
+      "Escribe el cliente u obra y su celular, elige la lista de precios (mayorista, detal o especial) y el descuento.",
+      "Busca cada material y ajusta cantidad y unidad; ves el total con impuestos al instante.",
+      "Toca “Guardar cotización”, y luego envíala por WhatsApp o imprímela como PDF.",
+      "Cuando el cliente apruebe, toca “Aprobar como pedido” o “Convertir en venta”: descuenta el inventario y entra a Caja y Contabilidad.",
+    ],
+    consejo: "En “Productos y precios” anota pasillo, estante y nivel para ubicar cada material en el POS.",
+  },
+  com_desposte: {
+    titulo: "Desposte y rendimiento",
+    paraQue: "Saber cuánto rinde una canal o bulto y cuánto cuesta realmente cada kilo limpio.",
+    pasos: [
+      "Elige lo que entra (de tu inventario o compra directa), su peso en kilos y el costo total.",
+      "Agrega cada corte que sale con su peso, y el hueso, grasa o desperdicio.",
+      "Revisa el rendimiento y el costo real por kilo limpio antes de guardar.",
+      "Al guardar, baja lo que entró, suben los cortes con su costo y la merma queda en Contabilidad.",
+    ],
+    consejo: "Crea antes los cortes como productos en kilos en “Productos y precios”.",
+  },
+};
+
+const GENERICO ="Para guardar cambios toca el botón de guardar; todo queda registrado en tu cuenta.";
 
 /** Devuelve el instructivo de la pantalla actual, o null si no hay uno. */
 export function instructivoPara(pathname: string): Instructivo | null {
@@ -192,6 +229,8 @@ export function instructivoPara(pathname: string): Instructivo | null {
   if (mod) {
     const modulo = buscarModulo(decodeURIComponent(mod[1]));
     if (!modulo) return null;
+    const propio = POR_MODULO[modulo.id];
+    if (propio) return propio;
     const cfg = configModulo(modulo.id);
     const estados = cfg.estados.map((e) => `“${e.texto}”`).join(", ");
     const cerrados = cfg.estados.filter((e) => cfg.cerrados.includes(e.clave)).map((e) => `“${e.texto}”`).join(", ");

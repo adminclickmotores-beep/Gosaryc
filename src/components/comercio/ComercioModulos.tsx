@@ -6,35 +6,45 @@ import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
+import { CLASE_NIVEL, diasPara, nivelVence, textoVence, type NivelVence } from "@/lib/lotes-comercio";
 
-type Producto = Tables<"com_productos">;
+export type Producto = Tables<"com_productos">;
 
-const dinero = (n: number) =>
+export const dinero = (n: number) =>
   new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
-const campo =
+export const campo =
   "w-full rounded-lg border border-glass-border bg-glass/40 px-3 py-2.5 text-base text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary/50";
-const boton =
+export const boton =
   "inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-50";
-const botonSec =
+export const botonSec =
   "inline-flex items-center justify-center gap-2 rounded-lg border border-glass-border px-3 py-2 text-sm text-foreground hover:bg-glass/40 disabled:opacity-50";
-const num = (s: string): number => {
+export const num = (s: string): number => {
   const n = Number(s.replace(",", "."));
   return Number.isFinite(n) ? n : 0;
 };
 
 // ---- Unidades y conversión (igual que en la base de datos) ----
-const UNIDADES = ["und", "caja", "g", "kg", "lb", "cm", "m", "ml", "l"] as const;
-const FAMILIA: Record<string, string> = { g: "masa", kg: "masa", lb: "masa", cm: "longitud", m: "longitud", ml: "volumen", l: "volumen", und: "conteo", caja: "conteo" };
-const NOMBRE_UNIDAD: Record<string, string> = {
+export const UNIDADES = ["und", "caja", "g", "kg", "lb", "cm", "m", "ml", "l"] as const;
+export const FAMILIA: Record<string, string> = { g: "masa", kg: "masa", lb: "masa", cm: "longitud", m: "longitud", ml: "volumen", l: "volumen", und: "conteo", caja: "conteo" };
+export const NOMBRE_UNIDAD: Record<string, string> = {
   und: "Unidad", caja: "Caja", g: "Gramo", kg: "Kilo", lb: "Libra", cm: "Centímetro", m: "Metro", ml: "Mililitro", l: "Litro",
 };
 
-function unidadesDe(p: Producto): string[] {
+/** Ubicación física en la bodega: Pasillo / Estante / Nivel. */
+export function ubicacion(p: Producto): string {
+  const partes: string[] = [];
+  if (p.ubicacion_pasillo) partes.push(`Pasillo ${p.ubicacion_pasillo}`);
+  if (p.ubicacion_estante) partes.push(`Estante ${p.ubicacion_estante}`);
+  if (p.ubicacion_nivel) partes.push(`Nivel ${p.ubicacion_nivel}`);
+  return partes.join(" · ");
+}
+
+export function unidadesDe(p: Producto): string[] {
   const fam = FAMILIA[p.unidad_base];
   return UNIDADES.filter((u) => FAMILIA[u] === fam && (u !== "caja" || p.unidades_por_caja !== null || p.unidad_base === "caja"));
 }
 
-function convertir(cant: number, de: string, a: string, caja: number | null): number | null {
+export function convertir(cant: number, de: string, a: string, caja: number | null): number | null {
   if (de === a) return cant;
   if (FAMILIA[de] !== FAMILIA[a]) return null;
   const f = (u: string): number | null =>
@@ -45,10 +55,10 @@ function convertir(cant: number, de: string, a: string, caja: number | null): nu
   return (cant * x) / y;
 }
 
-type Linea = { p: Producto; cantidad: string; unidad: string };
+export type Linea = { p: Producto; cantidad: string; unidad: string };
 type Calculo = { base: number; impuesto: number; total: number; cantBase: number; error: string | null };
 
-function precioDe(p: Producto, tipo: string): number {
+export function precioDe(p: Producto, tipo: string): number {
   if (tipo === "mayorista") return p.precio_mayorista ?? p.precio_detal;
   if (tipo === "especial") return p.precio_especial ?? p.precio_detal;
   return p.precio_detal;
@@ -76,7 +86,7 @@ function calcular(l: Linea, tipo: string): Calculo {
   return { base, impuesto: imp, total, cantBase: cb, error };
 }
 
-function Encabezado({ titulo, texto }: { titulo: string; texto: string }) {
+export function Encabezado({ titulo, texto }: { titulo: string; texto: string }) {
   return (
     <div className="mb-5">
       <h1 className="font-display text-2xl text-foreground">{titulo}</h1>
@@ -85,7 +95,7 @@ function Encabezado({ titulo, texto }: { titulo: string; texto: string }) {
   );
 }
 
-function Campo({ etiqueta, children }: { etiqueta: string; children: ReactNode }) {
+export function Campo({ etiqueta, children }: { etiqueta: string; children: ReactNode }) {
   return (
     <label className="block text-sm text-muted-foreground">
       <span className="mb-1 block">{etiqueta}</span>
@@ -94,7 +104,7 @@ function Campo({ etiqueta, children }: { etiqueta: string; children: ReactNode }
   );
 }
 
-function Cargando() {
+export function Cargando() {
   return (
     <div className="flex min-h-[30dvh] items-center justify-center">
       <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -102,7 +112,7 @@ function Cargando() {
   );
 }
 
-function usarProductos() {
+export function usarProductos() {
   const [productos, setProductos] = useState<Producto[]>([]);
   const [cargando, setCargando] = useState(true);
   const cargar = useCallback(async () => {
@@ -116,7 +126,7 @@ function usarProductos() {
   return { productos, cargando, recargar: cargar };
 }
 
-const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] ?? c);
+export const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] ?? c);
 
 type Ticket = {
   numero: string;
@@ -170,6 +180,9 @@ export function ProductosComercial() {
   const [stock, setStock] = useState("");
   const [minimo, setMinimo] = useState("");
   const [costo, setCosto] = useState("");
+  const [pasillo, setPasillo] = useState("");
+  const [estante, setEstante] = useState("");
+  const [nivel, setNivel] = useState("");
   const [guardando, setGuardando] = useState(false);
 
   const elegirImpuesto = (v: string) => {
@@ -197,6 +210,9 @@ export function ProductosComercial() {
       stock: Math.max(num(stock), 0),
       stock_minimo: Math.max(num(minimo), 0),
       costo: Math.max(num(costo), 0),
+      ubicacion_pasillo: pasillo.trim() || null,
+      ubicacion_estante: estante.trim() || null,
+      ubicacion_nivel: nivel.trim() || null,
     });
     setGuardando(false);
     if (error) {
@@ -204,7 +220,7 @@ export function ProductosComercial() {
     }
     toast.success("Producto guardado.");
     setNombre(""); setBarras(""); setSku(""); setPorCaja(""); setDetal(""); setMayorista(""); setEspecial("");
-    setStock(""); setMinimo(""); setCosto("");
+    setStock(""); setMinimo(""); setCosto(""); setPasillo(""); setEstante(""); setNivel("");
     void recargar();
   };
 
@@ -264,6 +280,9 @@ export function ProductosComercial() {
           <Campo etiqueta="Porcentaje (%)"><input className={campo} inputMode="decimal" value={pct} disabled={impuesto === "exento"} onChange={(e) => setPct(e.target.value)} /></Campo>
           <Campo etiqueta="Costo (por unidad del inventario)"><input className={campo} inputMode="decimal" value={costo} onChange={(e) => setCosto(e.target.value)} /></Campo>
           <Campo etiqueta="Stock mínimo"><input className={campo} inputMode="decimal" value={minimo} onChange={(e) => setMinimo(e.target.value)} /></Campo>
+          <Campo etiqueta="Ubicación: pasillo"><input className={campo} placeholder="Ej: 3" value={pasillo} onChange={(e) => setPasillo(e.target.value)} /></Campo>
+          <Campo etiqueta="Ubicación: estante"><input className={campo} placeholder="Ej: B" value={estante} onChange={(e) => setEstante(e.target.value)} /></Campo>
+          <Campo etiqueta="Ubicación: nivel"><input className={campo} placeholder="Ej: 2" value={nivel} onChange={(e) => setNivel(e.target.value)} /></Campo>
         </div>
         <label className="flex items-center gap-2 text-sm text-foreground">
           <input type="checkbox" checked={incluye} onChange={(e) => setIncluye(e.target.checked)} /> Los precios ya incluyen el impuesto
@@ -283,6 +302,7 @@ export function ProductosComercial() {
                 Detal {dinero(p.precio_detal)}{p.precio_mayorista !== null ? ` · Mayorista ${dinero(p.precio_mayorista)}` : ""}{p.precio_especial !== null ? ` · Especial ${dinero(p.precio_especial)}` : ""}
                 {" "}por {NOMBRE_UNIDAD[p.unidad_base].toLowerCase()} · {p.tipo_impuesto === "exento" ? "Exento" : `${p.tipo_impuesto === "iva" ? "IVA" : "Impoconsumo"} ${p.impuesto_pct}%`}
               </p>
+              {ubicacion(p) && <p className="break-words text-xs text-primary">{ubicacion(p)}</p>}
             </div>
             <span className={`text-sm ${p.stock <= p.stock_minimo ? "text-destructive" : "text-foreground"}`}>
               Stock: {Math.round(p.stock * 1000) / 1000} {p.unidad_base}
@@ -319,10 +339,39 @@ export function PosComercial() {
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [recibido, setRecibido] = useState("");
 
+  const [vencen, setVencen] = useState<Record<string, { dias: number; lote: string; nivel: NivelVence }>>({});
+
   const enfocar = () => window.setTimeout(() => lector.current?.focus(), 30);
   useEffect(() => {
     enfocar();
   }, []);
+
+  // Alertas de vencimiento: el lote que vence primero de cada producto (el que el FIFO vende primero).
+  useEffect(() => {
+    let vivo = true;
+    void (async () => {
+      const { data } = await supabase
+        .from("com_lotes")
+        .select("producto_id, numero_lote, vence")
+        .gt("cantidad_actual", 0)
+        .not("vence", "is", null)
+        .order("vence");
+      if (!vivo) return;
+      const m: Record<string, { dias: number; lote: string; nivel: NivelVence }> = {};
+      for (const l of data ?? []) {
+        if (m[l.producto_id]) continue;
+        const dias = diasPara(l.vence);
+        if (dias === null) continue;
+        const nivel = nivelVence(dias);
+        if (nivel === "ok" || nivel === "sin") continue;
+        m[l.producto_id] = { dias, lote: l.numero_lote, nivel };
+      }
+      setVencen(m);
+    })();
+    return () => {
+      vivo = false;
+    };
+  }, [productos]);
 
   const activos = useMemo(() => productos.filter((p) => p.activo), [productos]);
 
@@ -450,13 +499,21 @@ export function PosComercial() {
           {sugeridos.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {sugeridos.map((p) => (
-                <button key={p.id} className={botonSec} onClick={() => { agregar(p); setCodigo(""); enfocar(); }}>
-                  {p.nombre} · {dinero(precioDe(p, tipoPrecio))}/{p.unidad_base}
+                <button key={p.id} className={`${botonSec} flex-col items-start gap-0.5 text-left`} onClick={() => { agregar(p); setCodigo(""); enfocar(); }}>
+                  <span>{p.nombre} · {dinero(precioDe(p, tipoPrecio))}/{p.unidad_base}</span>
+                  {ubicacion(p) && <span className="text-xs text-primary">{ubicacion(p)}</span>}
+                  {vencen[p.id] && <span className={`rounded border px-1.5 text-xs ${CLASE_NIVEL[vencen[p.id].nivel]}`}>{textoVence(vencen[p.id].dias)}</span>}
                 </button>
               ))}
             </div>
           )}
           {activos.length === 0 && <p className="text-sm text-muted-foreground">Primero crea tus productos en “Productos y precios”.</p>}
+          {Object.values(vencen).some((v) => v.nivel === "vencido" || v.nivel === "7") && (
+            <p className="flex items-start gap-2 rounded-lg border border-destructive/50 p-2 text-sm text-destructive">
+              <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
+              Hay productos vencidos o que vencen en 7 días o menos. Revisa “Lotes y vencimientos”.
+            </p>
+          )}
 
           <div className="space-y-2">
             {lineas.length === 0 && <p className="text-sm text-muted-foreground">La cuenta está vacía. Escanea un producto para empezar.</p>}
@@ -466,6 +523,12 @@ export function PosComercial() {
                   <p className="min-w-0 break-words text-sm font-medium text-foreground">{l.p.nombre}</p>
                   <button aria-label="Quitar" onClick={() => quitar(l.p.id)} className="shrink-0 text-muted-foreground"><Trash2 className="h-4 w-4" /></button>
                 </div>
+                {ubicacion(l.p) && <p className="text-xs text-primary">Ubicación: {ubicacion(l.p)}</p>}
+                {vencen[l.p.id] && (
+                  <p className={`inline-block rounded border px-2 py-0.5 text-xs ${CLASE_NIVEL[vencen[l.p.id].nivel]}`}>
+                    Lote {vencen[l.p.id].lote}: {textoVence(vencen[l.p.id].dias)}. Se vende primero (FIFO).
+                  </p>
+                )}
                 <div className="flex flex-wrap items-center gap-2">
                   <button aria-label="Menos" className="rounded-full border border-glass-border p-1.5 text-foreground"
                     onClick={() => cambiarLinea(l.p.id, { cantidad: String(Math.max(num(l.cantidad) - 1, 0)) })}><Minus className="h-3.5 w-3.5" /></button>

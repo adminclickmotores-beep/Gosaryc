@@ -2257,6 +2257,10 @@ export type Database = {
       }
       com_productos: {
         Row: {
+          ubicacion_pasillo: string | null
+          ubicacion_estante: string | null
+          ubicacion_nivel: string | null
+          controla_lotes: boolean
           activo: boolean
           codigo_barras: string | null
           costo: number
@@ -2278,6 +2282,10 @@ export type Database = {
           unidades_por_caja: number | null
         }
         Insert: {
+          ubicacion_pasillo?: string | null
+          ubicacion_estante?: string | null
+          ubicacion_nivel?: string | null
+          controla_lotes?: boolean
           activo?: boolean
           codigo_barras?: string | null
           costo?: number
@@ -2299,6 +2307,10 @@ export type Database = {
           unidades_por_caja?: number | null
         }
         Update: {
+          ubicacion_pasillo?: string | null
+          ubicacion_estante?: string | null
+          ubicacion_nivel?: string | null
+          controla_lotes?: boolean
           activo?: boolean
           codigo_barras?: string | null
           costo?: number
@@ -2501,6 +2513,255 @@ export type Database = {
           plazo_dias?: number
           telefono?: string | null
           tipo_negocio?: string | null
+        }
+        Relationships: []
+      }
+      com_lotes: {
+        Row: {
+          cantidad_actual: number
+          cantidad_inicial: number
+          costo_unitario: number
+          created_at: string
+          id: string
+          numero_lote: string
+          owner_id: string | null
+          producto_id: string
+          registrado_por: string | null
+          tipo_negocio: string | null
+          vence: string | null
+        }
+        Insert: {
+          cantidad_actual: number
+          cantidad_inicial: number
+          costo_unitario?: number
+          created_at?: string
+          id?: string
+          numero_lote: string
+          owner_id?: string | null
+          producto_id: string
+          registrado_por?: string | null
+          tipo_negocio?: string | null
+          vence?: string | null
+        }
+        Update: {
+          cantidad_actual?: number
+          cantidad_inicial?: number
+          costo_unitario?: number
+          created_at?: string
+          id?: string
+          numero_lote?: string
+          owner_id?: string | null
+          producto_id?: string
+          registrado_por?: string | null
+          tipo_negocio?: string | null
+          vence?: string | null
+        }
+        Relationships: []
+      }
+      com_cotizaciones: {
+        Row: {
+          base: number
+          cliente: string
+          created_at: string
+          descuento: number
+          descuento_pct: number
+          estado: string
+          id: string
+          impoconsumo: number
+          iva: number
+          notas: string | null
+          numero: string
+          owner_id: string | null
+          registrado_por: string | null
+          telefono: string | null
+          tipo_negocio: string | null
+          tipo_precio: string
+          total: number
+          venta_id: string | null
+          vigencia: string | null
+        }
+        Insert: {
+          base?: number
+          cliente: string
+          created_at?: string
+          descuento?: number
+          descuento_pct?: number
+          estado?: string
+          id?: string
+          impoconsumo?: number
+          iva?: number
+          notas?: string | null
+          numero: string
+          owner_id?: string | null
+          registrado_por?: string | null
+          telefono?: string | null
+          tipo_negocio?: string | null
+          tipo_precio?: string
+          total?: number
+          venta_id?: string | null
+          vigencia?: string | null
+        }
+        Update: {
+          base?: number
+          cliente?: string
+          created_at?: string
+          descuento?: number
+          descuento_pct?: number
+          estado?: string
+          id?: string
+          impoconsumo?: number
+          iva?: number
+          notas?: string | null
+          numero?: string
+          owner_id?: string | null
+          registrado_por?: string | null
+          telefono?: string | null
+          tipo_negocio?: string | null
+          tipo_precio?: string
+          total?: number
+          venta_id?: string | null
+          vigencia?: string | null
+        }
+        Relationships: []
+      }
+      com_cotizacion_items: {
+        Row: {
+          base: number
+          cantidad: number
+          cotizacion_id: string
+          created_at: string
+          id: string
+          impuesto: number
+          nombre: string
+          owner_id: string | null
+          precio_unitario: number
+          producto_id: string
+          tipo_negocio: string | null
+          total: number
+          unidad: string
+        }
+        Insert: {
+          base?: number
+          cantidad: number
+          cotizacion_id: string
+          created_at?: string
+          id?: string
+          impuesto?: number
+          nombre: string
+          owner_id?: string | null
+          precio_unitario?: number
+          producto_id: string
+          tipo_negocio?: string | null
+          total?: number
+          unidad: string
+        }
+        Update: {
+          base?: number
+          cantidad?: number
+          cotizacion_id?: string
+          created_at?: string
+          id?: string
+          impuesto?: number
+          nombre?: string
+          owner_id?: string | null
+          precio_unitario?: number
+          producto_id?: string
+          tipo_negocio?: string | null
+          total?: number
+          unidad?: string
+        }
+        Relationships: []
+      }
+      com_despostes: {
+        Row: {
+          costo_kilo_limpio: number
+          costo_total: number
+          created_at: string
+          descripcion: string
+          id: string
+          merma_kg: number
+          merma_valor: number
+          notas: string | null
+          origen_id: string | null
+          owner_id: string | null
+          peso_entrada: number
+          peso_util: number
+          registrado_por: string | null
+          rendimiento_pct: number
+          tipo_negocio: string | null
+        }
+        Insert: {
+          costo_kilo_limpio?: number
+          costo_total: number
+          created_at?: string
+          descripcion: string
+          id?: string
+          merma_kg?: number
+          merma_valor?: number
+          notas?: string | null
+          origen_id?: string | null
+          owner_id?: string | null
+          peso_entrada: number
+          peso_util?: number
+          registrado_por?: string | null
+          rendimiento_pct?: number
+          tipo_negocio?: string | null
+        }
+        Update: {
+          costo_kilo_limpio?: number
+          costo_total?: number
+          created_at?: string
+          descripcion?: string
+          id?: string
+          merma_kg?: number
+          merma_valor?: number
+          notas?: string | null
+          origen_id?: string | null
+          owner_id?: string | null
+          peso_entrada?: number
+          peso_util?: number
+          registrado_por?: string | null
+          rendimiento_pct?: number
+          tipo_negocio?: string | null
+        }
+        Relationships: []
+      }
+      com_desposte_items: {
+        Row: {
+          created_at: string
+          desposte_id: string
+          id: string
+          nombre: string
+          owner_id: string | null
+          peso_kg: number
+          producto_id: string | null
+          tipo: string
+          tipo_negocio: string | null
+          valor: number
+        }
+        Insert: {
+          created_at?: string
+          desposte_id: string
+          id?: string
+          nombre: string
+          owner_id?: string | null
+          peso_kg: number
+          producto_id?: string | null
+          tipo: string
+          tipo_negocio?: string | null
+          valor?: number
+        }
+        Update: {
+          created_at?: string
+          desposte_id?: string
+          id?: string
+          nombre?: string
+          owner_id?: string | null
+          peso_kg?: number
+          producto_id?: string | null
+          tipo?: string
+          tipo_negocio?: string | null
+          valor?: number
         }
         Relationships: []
       }
@@ -6767,6 +7028,39 @@ export type Database = {
         Returns: Json
       }
       com_estado_credito: { Args: { p_cliente: string; p_telefono: string }; Returns: Json }
+      com_ingresar_lote: {
+        Args: { p_producto: string; p_lote: string; p_vence: string | null; p_cantidad: number; p_unidad: string; p_costo: number }
+        Returns: string
+      }
+      com_crear_cotizacion: {
+        Args: {
+          p_items: Json
+          p_cliente: string
+          p_telefono: string
+          p_tipo_precio: string
+          p_descuento_pct: number
+          p_vigencia_dias: number
+          p_notas: string
+        }
+        Returns: Json
+      }
+      com_estado_cotizacion: { Args: { p_id: string; p_estado: string }; Returns: undefined }
+      com_convertir_cotizacion: {
+        Args: { p_id: string; p_metodo: string; p_autorizar: boolean; p_motivo: string }
+        Returns: Json
+      }
+      com_registrar_desposte: {
+        Args: {
+          p_origen: string | null
+          p_descripcion: string
+          p_peso_entrada: number
+          p_costo_total: number
+          p_salidas: Json
+          p_mermas: Json
+          p_notas: string
+        }
+        Returns: Json
+      }
       pan_registrar_horneada: {
         Args: { p_receta: string; p_lotes: number; p_horneado_por: string; p_notas: string }
         Returns: string

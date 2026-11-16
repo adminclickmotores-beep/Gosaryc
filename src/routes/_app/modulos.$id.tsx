@@ -24,6 +24,7 @@ import {
   VacunasClinica,
 } from "@/components/clinica/ClinicaModulos";
 import { PosComercial, ProductosComercial } from "@/components/comercio/ComercioModulos";
+import { CotizadorFerreteria, DespostesFrescos, LotesComercial } from "@/components/comercio/ComercioEspecial";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
@@ -83,6 +84,9 @@ function ModuloPage() {
   if (id === "pan_turnos") return <TurnosPan />;
   if (id === "com_pos") return <PosComercial />;
   if (id === "com_productos") return <ProductosComercial />;
+  if (id === "com_lotes") return <LotesComercial />;
+  if (id === "com_cotizador") return <CotizadorFerreteria />;
+  if (id === "com_desposte") return <DespostesFrescos />;
   if (id === "cl_agenda") return <AgendaClinica />;
   if (id === "cl_pacientes") return <PacientesClinica />;
   if (id === "cl_historias") return <HistoriasClinica />;

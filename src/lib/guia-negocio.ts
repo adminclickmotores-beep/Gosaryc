@@ -298,7 +298,8 @@ GUIAS_NEGOCIO.ferreteria = {
   frase: "Cada referencia a la mano, cada obra bien surtida.",
   pasos: [
     { titulo: "Carga tus referencias", texto: "En “Referencias e inventario” agrega cada producto con su unidad (metro, bulto, galón), costo y margen." },
-    { titulo: "Cotiza a constructores", texto: "En “Cotizaciones de materiales” arma la lista de una obra con descuento y flete." },
+    { titulo: "Ubica cada tornillo", texto: "En “Productos y precios” anota pasillo, estante y nivel de cada producto: el POS lo muestra para encontrarlo rápido." },
+    { titulo: "Cotiza a constructores", texto: "En “Cotizador de materiales” arma la lista de la obra con precio mayorista y descuento, envíala por WhatsApp o PDF y conviértela en venta con un clic." },
     { titulo: "Despacha a la obra", texto: "En “Despachos a obra” anota la remisión, el conductor y quién recibe." },
     { titulo: "Cobra a tiempo", texto: "Usa “Cartera y fiados” para los constructores de confianza y actualiza las listas de precios de tus proveedores." },
   ],
@@ -307,7 +308,7 @@ GUIAS_NEGOCIO.supermercado = {
   frase: "Góndolas llenas, cero producto vencido.",
   pasos: [
     { titulo: "Carga tus productos", texto: "En “Productos y código de barras” registra categoría, IVA y stock mínimo." },
-    { titulo: "Vigila los vencimientos", texto: "En “Productos por vencer” anota lote y fecha, y decide si rotar, poner en descuento o devolver." },
+    { titulo: "Registra lotes y vencimientos", texto: "En “Lotes y vencimientos” anota el lote y la fecha al recibir mercancía. El POS vende primero lo que vence antes y avisa a 7, 15 y 30 días." },
     { titulo: "Crea promociones", texto: "En “Promociones” define 2x1 o precios especiales con vigencia." },
     { titulo: "Repón a tiempo", texto: "En “Reposición” revisa qué se agotó y el día de visita de cada proveedor." },
   ],
@@ -316,7 +317,8 @@ GUIAS_NEGOCIO.carniceria = {
   frase: "Producto fresco, merma controlada.",
   pasos: [
     { titulo: "Registra tus productos por peso", texto: "En “Productos frescos por peso” anota existencias en kilos, costo por kilo y merma esperada." },
-    { titulo: "Controla el frío", texto: "En “Cadena de frío” registra la temperatura de neveras y cuartos fríos cada día." },
+    { titulo: "Registra el desposte", texto: "En “Desposte y rendimiento” anota lo que entra (canal o bulto) y los cortes que salen con hueso y merma: calcula tu costo real por kilo limpio." },
+    { titulo: "Controla lotes y frío", texto: "En “Lotes y vencimientos” rota primero lo que vence antes, y en “Cadena de frío” anota la temperatura de neveras cada día." },
     { titulo: "Anota las mermas", texto: "En “Mermas y pérdidas” registra lo que se maduró, venció o se recortó." },
     { titulo: "Recibe pedidos", texto: "En “Pedidos y domicilios por peso” guarda el pedido con su peso, dirección y hora de entrega." },
   ],
