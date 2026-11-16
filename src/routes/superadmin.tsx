@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, CalendarPlus, ShieldCheck } from "lucide-react";
+import { ArrowLeft, CalendarPlus, KeyRound, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -91,6 +91,18 @@ function SuperAdminPage() {
     if (error) return toast.error("No se pudo guardar el cambio.");
     toast.success("Cambio guardado.");
     cargar();
+  };
+
+  // Genera la clave única del negocio (anula la anterior) y deja listo el envío por WhatsApp y correo.
+  const generarClave = async (ownerId: string, nombre: string, correo: string, telefono: string) => {
+    const { data, error } = await supabase.rpc("generar_clave_activacion", { p_owner: ownerId });
+    if (error || !data) return toast.error(error?.message || "No se pudo generar la clave.");
+    setEnvio({
+      correo,
+      telefono,
+      mensaje: `Hola ${nombre}, tu clave de activación de Gosaryc es ${data}. Pégala en el campo de renovación de tu licencia y pulsa Activar: quedará vigente por 1 año.`,
+    });
+    toast.success("Clave generada. Envíala al cliente.");
   };
 
   const verComprobante = async (p: Pago) => {
@@ -195,10 +207,10 @@ function SuperAdminPage() {
 
       {(pagos.length > 0 || envio) && (
         <GlassPanel className="space-y-3 p-4">
-          <h2 className="font-medium text-foreground">Pagos de licencia por revisar ({pagos.length})</h2>
+          <h2 className="font-medium text-foreground">Licencias por enviar y solicitudes ({pagos.length})</h2>
           {envio && (
             <div className="space-y-2 rounded-lg border border-primary/40 bg-glass/30 p-3">
-              <p className="text-sm text-foreground">Licencia aprobada. Envíala al administrador del negocio:</p>
+              <p className="text-sm text-foreground">Listo para enviar al administrador del negocio:</p>
               <p className="break-words text-xs text-muted-foreground">{envio.mensaje}</p>
               <div className="flex flex-wrap gap-2">
                 <button onClick={() => enviarWhatsapp(envio)} className="rounded-lg bg-primary px-3 py-2.5 text-xs font-medium text-primary-foreground">
@@ -351,6 +363,12 @@ function SuperAdminPage() {
                   {s?.correo_titular ?? "Sin correo"}
                 </p>
               </div>
+              <button
+                onClick={() => generarClave(oid, e.nombre, s?.correo_titular ?? "", e.whatsapp_cocina || e.telefono_pedidos || "")}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2.5 text-xs font-medium text-primary-foreground"
+              >
+                <KeyRound className="h-3.5 w-3.5" /> Generar clave de renovación (1 año)
+              </button>
               <div className="flex flex-wrap items-end gap-3">
                 <label className="space-y-1">
                   <span className="block text-xs text-muted-foreground">Plan</span>

@@ -195,17 +195,19 @@ function AppShell() {
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
-    (async () => {
-      const { data } = await supabase.from("suscripciones_negocio").select("estado, vence_el").maybeSingle();
+    const revisar = async () => {
+      const { data } = await supabase.from("suscripciones_negocio").select("estado, vence_en").maybeSingle();
       if (cancelled || !data) return;
-      const d = new Date();
-      const hoy = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
       if (data.estado === "suspendido") setBloqueo("suspendido");
-      else if (data.vence_el < hoy) setBloqueo("vencido");
+      else if (new Date(data.vence_en).getTime() <= Date.now()) setBloqueo("vencido");
       else setBloqueo(null);
-    })();
+    };
+    // Se valida al iniciar sesión y se vuelve a validar cada minuto mientras la app está abierta.
+    void revisar();
+    const t = setInterval(() => void revisar(), 60000);
     return () => {
       cancelled = true;
+      clearInterval(t);
     };
   }, [user?.id]);
 

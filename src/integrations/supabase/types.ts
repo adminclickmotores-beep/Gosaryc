@@ -4027,8 +4027,36 @@ export type Database = {
         }
         Relationships: []
       }
+      claves_activacion: {
+        Row: {
+          clave: string
+          created_at: string
+          estado: string
+          id: string
+          owner_id: string
+          usada_en: string | null
+        }
+        Insert: {
+          clave: string
+          created_at?: string
+          estado?: string
+          id?: string
+          owner_id: string
+          usada_en?: string | null
+        }
+        Update: {
+          clave?: string
+          created_at?: string
+          estado?: string
+          id?: string
+          owner_id?: string
+          usada_en?: string | null
+        }
+        Relationships: []
+      }
       suscripciones_negocio: {
         Row: {
+          vence_en: string
           correo_titular: string | null
           created_at: string
           dias_extra_usados: boolean
@@ -4042,6 +4070,7 @@ export type Database = {
           vence_el: string
         }
         Insert: {
+          vence_en?: string
           correo_titular?: string | null
           created_at?: string
           dias_extra_usados?: boolean
@@ -4055,6 +4084,7 @@ export type Database = {
           vence_el?: string
         }
         Update: {
+          vence_en?: string
           correo_titular?: string | null
           created_at?: string
           dias_extra_usados?: boolean
@@ -4760,6 +4790,9 @@ export type Database = {
       }
       aprobar_solicitud_licencia: { Args: { p_id: string; p_tipo: string }; Returns: string }
       aprobar_pago_licencia: { Args: { p_id: string }; Returns: Json }
+      generar_clave_activacion: { Args: { p_owner: string }; Returns: string }
+      activar_licencia: { Args: { p_clave: string }; Returns: Json }
+      mi_licencia_vigente: { Args: never; Returns: Json }
       mi_acceso: { Args: never; Returns: Json }
       mi_negocio_id: { Args: never; Returns: string }
       ret_permiso: { Args: { p: string }; Returns: boolean }

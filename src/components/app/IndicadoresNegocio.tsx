@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, BellRing, ListChecks, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
@@ -74,18 +74,28 @@ export function IndicadoresNegocio({ tipo }: { tipo: TipoNegocio }) {
   }, [registros, hoy, titulos]);
 
   const tarjetas = [
-    { t: "Registros activos", v: String(registros.length) },
-    { t: "Pendiente en tus módulos", v: dinero(resumen.pendiente) },
-    { t: "Requieren atención", v: String(resumen.alertas.length) },
+    { t: "Registros activos", v: String(registros.length), tono: 165, Icono: ListChecks },
+    { t: "Pendiente en tus módulos", v: dinero(resumen.pendiente), tono: 75, Icono: Wallet },
+    { t: "Requieren atención", v: String(resumen.alertas.length), tono: 20, Icono: BellRing },
   ];
 
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {tarjetas.map((c) => (
-          <GlassPanel key={c.t} className="min-w-0 p-4">
-            <p className="text-xs text-muted-foreground">{c.t}</p>
-            <p className="truncate text-lg font-medium text-foreground">{c.v}</p>
+          <GlassPanel
+            key={c.t}
+            hover="lift"
+            className="menu-card flex min-w-0 items-center gap-3 p-4"
+            style={{ "--tono": c.tono } as React.CSSProperties}
+          >
+            <span className="menu-card-icon">
+              <c.Icono className="h-5 w-5 shrink-0" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground">{c.t}</p>
+              <p className="truncate text-lg font-semibold text-foreground">{c.v}</p>
+            </div>
           </GlassPanel>
         ))}
       </div>
