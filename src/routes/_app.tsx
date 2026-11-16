@@ -25,6 +25,7 @@ import { GuidedTour } from "@/components/tour/GuidedTour";
 import { RouteProgressBar } from "@/components/app/RouteProgressBar";
 import { BrandHexLogo } from "@/components/app/BrandHexLogo";
 import { EstadoSinConexion } from "@/components/app/EstadoSinConexion";
+import { LicenciaNegocio } from "@/components/app/LicenciaNegocio";
 import { BRAND } from "@/lib/brand";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
@@ -424,6 +425,7 @@ function AppShell() {
             }`}
           >
             <InstructivoPagina />
+            {!bloqueo && <LicenciaNegocio modo="aviso" />}
             {bloqueo ? (
               <div className="mx-auto mt-10 max-w-md rounded-2xl border border-glass-border bg-glass/30 p-8 text-center">
                 <Lock className="mx-auto h-8 w-8 text-destructive" />
@@ -435,6 +437,7 @@ function AppShell() {
                     ? "Tu cuenta está suspendida por falta de pago. Comunícate con Gosaryc para reactivarla."
                     : "El periodo de uso de tu cuenta venció. Para seguir con acceso ilimitado, la licencia cuesta $100.000 COP al año e incluye soporte, instalación local y web. Comunícate con Gosaryc para renovarla."}
                 </p>
+                <LicenciaNegocio modo="bloqueo" />
               </div>
             ) : sinAcceso ? (
               <div className="mx-auto mt-10 max-w-md rounded-2xl border border-glass-border bg-glass/30 p-8 text-center">

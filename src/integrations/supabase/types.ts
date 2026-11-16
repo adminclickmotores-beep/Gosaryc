@@ -3991,31 +3991,79 @@ export type Database = {
           },
         ]
       }
-      suscripciones_negocio: {
+      pagos_licencia: {
         Row: {
+          comprobante_url: string | null
+          correo: string | null
           created_at: string
           estado: string
+          id: string
+          monto: number
+          owner_id: string
+          revisado_en: string | null
+          tipo: string
+        }
+        Insert: {
+          comprobante_url?: string | null
+          correo?: string | null
+          created_at?: string
+          estado?: string
+          id?: string
+          monto?: number
+          owner_id?: string
+          revisado_en?: string | null
+          tipo: string
+        }
+        Update: {
+          comprobante_url?: string | null
+          correo?: string | null
+          created_at?: string
+          estado?: string
+          id?: string
+          monto?: number
+          owner_id?: string
+          revisado_en?: string | null
+          tipo?: string
+        }
+        Relationships: []
+      }
+      suscripciones_negocio: {
+        Row: {
+          correo_titular: string | null
+          created_at: string
+          dias_extra_usados: boolean
+          estado: string
+          inicio: string
           notas: string | null
           owner_id: string
           plan: string
+          precio: number
           updated_at: string
           vence_el: string
         }
         Insert: {
+          correo_titular?: string | null
           created_at?: string
+          dias_extra_usados?: boolean
           estado?: string
+          inicio?: string
           notas?: string | null
           owner_id: string
           plan?: string
+          precio?: number
           updated_at?: string
           vence_el?: string
         }
         Update: {
+          correo_titular?: string | null
           created_at?: string
+          dias_extra_usados?: boolean
           estado?: string
+          inicio?: string
           notas?: string | null
           owner_id?: string
           plan?: string
+          precio?: number
           updated_at?: string
           vence_el?: string
         }
@@ -4711,6 +4759,7 @@ export type Database = {
         Returns: Json
       }
       aprobar_solicitud_licencia: { Args: { p_id: string; p_tipo: string }; Returns: string }
+      aprobar_pago_licencia: { Args: { p_id: string }; Returns: Json }
       mi_acceso: { Args: never; Returns: Json }
       mi_negocio_id: { Args: never; Returns: string }
       ret_permiso: { Args: { p: string }; Returns: boolean }

@@ -21,7 +21,11 @@ const PLANES: { clave: string; texto: string }[] = [
   { clave: "prueba", texto: "Prueba" },
   { clave: "emprendedor", texto: "Emprendedor" },
   { clave: "pro", texto: "Pro" },
+  { clave: "anual", texto: "Licencia anual ($100.000)" },
 ];
+
+type Pago = Tables<"pagos_licencia">;
+type EnvioLicencia = { correo: string; telefono: string; mensaje: string };
 
 const campo =
   "rounded-lg border border-glass-border bg-glass/40 px-3 py-2 text-base text-foreground outline-none focus:border-primary/50";
@@ -44,6 +48,8 @@ function SuperAdminPage() {
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [subs, setSubs] = useState<Record<string, Suscripcion>>({});
   const [hoy, setHoy] = useState("");
+  const [pagos, setPagos] = useState<Pago[]>([]);
+  const [envio, setEnvio] = useState<EnvioLicencia | null>(null);
   const [busca, setBusca] = useState("");
   const enLinea = useUsuariosEnLinea(permitido === true);
 
@@ -61,11 +67,13 @@ function SuperAdminPage() {
   }, [loading, session, nav]);
 
   const cargar = useCallback(async () => {
-    const [a, b] = await Promise.all([
+    const [a, b, c] = await Promise.all([
       supabase.from("negocio_config").select("*").order("created_at", { ascending: false }),
       supabase.from("suscripciones_negocio").select("*"),
+      supabase.from("pagos_licencia").select("*").eq("estado", "pendiente").order("created_at", { ascending: true }),
     ]);
     if (a.error || b.error) toast.error("No se pudieron cargar las empresas.");
+    setPagos(c.data ?? []);
     setEmpresas(a.data ?? []);
     const mapa: Record<string, Suscripcion> = {};
     for (const s of b.data ?? []) mapa[s.owner_id] = s;
@@ -83,6 +91,49 @@ function SuperAdminPage() {
     if (error) return toast.error("No se pudo guardar el cambio.");
     toast.success("Cambio guardado.");
     cargar();
+  };
+
+  const verComprobante = async (p: Pago) => {
+    if (!p.comprobante_url) return;
+    const { data, error } = await supabase.storage.from("comprobantes_pago").createSignedUrl(p.comprobante_url, 300);
+    if (error || !data) return toast.error("No se pudo abrir el comprobante.");
+    window.open(data.signedUrl, "_blank", "noopener");
+  };
+
+  const aprobarPago = async (p: Pago) => {
+    const { data, error } = await supabase.rpc("aprobar_pago_licencia", { p_id: p.id });
+    if (error) return toast.error(error.message || "No se pudo aprobar el pago.");
+    const r = (data ?? {}) as { correo?: string; vence_el?: string; tipo?: string };
+    const emp = empresas.find((e) => e.owner_id === p.owner_id);
+    const tel = emp?.whatsapp_cocina || emp?.telefono_pedidos || "";
+    const detalle =
+      r.tipo === "dias_extra"
+        ? `Aprobamos tus días adicionales. Tu licencia vence el ${r.vence_el}.`
+        : `Recibimos tu pago. Tu licencia anual de Gosaryc está activa desde hoy y vence el ${r.vence_el}.`;
+    setEnvio({
+      correo: r.correo ?? p.correo ?? "",
+      telefono: tel,
+      mensaje: `Hola${emp?.nombre ? ` ${emp.nombre}` : ""}, ${detalle}`,
+    });
+    toast.success("Pago aprobado. Envía la licencia al cliente.");
+    cargar();
+  };
+
+  const rechazarPago = async (p: Pago) => {
+    const { error } = await supabase
+      .from("pagos_licencia")
+      .update({ estado: "rechazado", revisado_en: new Date().toISOString() })
+      .eq("id", p.id);
+    if (error) return toast.error("No se pudo rechazar el pago.");
+    toast.success("Pago rechazado.");
+    cargar();
+  };
+
+  const enviarWhatsapp = (x: EnvioLicencia) => {
+    const t = x.telefono.replace(/\D/g, "");
+    if (!t) return toast.error("Este negocio no tiene WhatsApp registrado.");
+    const numero = t.length === 10 ? `57${t}` : t;
+    window.open(`https://wa.me/${numero}?text=${encodeURIComponent(x.mensaje)}`, "_blank", "noopener");
   };
 
   if (loading || permitido === null) {
@@ -141,6 +192,60 @@ function SuperAdminPage() {
           </GlassPanel>
         ))}
       </div>
+
+      {(pagos.length > 0 || envio) && (
+        <GlassPanel className="space-y-3 p-4">
+          <h2 className="font-medium text-foreground">Pagos de licencia por revisar ({pagos.length})</h2>
+          {envio && (
+            <div className="space-y-2 rounded-lg border border-primary/40 bg-glass/30 p-3">
+              <p className="text-sm text-foreground">Licencia aprobada. Envíala al administrador del negocio:</p>
+              <p className="break-words text-xs text-muted-foreground">{envio.mensaje}</p>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => enviarWhatsapp(envio)} className="rounded-lg bg-primary px-3 py-2.5 text-xs font-medium text-primary-foreground">
+                  Enviar por WhatsApp
+                </button>
+                {envio.correo && (
+                  <a
+                    href={`mailto:${envio.correo}?subject=${encodeURIComponent("Tu licencia de Gosaryc")}&body=${encodeURIComponent(envio.mensaje)}`}
+                    className="rounded-lg border border-glass-border px-3 py-2.5 text-xs text-foreground"
+                  >
+                    Enviar por correo
+                  </a>
+                )}
+                <button onClick={() => setEnvio(null)} className="rounded-lg border border-glass-border px-3 py-2.5 text-xs text-muted-foreground">
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          )}
+          {pagos.map((p) => {
+            const emp = empresas.find((e) => e.owner_id === p.owner_id);
+            return (
+              <div key={p.id} className="space-y-2 rounded-lg border border-glass-border bg-glass/30 p-3">
+                <p className="break-words font-medium text-foreground">{emp?.nombre ?? "Negocio"}</p>
+                <p className="break-all text-sm text-foreground">{p.correo}</p>
+                <p className="text-xs text-muted-foreground">
+                  {p.tipo === "anual" ? "Licencia anual · $100.000" : "Solicita días adicionales (única vez)"} ·{" "}
+                  {new Date(p.created_at).toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" })}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {p.comprobante_url && (
+                    <button onClick={() => verComprobante(p)} className="rounded-lg border border-glass-border px-3 py-2.5 text-xs text-foreground">
+                      Ver comprobante
+                    </button>
+                  )}
+                  <button onClick={() => aprobarPago(p)} className="rounded-lg bg-primary px-3 py-2.5 text-xs font-medium text-primary-foreground">
+                    Aprobar y activar
+                  </button>
+                  <button onClick={() => rechazarPago(p)} className="rounded-lg border border-glass-border px-3 py-2.5 text-xs text-foreground">
+                    Rechazar
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </GlassPanel>
+      )}
 
       <GlassPanel className="space-y-3 p-4">
         <div className="flex items-center justify-between gap-3">
@@ -236,6 +341,14 @@ function SuperAdminPage() {
                 <p className="text-foreground">
                   <span className="text-xs text-muted-foreground">Vence el: </span>
                   {vence || "Sin fecha"}
+                </p>
+                <p className="text-foreground">
+                  <span className="text-xs text-muted-foreground">Inicio: </span>
+                  {s?.inicio ?? "Sin fecha"}
+                </p>
+                <p className="break-all text-foreground">
+                  <span className="text-xs text-muted-foreground">Correo titular: </span>
+                  {s?.correo_titular ?? "Sin correo"}
                 </p>
               </div>
               <div className="flex flex-wrap items-end gap-3">
