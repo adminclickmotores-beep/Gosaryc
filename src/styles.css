@@ -996,6 +996,32 @@ html.light .menu-card-icon {
   box-shadow: 0 6px 14px -8px oklch(0.55 0.15 var(--tono) / 0.7);
 }
 
+/* Menú lateral con tarjetas de colores (mismo tono que las tarjetas del inicio) */
+.nav-tarjeta {
+  background:
+    linear-gradient(135deg, oklch(0.62 0.17 var(--tono) / 0.2) 0%, oklch(0.62 0.17 var(--tono) / 0.04) 75%),
+    oklch(0.17 0.018 255 / 0.6);
+  border: 1px solid oklch(0.72 0.14 var(--tono) / 0.25);
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+.nav-tarjeta:hover {
+  border-color: oklch(0.78 0.15 var(--tono) / 0.6);
+  box-shadow: 0 10px 24px -14px oklch(0.65 0.17 var(--tono) / 0.7);
+}
+.nav-tarjeta.nav-activa {
+  border-color: oklch(0.8 0.15 var(--tono) / 0.85);
+  box-shadow: 0 0 0 1px oklch(0.75 0.15 var(--tono) / 0.35), 0 10px 24px -12px oklch(0.65 0.17 var(--tono) / 0.8);
+}
+.nav-tarjeta .menu-card-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.65rem;
+}
+html.light .nav-tarjeta {
+  background: linear-gradient(135deg, oklch(0.92 0.06 var(--tono) / 0.9) 0%, oklch(0.99 0.012 var(--tono)) 80%);
+  border-color: oklch(0.6 0.14 var(--tono) / 0.3);
+}
+
 /* GoIDE: oculta la insignia "Edit with Lovable" (v2) */
 #lovable-badge, [id^="lovable-badge"], [id*="lovable-badge"], [class*="lovable-badge"], aside[id*="lovable" i], a[href*="utm_source=lovable-badge"], a[href*="lovable.dev"][href*="utm_campaign=lovable-badge"] { display:none !important; visibility:hidden !important; opacity:0 !important; pointer-events:none !important }
 /* /GoIDE */

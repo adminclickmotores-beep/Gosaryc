@@ -46,44 +46,6 @@ type NavItem = {
   Icon: React.ComponentType<{ size?: number; className?: string }>;
 };
 
-function ActiveBloom() {
-  return (
-    <motion.span
-      aria-hidden
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
-      className="pointer-events-none absolute left-1/2 top-full mt-1.5 -translate-x-1/2"
-      style={{ width: "120%" }}
-    >
-      <motion.span
-        aria-hidden
-        initial={{ scaleX: 0.6, opacity: 0 }}
-        animate={{ scaleX: 1, opacity: 1 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
-        style={{
-          transformOrigin: "center bottom",
-          background:
-            "radial-gradient(ellipse 60% 100% at 50% 100%, oklch(0.78 0.18 305 / 0.45), oklch(0.72 0.2 275 / 0.2) 40%, transparent 70%)",
-        }}
-        className="pointer-events-none absolute bottom-0 left-0 h-6 w-full"
-      />
-      <motion.span
-        aria-hidden
-        initial={{ scaleX: 0, opacity: 0 }}
-        animate={{ scaleX: 1, opacity: 1 }}
-        transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-        style={{
-          transformOrigin: "center",
-          background:
-            "linear-gradient(90deg, transparent, oklch(0.78 0.18 305 / 0.95) 50%, transparent)",
-        }}
-        className="pointer-events-none absolute bottom-0 left-0 h-px w-full"
-      />
-    </motion.span>
-  );
-}
-
 function AppShell() {
   const { session, loading, user } = useAuth();
   const loc = useLocation();
@@ -315,8 +277,9 @@ function AppShell() {
           )}
 
           <nav className={`flex-1 space-y-1 ${collapsed ? "px-2" : "px-3"}`}>
-            {navItems.map((n) => {
+            {navItems.map((n, i: number) => {
               const active = loc.pathname.startsWith(n.to);
+              const tonos = [165, 245, 300, 20, 75, 200, 340, 130];
               return (
                 <Link
                   key={n.to}
@@ -324,25 +287,16 @@ function AppShell() {
                   preload="render"
                   title={collapsed ? n.label : undefined}
                   data-tour={`nav-${n.to}`}
-                  className={`relative flex items-center ${collapsed ? "justify-center px-0" : "gap-3 px-3"} rounded-xl py-2.5 text-sm transition-colors duration-150 ${
-                    active
-                      ? "text-foreground"
-                      : "text-muted-foreground hover:bg-glass/50 hover:text-foreground"
+                  style={{ "--tono": tonos[i % tonos.length] } as React.CSSProperties}
+                  className={`nav-tarjeta ${active ? "nav-activa" : ""} relative flex items-center ${collapsed ? "justify-center px-0 py-1.5" : "gap-2.5 px-2 py-1.5"} rounded-xl text-sm ${
+                    active ? "text-foreground" : "text-foreground/80 hover:text-foreground"
                   }`}
                 >
-                  <span className="relative z-10 inline-flex">
-                    <n.Icon size={18} className={active ? "text-primary" : ""} />
-                    {active && collapsed && <ActiveBloom />}
+                  <span className="menu-card-icon">
+                    <n.Icon size={16} />
                   </span>
 
-                  {!collapsed && (
-                    <span className="relative z-10 flex-1">
-                      <span className="relative inline-block">
-                        {n.label}
-                        {active && <ActiveBloom />}
-                      </span>
-                    </span>
-                  )}
+                  {!collapsed && <span className="min-w-0 flex-1 truncate">{n.label}</span>}
                 </Link>
               );
             })}
