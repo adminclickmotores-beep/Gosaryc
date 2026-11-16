@@ -95,7 +95,7 @@ export const MANUAL_FIJO = `
 - Versiones: web (cualquier navegador), móvil (se instala desde el navegador con «Instalar app») y escritorio de Windows (instalador «Gosaryc Setup» con acceso directo del escritorio y del menú Inicio, logo propio, agente de WhatsApp integrado y «Guía de uso de Gosaryc», que también abre con F1).
 - En línea y sin conexión: con internet todo se guarda al instante; sin internet el programa avisa, guarda cambios y borradores en el dispositivo y sincroniza al volver la conexión. El agente de WhatsApp y el asistente virtual necesitan internet.
 - Agente de WhatsApp: en Mi negocio se vincula el número con un QR (WhatsApp > Dispositivos vinculados). Funciona en el computador, sin IA: responde con las respuestas que el dueño configura en «Respuestas del agente» (saludo, palabras clave y mensaje de cada una; la opción «Pasa a una persona» pausa el chat 6 horas). Si el dueño contesta desde su celular, el agente se pausa en ese chat. La IA (Gemini) se usa solo en el tutorial y el asistente virtual. En escritorio se enciende solo y requiere el computador encendido.
-- Soporte: contactar al equipo de Gosaryc, quien creó y diseñó el programa.
+- Soporte: si algo falla, primero el Agente virtual y la Academia; si sigue, crear un ticket en «Soporte» (menú lateral). El equipo de Gosaryc, quien creó y diseñó el programa, responde en la misma pantalla y el ticket muestra su estado (abierto, en proceso o resuelto).
 
 # 15. SOLUCIÓN DE PROBLEMAS FRECUENTES
 - «No veo un módulo»: es por permisos o porque el tipo de negocio no lo incluye; pedirle al administrador que lo active en Configuración > Equipo y permisos, o revisar el tipo de negocio.
@@ -104,7 +104,7 @@ export const MANUAL_FIJO = `
 - «El menú público no tiene productos»: agregarlos en la pestaña Menú y dejarlos activos.
 - «Los enlaces para compartir no funcionan»: revisar la dirección pública en Configuración > Negocio.
 - «El asistente dice que falta un dato»: completarlo en Mi negocio.
-- «La pantalla se ve rara o no carga»: recargar la página; si persiste, cerrar sesión y volver a entrar; si sigue, contactar a soporte indicando qué hacía y qué mensaje vio.
+- «La pantalla se ve rara o no carga»: recargar la página; si persiste, cerrar sesión y volver a entrar; si sigue, crear un ticket en Soporte indicando qué hacía y qué mensaje vio.
 - «Perdí la sesión»: iniciar de nuevo; marcar «Recordarme» en equipos personales.
 `;
 

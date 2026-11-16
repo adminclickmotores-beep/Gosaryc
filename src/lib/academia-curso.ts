@@ -193,6 +193,19 @@ export const CURSO_GOSARYC = {
           practica: { ruta: "/restaurante", etiqueta: "Ir a Mi negocio" },
         },
         {
+          id: "pedir-soporte",
+          titulo: "Pedir ayuda: Agente, Academia y Soporte",
+          minutos: 4,
+          descripcion: "Qué hacer si algo no funciona y cómo crear un ticket de soporte.",
+          pasos: [
+            "Primero pregúntale al Agente virtual: te explica cualquier pantalla paso a paso.",
+            "Revisa la Academia: casi todo tiene una lección con práctica guiada.",
+            "Si sigue fallando, abre «Soporte» en el menú lateral, elige el tipo (algo no funciona, duda, cuenta o sugerencia), escribe un asunto y cuenta qué estabas haciendo.",
+            "Envía el ticket. En la misma pantalla ves su estado (abierto, en proceso o resuelto) y la respuesta del equipo de soporte.",
+          ],
+          practica: { ruta: "/soporte", etiqueta: "Abrir soporte" },
+        },
+        {
           id: "sin-conexion",
           titulo: "Trabajar con o sin internet",
           minutos: 4,
