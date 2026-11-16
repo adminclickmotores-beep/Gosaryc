@@ -357,7 +357,7 @@ export function ModuloOperativo({ id }: { id: string }) {
   const borrar = async (r: Registro) => {
     if (!window.confirm("¿Eliminar este registro definitivamente? Si solo quieres cancelarlo, usa Anular.")) return;
     const { error } = await supabase.from(tabla).delete().eq("id", r.id);
-    if (error) return toast.error("No se pudo eliminar.");
+    if (error) return toast.error("Un registro con valor no se puede eliminar: usa Anular e indica el motivo.");
     cargar();
   };
 

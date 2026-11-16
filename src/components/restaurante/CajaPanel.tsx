@@ -29,6 +29,7 @@ export function CajaPanel() {
       .from("restaurante_movimientos_caja")
       .select("*")
       .gte("created_at", inicio.toISOString())
+      .eq("anulado", false)
       .order("created_at", { ascending: false });
     if (error) toast.error("No se pudo cargar la caja.");
     const { data: pedidosHoy } = await supabase
@@ -69,8 +70,14 @@ export function CajaPanel() {
   };
 
   const quitar = async (m: Movimiento) => {
-    const { error } = await supabase.from("restaurante_movimientos_caja").delete().eq("id", m.id);
-    if (error) return toast.error("No se pudo quitar el movimiento.");
+    // Los movimientos de caja no se borran: se anulan con motivo (solo el dueño) y queda auditoría.
+    const motivo = window.prompt("Motivo de la anulación (obligatorio):")?.trim();
+    if (!motivo) return toast.error("Sin motivo no se puede anular.");
+    const { error } = await supabase
+      .from("restaurante_movimientos_caja")
+      .update({ anulado: true, motivo_anulacion: motivo })
+      .eq("id", m.id);
+    if (error) return toast.error("No se pudo anular. Solo el dueño del negocio puede hacerlo.");
     cargar();
   };
 
@@ -133,7 +140,7 @@ export function CajaPanel() {
                 onClick={() => quitar(m)}
                 className="shrink-0 rounded-full border border-glass-border px-3 py-1.5 text-xs text-muted-foreground"
               >
-                Quitar
+                Anular
               </button>
             </GlassPanel>
           ))}

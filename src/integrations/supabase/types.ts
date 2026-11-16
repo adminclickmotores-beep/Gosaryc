@@ -115,6 +115,12 @@ export type Database = {
       }
       asientos_contables: {
         Row: {
+          anulado: boolean
+          anulado_en: string | null
+          anulado_por: string | null
+          motivo_anulacion: string | null
+          origen_id: string | null
+          origen_tipo: string | null
           asiento_id: string
           concepto: string
           created_at: string
@@ -126,6 +132,12 @@ export type Database = {
           owner_id: string | null
         }
         Insert: {
+          anulado?: boolean
+          anulado_en?: string | null
+          anulado_por?: string | null
+          motivo_anulacion?: string | null
+          origen_id?: string | null
+          origen_tipo?: string | null
           asiento_id: string
           concepto: string
           created_at?: string
@@ -137,6 +149,12 @@ export type Database = {
           owner_id?: string | null
         }
         Update: {
+          anulado?: boolean
+          anulado_en?: string | null
+          anulado_por?: string | null
+          motivo_anulacion?: string | null
+          origen_id?: string | null
+          origen_tipo?: string | null
           asiento_id?: string
           concepto?: string
           created_at?: string
@@ -2641,6 +2659,10 @@ export type Database = {
       }
       restaurante_movimientos_caja: {
         Row: {
+          anulado: boolean
+          anulado_en: string | null
+          anulado_por: string | null
+          motivo_anulacion: string | null
           concepto: string
           created_at: string
           id: string
@@ -2648,6 +2670,10 @@ export type Database = {
           tipo: string
         }
         Insert: {
+          anulado?: boolean
+          anulado_en?: string | null
+          anulado_por?: string | null
+          motivo_anulacion?: string | null
           concepto: string
           created_at?: string
           id?: string
@@ -2655,6 +2681,10 @@ export type Database = {
           tipo: string
         }
         Update: {
+          anulado?: boolean
+          anulado_en?: string | null
+          anulado_por?: string | null
+          motivo_anulacion?: string | null
           concepto?: string
           created_at?: string
           id?: string

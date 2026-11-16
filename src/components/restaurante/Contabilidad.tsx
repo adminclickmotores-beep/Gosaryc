@@ -80,6 +80,7 @@ export function Contabilidad() {
       supabase
         .from("asientos_contables")
         .select("*")
+        .eq("anulado", false)
         .order("fecha", { ascending: true })
         .order("created_at", { ascending: true }),
     ]);
@@ -189,9 +190,15 @@ export function Contabilidad() {
   };
 
   const borrarAsiento = async (asientoId: string) => {
-    if (!window.confirm("¿Eliminar este asiento completo?")) return;
-    const { error } = await supabase.from("asientos_contables").delete().eq("asiento_id", asientoId);
-    if (error) return toast.error("No se pudo eliminar el asiento.");
+    // Los asientos no se borran: se anulan con motivo y queda registrada la auditoría (solo el dueño).
+    const motivo = window.prompt("Motivo de la anulación del asiento (obligatorio):")?.trim();
+    if (!motivo) return toast.error("Sin motivo no se puede anular.");
+    const { error } = await supabase
+      .from("asientos_contables")
+      .update({ anulado: true, motivo_anulacion: motivo })
+      .eq("asiento_id", asientoId);
+    if (error) return toast.error("No se pudo anular el asiento. Solo el dueño del negocio puede hacerlo.");
+    toast.success("Asiento anulado.");
     void cargar();
   };
 
@@ -214,7 +221,9 @@ export function Contabilidad() {
   };
 
   const cargarPlanBasico = async () => {
-    const { error } = await supabase.from("cuentas_contables").insert(PLAN_BASICO);
+    const faltantes = PLAN_BASICO.filter((p) => !cuentas.some((c) => c.codigo === p.codigo));
+    if (faltantes.length === 0) return toast.success("Tu plan de cuentas ya está completo.");
+    const { error } = await supabase.from("cuentas_contables").insert(faltantes);
     if (error) return toast.error("No se pudo crear el plan de cuentas.");
     toast.success("Plan de cuentas básico creado.");
     void cargar();
