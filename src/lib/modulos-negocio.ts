@@ -229,6 +229,10 @@ const CLIENTES_LAV = m("clientes_lav", "Clientes de la lavandería", "Clientes f
 const PAGOS_LAV = m("pagos_lav", "Cobros y pagos digitales", "Cobro de servicios y domicilios por efectivo, tarjeta o transferencia.", Smartphone);
 const RESENAS_LAV = m("resenas_lav", "Reclamos por prendas y entregas", "Prendas dañadas o perdidas, retrasos y reclamos, con seguimiento.", Star);
 const PERSONAL_LAV = m("personal_lav", "Operarios, turnos y pagos", "Turnos de planchado y lavado, destajos y novedades del personal.", Briefcase);
+const CLIENTES_COND = m("clientes_cond", "Propietarios e inquilinos", "Propietarios e inquilinos de cada unidad, con contacto y estado de cuenta.", Users);
+const PAGOS_COND = m("pagos_cond", "Pagos de cuotas y consignaciones", "Pagos de administración, multas y consignaciones de cuotas por medio digital.", Smartphone);
+const PERSONAL_COND = m("personal_cond", "Vigilancia, aseo y nómina", "Turnos de portería, aseo y mantenimiento, y pagos del personal del edificio.", Briefcase);
+const METAS_COND = m("metas_cond", "Metas de recaudo de cuotas", "Metas de recaudo mensual y cartera recuperada por torre.", Target);
 const METAS_LAV = m("metas_lav", "Metas de kilos y facturación", "Metas de kilos lavados, órdenes y facturación por semana.", Target);
 const METAS_PROF = m("metas_prof", "Metas de casos y honorarios", "Metas de casos cerrados y honorarios facturados por mes.", Target);
 const METAS_EVENTOS = m("metas_eventos", "Metas de eventos y contratos", "Metas de eventos realizados y contratos cerrados por temporada.", Target);
@@ -643,7 +647,7 @@ TIPOS_NEGOCIO.push(
       m("areas_comunes", "Áreas comunes y reservas", "Salón social, piscina, parqueaderos y sus reservas.", CalendarClock),
       m("mantenimiento_cond", "Mantenimiento del edificio", "Tareas, proveedores y reparaciones de zonas comunes.", Wrench),
       m("comunicados_cond", "Comunicados y PQRS", "Avisos a residentes y solicitudes con seguimiento.", Bell),
-      CLIENTES, AGENDA, FACTURAS, PAGOS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES_COND, AGENDA, FACTURAS, PAGOS_COND, CAJA, PROVEEDORES, PERSONAL_COND, METAS_COND, FINANZAS,
     ],
   },
   {
