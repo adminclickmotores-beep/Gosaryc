@@ -244,7 +244,7 @@ function AppShell() {
           }`}
         >
           <div className={`flex items-center ${collapsed ? "justify-center px-1" : "justify-between gap-1 px-4"} py-5`}>
-            <Link to={rutaPanel as never} className="flex min-w-0 items-center gap-2 text-foreground">
+            <Link to="/" className="flex min-w-0 items-center gap-2 text-foreground">
               <BrandHexLogo size={collapsed ? 32 : 34} />
               {!collapsed && <span className="font-display text-base tracking-tight truncate">{BRAND.name}</span>}
             </Link>
@@ -351,7 +351,7 @@ function AppShell() {
         <main className="flex-1 min-w-0 overflow-x-hidden pb-[calc(env(safe-area-inset-bottom)+5rem)] md:pb-0">
           {/* Mobile top bar */}
           <header className={`sticky top-0 z-30 ${completaFinal ? "hidden" : "flex"} items-center justify-between border-b border-glass-border bg-background/80 px-4 py-3 backdrop-blur-xl md:hidden`}>
-            <Link to={rutaPanel as never} className="flex items-center gap-2 text-foreground">
+            <Link to="/" className="flex items-center gap-2 text-foreground">
               <BrandHexLogo size={26} />
               <span className="font-display text-base tracking-tight">{BRAND.name}</span>
             </Link>
