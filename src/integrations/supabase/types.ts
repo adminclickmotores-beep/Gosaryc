@@ -2200,41 +2200,65 @@ export type Database = {
       }
       facturas_registros: {
         Row: {
+          abonado: number
           anulado: boolean
+          cantidad: number
           contacto: string | null
           created_at: string
+          datos: Json
           detalle: string | null
           estado: string
           fecha: string | null
+          historial: Json
           id: string
+          minimo: number
+          modulo: string
           monto: number
+          motivo_anulacion: string | null
           owner_id: string | null
+          telefono: string | null
           tipo_negocio: string | null
           titulo: string
         }
         Insert: {
+          abonado?: number
           anulado?: boolean
+          cantidad?: number
           contacto?: string | null
           created_at?: string
+          datos?: Json
           detalle?: string | null
           estado?: string
           fecha?: string | null
+          historial?: Json
           id?: string
+          minimo?: number
+          modulo?: string
           monto?: number
+          motivo_anulacion?: string | null
           owner_id?: string | null
+          telefono?: string | null
           tipo_negocio?: string | null
           titulo: string
         }
         Update: {
+          abonado?: number
           anulado?: boolean
+          cantidad?: number
           contacto?: string | null
           created_at?: string
+          datos?: Json
           detalle?: string | null
           estado?: string
           fecha?: string | null
+          historial?: Json
           id?: string
+          minimo?: number
+          modulo?: string
           monto?: number
+          motivo_anulacion?: string | null
           owner_id?: string | null
+          telefono?: string | null
           tipo_negocio?: string | null
           titulo?: string
         }
@@ -2242,41 +2266,65 @@ export type Database = {
       }
       permisos_rest_registros: {
         Row: {
+          abonado: number
           anulado: boolean
+          cantidad: number
           contacto: string | null
           created_at: string
+          datos: Json
           detalle: string | null
           estado: string
           fecha: string | null
+          historial: Json
           id: string
+          minimo: number
+          modulo: string
           monto: number
+          motivo_anulacion: string | null
           owner_id: string | null
+          telefono: string | null
           tipo_negocio: string | null
           titulo: string
         }
         Insert: {
+          abonado?: number
           anulado?: boolean
+          cantidad?: number
           contacto?: string | null
           created_at?: string
+          datos?: Json
           detalle?: string | null
           estado?: string
           fecha?: string | null
+          historial?: Json
           id?: string
+          minimo?: number
+          modulo?: string
           monto?: number
+          motivo_anulacion?: string | null
           owner_id?: string | null
+          telefono?: string | null
           tipo_negocio?: string | null
           titulo: string
         }
         Update: {
+          abonado?: number
           anulado?: boolean
+          cantidad?: number
           contacto?: string | null
           created_at?: string
+          datos?: Json
           detalle?: string | null
           estado?: string
           fecha?: string | null
+          historial?: Json
           id?: string
+          minimo?: number
+          modulo?: string
           monto?: number
+          motivo_anulacion?: string | null
           owner_id?: string | null
+          telefono?: string | null
           tipo_negocio?: string | null
           titulo?: string
         }

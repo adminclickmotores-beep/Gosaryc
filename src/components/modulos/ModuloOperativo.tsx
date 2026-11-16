@@ -79,6 +79,9 @@ export function ModuloOperativo({ id }: { id: string }) {
     resolverTipoNegocio(negocio?.tipo_negocio).modulos.find((x) => x.id === id) ?? buscarModulo(id);
   const cfg = configModulo(id);
   const tipo = cfg.tipo;
+  // Facturación y permisos tienen tabla propia; el resto sigue en la tabla compartida.
+  const tabla =
+    id === "facturas" ? "facturas_registros" : id === "permisos_rest" ? "permisos_rest_registros" : "modulo_registros";
   const conSaldo = TIPOS_SALDO.includes(tipo);
   const conStock = tipo === "stock";
   const conAlertaFecha = TIPOS_FECHA.includes(tipo) || tipo === "general";
@@ -111,13 +114,13 @@ export function ModuloOperativo({ id }: { id: string }) {
 
   const cargar = useCallback(async () => {
     const { data } = await supabase
-      .from("modulo_registros")
+      .from(tabla)
       .select("*")
       .eq("modulo", id)
       .order("created_at", { ascending: false })
       .limit(500);
     setLista(data ?? []);
-  }, [id]);
+  }, [id, tabla]);
 
   useEffect(() => {
     cargar();
@@ -176,7 +179,7 @@ export function ModuloOperativo({ id }: { id: string }) {
   const guardar = async (r: Registro, cambios: TablesUpdate<"modulo_registros">, texto: string) => {
     const hist = [...leerHistorial(r.historial), { f: new Date().toISOString(), t: texto }];
     const { error } = await supabase
-      .from("modulo_registros")
+      .from(tabla)
       .update({ ...cambios, historial: hist as unknown as Json })
       .eq("id", r.id);
     if (error) {
@@ -222,7 +225,7 @@ export function ModuloOperativo({ id }: { id: string }) {
       estado = estadoStock(cantidad, minimo);
       if (cantidad > 0) hist.push({ f: new Date().toISOString(), t: `Existencia inicial: ${cantidad}` });
     }
-    const { error } = await supabase.from("modulo_registros").insert({
+    const { error } = await supabase.from(tabla).insert({
       modulo: id,
       estado,
       titulo: titulo.trim(),
@@ -353,7 +356,7 @@ export function ModuloOperativo({ id }: { id: string }) {
 
   const borrar = async (r: Registro) => {
     if (!window.confirm("¿Eliminar este registro definitivamente? Si solo quieres cancelarlo, usa Anular.")) return;
-    const { error } = await supabase.from("modulo_registros").delete().eq("id", r.id);
+    const { error } = await supabase.from(tabla).delete().eq("id", r.id);
     if (error) return toast.error("No se pudo eliminar.");
     cargar();
   };
