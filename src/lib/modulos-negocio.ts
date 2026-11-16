@@ -249,6 +249,11 @@ const PERSONAL_CEL = m("personal_cel", "Vendedores, técnicos y comisiones", "Co
 const CLIENTES_PAPEL = m("clientes_papel", "Colegios, empresas y clientes", "Colegios, empresas y clientes que compran útiles, copias o listas.", Users);
 const PAGOS_PAPEL = m("pagos_papel", "Cobros y pagos digitales de la papelería", "Cobro de útiles, copias y pedidos de colegios por cada medio de pago.", Smartphone);
 const PERSONAL_PAPEL = m("personal_papel", "Vendedores, turnos y pagos", "Turnos de vendedores, comisiones y novedades del personal de la papelería.", Briefcase);
+const CLIENTES_MODA = m("clientes_moda", "Clientas y clientes de la tienda", "Clientes con sus tallas, colores preferidos, compras y apartados.", Users);
+const PAGOS_MODA = m("pagos_moda", "Cobros y pagos digitales de la tienda", "Cobro de prendas y calzado por efectivo, tarjeta, Nequi o transferencia.", Smartphone);
+const RESENAS_MODA = m("resenas_moda", "Cambios, quejas y reseñas", "Cambios de talla, quejas y opiniones de clientes, con seguimiento.", Star);
+const PERSONAL_MODA = m("personal_moda", "Asesores de venta, turnos y comisiones", "Turnos de asesores de venta, comisiones por prenda y novedades.", Briefcase);
+const METAS_MODA = m("metas_moda", "Metas de venta por temporada", "Metas de venta de prendas y calzado por temporada y por asesor.", Target);
 const METAS_PAPEL = m("metas_papel", "Metas de temporada escolar", "Metas de ventas de útiles y listas escolares por temporada.", Target);
 const METAS_CEL = m("metas_cel", "Metas de ventas y reparaciones", "Metas de equipos vendidos, reparaciones y líneas activadas por mes.", Target);
 const METAS_JOY = m("metas_joy", "Metas de ventas y encargos", "Metas de ventas de piezas y de encargos cerrados por mes.", Target);
@@ -746,7 +751,7 @@ TIPOS_NEGOCIO.push(
       m("vitrina", "Exhibición en vitrina", "Qué está exhibido y qué falta reponer.", Armchair),
       m("apartados", "Apartados (plan separe)", "Abonos y entrega de productos separados.", Tag),
       m("devoluciones", "Cambios y devoluciones", "Control de cambios y notas crédito.", Repeat),
-      CLIENTES, FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES_MODA, FIADOS, FACTURAS, PAGOS_MODA, FIDELIZACION, RESENAS_MODA, CAJA, PROVEEDORES, PERSONAL_MODA, METAS_MODA, FINANZAS,
     ],
   },
 );
