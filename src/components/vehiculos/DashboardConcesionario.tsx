@@ -8,17 +8,21 @@ import { configModulo } from "@/lib/modulos-config";
 type Vehiculo = Tables<"vehiculos_inventario">;
 type Credito = Tables<"solicitudes_credito">;
 type Registro = Tables<"modulo_registros">;
+type VentaVeh = Tables<"ventas_veh_registros">;
+type ComisionVeh = Tables<"comisiones_registros">;
 
 const dinero = (n: number) =>
   new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
 
-const MODULOS = ["ventas_veh", "comisiones", "alistamiento", "cartera_veh", "costos_veh", "vehiculos_usados"];
+const MODULOS = ["alistamiento", "cartera_veh", "costos_veh", "vehiculos_usados"];
 
 /** Tablero real del concesionario: todo sale de los registros guardados, nada simulado. */
 export function DashboardConcesionario() {
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
   const [creditos, setCreditos] = useState<Credito[]>([]);
   const [registros, setRegistros] = useState<Registro[]>([]);
+  const [ventasVeh, setVentasVeh] = useState<VentaVeh[]>([]);
+  const [comisionesVeh, setComisionesVeh] = useState<ComisionVeh[]>([]);
   const [mes, setMes] = useState("");
   const [hoy, setHoy] = useState("");
 
@@ -32,11 +36,13 @@ export function DashboardConcesionario() {
   useEffect(() => {
     let cancelado = false;
     (async () => {
-      const [v0, co, c, r] = await Promise.all([
+      const [v0, co, c, r, vv, cv] = await Promise.all([
         supabase.from("vehiculos_inventario").select("*").limit(2000),
         supabase.from("vehiculo_costos").select("vehiculo_id, precio_compra").limit(5000),
         supabase.from("solicitudes_credito").select("*").limit(2000),
         supabase.from("modulo_registros").select("*").in("modulo", MODULOS).eq("anulado", false).limit(2000),
+        supabase.from("ventas_veh_registros").select("*").eq("anulado", false).limit(2000),
+        supabase.from("comisiones_registros").select("*").eq("anulado", false).limit(2000),
       ]);
       if (cancelado) return;
       const costos = new Map<string, number | null>();
@@ -44,6 +50,8 @@ export function DashboardConcesionario() {
       setVehiculos((v0.data ?? []).map((x) => ({ ...x, precio_compra: costos.get(x.id) ?? null })));
       setCreditos(c.data ?? []);
       setRegistros(r.data ?? []);
+      setVentasVeh(vv.data ?? []);
+      setComisionesVeh(cv.data ?? []);
     })();
     return () => {
       cancelado = true;
@@ -57,12 +65,12 @@ export function DashboardConcesionario() {
     const utilidad = vend.reduce((s, v) => s + (v.precio - (v.precio_compra ?? 0)), 0);
     const abiertos = (m: string) => registros.filter((r) => r.modulo === m && !configModulo(m).cerrados.includes(r.estado));
     const todos = (m: string) => registros.filter((r) => r.modulo === m);
-    const ventasMes = todos("ventas_veh").filter((r) => mes && (r.fecha ?? r.created_at).startsWith(mes));
+    const ventasMes = ventasVeh.filter((r) => mes && (r.fecha ?? r.created_at).startsWith(mes));
     const aprobados = creditos.filter((c) => c.estado === "aprobado").length;
     const rechazados = creditos.filter((c) => c.estado === "rechazado").length;
     const pendientes = creditos.filter((c) => c.estado !== "aprobado" && c.estado !== "rechazado").length;
     const gastoAlistamiento = todos("alistamiento").reduce((s, r) => s + r.monto, 0);
-    const comisiones = todos("comisiones").reduce((s, r) => s + r.monto, 0);
+    const comisiones = comisionesVeh.reduce((s, r) => s + r.monto, 0);
     const cartera = abiertos("cartera_veh").reduce((s, r) => s + Math.max(r.monto - r.abonado, 0), 0);
     const retomas = todos("vehiculos_usados").length;
     const alertas: string[] = [];
@@ -79,7 +87,7 @@ export function DashboardConcesionario() {
       gastoAlistamiento, comisiones, cartera, retomas, alertas,
       valorInventario: disp.reduce((s, v) => s + v.precio, 0),
     };
-  }, [vehiculos, creditos, registros, mes, hoy]);
+  }, [vehiculos, creditos, registros, ventasVeh, comisionesVeh, mes, hoy]);
 
   const tarjetas = [
     { t: "Inventario disponible", v: String(d.disp.length), s: dinero(d.valorInventario) },
