@@ -201,6 +201,11 @@ const PERSONAL_VET = m("personal_vet", "Veterinarios, turnos y pagos", "Turnos d
 const CLIENTES_TEC = m("clientes_tec", "Clientes y cuentas de software", "Clientes de la agencia, sus proyectos, contactos y contratos activos.", Users);
 const PAGOS_TEC = m("pagos_tec", "Cobros de proyectos y suscripciones", "Cobros de proyectos, mensualidades y soporte por transferencia o pasarela.", Smartphone);
 const PERSONAL_TEC = m("personal_tec", "Equipo técnico, horas y pagos", "Horas de desarrolladores, pagos al equipo y novedades del personal técnico.", Briefcase);
+const CLIENTES_TRANSP = m("clientes_transp", "Remitentes y clientes de carga", "Empresas y personas que envían carga, con sus rutas y tarifas pactadas.", Users);
+const PAGOS_TRANSP = m("pagos_transp", "Cobros de fletes y pagos digitales", "Cobro de fletes, anticipos y saldos por transferencia o consignación.", Smartphone);
+const RESENAS_TRANSP = m("resenas_transp", "Reclamos de carga y entregas", "Reclamos por averías, faltantes o retrasos, con seguimiento.", Star);
+const PERSONAL_TRANSP = m("personal_transp", "Conductores, turnos y liquidaciones", "Liquidación de conductores y auxiliares de ruta por viaje y periodo.", Briefcase);
+const METAS_TRANSP = m("metas_transp", "Metas de viajes y fletes", "Metas de viajes realizados, kilómetros y fletes facturados por mes.", Target);
 const METAS_TEC = m("metas_tec", "Metas de proyectos y facturación", "Metas de proyectos entregados y facturación recurrente por mes.", Target);
 const METAS_VET = m("metas_vet", "Metas de consultas y ventas", "Metas de consultas atendidas, vacunaciones y ventas de productos.", Target);
 const METAS_INMO = m("metas_inmo", "Metas de negocios cerrados", "Metas de arriendos y ventas cerradas por asesor y mes.", Target);
@@ -471,7 +476,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("viajes", "Viajes y despachos", "Rutas, cargas y estado de cada envío.", Package),
       m("conductores", "Conductores y pagos", "Liquidación por viaje.", Briefcase),
       m("combustible", "Combustible y gastos de ruta", "Control de gastos por vehículo.", Banknote),
-      CLIENTES, AGENDA, FIADOS, FACTURAS, PAGOS, RESENAS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES_TRANSP, AGENDA, FIADOS, FACTURAS, PAGOS_TRANSP, RESENAS_TRANSP, CAJA, PROVEEDORES, PERSONAL_TRANSP, METAS_TRANSP, FINANZAS,
     ],
   },
 ];
