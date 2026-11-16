@@ -242,6 +242,11 @@ const CLIENTES_JOY = m("clientes_joy", "Clientes de joyería y relojería", "Cli
 const PAGOS_JOY = m("pagos_joy", "Pagos y anticipos de piezas", "Anticipos de encargos y pagos de piezas por transferencia, tarjeta o efectivo.", Smartphone);
 const RESENAS_JOY = m("resenas_joy", "Garantías y reclamos de clientes", "Reclamos sobre piezas, reparaciones o certificados, con seguimiento.", Star);
 const PERSONAL_JOY = m("personal_joy", "Joyeros, vendedores y comisiones", "Comisiones de vendedores, pago a joyeros y novedades del equipo.", Briefcase);
+const CLIENTES_CEL = m("clientes_cel", "Clientes de celulares", "Clientes con sus equipos, reparaciones, garantías y líneas activas.", Users);
+const PAGOS_CEL = m("pagos_cel", "Cobros de equipos y reparaciones", "Cobro de celulares, accesorios y reparaciones por cada medio de pago.", Smartphone);
+const RESENAS_CEL = m("resenas_cel", "Garantías y reclamos de equipos", "Reclamos por fallas, reparaciones o garantías, con seguimiento.", Star);
+const PERSONAL_CEL = m("personal_cel", "Vendedores, técnicos y comisiones", "Comisiones de vendedores, pagos a técnicos y novedades del equipo.", Briefcase);
+const METAS_CEL = m("metas_cel", "Metas de ventas y reparaciones", "Metas de equipos vendidos, reparaciones y líneas activadas por mes.", Target);
 const METAS_JOY = m("metas_joy", "Metas de ventas y encargos", "Metas de ventas de piezas y de encargos cerrados por mes.", Target);
 const METAS_TEXTIL = m("metas_textil", "Metas de prendas y pedidos", "Metas de prendas confeccionadas y pedidos entregados por mes.", Target);
 const METAS_PREST = m("metas_prest", "Metas de colocación y recuperación", "Metas de préstamos colocados y de cartera recuperada por mes.", Target);
@@ -711,7 +716,7 @@ TIPOS_NEGOCIO.push(
       m("equipos_imei", "Equipos e IMEI", "Control de equipos por IMEI, estado y precio.", Smartphone),
       m("reparaciones_cel", "Reparaciones", "Equipos en reparación, diagnóstico, repuestos y entrega.", Wrench),
       m("accesorios_cel", "Accesorios e inventario", "Fundas, cargadores y existencias.", Package),
-      CLIENTES, GARANTIAS, FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES_CEL, GARANTIAS, FIADOS, FACTURAS, PAGOS_CEL, FIDELIZACION, RESENAS_CEL, CAJA, PROVEEDORES, PERSONAL_CEL, METAS_CEL, FINANZAS,
     ],
   },
   {
