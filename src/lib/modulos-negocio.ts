@@ -697,8 +697,8 @@ TIPOS_NEGOCIO.push(
       m("tarifas_lavado", "Tarifas por servicio", "Precio por prenda, kilo o tipo de lavado.", Tag),
       m("entregas_lav", "Recogida y entrega", "Rutas de recogida y entrega a domicilio.", Bike),
       m("insumos_lav", "Insumos", "Jabones, químicos y consumibles.", Boxes),
-      CLIENTES_LAV, AGENDA,
-      FIADOS, FACTURAS, PAGOS_LAV, FIDELIZACION, RESENAS_LAV, CAJA, PROVEEDORES, PERSONAL_LAV, METAS_LAV, FINANZAS,
+      CLIENTES_LAV, ...propios("lav", "agenda"),
+      ...propios("lav", "cuentas"), FACTURAS, PAGOS_LAV, FIDELIZACION, RESENAS_LAV, ...propios("lav", "caja", "proveedores"), PERSONAL_LAV, METAS_LAV, ...propios("lav", "finanzas"),
     ],
   },
 );
@@ -716,7 +716,7 @@ TIPOS_NEGOCIO.push(
       m("areas_comunes", "Áreas comunes y reservas", "Salón social, piscina, parqueaderos y sus reservas.", CalendarClock),
       m("mantenimiento_cond", "Mantenimiento del edificio", "Tareas, proveedores y reparaciones de zonas comunes.", Wrench),
       m("comunicados_cond", "Comunicados y PQRS", "Avisos a residentes y solicitudes con seguimiento.", Bell),
-      CLIENTES_COND, AGENDA, FACTURAS, PAGOS_COND, CAJA, PROVEEDORES, PERSONAL_COND, METAS_COND, FINANZAS,
+      CLIENTES_COND, ...propios("cond", "agenda"), FACTURAS, PAGOS_COND, ...propios("cond", "caja", "proveedores"), PERSONAL_COND, METAS_COND, ...propios("cond", "finanzas"),
     ],
   },
   {
@@ -729,7 +729,7 @@ TIPOS_NEGOCIO.push(
       m("cronograma_cuotas", "Cronograma de cuotas", "Simulación de cuotas y fechas de pago.", CalendarDays),
       m("cobranza_diaria", "Cobranza diaria y mensual", "Cuotas por cobrar hoy, en mora y promesas de pago.", Coins),
       m("garantias_prest", "Garantías de préstamo", "Bienes o avales que respaldan cada préstamo.", ShieldCheck),
-      CLIENTES_PREST, AGENDA, FACTURAS, PAGOS_PREST, CAJA, PERSONAL_PREST, METAS_PREST, FINANZAS,
+      CLIENTES_PREST, ...propios("prest", "agenda"), FACTURAS, PAGOS_PREST, ...propios("prest", "caja"), PERSONAL_PREST, METAS_PREST, ...propios("prest", "finanzas"),
     ],
   },
   {
@@ -742,7 +742,7 @@ TIPOS_NEGOCIO.push(
       m("ordenes_confeccion", "Órdenes de confección", "Prendas por talla y color, estado y fecha de entrega.", Shirt),
       m("destajo", "Pago por destajo", "Prendas terminadas por operario y valor a pagar.", Percent),
       m("insumos_textil", "Telas e insumos", "Telas, hilos, botones y existencias.", Boxes),
-      CLIENTES_TEXTIL, AGENDA, FIADOS, FACTURAS, PAGOS_TEXTIL, CAJA, PROVEEDORES, PERSONAL_TEXTIL, METAS_TEXTIL, FINANZAS,
+      CLIENTES_TEXTIL, ...propios("textil", "agenda"), ...propios("textil", "cuentas"), FACTURAS, PAGOS_TEXTIL, ...propios("textil", "caja", "proveedores"), PERSONAL_TEXTIL, METAS_TEXTIL, ...propios("textil", "finanzas"),
     ],
   },
   {
@@ -755,7 +755,7 @@ TIPOS_NEGOCIO.push(
       m("certificados_joy", "Certificados de autenticidad", "Certificados y garantías entregadas a cada cliente.", BadgeCheck),
       m("taller_joyeria", "Taller y reparaciones", "Arreglos, relojes y trabajos por encargo.", Wrench),
       m("apartados", "Apartados (plan separe)", "Abonos y entrega de piezas separadas.", Tag),
-      CLIENTES_JOY, FIADOS, FACTURAS, PAGOS_JOY, FIDELIZACION, RESENAS_JOY, CAJA, PROVEEDORES, PERSONAL_JOY, METAS_JOY, FINANZAS,
+      CLIENTES_JOY, ...propios("joy", "cuentas"), FACTURAS, PAGOS_JOY, FIDELIZACION, RESENAS_JOY, ...propios("joy", "caja", "proveedores"), PERSONAL_JOY, METAS_JOY, ...propios("joy", "finanzas"),
     ],
   },
   {
