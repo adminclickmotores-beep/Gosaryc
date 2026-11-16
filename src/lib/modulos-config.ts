@@ -126,6 +126,34 @@ const CAMPOS_POR_TIPO: Record<string, CampoExtra[]> = {
 
 /** Campos propios de módulos concretos (tienen prioridad sobre los de su familia). */
 const CAMPOS_ESPECIFICOS: Record<string, CampoExtra[]> = {
+  productos: [
+    { clave: "codigo_barras", etiqueta: "Código de barras o referencia", tipo: "text", placeholder: "Código del empaque o SKU" },
+    { clave: "variante", etiqueta: "Talla, color o presentación", tipo: "text", placeholder: "Ej. Talla M, azul, 500 g" },
+    { clave: "categoria", etiqueta: "Categoría", tipo: "select", opciones: ["Ropa", "Calzado", "Accesorios", "Alimentos", "Bebidas", "Aseo", "Papelería", "Tecnología", "Hogar", "Otro"] },
+    { clave: "costo", etiqueta: "Costo de compra (COP)", tipo: "text" },
+    { clave: "iva", etiqueta: "IVA aplicado", tipo: "select", opciones: ["Exento", "5 %", "19 %"] },
+    { clave: "minimo", etiqueta: "Stock mínimo para reponer", tipo: "text" },
+    { clave: "ubicacion", etiqueta: "Ubicación en tienda o bodega", tipo: "text", placeholder: "Estante, vitrina o bodega" },
+    { clave: "proveedor", etiqueta: "Proveedor", tipo: "text" },
+  ],
+  apartados: [
+    { clave: "producto_apartado", etiqueta: "Producto apartado", tipo: "text" },
+    { clave: "variante", etiqueta: "Talla, color o presentación", tipo: "text" },
+    { clave: "cliente_tel", etiqueta: "Teléfono del cliente", tipo: "tel" },
+    { clave: "documento", etiqueta: "Documento del cliente", tipo: "text" },
+    { clave: "abonado", etiqueta: "Abonos recibidos (COP)", tipo: "text" },
+    { clave: "saldo", etiqueta: "Saldo pendiente (COP)", tipo: "text" },
+    { clave: "fecha_limite", etiqueta: "Fecha límite para retirar", tipo: "date" },
+    PAGO,
+  ],
+  devoluciones: [
+    { clave: "factura_origen", etiqueta: "Factura o tiquete de compra", tipo: "text" },
+    { clave: "producto_devuelto", etiqueta: "Producto devuelto", tipo: "text" },
+    { clave: "motivo", etiqueta: "Motivo", tipo: "select", opciones: ["Talla o color no sirve", "Producto defectuoso", "No era lo esperado", "Error en el despacho", "Otro"] },
+    { clave: "solucion", etiqueta: "Solución", tipo: "select", opciones: ["Cambio por otro producto", "Nota crédito", "Devolución de dinero", "Pendiente"] },
+    { clave: "cliente_tel", etiqueta: "Teléfono del cliente", tipo: "tel" },
+    { clave: "fecha_compra", etiqueta: "Fecha de la compra original", tipo: "date" },
+  ],
   vehiculos: [
     { clave: "placa", etiqueta: "Placa", tipo: "text" },
     { clave: "marca", etiqueta: "Marca", tipo: "text" },
