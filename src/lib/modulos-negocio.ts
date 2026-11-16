@@ -414,7 +414,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("apartados", "Apartados (plan separe)", "Abonos y entrega de productos separados.", Tag),
       m("devoluciones", "Cambios y devoluciones", "Control de cambios y notas crédito.", Repeat),
       CLIENTES_TIENDA,
-      FIADOS, FACTURAS, PAGOS_TIENDA, FIDELIZACION, RESENAS_TIENDA, CAJA, PROVEEDORES, PERSONAL_TIENDA, METAS_TIENDA, FINANZAS,
+      ...propios("tienda", "cuentas"), FACTURAS, PAGOS_TIENDA, FIDELIZACION, RESENAS_TIENDA, ...propios("tienda", "caja", "proveedores"), PERSONAL_TIENDA, METAS_TIENDA, ...propios("tienda", "finanzas"),
     ],
   },
   {
@@ -426,7 +426,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("catalogo_servicios", "Catálogo de servicios", "Servicios, duración y precio.", Scissors),
       m("profesionales", "Profesionales y recursos", "Quién presta cada servicio (profesional, técnico, instructor o terapeuta), su horario y el recurso que usa (sala, equipo o vehículo).", BadgeCheck),
       m("disponibilidad", "Disponibilidad", "Horarios y bloqueos de cada persona y recurso para evitar reservas duplicadas.", CalendarClock),
-      AGENDA,
+      ...propios("serv", "agenda"),
       m("prospectos_serv", "Prospectos", "Personas interesadas que aún no reservan, con seguimiento.", Users),
       m("ordenes_serv_cita", "Órdenes de servicio", "Reserva, asignación, seguimiento y finalización del servicio hasta facturación y pago.", ClipboardList),
       m("anticipos_serv", "Anticipos", "Anticipos de reservas y su aplicación al pago final.", Banknote),
@@ -435,7 +435,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("lista_espera", "Lista de espera", "Clientes por atender cuando se libere un cupo.", Bell),
       m("comisiones", "Comisiones del personal", "Pago por servicio realizado.", Percent),
       CLIENTES_SERVICIOS,
-      FACTURAS, PAGOS_SERVICIOS, FIDELIZACION, RESENAS_SERVICIOS, CAJA, PERSONAL_SERVICIOS, METAS_SERVICIOS, FINANZAS,
+      FACTURAS, PAGOS_SERVICIOS, FIDELIZACION, RESENAS_SERVICIOS, ...propios("serv", "cuentas", "caja", "proveedores"), PERSONAL_SERVICIOS, METAS_SERVICIOS, ...propios("serv", "finanzas"),
     ],
   },
   {
@@ -445,7 +445,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
     usaPedidos: false,
     modulos: [
       m("pacientes", "Pacientes y fichas", "Datos de contacto y antecedentes de cada paciente.", Stethoscope),
-      AGENDA,
+      ...propios("salud", "agenda"),
       m("historia_clinica", "Historias y evoluciones", "Notas de cada consulta o tratamiento.", ClipboardList),
       m("tratamientos", "Tratamientos y presupuestos", "Planes de tratamiento con su valor y avance.", FileText),
       m("consultorios", "Consultorios y profesionales", "Consultorios, profesionales y su disponibilidad.", Landmark),
@@ -458,7 +458,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("insumos_salud", "Insumos y medicamentos", "Existencias y alertas de faltantes.", Package),
       m("autorizaciones", "Autorizaciones y EPS", "Seguimiento de autorizaciones y cobros a aseguradoras.", Landmark),
       GLOSAS_SALUD, HABILITACION_SALUD, RESIDUOS_SALUD,
-      FACTURAS_SALUD, PAGOS_SALUD, RESENAS_SALUD, CAJA, PROVEEDORES, PERSONAL_SALUD, METAS_SALUD, FINANZAS,
+      FACTURAS_SALUD, PAGOS_SALUD, RESENAS_SALUD, ...propios("salud", "cuentas", "caja", "proveedores"), PERSONAL_SALUD, METAS_SALUD, ...propios("salud", "finanzas"),
     ],
   },
   {
@@ -469,10 +469,10 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
     modulos: [
       m("estudiantes", "Estudiantes y matrículas", "Inscripciones y datos de cada estudiante.", GraduationCap),
       m("cursos", "Cursos y grupos", "Cursos, horarios, cupos y docentes.", ClipboardList),
-      AGENDA,
+      ...propios("edu", "agenda"),
       m("mensualidades", "Pensiones y mensualidades", "Pagos pendientes y recordatorios de cobro.", Coins),
       m("asistencia", "Asistencia y notas", "Seguimiento del avance de cada estudiante.", BadgeCheck),
-      FACTURAS, PAGOS_EDUCACION, RESENAS_EDUCACION, CAJA, PERSONAL_EDUCACION, METAS_EDUCACION, FINANZAS,
+      FACTURAS, PAGOS_EDUCACION, RESENAS_EDUCACION, ...propios("edu", "cuentas", "caja", "proveedores"), PERSONAL_EDUCACION, METAS_EDUCACION, ...propios("edu", "finanzas"),
     ],
   },
   {
@@ -486,7 +486,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("huespedes", "Huéspedes", "Registro y preferencias de tus huéspedes.", Users),
       m("servicios_extra", "Servicios adicionales", "Desayunos, tours, lavandería y otros cargos.", Tag),
       m("limpieza", "Limpieza y mantenimiento", "Tareas por habitación y estado.", Wrench),
-      FACTURAS, PAGOS_HOSP, FIDELIZACION, RESENAS_HOSP, CAJA, PROVEEDORES, PERSONAL_HOSP, METAS_HOSP, FINANZAS,
+      FACTURAS, PAGOS_HOSP, FIDELIZACION, RESENAS_HOSP, ...propios("hosp", "agenda", "cuentas", "caja", "proveedores"), PERSONAL_HOSP, METAS_HOSP, ...propios("hosp", "finanzas"),
     ],
   },
   {
@@ -499,7 +499,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("clases", "Clases y cupos", "Horarios de clases con cupos y asistentes.", CalendarDays),
       m("control_acceso", "Control de ingreso", "Registro de asistencia de los socios.", QrCode),
       m("planes_entreno", "Rutinas y seguimiento", "Planes y medidas de cada socio.", ClipboardList),
-      FACTURAS, PAGOS_GYM, FIDELIZACION, RESENAS_GYM, CAJA, PROVEEDORES, PERSONAL_GYM, METAS_GYM, FINANZAS,
+      FACTURAS, PAGOS_GYM, FIDELIZACION, RESENAS_GYM, ...propios("gym", "agenda", "cuentas", "caja", "proveedores"), PERSONAL_GYM, METAS_GYM, ...propios("gym", "finanzas"),
     ],
   },
   {
@@ -512,7 +512,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("cotizaciones_obra", "Cotizaciones", "Propuestas y seguimiento hasta el cierre.", FileText),
       m("materiales", "Materiales y herramientas", "Inventario y consumo por obra.", Package),
       m("contratistas", "Contratistas y pagos", "Cuentas por pagar a maestros y subcontratistas.", Handshake),
-      AGENDA, CLIENTES_OBRA, GARANTIAS, FIADOS, FACTURAS, PAGOS_OBRA, RESENAS_OBRA, CAJA, PROVEEDORES, PERSONAL_OBRA, METAS_OBRA, FINANZAS,
+      ...propios("obra", "agenda"), CLIENTES_OBRA, GARANTIAS, ...propios("obra", "cuentas"), FACTURAS, PAGOS_OBRA, RESENAS_OBRA, ...propios("obra", "caja", "proveedores"), PERSONAL_OBRA, METAS_OBRA, ...propios("obra", "finanzas"),
     ],
   },
   {
@@ -525,7 +525,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("cosechas", "Cosechas y ventas", "Producción recogida y a quién se vendió.", PackageCheck),
       m("insumos_agro", "Insumos y fertilizantes", "Compras y consumo por lote.", Boxes),
       m("animales", "Animales y sanidad", "Control de ganado, vacunas y tratamientos.", Shield),
-      CLIENTES_AGRO, FACTURAS, PAGOS_AGRO, FIADOS, CAJA, PROVEEDORES, PERSONAL_AGRO, METAS_AGRO, FINANZAS,
+      CLIENTES_AGRO, FACTURAS, PAGOS_AGRO, ...propios("agro", "cuentas", "agenda", "caja", "proveedores"), PERSONAL_AGRO, METAS_AGRO, ...propios("agro", "finanzas"),
     ],
   },
   {
@@ -538,7 +538,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("arrendatarios", "Arrendatarios y contratos", "Contratos, canon y vencimientos.", FileText),
       m("cobro_canon", "Cobro de arriendos", "Cartera mensual y recordatorios.", Coins),
       m("visitas", "Visitas a inmuebles", "Agenda de visitas con seguimiento.", KeyRound),
-      CLIENTES_INMO, AGENDA, FACTURAS, PAGOS_INMO, CAJA, PERSONAL_INMO, METAS_INMO, FINANZAS,
+      CLIENTES_INMO, ...propios("inmo", "agenda", "cuentas"), FACTURAS, PAGOS_INMO, ...propios("inmo", "caja", "proveedores"), PERSONAL_INMO, METAS_INMO, ...propios("inmo", "finanzas"),
     ],
   },
   {
@@ -548,10 +548,10 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
     usaPedidos: false,
     modulos: [
       m("mascotas_reg", "Mascotas y dueños", "Ficha de cada mascota y su responsable.", PawPrint),
-      AGENDA,
+      ...propios("vet", "agenda"),
       m("vacunacion", "Vacunas y desparasitación", "Próximas dosis y recordatorios.", ShieldCheck),
       m("productos_vet", "Productos y alimentos", "Inventario y ventas.", ShoppingBag),
-      FACTURAS, PAGOS_VET, FIDELIZACION, RESENAS_VET, CAJA, PROVEEDORES, PERSONAL_VET, METAS_VET, FINANZAS,
+      FACTURAS, PAGOS_VET, FIDELIZACION, RESENAS_VET, ...propios("vet", "cuentas", "caja", "proveedores"), PERSONAL_VET, METAS_VET, ...propios("vet", "finanzas"),
     ],
   },
   {
@@ -564,7 +564,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("tickets", "Soporte y tickets", "Solicitudes de clientes con seguimiento.", ClipboardList),
       m("suscripciones_tec", "Planes y suscripciones", "Cobros recurrentes de tus clientes.", Repeat),
       m("horas", "Horas y facturación", "Horas dedicadas a cada cliente.", CalendarClock),
-      CLIENTES_TEC, SOLICITUDES, FACTURAS, PAGOS_TEC, CAJA, PERSONAL_TEC, METAS_TEC, FINANZAS,
+      CLIENTES_TEC, SOLICITUDES, ...propios("tec", "agenda", "cuentas"), FACTURAS, PAGOS_TEC, ...propios("tec", "caja", "proveedores"), PERSONAL_TEC, METAS_TEC, ...propios("tec", "finanzas"),
     ],
   },
   {
@@ -577,7 +577,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("viajes", "Viajes y despachos", "Rutas, cargas y estado de cada envío.", Package),
       m("conductores", "Conductores y pagos", "Liquidación por viaje.", Briefcase),
       m("combustible", "Combustible y gastos de ruta", "Control de gastos por vehículo.", Banknote),
-      CLIENTES_TRANSP, AGENDA, FIADOS, FACTURAS, PAGOS_TRANSP, RESENAS_TRANSP, CAJA, PROVEEDORES, PERSONAL_TRANSP, METAS_TRANSP, FINANZAS,
+      CLIENTES_TRANSP, ...propios("transp", "agenda", "cuentas"), FACTURAS, PAGOS_TRANSP, RESENAS_TRANSP, ...propios("transp", "caja", "proveedores"), PERSONAL_TRANSP, METAS_TRANSP, ...propios("transp", "finanzas"),
     ],
   },
 ];

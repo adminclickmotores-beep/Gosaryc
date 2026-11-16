@@ -7,11 +7,11 @@ import type { FamiliaPropia } from "@/lib/modulos-propios";
  * seguridad y aseo, ganadería, fundación e iglesia). Cada uno con su vocabulario y sus formularios.
  */
 
-const t = (clave: string, etiqueta: string): CampoExtra => ({ clave, etiqueta, tipo: "text" });
-const tel = (clave: string, etiqueta: string): CampoExtra => ({ clave, etiqueta, tipo: "tel" });
-const em = (clave: string, etiqueta: string): CampoExtra => ({ clave, etiqueta, tipo: "email" });
-const d = (clave: string, etiqueta: string): CampoExtra => ({ clave, etiqueta, tipo: "date" });
-const sel = (clave: string, etiqueta: string, opciones: string[]): CampoExtra => ({ clave, etiqueta, tipo: "select", opciones });
+export const t = (clave: string, etiqueta: string): CampoExtra => ({ clave, etiqueta, tipo: "text" });
+export const tel = (clave: string, etiqueta: string): CampoExtra => ({ clave, etiqueta, tipo: "tel" });
+export const em = (clave: string, etiqueta: string): CampoExtra => ({ clave, etiqueta, tipo: "email" });
+export const d = (clave: string, etiqueta: string): CampoExtra => ({ clave, etiqueta, tipo: "date" });
+export const sel = (clave: string, etiqueta: string, opciones: string[]): CampoExtra => ({ clave, etiqueta, tipo: "select", opciones });
 
 const MEDIOS = ["Efectivo", "Nequi", "Daviplata", "Bre-B", "Transferencia", "Tarjeta"];
 
@@ -20,23 +20,23 @@ const F = (
   campos: CampoExtra[],
 ): FamiliaPropia => ({ titulo, desc, ph, det, cont, monto, fecha, res, campos });
 
-const caja = (titulo: string, desc: string, ph: string, det: string, tipos: string[], extra: CampoExtra[]): FamiliaPropia =>
+export const caja = (titulo: string, desc: string, ph: string, det: string, tipos: string[], extra: CampoExtra[]): FamiliaPropia =>
   F(titulo, desc, ph, det, "Cajero responsable", "Valor (COP)", "Fecha del movimiento", "Movimientos por revisar",
     [sel("tipo_mov", "Tipo de movimiento", tipos), sel("medio", "Medio de pago", MEDIOS), t("responsable", "Responsable del turno"), ...extra, t("soporte", "Soporte o comprobante")]);
 
-const prov = (titulo: string, desc: string, ph: string, det: string, extra: CampoExtra[]): FamiliaPropia =>
+export const prov = (titulo: string, desc: string, ph: string, det: string, extra: CampoExtra[]): FamiliaPropia =>
   F(titulo, desc, ph, det, "Proveedor", "Valor del pedido o deuda (COP)", "Fecha de pago acordada", "Por pagar a proveedores",
     [t("nit", "NIT del proveedor"), tel("telefono", "Teléfono o WhatsApp"), ...extra, sel("condicion", "Condición de pago", ["Contado", "8 días", "15 días", "30 días", "45 días"]), t("factura", "Factura del proveedor")]);
 
-const fin = (titulo: string, desc: string, ph: string, det: string, conceptos: string[], extra: CampoExtra[]): FamiliaPropia =>
+export const fin = (titulo: string, desc: string, ph: string, det: string, conceptos: string[], extra: CampoExtra[]): FamiliaPropia =>
   F(titulo, desc, ph, det, "Responsable", "Valor (COP)", "Fecha del registro", "Registros del periodo",
     [sel("clase", "Clase", ["Ingreso", "Costo", "Gasto", "Impuesto", "Inversión"]), sel("concepto", "Concepto", conceptos), ...extra, sel("periodo", "Periodo", ["Semana", "Mes", "Trimestre", "Año"])]);
 
-const cta = (titulo: string, desc: string, ph: string, det: string, extra: CampoExtra[]): FamiliaPropia =>
+export const cta = (titulo: string, desc: string, ph: string, det: string, extra: CampoExtra[]): FamiliaPropia =>
   F(titulo, desc, ph, det, "Deudor", "Saldo por cobrar (COP)", "Fecha prometida de pago", "Cuentas por cobrar",
     [t("documento", "Documento o NIT"), tel("telefono", "Teléfono o WhatsApp"), t("factura", "Factura o remisión"), ...extra, sel("estado_cobro", "Gestión de cobro", ["Al día", "Recordatorio enviado", "Llamada hecha", "Promesa de pago", "Cobro jurídico"])]);
 
-const agd = (titulo: string, desc: string, ph: string, det: string, cont: string, extra: CampoExtra[]): FamiliaPropia =>
+export const agd = (titulo: string, desc: string, ph: string, det: string, cont: string, extra: CampoExtra[]): FamiliaPropia =>
   F(titulo, desc, ph, det, cont, "Valor estimado (COP)", "Fecha y hora", "Citas por atender",
     [tel("telefono", "Teléfono o WhatsApp"), t("hora", "Hora"), ...extra, sel("confirmacion", "Confirmación", ["Pendiente", "Confirmada", "Reprogramada", "Cancelada"])]);
 
