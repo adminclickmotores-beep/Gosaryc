@@ -198,6 +198,10 @@ const PERSONAL_INMO = m("personal_inmo", "Asesores, turnos y comisiones", "Comis
 const PAGOS_VET = m("pagos_vet", "Cobros de consultas y pagos digitales", "Cobro de consultas, cirugías, vacunas y productos por cada medio de pago.", Smartphone);
 const RESENAS_VET = m("resenas_vet", "Quejas y reseñas de dueños", "Reclamos, sugerencias y reseñas de los dueños de mascotas, con seguimiento.", Star);
 const PERSONAL_VET = m("personal_vet", "Veterinarios, turnos y pagos", "Turnos de veterinarios y auxiliares, honorarios y novedades del personal.", Briefcase);
+const CLIENTES_TEC = m("clientes_tec", "Clientes y cuentas de software", "Clientes de la agencia, sus proyectos, contactos y contratos activos.", Users);
+const PAGOS_TEC = m("pagos_tec", "Cobros de proyectos y suscripciones", "Cobros de proyectos, mensualidades y soporte por transferencia o pasarela.", Smartphone);
+const PERSONAL_TEC = m("personal_tec", "Equipo técnico, horas y pagos", "Horas de desarrolladores, pagos al equipo y novedades del personal técnico.", Briefcase);
+const METAS_TEC = m("metas_tec", "Metas de proyectos y facturación", "Metas de proyectos entregados y facturación recurrente por mes.", Target);
 const METAS_VET = m("metas_vet", "Metas de consultas y ventas", "Metas de consultas atendidas, vacunaciones y ventas de productos.", Target);
 const METAS_INMO = m("metas_inmo", "Metas de negocios cerrados", "Metas de arriendos y ventas cerradas por asesor y mes.", Target);
 const METAS_AGRO = m("metas_agro", "Metas de producción y ventas", "Metas de producción por lote y de ventas por temporada.", Target);
@@ -454,7 +458,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("tickets", "Soporte y tickets", "Solicitudes de clientes con seguimiento.", ClipboardList),
       m("suscripciones_tec", "Planes y suscripciones", "Cobros recurrentes de tus clientes.", Repeat),
       m("horas", "Horas y facturación", "Horas dedicadas a cada cliente.", CalendarClock),
-      CLIENTES, SOLICITUDES, FACTURAS, PAGOS, CAJA, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES_TEC, SOLICITUDES, FACTURAS, PAGOS_TEC, CAJA, PERSONAL_TEC, METAS_TEC, FINANZAS,
     ],
   },
   {
