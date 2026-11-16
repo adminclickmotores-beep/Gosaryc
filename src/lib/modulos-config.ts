@@ -126,6 +126,51 @@ const CAMPOS_POR_TIPO: Record<string, CampoExtra[]> = {
 
 /** Campos propios de módulos concretos (tienen prioridad sobre los de su familia). */
 const CAMPOS_ESPECIFICOS: Record<string, CampoExtra[]> = {
+  procedimientos: [
+    { clave: "documento", etiqueta: "Documento del paciente", tipo: "text" },
+    { clave: "telefono", etiqueta: "Teléfono del paciente", tipo: "tel" },
+    { clave: "zona", etiqueta: "Zona o pieza tratada", tipo: "text", placeholder: "Ej. Diente 36, rostro, lumbar" },
+    { clave: "codigo_cups", etiqueta: "Código CUPS", tipo: "text" },
+    { clave: "profesional", etiqueta: "Profesional que lo realizó", tipo: "text" },
+    { clave: "materiales", etiqueta: "Materiales o insumos usados", tipo: "text" },
+    { clave: "eps", etiqueta: "EPS o forma de pago", tipo: "text", placeholder: "EPS, particular o convenio" },
+  ],
+  ordenes_medicas: [
+    { clave: "paciente_doc", etiqueta: "Documento del paciente", tipo: "text" },
+    { clave: "tipo_orden", etiqueta: "Tipo de orden", tipo: "select", opciones: ["Examen de laboratorio", "Imagenología", "Remisión a especialista", "Procedimiento", "Otro"] },
+    { clave: "examen", etiqueta: "Examen o remisión indicada", tipo: "text" },
+    { clave: "diagnostico", etiqueta: "Diagnóstico (código CIE-10)", tipo: "text", placeholder: "Ej. J06.9" },
+    { clave: "urgencia", etiqueta: "Urgencia", tipo: "select", opciones: ["Normal", "Prioritaria", "Urgente"] },
+    { clave: "vigencia", etiqueta: "Vigencia de la orden (días)", tipo: "text" },
+  ],
+  formulas: [
+    { clave: "paciente_doc", etiqueta: "Documento del paciente", tipo: "text" },
+    { clave: "medicamento", etiqueta: "Medicamento", tipo: "text" },
+    { clave: "dosis", etiqueta: "Dosis", tipo: "text", placeholder: "Ej. 500 mg" },
+    { clave: "frecuencia", etiqueta: "Frecuencia", tipo: "text", placeholder: "Ej. Cada 8 horas" },
+    { clave: "duracion", etiqueta: "Duración del tratamiento", tipo: "text", placeholder: "Ej. 7 días" },
+    { clave: "numero_formula", etiqueta: "Número de fórmula", tipo: "text" },
+    { clave: "controlada", etiqueta: "Medicamento controlado", tipo: "select", opciones: ["No", "Sí"] },
+  ],
+  insumos_salud: [
+    { clave: "codigo", etiqueta: "Código o referencia", tipo: "text" },
+    { clave: "lote", etiqueta: "Lote", tipo: "text" },
+    { clave: "vencimiento", etiqueta: "Fecha de vencimiento", tipo: "date" },
+    { clave: "cantidad", etiqueta: "Cantidad disponible", tipo: "text" },
+    { clave: "presentacion", etiqueta: "Presentación", tipo: "select", opciones: ["Unidad", "Caja", "Frasco", "Ampolla", "Tableta", "Sobre", "Otro"] },
+    { clave: "minimo", etiqueta: "Stock mínimo", tipo: "text" },
+    { clave: "ubicacion", etiqueta: "Ubicación", tipo: "text", placeholder: "Nevera, estante o botiquín" },
+    { clave: "requiere_cadena_frio", etiqueta: "Requiere cadena de frío", tipo: "select", opciones: ["No", "Sí"] },
+  ],
+  autorizaciones: [
+    { clave: "paciente_doc", etiqueta: "Documento del paciente", tipo: "text" },
+    { clave: "numero_autorizacion", etiqueta: "Número de autorización", tipo: "text" },
+    { clave: "eps", etiqueta: "EPS o aseguradora", tipo: "text" },
+    { clave: "servicio", etiqueta: "Servicio autorizado", tipo: "text" },
+    { clave: "cantidad_autorizada", etiqueta: "Cantidad autorizada", tipo: "text" },
+    { clave: "vigencia", etiqueta: "Vence la autorización", tipo: "date" },
+    { clave: "estado_auth", etiqueta: "Estado", tipo: "select", opciones: ["Pendiente", "Aprobada", "Negada", "Vencida"] },
+  ],
   catalogo_servicios: [
     { clave: "duracion", etiqueta: "Duración del servicio", tipo: "text", placeholder: "Ej. 45 min" },
     { clave: "categoria", etiqueta: "Categoría", tipo: "text", placeholder: "Ej. Cortes, masajes, consultas" },
