@@ -281,9 +281,6 @@ const METAS_CEL = m("metas_cel", "Metas de ventas y reparaciones", "Metas de equ
 const FACTURAS_CEL = m("facturas_cel", "Facturación de equipos (DIAN)", "Facturas de celulares, accesorios y reparaciones, con IMEI y garantía.", Receipt);
 const FACTURAS_PAPEL = m("facturas_papel", "Facturación de colegios y empresas (DIAN)", "Facturas de útiles, copias y pedidos de colegios y empresas.", Receipt);
 const FACTURAS_MODA = m("facturas_moda", "Facturación de prendas (DIAN)", "Facturas de prendas y calzado, con talla y color.", Receipt);
-const CAJA_CEL = m("caja_cel", "Caja de la tienda de celulares", "Apertura, cierre de caja, cobros de equipos y gastos del día.", Banknote);
-const CAJA_PAPEL = m("caja_papel", "Caja de la papelería", "Apertura, cierre de caja, cobros de útiles y gastos del día.", Banknote);
-const CAJA_MODA = m("caja_moda", "Caja de la tienda de moda", "Apertura, cierre de caja, cobros de prendas y gastos del día.", Banknote);
 const METAS_JOY = m("metas_joy", "Metas de ventas y encargos", "Metas de ventas de piezas y de encargos cerrados por mes.", Target);
 const METAS_TEXTIL = m("metas_textil", "Metas de prendas y pedidos", "Metas de prendas confeccionadas y pedidos entregados por mes.", Target);
 const METAS_PREST = m("metas_prest", "Metas de colocación y recuperación", "Metas de préstamos colocados y de cartera recuperada por mes.", Target);
@@ -767,7 +764,7 @@ TIPOS_NEGOCIO.push(
       m("equipos_imei", "Equipos e IMEI", "Control de equipos por IMEI, estado y precio.", Smartphone),
       m("reparaciones_cel", "Reparaciones", "Equipos en reparación, diagnóstico, repuestos y entrega.", Wrench),
       m("accesorios_cel", "Accesorios e inventario", "Fundas, cargadores y existencias.", Package),
-      CLIENTES_CEL, GARANTIAS, FIADOS, FACTURAS_CEL, PAGOS_CEL, FIDELIZACION, RESENAS_CEL, CAJA_CEL, PROVEEDORES, PERSONAL_CEL, METAS_CEL, FINANZAS,
+      CLIENTES_CEL, GARANTIAS, ...propios("cel", "cuentas"), FACTURAS_CEL, PAGOS_CEL, FIDELIZACION, RESENAS_CEL, ...propios("cel", "caja", "proveedores"), PERSONAL_CEL, METAS_CEL, ...propios("cel", "finanzas"),
     ],
   },
   {
@@ -779,7 +776,7 @@ TIPOS_NEGOCIO.push(
       m("productos_papel", "Útiles y libros", "Inventario de útiles escolares y libros por ISBN.", BookOpen),
       m("copias_impresiones", "Copias e impresiones", "Servicios de fotocopia, impresión y su cobro.", FileText),
       m("lista_escolar", "Listas escolares", "Listas de útiles por colegio y pedidos de temporada.", ClipboardList),
-      CLIENTES_PAPEL, FIADOS, FACTURAS_PAPEL, PAGOS_PAPEL, FIDELIZACION, CAJA_PAPEL, PROVEEDORES, PERSONAL_PAPEL, METAS_PAPEL, FINANZAS,
+      CLIENTES_PAPEL, ...propios("papel", "cuentas"), FACTURAS_PAPEL, PAGOS_PAPEL, FIDELIZACION, ...propios("papel", "caja", "proveedores"), PERSONAL_PAPEL, METAS_PAPEL, ...propios("papel", "finanzas"),
     ],
   },
   {
@@ -793,7 +790,7 @@ TIPOS_NEGOCIO.push(
       m("vitrina", "Exhibición en vitrina", "Qué está exhibido y qué falta reponer.", Armchair),
       m("apartados", "Apartados (plan separe)", "Abonos y entrega de productos separados.", Tag),
       m("devoluciones", "Cambios y devoluciones", "Control de cambios y notas crédito.", Repeat),
-      CLIENTES_MODA, FIADOS, FACTURAS_MODA, PAGOS_MODA, FIDELIZACION, RESENAS_MODA, CAJA_MODA, PROVEEDORES, PERSONAL_MODA, METAS_MODA, FINANZAS,
+      CLIENTES_MODA, ...propios("moda", "cuentas"), FACTURAS_MODA, PAGOS_MODA, FIDELIZACION, RESENAS_MODA, ...propios("moda", "caja", "proveedores"), PERSONAL_MODA, METAS_MODA, ...propios("moda", "finanzas"),
     ],
   },
 );
