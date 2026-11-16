@@ -126,6 +126,33 @@ const CAMPOS_POR_TIPO: Record<string, CampoExtra[]> = {
 
 /** Campos propios de módulos concretos (tienen prioridad sobre los de su familia). */
 const CAMPOS_ESPECIFICOS: Record<string, CampoExtra[]> = {
+  catalogo_servicios: [
+    { clave: "duracion", etiqueta: "Duración del servicio", tipo: "text", placeholder: "Ej. 45 min" },
+    { clave: "categoria", etiqueta: "Categoría", tipo: "text", placeholder: "Ej. Cortes, masajes, consultas" },
+    { clave: "profesional_requerido", etiqueta: "Profesional o recurso que requiere", tipo: "text", placeholder: "Ej. Estilista, sala 2" },
+    { clave: "iva", etiqueta: "IVA aplicado", tipo: "select", opciones: ["Exento", "5 %", "19 %"] },
+    { clave: "precio_minimo", etiqueta: "Precio mínimo permitido (COP)", tipo: "text" },
+    { clave: "comision", etiqueta: "Comisión del profesional (%)", tipo: "text", placeholder: "Ej. 40" },
+    { clave: "requiere_anticipo", etiqueta: "Requiere anticipo", tipo: "select", opciones: ["No", "Sí"] },
+  ],
+  paquetes: [
+    { clave: "tipo_paquete", etiqueta: "Tipo", tipo: "select", opciones: ["Bono de sesiones", "Membresía mensual", "Plan trimestral", "Paquete de temporada"] },
+    { clave: "sesiones", etiqueta: "Número de sesiones incluidas", tipo: "text" },
+    { clave: "servicios_incluidos", etiqueta: "Servicios incluidos", tipo: "text" },
+    { clave: "vigencia", etiqueta: "Vigencia (días)", tipo: "text", placeholder: "Ej. 90" },
+    { clave: "sesiones_usadas", etiqueta: "Sesiones usadas", tipo: "text" },
+    { clave: "cliente_tel", etiqueta: "Teléfono del cliente", tipo: "tel" },
+    { clave: "documento", etiqueta: "Documento del cliente", tipo: "text" },
+    PAGO,
+  ],
+  historial: [
+    { clave: "servicio_realizado", etiqueta: "Servicio realizado", tipo: "text" },
+    { clave: "profesional", etiqueta: "Profesional que lo atendió", tipo: "text" },
+    { clave: "alergias", etiqueta: "Alergias o alertas del cliente", tipo: "text" },
+    { clave: "preferencias", etiqueta: "Preferencias del cliente", tipo: "text", placeholder: "Ej. Sin amoniaco, tono frío" },
+    { clave: "proxima_cita", etiqueta: "Próxima cita sugerida", tipo: "date" },
+    { clave: "fotos_antes_despues", etiqueta: "Fotos antes y después (enlace)", tipo: "text" },
+  ],
   productos: [
     { clave: "codigo_barras", etiqueta: "Código de barras o referencia", tipo: "text", placeholder: "Código del empaque o SKU" },
     { clave: "variante", etiqueta: "Talla, color o presentación", tipo: "text", placeholder: "Ej. Talla M, azul, 500 g" },
