@@ -1,45 +1,47 @@
-# Gosaryc de escritorio
+# Instalador de escritorio de Gosaryc (Electron)
 
-Esta carpeta genera los instaladores de Gosaryc para Windows, Mac y Linux.
-Es independiente de la web: no afecta a la app publicada.
+Crea un instalador de Windows (`Gosaryc Setup x.x.x.exe`). La app instalada:
+- Abre el panel de Gosaryc en su propia ventana, con acceso directo en el escritorio y en el menú Inicio.
+- Trae la API local de WhatsApp con el agente: arranca sola en segundo plano y le pasa la clave al panel (no hay que copiarla).
+- Usa el Microsoft Edge o Google Chrome que ya tiene el computador para conectar WhatsApp.
+- Sin internet muestra una pantalla con el botón "Reintentar".
+- Mantiene el código interno del equipo para las licencias.
 
-## Generar instaladores (en tu computadora)
+## Qué necesitas descargar (una sola vez, en el computador donde armas el instalador)
+1. **Node.js LTS**: https://nodejs.org (instálalo con "Siguiente" en todo y reinicia el computador).
+2. **Electron no se descarga a mano**: se instala solo con el paso de abajo.
 
+## Armar el instalador (la forma fácil)
+1. Descomprime la carpeta completa del proyecto (deben quedar juntas `escritorio` y `whatsapp-local`).
+2. Entra a la carpeta `escritorio` y haz doble clic en `crear-instalador-windows.bat`.
+3. Espera varios minutos. Al terminar se abre la carpeta `instaladores` con `Gosaryc Setup 1.0.0.exe`.
+4. Ese `.exe` es el que le entregas a tus clientes: doble clic, "Instalar" y listo.
+
+## Con comandos (opcional)
+Dentro de `whatsapp-local`:
 ```
-cd escritorio
+set PUPPETEER_SKIP_DOWNLOAD=true
+npm install --omit=dev
+```
+Dentro de `escritorio`:
+```
 npm install
-npm run iniciar              # probar la ventana
-npm run instalador:windows   # .exe  (hazlo en Windows)
-npm run instalador:mac       # .dmg  (hazlo en una Mac)
-npm run instalador:linux     # .AppImage y .deb (hazlo en Linux)
+npm run iniciar              (prueba la app sin instalar)
+npm run instalador:windows   (crea el instalador en "instaladores")
 ```
 
-Los archivos salen en `escritorio/instaladores/`.
-Antes, publica la web (botón "Publish") o define `GOSARYC_URL` con tu dirección.
+## Usar el agente en la app instalada
+1. Inicia sesión en la app.
+2. Entra a **Mi negocio > Agente de WhatsApp**, pulsa **Crear agente** y luego **Conectar este número**.
+3. Escanea el código QR con el WhatsApp de ese negocio. Repite en cada negocio con su propio número.
+4. Mantén la app abierta (puedes minimizarla): si la cierras, el agente deja de responder.
 
-## Crear el .exe paso a paso (Windows)
+## Cambiar la dirección del panel
+Por defecto abre `https://gosaryc.lovable.app`. Con otro dominio, define `GOSARYC_URL` antes de abrir la app y agrega ese dominio en la variable `ORIGENES` de la API local.
 
-1. Instala Node.js desde https://nodejs.org (versión LTS).
-2. Abre la carpeta `escritorio` y haz doble clic en `crear-instalador-windows.bat`.
-3. Al terminar se abre la carpeta `instaladores` con `Gosaryc Setup 1.0.0.exe`.
+## Aviso de Windows
+El instalador no está firmado con un certificado de pago: Windows puede mostrar "Windows protegió su PC". Pulsa **Más información > Ejecutar de todas formas**.
 
-La app abre https://gosaryc.lovable.app. Cada vez que publiques cambios en la web,
-los usuarios los ven al abrir el programa, sin reinstalar. Si no hay internet muestra un aviso con botón "Reintentar".
-Al abrirse por primera vez muestra el código interno del equipo y pide el correo y el nombre del negocio.
-La solicitud te llega a la pantalla de Licencias en tu celular: ahí aprietas "Prueba 30 días" o "Licencia 1 año"
-y el programa se activa solo en ese equipo. Cada licencia queda ligada a su equipo.
-
-## Tu firma (código firmado)
-
-Sin firma el instalador funciona, pero Windows y Mac muestran "editor desconocido".
-Para que salga a nombre de Gosaryc, compra el certificado y pásalo con variables de entorno
-al generar el instalador:
-
-- Windows: `CSC_LINK` (ruta al .pfx) y `CSC_KEY_PASSWORD`.
-- Mac: cuenta Apple Developer (99 USD/año), `CSC_LINK`, `CSC_KEY_PASSWORD`,
-  `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID`.
-- Linux: no requiere firma.
-
-El nombre del editor ya está configurado como "Gosaryc".
-Para cambiar el icono, agrega `build/icon.ico` (Windows), `build/icon.icns` (Mac)
-y `build/icon.png` (Linux, 512x512).
+## Más adelante
+- Icono propio: guarda un `icono.ico` (256x256) en una carpeta `build` dentro de `escritorio`.
+- Mac: `npm run instalador:mac` (se arma desde un Mac).

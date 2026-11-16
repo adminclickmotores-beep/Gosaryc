@@ -6,7 +6,62 @@ const os = require("os");
 const path = require("path");
 const fs = require("fs");
 const crypto = require("crypto");
-const { execFileSync } = require("child_process");
+const { execFileSync, spawn } = require("child_process");
+
+// ---- API local de WhatsApp (varios números + agente), integrada en segundo plano ----
+let procesoWa = null;
+const carpetaWa = () => (app.isPackaged ? path.join(process.resourcesPath, "whatsapp-local") : path.join(__dirname, "..", "whatsapp-local"));
+const datosWa = () => path.join(app.getPath("userData"), "whatsapp");
+
+// Usa el Edge o Chrome que ya tiene el computador (no hay que descargar otro navegador).
+function buscarNavegador() {
+  const pf = process.env["ProgramFiles"] || "C:\\Program Files";
+  const pf86 = process.env["ProgramFiles(x86)"] || "C:\\Program Files (x86)";
+  const candidatos = [
+    path.join(pf86, "Microsoft", "Edge", "Application", "msedge.exe"),
+    path.join(pf, "Microsoft", "Edge", "Application", "msedge.exe"),
+    path.join(pf, "Google", "Chrome", "Application", "chrome.exe"),
+    path.join(pf86, "Google", "Chrome", "Application", "chrome.exe"),
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/usr/bin/google-chrome",
+    "/usr/bin/chromium",
+  ];
+  return candidatos.find((c) => fs.existsSync(c)) || "";
+}
+
+function iniciarWhatsApp() {
+  const servidor = path.join(carpetaWa(), "server.js");
+  if (!fs.existsSync(servidor)) return;
+  fs.mkdirSync(datosWa(), { recursive: true });
+  procesoWa = spawn(process.execPath, [servidor], {
+    cwd: carpetaWa(),
+    windowsHide: true,
+    env: { ...process.env, ELECTRON_RUN_AS_NODE: "1", DATOS: datosWa(), CHROME_PATH: buscarNavegador() },
+    stdio: "ignore",
+  });
+  procesoWa.on("exit", () => {
+    procesoWa = null;
+  });
+}
+
+// Deja la clave de la API local lista en el panel, para no copiarla a mano.
+async function entregarClave(ventana) {
+  const archivo = path.join(datosWa(), "token.txt");
+  for (let i = 0; i < 40; i++) {
+    if (fs.existsSync(archivo)) {
+      const token = fs.readFileSync(archivo, "utf8").trim();
+      if (token && !ventana.isDestroyed()) {
+        try {
+          await ventana.webContents.executeJavaScript(`localStorage.setItem("whatsapp_local_token", ${JSON.stringify(token)})`);
+        } catch {
+          /* la ventana cambió de página */
+        }
+      }
+      return;
+    }
+    await new Promise((r) => setTimeout(r, 500));
+  }
+}
 
 // Código interno del equipo: sale del identificador propio de cada computadora (no cambia al reinstalar).
 function leerIdentificadorEquipo() {
@@ -93,6 +148,9 @@ function crearVentana() {
   // Marca la app para que la web sepa que corre en el escritorio y pida la licencia.
   ventana.webContents.setUserAgent(`${ventana.webContents.getUserAgent()} GosarycEscritorio/1.0`);
   ventana.loadURL(URL_APP);
+  ventana.webContents.on("did-finish-load", () => {
+    if (ventana.webContents.getURL().startsWith(ORIGEN_APP)) void entregarClave(ventana);
+  });
 
   // Si no hay internet, se muestra un aviso con botón para reintentar (solo para la página principal).
   ventana.webContents.on("did-fail-load", (_e, codigo, _desc, urlFallida, esPrincipal) => {
@@ -132,7 +190,17 @@ if (!app.requestSingleInstanceLock()) {
       ventanaPrincipal.focus();
     }
   });
+  app.on("before-quit", () => {
+    if (procesoWa) {
+      try {
+        procesoWa.kill();
+      } catch {
+        /* ya cerrado */
+      }
+    }
+  });
   app.whenReady().then(() => {
+    iniciarWhatsApp();
     crearVentana();
     app.on("activate", () => {
       if (BrowserWindow.getAllWindows().length === 0) crearVentana();

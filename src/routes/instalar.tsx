@@ -46,9 +46,22 @@ function InstalarPage() {
   const [evento, setEvento] = useState<EventoInstalacion | null>(null);
   const [instalada, setInstalada] = useState(false);
   const [esIos, setEsIos] = useState(false);
+  const [pista, setPista] = useState("");
 
   useEffect(() => {
-    setEsIos(/iphone|ipad|ipod/i.test(navigator.userAgent));
+    const ua = navigator.userAgent;
+    setEsIos(/iphone|ipad|ipod/i.test(ua));
+    if (/iphone|ipad|ipod/i.test(ua) && /crios|fxios|edgios|opios/i.test(ua)) {
+      setPista("Estás en un navegador de iPhone que no puede instalar apps. Abre esta misma página en Safari y toca Compartir > Agregar a pantalla de inicio.");
+    } else if (/firefox/i.test(ua) && !/android/i.test(ua)) {
+      setPista("Firefox no instala apps en el computador. Abre esta página con Microsoft Edge o Google Chrome y pulsa Instalar.");
+    } else if (/macintosh/i.test(ua) && /safari/i.test(ua) && !/chrome|crios|edg/i.test(ua)) {
+      setPista("En Safari del Mac: abre el menú Archivo y elige «Agregar al Dock». También puedes usar Chrome o Edge.");
+    } else if (/samsungbrowser/i.test(ua)) {
+      setPista("En Samsung Internet toca el menú y elige «Agregar página a» > «Pantalla de inicio», o abre esta página en Chrome.");
+    } else {
+      setPista("");
+    }
     if (window.matchMedia("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone) {
       // Ya estamos dentro de la app instalada: la pantalla de instalación no pinta nada aquí, entramos a la app.
       setInstalada(true);
@@ -139,6 +152,12 @@ function InstalarPage() {
         </p>
       </GlassPanel>
 
+      {pista && (
+        <GlassPanel className="p-4 text-sm text-foreground">
+          <p className="break-words">{pista}</p>
+        </GlassPanel>
+      )}
+
       <GlassPanel className="p-6 text-center">
         {instalada ? (
           <p className="flex items-center justify-center gap-2 text-foreground">
@@ -185,6 +204,15 @@ function InstalarPage() {
         </GlassPanel>
       </div>
 
+      <GlassPanel className="p-5">
+        <Monitor className="h-5 w-5 text-primary" />
+        <h2 className="mt-3 font-medium text-foreground">Después de instalar</h2>
+        <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+          <li>Abre la app desde su acceso directo: se abre en su propia ventana, sin barra del navegador.</li>
+          <li>Sigue funcionando sin internet con lo que ya cargaste; al volver la conexión se sincroniza.</li>
+          <li>La app se actualiza sola cada vez que se publican mejoras.</li>
+        </ul>
+      </GlassPanel>
     </div>
   );
 }

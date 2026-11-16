@@ -2,17 +2,34 @@
 REM Haz doble clic en este archivo para crear el instalador de Gosaryc para Windows.
 REM Funciona sin importar desde que carpeta lo abras.
 cd /d "%~dp0"
-echo Instalando dependencias (puede tardar unos minutos)...
+where node >nul 2>nul
+if errorlevel 1 goto sinnode
+
+echo [1/3] Preparando la API local de WhatsApp (agente)...
+set PUPPETEER_SKIP_DOWNLOAD=true
+set PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+pushd ..\whatsapp-local
+call npm install --omit=dev
+if errorlevel 1 ( popd & goto error )
+popd
+
+echo [2/3] Instalando dependencias de escritorio (puede tardar unos minutos)...
 call npm install
 if errorlevel 1 goto error
-echo Creando el instalador de Windows...
+
+echo [3/3] Creando el instalador de Windows...
 call npm run instalador:windows
 if errorlevel 1 goto error
+
 echo.
 echo Listo. El instalador esta en la carpeta "instaladores".
 explorer "%~dp0instaladores"
 pause
 exit /b 0
+:sinnode
+echo Necesitas instalar Node.js primero: https://nodejs.org (version LTS)
+pause
+exit /b 1
 :error
 echo.
 echo Ocurrio un error. Revisa que Node.js este instalado (https://nodejs.org).

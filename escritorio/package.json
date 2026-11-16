@@ -1,43 +1,39 @@
 {
   "name": "gosaryc-escritorio",
   "version": "1.0.0",
-  "description": "Gosaryc - aplicación de escritorio",
+  "private": true,
+  "description": "Gosaryc para escritorio: abre el panel y trae la API local de WhatsApp con el agente integrada.",
   "author": "Gosaryc",
   "main": "main.cjs",
-  "private": true,
   "scripts": {
     "iniciar": "electron .",
+    "start": "electron .",
     "instalador:windows": "electron-builder --win",
     "instalador:mac": "electron-builder --mac",
-    "instalador:linux": "electron-builder --linux",
-    "instalador:todos": "electron-builder --win --mac --linux"
+    "instalador:linux": "electron-builder --linux"
   },
   "devDependencies": {
     "electron": "^33.0.0",
     "electron-builder": "^25.1.8"
   },
   "build": {
-    "appId": "com.gosaryc.app",
+    "appId": "app.gosaryc.escritorio",
     "productName": "Gosaryc",
-    "copyright": "Copyright © 2026 Gosaryc",
-    "files": ["main.cjs", "preload.cjs", "package.json"],
     "directories": { "output": "instaladores" },
-    "win": {
-      "target": ["nsis"],
-      "publisherName": "Gosaryc"
-    },
+    "files": ["main.cjs", "preload.cjs", "package.json"],
+    "extraResources": [
+      {
+        "from": "../whatsapp-local",
+        "to": "whatsapp-local",
+        "filter": ["**/*", "!.sesion/**", "!token.txt", "!lineas.json"]
+      }
+    ],
+    "win": { "target": "nsis" },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
-    },
-    "mac": {
-      "target": ["dmg"],
-      "category": "public.app-category.business"
-    },
-    "linux": {
-      "target": ["AppImage", "deb"],
-      "category": "Office",
-      "maintainer": "Gosaryc"
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
     }
   }
 }

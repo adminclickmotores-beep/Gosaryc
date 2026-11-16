@@ -149,7 +149,12 @@ function crearLinea({ id, nombre, clave, agente }) {
   };
   linea.cliente = new Client({
     authStrategy: new LocalAuth({ clientId: id, dataPath: path.join(CARPETA, ".sesion") }),
-    puppeteer: { headless: true, args: ["--no-sandbox", "--disable-setuid-sandbox"] },
+    puppeteer: {
+      headless: true,
+      // Con el instalador de escritorio se usa el Edge o Chrome ya instalado (CHROME_PATH).
+      executablePath: process.env.CHROME_PATH || undefined,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    },
   });
   linea.cliente.on("qr", async (qr) => {
     linea.estado = "esperando_qr";

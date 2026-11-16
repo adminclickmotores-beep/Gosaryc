@@ -32,6 +32,13 @@ export const Route = createFileRoute("/manifiesto")({
           background_color: "#0b0b14",
           theme_color: color,
           lang: "es",
+          orientation: "any",
+          categories: ["business", "productivity"],
+          prefer_related_applications: false,
+          shortcuts: [
+            { name: "Inicio", url: "/dashboard" },
+            { name: "Asistente virtual", url: "/asistente-virtual" },
+          ],
           icons,
         };
         return new Response(JSON.stringify(cuerpo), {
