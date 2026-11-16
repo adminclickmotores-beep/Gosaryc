@@ -126,6 +126,31 @@ const CAMPOS_POR_TIPO: Record<string, CampoExtra[]> = {
 
 /** Campos propios de módulos concretos (tienen prioridad sobre los de su familia). */
 const CAMPOS_ESPECIFICOS: Record<string, CampoExtra[]> = {
+  cursos: [
+    { clave: "docente", etiqueta: "Docente o instructor", tipo: "text" },
+    { clave: "horario", etiqueta: "Horario", tipo: "text", placeholder: "Ej. Lunes y miércoles 6 a 8 p. m." },
+    { clave: "cupo", etiqueta: "Cupo máximo", tipo: "text" },
+    { clave: "matriculados", etiqueta: "Estudiantes matriculados", tipo: "text" },
+    { clave: "nivel", etiqueta: "Nivel", tipo: "select", opciones: ["Básico", "Intermedio", "Avanzado", "Técnico", "Otro"] },
+    { clave: "fecha_inicio", etiqueta: "Fecha de inicio", tipo: "date" },
+    { clave: "valor_mensual", etiqueta: "Valor de la mensualidad (COP)", tipo: "text" },
+  ],
+  mensualidades: [
+    { clave: "mes_cobrado", etiqueta: "Mes cobrado", tipo: "text", placeholder: "Ej. Marzo 2027" },
+    { clave: "acudiente_tel", etiqueta: "Teléfono del acudiente", tipo: "tel" },
+    { clave: "documento", etiqueta: "Documento del estudiante", tipo: "text" },
+    { clave: "fecha_vencimiento", etiqueta: "Fecha de vencimiento", tipo: "date" },
+    { clave: "descuento", etiqueta: "Descuento (%)", tipo: "text" },
+    { clave: "abonado", etiqueta: "Abonos recibidos (COP)", tipo: "text" },
+    PAGO,
+  ],
+  asistencia: [
+    { clave: "fecha_sesion", etiqueta: "Fecha de la sesión", tipo: "date" },
+    { clave: "asistio", etiqueta: "Asistencia", tipo: "select", opciones: ["Asistió", "Faltó con excusa", "Faltó sin excusa", "Llegó tarde"] },
+    { clave: "nota", etiqueta: "Nota o calificación", tipo: "text", placeholder: "Ej. 4.5 o Aprobado" },
+    { clave: "avance", etiqueta: "Avance o tema visto", tipo: "text" },
+    { clave: "observacion", etiqueta: "Observaciones para el acudiente", tipo: "text" },
+  ],
   procedimientos: [
     { clave: "documento", etiqueta: "Documento del paciente", tipo: "text" },
     { clave: "telefono", etiqueta: "Teléfono del paciente", tipo: "tel" },
@@ -304,13 +329,6 @@ const CAMPOS_ESPECIFICOS: Record<string, CampoExtra[]> = {
     { clave: "sala", etiqueta: "Sala o zona", tipo: "text" },
     { clave: "hora", etiqueta: "Hora", tipo: "text" },
     { clave: "nivel", etiqueta: "Nivel", tipo: "select", opciones: ["Principiante", "Intermedio", "Avanzado", "Todos"] },
-  ],
-  mensualidades: [
-    { clave: "documento", etiqueta: "Documento del acudiente", tipo: "text" },
-    { clave: "telefono", etiqueta: "Teléfono del acudiente", tipo: "tel" },
-    { clave: "correo", etiqueta: "Correo del acudiente", tipo: "email" },
-    { clave: "mes", etiqueta: "Mes cobrado", tipo: "text" },
-    PAGO,
   ],
   facturas: [
     { clave: "numero", etiqueta: "Número de factura", tipo: "text" },
