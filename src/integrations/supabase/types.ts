@@ -1934,6 +1934,57 @@ export type Database = {
         }
         Relationships: []
       }
+      proveedores_registros: {
+        Row: {
+          abonado: number
+          anulado: boolean
+          contacto: string | null
+          created_at: string
+          datos: Json
+          detalle: string | null
+          estado: string
+          historial: Json
+          id: string
+          monto: number
+          owner_id: string | null
+          telefono: string | null
+          tipo_negocio: string | null
+          titulo: string
+        }
+        Insert: {
+          abonado?: number
+          anulado?: boolean
+          contacto?: string | null
+          created_at?: string
+          datos?: Json
+          detalle?: string | null
+          estado?: string
+          historial?: Json
+          id?: string
+          monto?: number
+          owner_id?: string | null
+          telefono?: string | null
+          tipo_negocio?: string | null
+          titulo: string
+        }
+        Update: {
+          abonado?: number
+          anulado?: boolean
+          contacto?: string | null
+          created_at?: string
+          datos?: Json
+          detalle?: string | null
+          estado?: string
+          historial?: Json
+          id?: string
+          monto?: number
+          owner_id?: string | null
+          telefono?: string | null
+          tipo_negocio?: string | null
+          titulo?: string
+        }
+        Relationships: []
+      }
       resenas_registros: {
         Row: {
           anulado: boolean

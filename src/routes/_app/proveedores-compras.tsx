@@ -124,9 +124,8 @@ function ProveedoresComprasPage() {
 
   const cargar = useCallback(async () => {
     const { data, error } = await supabase
-      .from("modulo_registros")
-      .select("titulo, contacto, estado, monto")
-      .eq("modulo", "proveedores");
+      .from("proveedores_registros")
+      .select("titulo, contacto, estado, monto");
     if (error) toast.error("No se pudieron cargar los proveedores.");
     setFilas(data ?? []);
     setCargando(false);
