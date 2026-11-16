@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía de uso de Gosaryc</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Segoe UI,system-ui,sans-serif;background:#0b0b14;color:#e8e8f0;line-height:1.6}
+  header{padding:32px 24px;background:linear-gradient(135deg,#047857,#2dd4a0);color:#fff}
+  header h1{margin:0 0 4px;font-size:28px}
+  header p{margin:0;opacity:.9}
+  .wrap{display:flex;gap:24px;max-width:1100px;margin:0 auto;padding:24px}
+  nav{position:sticky;top:16px;align-self:flex-start;min-width:220px;display:flex;flex-direction:column;gap:4px}
+  nav a{color:#9be8cf;text-decoration:none;padding:6px 10px;border-radius:8px;font-size:14px}
+  nav a:hover{background:#1a1a2b}
+  main{flex:1;min-width:0}
+  section{background:#14141f;border:1px solid #23233a;border-radius:14px;padding:20px 24px;margin-bottom:18px}
+  h2{margin:0 0 10px;font-size:20px;color:#2dd4a0}
+  h3{margin:16px 0 4px;font-size:16px}
+  ul,ol{padding-left:22px;margin:6px 0}
+  li{margin:4px 0}
+  code{background:#1f1f33;padding:1px 6px;border-radius:6px}
+  .aviso{background:#10281f;border:1px solid #1f6f55;border-radius:10px;padding:10px 14px;margin:10px 0}
+  @media(max-width:760px){.wrap{flex-direction:column}nav{position:static;flex-direction:row;flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Guía de uso de Gosaryc</h1>
+  <p>Todo lo importante para empezar a vender con tu programa.</p>
+</header>
+<div class="wrap">
+<nav>
+  <a href="#inicio">1. Primeros pasos</a>
+  <a href="#vender">2. Vender y cobrar</a>
+  <a href="#pedidos">3. Pedidos y cocina</a>
+  <a href="#menu">4. Menú y QR</a>
+  <a href="#caja">5. Caja</a>
+  <a href="#inventario">6. Inventario y recetas</a>
+  <a href="#asistente">7. Asistente virtual</a>
+  <a href="#whatsapp">8. Agente de WhatsApp</a>
+  <a href="#equipo">9. Equipo y permisos</a>
+  <a href="#licencia">10. Licencia</a>
+  <a href="#problemas">11. Problemas frecuentes</a>
+</nav>
+<main>
+
+<section id="inicio">
+<h2>1. Primeros pasos</h2>
+<ol>
+  <li>Abre <b>Gosaryc</b> desde el acceso directo del escritorio. Necesitas internet para entrar.</li>
+  <li>Crea tu cuenta con correo y contraseña (mínimo 6 caracteres). El ojo muestra u oculta la contraseña. Marca <b>Recordarme</b> en tu equipo personal.</li>
+  <li>Escribe el nombre de tu negocio y elige su tipo. Con eso se activan los módulos de tu giro.</li>
+  <li>Completa la lista <b>Primeros pasos</b>: datos del negocio, tipo, primer producto e instalación de la app en tu celular.</li>
+</ol>
+<div class="aviso">Cada pantalla tiene un pequeño instructivo («cómo usar esta pantalla»). En el panel hay también una <b>Academia</b> con un curso por lecciones.</div>
+<p>Atajo útil: <code>Ctrl + K</code> abre el buscador de módulos.</p>
+</section>
+
+<section id="vender">
+<h2>2. Vender y cobrar</h2>
+<ol>
+  <li>Busca o toca un producto para agregarlo a la <b>Cuenta actual</b>. Con + y − cambias la cantidad.</li>
+  <li>Elige: en mesa, para llevar o domicilio. En domicilio escribe nombre, celular y dirección; la tarifa de envío se suma sola según el barrio.</li>
+  <li>Escoge el método de pago (efectivo, transferencia, tarjeta, Nequi, Daviplata…). En efectivo escribe lo recibido y se calcula el cambio.</li>
+  <li>Cobra: se genera el recibo, que puedes imprimir.</li>
+</ol>
+<p>Si no hay productos, agrégalos primero en la pestaña <b>Menú</b>.</p>
+</section>
+
+<section id="pedidos">
+<h2>3. Pedidos y cocina</h2>
+<p>Los pedidos se ordenan en columnas: Nuevos → En cocina → Listos → En camino → Entregados. Cada pedido tiene un botón para pasarlo a la siguiente etapa y puedes imprimir la comanda para la cocina. Los pedidos que hacen tus clientes desde el menú público llegan solos.</p>
+</section>
+
+<section id="menu">
+<h2>4. Menú público y código QR</h2>
+<ul>
+  <li>En <b>Menú</b> creas categorías y productos (nombre, precio, foto). Solo los productos activos se ven en el menú público.</li>
+  <li>En <b>QR del menú</b> descargas el código para imprimirlo en las mesas o compartir el enlace por WhatsApp y redes.</li>
+  <li>La dirección de los enlaces se define en Configuración → Negocio («Dirección pública», debe empezar con https://).</li>
+</ul>
+</section>
+
+<section id="caja">
+<h2>5. Caja</h2>
+<ol>
+  <li>Abre el turno escribiendo el fondo inicial en efectivo.</li>
+  <li>Durante el día registra gastos y retiros con «Registrar movimiento». Las ventas se suman solas.</li>
+  <li>Al final usa <b>Arqueo y cierre</b>: escribe el efectivo contado. Si hay diferencia, explica el motivo en las notas.</li>
+</ol>
+<p>Con la caja cerrada no se pueden registrar movimientos: abre un turno primero.</p>
+</section>
+
+<section id="inventario">
+<h2>6. Inventario, recetas y reportes</h2>
+<p>Registra tus insumos con cantidad, costo y stock mínimo, y arma las recetas de cada producto. Así el programa calcula costo y margen y descuenta inventario en cada venta. En <b>Reportes</b> y <b>Finanzas</b> ves ventas, costos y utilidad por periodo.</p>
+</section>
+
+<section id="asistente">
+<h2>7. Asistente virtual</h2>
+<p>Es tu ayudante dentro del programa: responde dudas de uso, te explica cómo hacer algo paso a paso y conoce los datos de tu negocio.</p>
+<ol>
+  <li>Entra al módulo <b>Asistente virtual</b> desde el menú o con <code>Ctrl + K</code>.</li>
+  <li>Escribe tu pregunta con tus palabras. Ejemplos: «¿Cómo abro la caja?», «¿Cómo agrego un producto?», «¿Cómo cobro un domicilio?».</li>
+  <li>Si dice que falta un dato de tu negocio, complétalo en <b>Mi negocio</b> (horarios, teléfono, zonas de entrega…).</li>
+</ol>
+<div class="aviso">El asistente tiene un límite diario de consultas. Si lo alcanzas, vuelve a intentarlo al día siguiente.</div>
+</section>
+
+<section id="whatsapp">
+<h2>8. Agente de WhatsApp (ventas y atención)</h2>
+<p>El instalador ya trae el agente integrado: se enciende solo en segundo plano cuando abres Gosaryc. Atiende a tus clientes por WhatsApp con los datos y el catálogo de tu negocio, aconseja, resuelve dudas y ayuda a cerrar ventas.</p>
+<h3>Para conectarlo</h3>
+<ol>
+  <li>Entra a <b>Mi negocio</b> y busca la sección del <b>Agente de WhatsApp</b>.</li>
+  <li>Agrega una línea y escanea el código QR con el WhatsApp del número de tu negocio (WhatsApp → Dispositivos vinculados → Vincular un dispositivo).</li>
+  <li>Cuando aparezca como conectado, el agente empieza a responder.</li>
+</ol>
+<h3>Para que responda bien</h3>
+<ul>
+  <li>Completa los datos de tu negocio y deja activos tus productos con precio: de ahí sale lo que responde.</li>
+  <li>El agente aprende: cuando tú contestas a un cliente desde tu teléfono, aprende de esa respuesta. No necesitas darle instrucciones aparte.</li>
+  <li>Puedes revisar sus conversaciones y tomar el control cuando quieras.</li>
+</ul>
+<div class="aviso">Mantén Gosaryc abierto (o minimizado) y el computador con internet para que el agente siga respondiendo. Si lo cierras, el agente se apaga.</div>
+</section>
+
+<section id="equipo">
+<h2>9. Equipo y permisos</h2>
+<p>En Configuración → <b>Equipo y permisos</b> invitas a cada persona por correo con un enlace y decides qué módulos puede usar. Quien no tiene permiso para un módulo no lo ve.</p>
+</section>
+
+<section id="licencia">
+<h2>10. Licencia</h2>
+<p>La primera vez, Gosaryc pide un código de licencia (prueba de 30 días o licencia anual). Cuando esté por vencer verás un aviso para renovar; la renovación la gestiona el equipo de Gosaryc.</p>
+</section>
+
+<section id="problemas">
+<h2>11. Problemas frecuentes</h2>
+<ul>
+  <li><b>No hay internet:</b> aparece una pantalla con el botón <b>Reintentar</b>.</li>
+  <li><b>No veo un módulo:</b> falta el permiso o tu tipo de negocio no lo incluye; pídele al administrador que lo active.</li>
+  <li><b>No puedo cobrar o registrar movimientos de caja:</b> abre el turno de caja.</li>
+  <li><b>El menú público está vacío:</b> agrega productos y déjalos activos.</li>
+  <li><b>Windows muestra «Windows protegió su PC»:</b> pulsa «Más información» y luego «Ejecutar de todas formas».</li>
+  <li><b>El agente de WhatsApp no responde:</b> revisa que la línea siga vinculada y que haya internet; si no, vuelve a escanear el QR.</li>
+  <li><b>La pantalla se ve rara:</b> cierra y vuelve a abrir Gosaryc; si sigue, contacta a soporte.</li>
+</ul>
+</section>
+
+</main>
+</div>
+</body>
+</html>

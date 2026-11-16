@@ -23,6 +23,7 @@
     "directories": { "output": "instaladores" },
     "files": ["main.cjs", "preload.cjs", "package.json", "build/icon.png"],
     "extraResources": [
+      { "from": "guia", "to": "guia" },
       {
         "from": "../whatsapp-local",
         "to": "whatsapp-local",
@@ -38,7 +39,8 @@
       "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
       "shortcutName": "Gosaryc",
-      "runAfterFinish": true
+      "runAfterFinish": true,
+      "include": "build/installer.nsh"
     }
   }
 }

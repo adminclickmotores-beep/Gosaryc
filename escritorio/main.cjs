@@ -1,7 +1,7 @@
 // Gosaryc - envoltorio de escritorio (Electron).
 // Abre la web publicada de Gosaryc dentro de una ventana propia.
 // Para apuntar a otra dirección: GOSARYC_URL=https://tu-dominio.com npm run iniciar
-const { app, BrowserWindow, shell, ipcMain } = require("electron");
+const { app, BrowserWindow, shell, ipcMain, Menu } = require("electron");
 const os = require("os");
 const path = require("path");
 const fs = require("fs");
@@ -122,6 +122,28 @@ const PAGINA_SIN_CONEXION = `data:text/html;charset=utf-8,${encodeURIComponent(`
 
 let ventanaPrincipal = null;
 
+// Guía de uso incluida en el instalador (funciona sin internet).
+function abrirGuia() {
+  const archivo = app.isPackaged ? path.join(process.resourcesPath, "guia", "guia.html") : path.join(__dirname, "guia", "guia.html");
+  const g = new BrowserWindow({
+    width: 1000,
+    height: 760,
+    title: "Guía de uso de Gosaryc",
+    icon: path.join(__dirname, "build", "icon.png"),
+    autoHideMenuBar: true,
+  });
+  g.loadFile(archivo);
+}
+
+function crearMenu() {
+  Menu.setApplicationMenu(
+    Menu.buildFromTemplate([
+      { label: "Gosaryc", submenu: [{ label: "Recargar", accelerator: "CmdOrCtrl+R", click: () => ventanaPrincipal && ventanaPrincipal.reload() }, { type: "separator" }, { role: "quit", label: "Salir" }] },
+      { label: "Ayuda", submenu: [{ label: "Guía de uso (asistente virtual, agente de WhatsApp y más)", accelerator: "F1", click: abrirGuia }] },
+    ]),
+  );
+}
+
 function crearVentana() {
   const ventana = new BrowserWindow({
     width: 1280,
@@ -202,7 +224,18 @@ if (!app.requestSingleInstanceLock()) {
   });
   app.whenReady().then(() => {
     iniciarWhatsApp();
+    crearMenu();
     crearVentana();
+    // La primera vez se muestra la guía de uso.
+    try {
+      const marca = path.join(app.getPath("userData"), "guia-vista.txt");
+      if (!fs.existsSync(marca)) {
+        fs.writeFileSync(marca, "1");
+        abrirGuia();
+      }
+    } catch {
+      /* sin guía inicial */
+    }
     app.on("activate", () => {
       if (BrowserWindow.getAllWindows().length === 0) crearVentana();
     });
