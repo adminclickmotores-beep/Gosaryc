@@ -232,6 +232,10 @@ const PERSONAL_LAV = m("personal_lav", "Operarios, turnos y pagos", "Turnos de p
 const CLIENTES_COND = m("clientes_cond", "Propietarios e inquilinos", "Propietarios e inquilinos de cada unidad, con contacto y estado de cuenta.", Users);
 const PAGOS_COND = m("pagos_cond", "Pagos de cuotas y consignaciones", "Pagos de administración, multas y consignaciones de cuotas por medio digital.", Smartphone);
 const PERSONAL_COND = m("personal_cond", "Vigilancia, aseo y nómina", "Turnos de portería, aseo y mantenimiento, y pagos del personal del edificio.", Briefcase);
+const CLIENTES_PREST = m("clientes_prest", "Clientes y deudores", "Prestatarios y avalistas con su historial de pagos y calificación de riesgo.", Users);
+const PAGOS_PREST = m("pagos_prest", "Recaudos y abonos a préstamos", "Abonos a cuotas y recaudos en efectivo, transferencia o consignación.", Smartphone);
+const PERSONAL_PREST = m("personal_prest", "Cobradores, turnos y comisiones", "Rutas de cobro, comisiones por recaudo y novedades de cada cobrador.", Briefcase);
+const METAS_PREST = m("metas_prest", "Metas de colocación y recuperación", "Metas de préstamos colocados y de cartera recuperada por mes.", Target);
 const METAS_COND = m("metas_cond", "Metas de recaudo de cuotas", "Metas de recaudo mensual y cartera recuperada por torre.", Target);
 const METAS_LAV = m("metas_lav", "Metas de kilos y facturación", "Metas de kilos lavados, órdenes y facturación por semana.", Target);
 const METAS_PROF = m("metas_prof", "Metas de casos y honorarios", "Metas de casos cerrados y honorarios facturados por mes.", Target);
@@ -660,7 +664,7 @@ TIPOS_NEGOCIO.push(
       m("cronograma_cuotas", "Cronograma de cuotas", "Simulación de cuotas y fechas de pago.", CalendarDays),
       m("cobranza_diaria", "Cobranza diaria y mensual", "Cuotas por cobrar hoy, en mora y promesas de pago.", Coins),
       m("garantias_prest", "Garantías de préstamo", "Bienes o avales que respaldan cada préstamo.", ShieldCheck),
-      CLIENTES, AGENDA, FACTURAS, PAGOS, CAJA, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES_PREST, AGENDA, FACTURAS, PAGOS_PREST, CAJA, PERSONAL_PREST, METAS_PREST, FINANZAS,
     ],
   },
   {
