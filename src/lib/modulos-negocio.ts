@@ -221,6 +221,11 @@ const CLIENTES_EVENTOS = m("clientes_eventos", "Anfitriones y clientes de evento
 const PAGOS_EVENTOS = m("pagos_eventos", "Anticipos y saldos de eventos", "Anticipos, abonos y saldos de cada evento por transferencia o tarjeta.", Smartphone);
 const RESENAS_EVENTOS = m("resenas_eventos", "Quejas y reseñas de anfitriones", "Opiniones y reclamos sobre el evento o el servicio, con seguimiento.", Star);
 const PERSONAL_EVENTOS = m("personal_eventos", "Staff, turnos y pagos por evento", "Meseros, fotógrafos y personal de apoyo: turnos, honorarios y novedades.", Briefcase);
+const CLIENTES_PROF = m("clientes_prof", "Clientes y contrapartes del despacho", "Clientes del despacho, con sus casos abiertos y honorarios pactados.", Users);
+const PAGOS_PROF = m("pagos_prof", "Pagos de honorarios y consignaciones", "Abonos de honorarios, consignaciones a terceros y pagos por transferencia.", Smartphone);
+const RESENAS_PROF = m("resenas_prof", "Quejas y reseñas de clientes", "Observaciones y reclamos de clientes sobre la atención, con seguimiento.", Star);
+const PERSONAL_PROF = m("personal_prof", "Asociados, asistentes y pagos", "Honorarios de asociados, horas de asistentes y novedades del equipo.", Briefcase);
+const METAS_PROF = m("metas_prof", "Metas de casos y honorarios", "Metas de casos cerrados y honorarios facturados por mes.", Target);
 const METAS_EVENTOS = m("metas_eventos", "Metas de eventos y contratos", "Metas de eventos realizados y contratos cerrados por temporada.", Target);
 const METAS_FARM = m("metas_farm", "Metas de ventas y rotación", "Metas de ventas mensuales y rotación de productos por categoría.", Target);
 const METAS_TALLER = m("metas_taller", "Metas de órdenes y facturación", "Metas de órdenes cerradas y facturación mensual del taller.", Target);
@@ -600,8 +605,8 @@ TIPOS_NEGOCIO.push(
       m("honorarios", "Honorarios y cobros", "Valores pactados, abonos y saldos.", Scale),
       m("plazos", "Plazos y vencimientos", "Términos legales, declaraciones y entregas.", CalendarClock),
       m("documentos_prof", "Documentos por cliente", "Contratos y archivos importantes.", FolderOpen),
-      AGENDA, CLIENTES, SOLICITUDES,
-      FACTURAS, PAGOS, RESENAS, CAJA, EMPLEADOS, METAS, FINANZAS,
+      AGENDA, CLIENTES_PROF, SOLICITUDES,
+      FACTURAS, PAGOS_PROF, RESENAS_PROF, CAJA, PERSONAL_PROF, METAS_PROF, FINANZAS,
     ],
   },
   {
