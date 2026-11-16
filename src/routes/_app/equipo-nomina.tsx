@@ -21,9 +21,8 @@ function EquipoNominaPage() {
 
   const cargar = useCallback(async () => {
     const { data, error } = await supabase
-      .from("modulo_registros")
-      .select("titulo, estado, monto")
-      .eq("modulo", "equipo_turnos");
+      .from("equipo_pagos")
+      .select("titulo, estado, monto");
     if (error) toast.error("No se pudo cargar la nómina.");
     setFilas(data ?? []);
     setCargando(false);
