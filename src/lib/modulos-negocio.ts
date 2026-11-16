@@ -189,6 +189,10 @@ const CLIENTES_OBRA = m("clientes_obra", "Clientes y propietarios", "Clientes, p
 const PAGOS_OBRA = m("pagos_obra", "Pagos de obra y anticipos", "Anticipos, abonos y pagos de cada obra, por transferencia o efectivo.", Smartphone);
 const RESENAS_OBRA = m("resenas_obra", "Reclamos y garantías de obra", "Reclamos y observaciones de clientes sobre el trabajo, con seguimiento.", Star);
 const PERSONAL_OBRA = m("personal_obra", "Oficiales, jornales y pagos", "Jornales, destajos y pagos de oficiales por obra.", Briefcase);
+const CLIENTES_AGRO = m("clientes_agro", "Compradores y clientes del campo", "Compradores de cosechas, almacenes y clientes, con sus entregas y saldos.", Users);
+const PAGOS_AGRO = m("pagos_agro", "Pagos y liquidaciones de cosecha", "Cobros de ventas de cosecha y pagos a jornaleros o proveedores del campo.", Smartphone);
+const PERSONAL_AGRO = m("personal_agro", "Jornaleros, turnos y pagos", "Jornales, cuadrillas y pagos del personal del campo.", Briefcase);
+const METAS_AGRO = m("metas_agro", "Metas de producción y ventas", "Metas de producción por lote y de ventas por temporada.", Target);
 const METAS_OBRA = m("metas_obra", "Metas de obras y facturación", "Metas de obras entregadas y facturación por periodo.", Target);
 const METAS_GYM = m("metas_gym", "Metas de socios y recaudo", "Metas de nuevos socios, renovaciones y recaudo por mes.", Target);
 const METAS_HOSP = m("metas_hosp", "Metas de ocupación e ingresos", "Metas de ocupación y de ingresos por temporada.", Target);
@@ -403,7 +407,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("cosechas", "Cosechas y ventas", "Producción recogida y a quién se vendió.", PackageCheck),
       m("insumos_agro", "Insumos y fertilizantes", "Compras y consumo por lote.", Boxes),
       m("animales", "Animales y sanidad", "Control de ganado, vacunas y tratamientos.", Shield),
-      CLIENTES, FACTURAS, PAGOS, FIADOS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES_AGRO, FACTURAS, PAGOS_AGRO, FIADOS, CAJA, PROVEEDORES, PERSONAL_AGRO, METAS_AGRO, FINANZAS,
     ],
   },
   {
