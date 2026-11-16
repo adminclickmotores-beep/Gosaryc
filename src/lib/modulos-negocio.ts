@@ -371,7 +371,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("mermas_rest", "Mermas y desperdicios", "Producto dañado, vencido o devuelto a cocina, con su costo, causa y responsable.", Trash2),
       m("sanidad_bpm", "Sanidad y buenas prácticas (BPM)", "Temperaturas de neveras, limpieza, fumigación, lavado de tanques y examen del personal manipulador.", Thermometer),
       m("permisos_rest", "Permisos y licencias", "Concepto sanitario, bomberos, Cámara de Comercio, SAYCO-ACINPRO, uso de suelo y fechas de renovación.", ScrollText),
-      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      ...propios("rest", "cuentas"), FACTURAS, PAGOS, FIDELIZACION, RESENAS, ...propios("rest", "caja", "proveedores"), EMPLEADOS, METAS, ...propios("rest", "finanzas"),
     ],
   },
   {
@@ -582,6 +582,8 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
 // ---- Más tipos de negocio ----
 // Los negocios de comida comparten los módulos del restaurante (menú, pedidos, cocina, insumos, recetas)
 // y agregan los suyos propios.
+const SUFIJO_COMIDA: Record<string, string> = { panaderia: "pan", cafeteria: "cafe", comida_rapida: "rapida", catering: "cat" };
+
 const comida = (
   clave: TipoNegocioClave,
   etiqueta: string,
@@ -590,7 +592,16 @@ const comida = (
   quitar: string[] = [],
 ): TipoNegocio => {
   const base = TIPOS_NEGOCIO.find((x) => x.clave === "restaurante") as TipoNegocio;
-  const mods = base.modulos.filter((x) => !quitar.includes(x.id));
+  // Los módulos propios del restaurante (sufijo _rest) se copian con el sufijo de este negocio.
+  const suf: string | undefined = SUFIJO_COMIDA[clave];
+  const mods = base.modulos
+    .filter((x) => !quitar.includes(x.id))
+    .map((x): ModuloNegocio => {
+      if (!suf || !x.id.endsWith("_rest")) return x;
+      const fam = x.id.replace(/_rest$/, "");
+      const id = `${fam}_${suf}`;
+      return { ...x, id, ruta: `/modulos/${id}`, titulo: PROPIOS[suf][fam].titulo, descripcion: PROPIOS[suf][fam].desc };
+    });
   mods.splice(2, 0, ...extras);
   return { clave, etiqueta, panel, usaPedidos: true, modulos: mods };
 };
@@ -938,7 +949,7 @@ TIPOS_NEGOCIO.push(
       m("beneficiarios_fund", "Beneficiarios", "Programa, necesidad atendida, acudiente y consentimiento.", HeartHandshake),
       m("donaciones_fund", "Donaciones y certificados", "Dinero o especie, proyecto destino y certificado de donación.", Gift),
       m("proyectos_fund", "Proyectos y financiadores", "Presupuesto, ejecución, indicadores y fecha de informes.", ClipboardList),
-      m("voluntarios_fund", "Voluntarios", "Área, horas al mes y certificado de voluntariado.", Users),
+      m("voluntarios_fund", "Voluntarios", "��rea, horas al mes y certificado de voluntariado.", Users),
       ...propios("fund", "clientes", "agenda", "facturas", "pagos", "caja", "proveedores", "personal", "metas", "finanzas"),
     ],
   },
