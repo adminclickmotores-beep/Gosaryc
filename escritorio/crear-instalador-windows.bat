@@ -17,6 +17,14 @@ echo [2/3] Instalando dependencias de escritorio (puede tardar unos minutos)...
 call npm install
 if errorlevel 1 goto error
 
+REM Algunas versiones nuevas de npm bloquean el script que descarga Electron. Lo ejecutamos a mano.
+if not exist "node_modules\electron\path.txt" (
+  echo Descargando Electron...
+  node node_modules\electron\install.js
+  if errorlevel 1 goto error
+)
+if not exist "node_modules\electron\path.txt" goto error
+
 echo [3/3] Creando el instalador de Windows...
 call npm run instalador:windows
 if errorlevel 1 goto error
