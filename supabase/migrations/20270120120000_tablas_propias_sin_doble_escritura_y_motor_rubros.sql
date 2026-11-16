@@ -100,6 +100,13 @@ BEGIN
     m := pares[i][2];
 
     EXECUTE format($f$ALTER TABLE public.%I
+      ADD COLUMN IF NOT EXISTS owner_id uuid,
+      ADD COLUMN IF NOT EXISTS tipo_negocio text,
+      ADD COLUMN IF NOT EXISTS titulo text NOT NULL DEFAULT '',
+      ADD COLUMN IF NOT EXISTS estado text NOT NULL DEFAULT 'pendiente',
+      ADD COLUMN IF NOT EXISTS monto numeric NOT NULL DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS anulado boolean NOT NULL DEFAULT false,
+      ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now(),
       ADD COLUMN IF NOT EXISTS detalle text,
       ADD COLUMN IF NOT EXISTS contacto text,
       ADD COLUMN IF NOT EXISTS telefono text,
