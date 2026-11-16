@@ -126,6 +126,42 @@ const CAMPOS_POR_TIPO: Record<string, CampoExtra[]> = {
 
 /** Campos propios de módulos concretos (tienen prioridad sobre los de su familia). */
 const CAMPOS_ESPECIFICOS: Record<string, CampoExtra[]> = {
+  flota: [
+    { clave: "placa", etiqueta: "Placa", tipo: "text" },
+    { clave: "tipo_vehiculo", etiqueta: "Tipo de vehículo", tipo: "select", opciones: ["Camión", "Camioneta", "Furgón", "Moto", "Bicicleta de carga", "Otro"] },
+    { clave: "capacidad_carga", etiqueta: "Capacidad de carga (kg)", tipo: "text" },
+    { clave: "soat_vence", etiqueta: "Vencimiento del SOAT", tipo: "date" },
+    { clave: "tecnomecanica_vence", etiqueta: "Vencimiento de la tecnomecánica", tipo: "date" },
+    { clave: "seguro_vence", etiqueta: "Vencimiento del seguro de carga", tipo: "date" },
+    { clave: "conductor_asignado", etiqueta: "Conductor asignado", tipo: "text" },
+    { clave: "km_actual", etiqueta: "Kilometraje actual", tipo: "text" },
+  ],
+  viajes: [
+    { clave: "origen", etiqueta: "Origen", tipo: "text" },
+    { clave: "destino", etiqueta: "Destino", tipo: "text" },
+    { clave: "placa_viaje", etiqueta: "Vehículo (placa)", tipo: "text" },
+    { clave: "conductor_viaje", etiqueta: "Conductor", tipo: "text" },
+    { clave: "carga", etiqueta: "Carga transportada", tipo: "text", placeholder: "Ej. 3 pallets, 800 kg" },
+    { clave: "guia", etiqueta: "Número de guía o remesa", tipo: "text" },
+    { clave: "estado_viaje", etiqueta: "Estado del envío", tipo: "select", opciones: ["Programado", "En ruta", "Entregado", "Con novedad", "Cancelado"] },
+    { clave: "fecha_salida", etiqueta: "Fecha y hora de salida", tipo: "text" },
+  ],
+  conductores: [
+    { clave: "licencia_conductor", etiqueta: "Número y categoría de licencia", tipo: "text" },
+    { clave: "vence_licencia", etiqueta: "Vencimiento de la licencia", tipo: "date" },
+    { clave: "tipo_pago", etiqueta: "Forma de pago", tipo: "select", opciones: ["Por viaje", "Salario fijo", "Porcentaje del flete", "Mixto"] },
+    { clave: "valor_viaje", etiqueta: "Valor por viaje (COP)", tipo: "text" },
+    { clave: "descuentos", etiqueta: "Descuentos o anticipos (COP)", tipo: "text" },
+    { clave: "telefono_conductor", etiqueta: "Teléfono", tipo: "tel" },
+  ],
+  combustible: [
+    { clave: "placa_gasto", etiqueta: "Vehículo (placa)", tipo: "text" },
+    { clave: "tipo_gasto", etiqueta: "Tipo de gasto", tipo: "select", opciones: ["Combustible", "Peaje", "Parqueadero", "Mantenimiento", "Comida de ruta", "Otro"] },
+    { clave: "galones", etiqueta: "Galones o litros", tipo: "text" },
+    { clave: "kilometraje_gasto", etiqueta: "Kilometraje al momento", tipo: "text" },
+    { clave: "viaje_ref", etiqueta: "Viaje relacionado", tipo: "text" },
+    { clave: "soporte_gasto", etiqueta: "Número de factura o recibo", tipo: "text" },
+  ],
   proyectos_tec: [
     { clave: "alcance_tec", etiqueta: "Alcance o tipo de entregable", tipo: "select", opciones: ["Sitio web", "App móvil", "Software a medida", "Diseño", "Integración", "Mantenimiento", "Otro"] },
     { clave: "tecnologias", etiqueta: "Tecnologías o stack", tipo: "text", placeholder: "Ej. React, Supabase" },
