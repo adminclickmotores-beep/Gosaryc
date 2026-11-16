@@ -238,6 +238,11 @@ const PERSONAL_PREST = m("personal_prest", "Cobradores, turnos y comisiones", "R
 const CLIENTES_TEXTIL = m("clientes_textil", "Marcas y clientes de confección", "Marcas, colegios y clientes que encargan prendas, con sus pedidos y saldos.", Users);
 const PAGOS_TEXTIL = m("pagos_textil", "Anticipos y pagos de pedidos", "Anticipos de pedidos y pagos por transferencia o consignación.", Smartphone);
 const PERSONAL_TEXTIL = m("personal_textil", "Operarios, destajos y nómina", "Pago por destajo de cada operario y novedades del taller de confección.", Briefcase);
+const CLIENTES_JOY = m("clientes_joy", "Clientes de joyería y relojería", "Clientes con sus piezas, encargos, garantías y preferencias de diseño.", Users);
+const PAGOS_JOY = m("pagos_joy", "Pagos y anticipos de piezas", "Anticipos de encargos y pagos de piezas por transferencia, tarjeta o efectivo.", Smartphone);
+const RESENAS_JOY = m("resenas_joy", "Garantías y reclamos de clientes", "Reclamos sobre piezas, reparaciones o certificados, con seguimiento.", Star);
+const PERSONAL_JOY = m("personal_joy", "Joyeros, vendedores y comisiones", "Comisiones de vendedores, pago a joyeros y novedades del equipo.", Briefcase);
+const METAS_JOY = m("metas_joy", "Metas de ventas y encargos", "Metas de ventas de piezas y de encargos cerrados por mes.", Target);
 const METAS_TEXTIL = m("metas_textil", "Metas de prendas y pedidos", "Metas de prendas confeccionadas y pedidos entregados por mes.", Target);
 const METAS_PREST = m("metas_prest", "Metas de colocación y recuperación", "Metas de préstamos colocados y de cartera recuperada por mes.", Target);
 const METAS_COND = m("metas_cond", "Metas de recaudo de cuotas", "Metas de recaudo mensual y cartera recuperada por torre.", Target);
@@ -694,7 +699,7 @@ TIPOS_NEGOCIO.push(
       m("certificados_joy", "Certificados de autenticidad", "Certificados y garantías entregadas a cada cliente.", BadgeCheck),
       m("taller_joyeria", "Taller y reparaciones", "Arreglos, relojes y trabajos por encargo.", Wrench),
       m("apartados", "Apartados (plan separe)", "Abonos y entrega de piezas separadas.", Tag),
-      CLIENTES, FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES_JOY, FIADOS, FACTURAS, PAGOS_JOY, FIDELIZACION, RESENAS_JOY, CAJA, PROVEEDORES, PERSONAL_JOY, METAS_JOY, FINANZAS,
     ],
   },
   {
