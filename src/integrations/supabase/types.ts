@@ -1595,6 +1595,36 @@ export type Database = {
         }
         Relationships: []
       }
+      agente_memoria: {
+        Row: {
+          contenido: string
+          created_at: string
+          id: string
+          negocio_id: string
+          owner_id: string
+          tipo: string
+          veces: number
+        }
+        Insert: {
+          contenido: string
+          created_at?: string
+          id?: string
+          negocio_id: string
+          owner_id: string
+          tipo?: string
+          veces?: number
+        }
+        Update: {
+          contenido?: string
+          created_at?: string
+          id?: string
+          negocio_id?: string
+          owner_id?: string
+          tipo?: string
+          veces?: number
+        }
+        Relationships: []
+      }
       agente_whatsapp: {
         Row: {
           activo: boolean

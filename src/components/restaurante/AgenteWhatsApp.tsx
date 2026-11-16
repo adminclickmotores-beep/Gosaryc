@@ -32,6 +32,32 @@ export function AgenteWhatsApp() {
   const [apiCaida, setApiCaida] = useState(false);
 
   const idLinea = (negocio?.id ?? "").slice(0, 8) || "negocio";
+  const [memoria, setMemoria] = useState<Tables<"agente_memoria">[]>([]);
+
+  const cargarMemoria = useCallback(async () => {
+    if (!negocio) return;
+    const { data } = await supabase
+      .from("agente_memoria")
+      .select("*")
+      .eq("negocio_id", negocio.id)
+      .order("veces", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(30);
+    setMemoria(data ?? []);
+  }, [negocio]);
+
+  useEffect(() => {
+    void cargarMemoria();
+  }, [cargarMemoria]);
+
+  const olvidar = async (id: string) => {
+    const { error } = await supabase.from("agente_memoria").delete().eq("id", id);
+    if (error) {
+      toast.error("No se pudo borrar");
+      return;
+    }
+    setMemoria((m) => m.filter((x) => x.id !== id));
+  };
 
   useEffect(() => {
     setClaveLocal(localStorage.getItem("whatsapp_local_token") ?? "");
@@ -151,8 +177,28 @@ export function AgenteWhatsApp() {
         />
       </label>
 
+      <p className="rounded-lg border border-glass-border bg-glass/40 p-3 text-sm text-muted-foreground">
+        El agente aprende solo: guarda tus respuestas reales cuando contestas desde el celular y las lecciones de cada conversación, y las usa en las siguientes. Las instrucciones de abajo son opcionales.
+      </p>
+
+      {memoria.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium">Lo que ha aprendido ({memoria.length})</h4>
+          <ul className="max-h-60 space-y-1.5 overflow-y-auto">
+            {memoria.map((m) => (
+              <li key={m.id} className="flex items-start justify-between gap-2 rounded-lg bg-background/50 p-2 text-sm">
+                <span className="min-w-0 break-words">{m.contenido}</span>
+                <button onClick={() => void olvidar(m.id)} className="shrink-0 text-xs text-muted-foreground underline">
+                  Olvidar
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <label className="block text-sm">
-        <span className="mb-1 block text-muted-foreground">Instrucciones propias (promociones, políticas, forma de pago, tono…)</span>
+        <span className="mb-1 block text-muted-foreground">Instrucciones propias, opcional (promociones, políticas, forma de pago, tono…)</span>
         <textarea
           className="min-h-28 w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base"
           value={instrucciones}

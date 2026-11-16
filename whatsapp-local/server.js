@@ -96,6 +96,7 @@ function alMensaje(linea, msg) {
   const jid = msg.from;
   const chat = linea.chats.get(jid) || { historial: [], pausadoHasta: 0, ocupado: false, timer: null, avisoMedia: 0 };
   linea.chats.set(jid, chat);
+  if (msg.type === "chat" && msg.body) chat.ultimaPregunta = msg.body.slice(0, 300);
   if (Date.now() < chat.pausadoHasta) return; // una persona del equipo atiende este chat
 
   if (msg.type === "chat" && msg.body) {
@@ -115,9 +116,22 @@ function alEscribirYo(linea, msg) {
   if (!msg.fromMe || msg.to.endsWith("@g.us")) return;
   const id = msg.id?._serialized;
   if (id && linea.propios.has(id)) return;
-  const chat = linea.chats.get(msg.to);
+  let chat = linea.chats.get(msg.to);
   if (chat) chat.pausadoHasta = Date.now() + PAUSA_HUMANO_MS;
-  else linea.chats.set(msg.to, { historial: [], pausadoHasta: Date.now() + PAUSA_HUMANO_MS, ocupado: false, timer: null, avisoMedia: 0 });
+  else {
+    chat = { historial: [], pausadoHasta: Date.now() + PAUSA_HUMANO_MS, ocupado: false, timer: null, avisoMedia: 0 };
+    linea.chats.set(msg.to, chat);
+  }
+  // Aprende: la respuesta real del dueño a la última pregunta del cliente queda en la memoria del agente.
+  if (linea.clave && linea.agente && msg.type === "chat" && msg.body && chat.ultimaPregunta) {
+    const pregunta = chat.ultimaPregunta;
+    chat.ultimaPregunta = "";
+    fetch(AGENTE_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${linea.clave}` },
+      body: JSON.stringify({ accion: "aprender", pregunta, respuesta: msg.body.slice(0, 400) }),
+    }).catch(() => {});
+  }
 }
 
 function crearLinea({ id, nombre, clave, agente }) {

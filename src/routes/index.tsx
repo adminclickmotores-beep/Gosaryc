@@ -5,6 +5,7 @@ import {
   Stethoscope, GraduationCap, BedDouble, Dumbbell, Hammer, Sprout, Building2, PawPrint, Laptop, Truck, Car,
   Smartphone, Palette, ShieldCheck, Sparkles, Check, Users, Receipt, BarChart3, Layers, Clock, TrendingUp,
   Cake, Coffee, Wrench, Pill, PartyPopper, Briefcase, Shirt, Gem, Banknote, FileText, Gift, CalendarDays,
+  Bot, MessageCircle, Brain, Headphones,
 } from "lucide-react";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
@@ -183,6 +184,39 @@ function LandingPage() {
               </Link>
             ))}
           </div>
+        </section>
+
+        {/* Agente de WhatsApp con IA */}
+        <section className="mt-24" aria-labelledby="agente-ia">
+          <GlassPanel tier="strong" className="relative overflow-hidden p-6 sm:p-10">
+            <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-primary/20 blur-3xl" />
+            <p className="text-eyebrow text-center">Nuevo</p>
+            <h2 id="agente-ia" className="mt-3 text-center font-display text-3xl sm:text-4xl">
+              Un agente de WhatsApp que atiende y vende por ti
+            </h2>
+            <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-muted-foreground sm:text-base">
+              Se conecta al número de cada negocio, responde a tus clientes las 24 horas y aprende de tus propias respuestas para sonar cada vez más como tú.
+            </p>
+            <div className="relative mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                { Icon: Headphones, titulo: "Servicio al cliente", desc: "Resuelve dudas de horarios, precios y pedidos al instante." },
+                { Icon: Bot, titulo: "Asesor y vendedor", desc: "Recomienda, resuelve objeciones y ayuda a cerrar la venta." },
+                { Icon: Brain, titulo: "Aprende y se adapta", desc: "Se adapta a tu tipo de negocio y mejora con cada conversación." },
+                { Icon: MessageCircle, titulo: "Un número por negocio", desc: "Cada negocio conecta su propio WhatsApp. Tú puedes intervenir cuando quieras." },
+              ].map(({ Icon, titulo, desc }) => (
+                <GlassPanel key={titulo} tier="inner" className="p-4">
+                  <span className="icon-chip h-10 w-10 rounded-xl"><Icon className="h-5 w-5" /></span>
+                  <h3 className="mt-3 font-medium text-foreground">{titulo}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
+                </GlassPanel>
+              ))}
+            </div>
+            <div className="relative mt-8 text-center">
+              <Link to="/login" className="btn-pro inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold">
+                Quiero mi agente <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </GlassPanel>
         </section>
 
         {/* Sectores */}

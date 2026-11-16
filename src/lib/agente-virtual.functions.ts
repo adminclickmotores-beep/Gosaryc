@@ -127,6 +127,19 @@ ${tarifasComoTexto()}
     const pasosGenerales = PASOS_GENERALES.map((p, i) => `${i + 1}. ${p.titulo}: ${p.texto}`).join("\n");
     const tiposTxt = TIPOS_NEGOCIO.map((t) => t.etiqueta).join("; ");
 
+    // Lo que el agente de este negocio ha aprendido de las respuestas reales del dueño y de las conversaciones.
+    const { data: memoria } = await context.supabase
+      .from("agente_memoria")
+      .select("tipo,contenido")
+      .order("veces", { ascending: false })
+      .limit(20);
+    const aprendido =
+      memoria && memoria.length > 0
+        ? "\nLo que este negocio ya le ha enseñado al agente (úsalo para adaptar tus respuestas y redactados al estilo y políticas del negocio):\n" +
+          memoria.map((x) => `- ${x.contenido}`).join("\n") +
+          "\n"
+        : "";
+
     const system = `Eres el asistente de ayuda de Gosaryc, el programa con el que "${cfg?.nombre || "este negocio"}" (tipo: ${tipo}) administra su negocio. Hablas con quienes USAN el programa (dueño y equipo): tu trabajo principal es resolver sus dudas de uso y guiarlos paso a paso en la configuración.
 Tu negocio es del giro "${giro.panel}". Habla con el vocabulario propio de ese giro (no de restaurante a menos que lo sea).
 Responde en español de México, con tono amable y directo, en frases cortas y con pasos numerados cuando expliques cómo hacer algo.
@@ -190,6 +203,7 @@ Cómo ayudar:
 - Si el problema parece un error del programa, pide qué estaba haciendo y qué mensaje vio, y sugiere recargar la página; si persiste, contactar a soporte.
 Usa EXCLUSIVAMENTE la información configurada del negocio que aparece abajo cuando hables de sus datos. Mantén siempre el mismo nombre, horarios, precios y tarifas en toda la conversación.
 
+${aprendido}
 Datos configurados del negocio:
 ${perfil}
 

@@ -32,11 +32,9 @@ function dentroDelLimite(clave: string): boolean {
   return true;
 }
 
-/** Responde a un cliente final de WhatsApp como agente de ventas, atención y asesoría del negocio. */
-export async function responderComoAgente(clave: string, mensajes: MensajeCliente[]): Promise<RespuestaAgente> {
+async function buscarAgente(clave: string) {
   if (!clave || clave.length < 20) throw new ErrorAgente(401, "Clave del agente inválida");
   if (!dentroDelLimite(clave)) throw new ErrorAgente(429, "Demasiados mensajes, intenta en un minuto");
-
   const { data: ag } = await supabaseAdmin
     .from("agente_whatsapp")
     .select("negocio_id,owner_id,activo,instrucciones,nombre_agente")
@@ -44,6 +42,107 @@ export async function responderComoAgente(clave: string, mensajes: MensajeClient
     .maybeSingle();
   if (!ag) throw new ErrorAgente(401, "Clave del agente inválida");
   if (!ag.activo) throw new ErrorAgente(403, "El agente está desactivado para este negocio");
+  return ag;
+}
+
+/** Llama a la IA (Gemini si hay llave, si no la IA integrada) y devuelve el texto. */
+async function llamarIA(messages: Array<{ role: string; content: string }>): Promise<string> {
+  const proveedores: Array<{ endpoint: string; key: string; model: string }> = [];
+  const geminiKey = process.env.GEMINI_API_KEY;
+  if (geminiKey) proveedores.push({ endpoint: GEMINI_ENDPOINT, key: geminiKey, model: GEMINI_MODEL });
+  if (process.env.LOVABLE_API_KEY) proveedores.push({ endpoint: GATEWAY, key: process.env.LOVABLE_API_KEY, model: MODEL });
+  if (proveedores.length === 0) throw new ErrorAgente(503, "El agente todavía no está configurado");
+  for (const p of proveedores) {
+    try {
+      const r = await fetch(p.endpoint, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${p.key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model: p.model, messages }),
+      });
+      if (!r.ok) continue;
+      const json = (await r.json()) as { choices?: Array<{ message?: { content?: string } }> };
+      const t = json.choices?.[0]?.message?.content?.trim() ?? "";
+      if (t) return t;
+    } catch {
+      // se prueba el siguiente proveedor
+    }
+  }
+  return "";
+}
+
+type DuenoMemoria = { negocio_id: string; owner_id: string };
+
+async function guardarMemoria(ag: DuenoMemoria, tipo: "respuesta_dueno" | "patron", contenido: string): Promise<void> {
+  const texto = contenido.trim().slice(0, 600);
+  if (texto.length < 8) return;
+  const { data: previo } = await supabaseAdmin
+    .from("agente_memoria")
+    .select("id,veces")
+    .eq("negocio_id", ag.negocio_id)
+    .eq("tipo", tipo)
+    .eq("contenido", texto)
+    .maybeSingle();
+  if (previo) {
+    await supabaseAdmin.from("agente_memoria").update({ veces: previo.veces + 1 }).eq("id", previo.id);
+    return;
+  }
+  await supabaseAdmin.from("agente_memoria").insert({ negocio_id: ag.negocio_id, owner_id: ag.owner_id, tipo, contenido: texto });
+  // Máximo 60 recuerdos por tipo: se olvidan los más viejos.
+  const { data: sobrantes } = await supabaseAdmin
+    .from("agente_memoria")
+    .select("id")
+    .eq("negocio_id", ag.negocio_id)
+    .eq("tipo", tipo)
+    .order("veces", { ascending: false })
+    .order("created_at", { ascending: false })
+    .range(60, 200);
+  const ids = (sobrantes ?? []).map((s) => s.id);
+  if (ids.length > 0) await supabaseAdmin.from("agente_memoria").delete().in("id", ids);
+}
+
+/** El dueño respondió desde su celular: esa respuesta real se guarda como ejemplo de cómo atiende el negocio. */
+export async function aprenderRespuestaDueno(clave: string, pregunta: string, respuesta: string): Promise<void> {
+  const ag = await buscarAgente(clave);
+  const p = String(pregunta || "").trim().slice(0, 250);
+  const r = String(respuesta || "").trim().slice(0, 350);
+  if (p.length < 3 || r.length < 3) return;
+  await guardarMemoria(ag, "respuesta_dueno", `Cliente: ${p} → Dueño: ${r}`);
+}
+
+/** Saca de una conversación terminada pistas generales (dudas frecuentes, objeciones, lo que ayudó a cerrar). */
+async function aprenderPatrones(ag: DuenoMemoria, historial: MensajeCliente[]): Promise<void> {
+  const conversacion = historial
+    .slice(-16)
+    .map((m) => `${m.role === "user" ? "Cliente" : "Agente"}: ${m.content.slice(0, 300)}`)
+    .join("\n");
+  const salida = await llamarIA([
+    {
+      role: "system",
+      content:
+        "Analizas conversaciones de ventas por WhatsApp. Devuelve SOLO un arreglo JSON con 0 a 2 textos cortos en español (máx. 160 caracteres cada uno) con lecciones GENERALES y útiles para atender mejor la próxima vez: tipo de duda frecuente, objeción y cómo se resolvió, o qué ayudó a cerrar. Prohibido incluir nombres, teléfonos, direcciones, precios o datos personales. Si no hay nada útil devuelve [].",
+    },
+    { role: "user", content: conversacion },
+  ]);
+  const m = salida.match(/\[[\s\S]*\]/);
+  if (!m) return;
+  let lista: unknown;
+  try {
+    lista = JSON.parse(m[0]);
+  } catch {
+    return;
+  }
+  if (!Array.isArray(lista)) return;
+  for (const item of lista.slice(0, 2)) {
+    if (typeof item !== "string") continue;
+    const t = item.trim();
+    if (t.length < 10 || t.length > 200 || /\d{6,}/.test(t)) continue;
+    await guardarMemoria(ag, "patron", t);
+  }
+}
+
+/** Responde a un cliente final de WhatsApp como agente de ventas, atención y asesoría del negocio. */
+export async function responderComoAgente(clave: string, mensajes: MensajeCliente[]): Promise<RespuestaAgente> {
+  const ag = await buscarAgente(clave);
 
   const { data: cfg } = await supabaseAdmin
     .from("negocio_config")
@@ -111,6 +210,24 @@ export async function responderComoAgente(clave: string, mensajes: MensajeClient
   const nombreAgente = (ag.nombre_agente || "Asistente").slice(0, 40);
   const extra = ag.instrucciones?.trim() ? ag.instrucciones.trim().slice(0, 3000) : "";
 
+  // Lo que el agente ha aprendido de este negocio (respuestas reales del dueño y patrones de conversaciones).
+  const { data: memoria } = await supabaseAdmin
+    .from("agente_memoria")
+    .select("tipo,contenido,veces")
+    .eq("negocio_id", ag.negocio_id)
+    .order("veces", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(40);
+  const delDueno = (memoria ?? []).filter((x) => x.tipo === "respuesta_dueno").slice(0, 20).map((x) => `- ${x.contenido}`);
+  const patrones = (memoria ?? []).filter((x) => x.tipo === "patron").slice(0, 15).map((x) => `- ${x.contenido}`);
+  const aprendido =
+    (delDueno.length
+      ? `\nRespuestas REALES del dueño a clientes (son verdaderas; imita su tono, sus políticas y sus formas de responder cuando se parezca la pregunta):\n${delDueno.join("\n")}\n`
+      : "") +
+    (patrones.length
+      ? `\nPatrones observados en conversaciones anteriores (son solo pistas para atender mejor; NO son datos del negocio ni sustituyen precios, horarios o políticas):\n${patrones.join("\n")}\n`
+      : "");
+
   const system = `Eres ${nombreAgente}, la persona que atiende por WhatsApp a los CLIENTES de "${cfg?.nombre || "este negocio"}" (giro: ${giro.panel}). Eres a la vez agente de servicio al cliente, asesor comercial y vendedor.
 Escribes en español, con tono cálido, humano y profesional, mensajes cortos propios de WhatsApp (máximo 4 o 5 líneas, sin tablas ni títulos). Habla con el vocabulario del giro "${giro.panel}". Áreas del negocio: ${modulos || "atención general"}.
 
@@ -128,7 +245,7 @@ ${perfil}
 
 Catálogo de productos y servicios con precios:
 ${catalogo}
-${domicilio ? `\n${domicilio}\n` : ""}${extra ? `\nInstrucciones propias del dueño (tienen prioridad en el estilo y las políticas):\n${extra}\n` : ""}
+${domicilio ? `\n${domicilio}\n` : ""}${aprendido}${extra ? `\nInstrucciones propias del dueño (tienen prioridad en el estilo y las políticas):\n${extra}\n` : ""}
 Reglas:
 - No inventes precios, horarios, direcciones, productos, promociones, descuentos ni disponibilidad. Si un dato dice NO CONFIGURADO o no está arriba, di que lo confirma una persona del equipo y usa [[ASESOR]] si es necesario para cerrar.
 - No prometas lo que no puedas cumplir (tiempos exactos, garantías, descuentos) si no está en los datos.
@@ -148,32 +265,19 @@ Reglas:
     throw new ErrorAgente(400, "Falta el mensaje del cliente");
   }
 
-  const proveedores: Array<{ endpoint: string; key: string; model: string }> = [];
-  const geminiKey = process.env.GEMINI_API_KEY;
-  if (geminiKey) proveedores.push({ endpoint: GEMINI_ENDPOINT, key: geminiKey, model: GEMINI_MODEL });
-  if (process.env.LOVABLE_API_KEY) proveedores.push({ endpoint: GATEWAY, key: process.env.LOVABLE_API_KEY, model: MODEL });
-  if (proveedores.length === 0) throw new ErrorAgente(503, "El agente todavía no está configurado");
-
-  const body = { messages: [{ role: "system", content: system }, ...historial] };
-  let texto = "";
-  for (const p of proveedores) {
-    try {
-      const r = await fetch(p.endpoint, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${p.key}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ model: p.model, ...body }),
-      });
-      if (!r.ok) continue;
-      const json = (await r.json()) as { choices?: Array<{ message?: { content?: string } }> };
-      texto = json.choices?.[0]?.message?.content?.trim() ?? "";
-      if (texto) break;
-    } catch {
-      // se prueba el siguiente proveedor
-    }
-  }
+  const texto = await llamarIA([{ role: "system", content: system }, ...historial]);
   if (!texto) throw new ErrorAgente(502, "El agente no pudo responder en este momento");
 
   const escalar = /\[\[ASESOR\]\]/i.test(texto);
   const limpio = texto.replace(/\[\[ASESOR\]\]/gi, "").trim();
+
+  // Aprende de la conversación al terminar (pasa a una persona) o cada cierto número de mensajes.
+  if (escalar || (historial.length >= 8 && historial.length % 8 < 2)) {
+    try {
+      await aprenderPatrones(ag, [...historial, { role: "assistant", content: limpio }]);
+    } catch (e) {
+      console.error("Agente: no se pudo aprender de la conversación", e);
+    }
+  }
   return { texto: limpio || "Un momento, una persona del equipo te atiende enseguida.", escalar };
 }
