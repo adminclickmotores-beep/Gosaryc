@@ -192,6 +192,10 @@ const PERSONAL_OBRA = m("personal_obra", "Oficiales, jornales y pagos", "Jornale
 const CLIENTES_AGRO = m("clientes_agro", "Compradores y clientes del campo", "Compradores de cosechas, almacenes y clientes, con sus entregas y saldos.", Users);
 const PAGOS_AGRO = m("pagos_agro", "Pagos y liquidaciones de cosecha", "Cobros de ventas de cosecha y pagos a jornaleros o proveedores del campo.", Smartphone);
 const PERSONAL_AGRO = m("personal_agro", "Jornaleros, turnos y pagos", "Jornales, cuadrillas y pagos del personal del campo.", Briefcase);
+const CLIENTES_INMO = m("clientes_inmo", "Propietarios, interesados y arrendatarios", "Propietarios, compradores e interesados en arriendo, con sus inmuebles y saldos.", Users);
+const PAGOS_INMO = m("pagos_inmo", "Pagos de arriendos y consignaciones", "Cánones, administración y consignaciones a propietarios por medio de pago.", Smartphone);
+const PERSONAL_INMO = m("personal_inmo", "Asesores, turnos y comisiones", "Comisiones de asesores y pagos del personal de la inmobiliaria.", Briefcase);
+const METAS_INMO = m("metas_inmo", "Metas de negocios cerrados", "Metas de arriendos y ventas cerradas por asesor y mes.", Target);
 const METAS_AGRO = m("metas_agro", "Metas de producción y ventas", "Metas de producción por lote y de ventas por temporada.", Target);
 const METAS_OBRA = m("metas_obra", "Metas de obras y facturación", "Metas de obras entregadas y facturación por periodo.", Target);
 const METAS_GYM = m("metas_gym", "Metas de socios y recaudo", "Metas de nuevos socios, renovaciones y recaudo por mes.", Target);
@@ -420,7 +424,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("arrendatarios", "Arrendatarios y contratos", "Contratos, canon y vencimientos.", FileText),
       m("cobro_canon", "Cobro de arriendos", "Cartera mensual y recordatorios.", Coins),
       m("visitas", "Visitas a inmuebles", "Agenda de visitas con seguimiento.", KeyRound),
-      CLIENTES, AGENDA, FACTURAS, PAGOS, CAJA, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES_INMO, AGENDA, FACTURAS, PAGOS_INMO, CAJA, PERSONAL_INMO, METAS_INMO, FINANZAS,
     ],
   },
   {
