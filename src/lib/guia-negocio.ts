@@ -15,6 +15,10 @@ export const GUIAS_NEGOCIO: Record<TipoNegocioClave, GuiaNegocio> = {
       { titulo: "Comparte tu menú público", texto: "Usa el botón “Menú público” y envía el enlace por WhatsApp o redes." },
       { titulo: "Atiende los pedidos", texto: "En “Pedidos y cocina” mueve cada pedido: enviar a cocina, listo, en camino, entregado." },
       { titulo: "Controla tus insumos", texto: "En “Recetario e inventario” registra ingredientes y recetas para saber tu costo." },
+      { titulo: "Concilia Rappi y las apps", texto: "En “Rappi, DiDi Food y apps” anota cada liquidación: venta bruta, comisión y lo que te consignaron." },
+      { titulo: "Registra las mermas", texto: "En “Mermas y desperdicios” anota lo que se daña o se devuelve para ver cuánto te cuesta cada semana." },
+      { titulo: "Cumple con sanidad y permisos", texto: "En “Sanidad y buenas prácticas” y “Permisos y licencias” guarda temperaturas, fumigaciones, concepto sanitario, bomberos y SAYCO-ACINPRO con su fecha de vencimiento." },
+      { titulo: "Cuida la propina y el impoconsumo", texto: "La propina es voluntaria (sugerida 10%) y se reparte en “Propinas”. Tu contador te dirá si cobras impoconsumo (8%) o IVA según tu régimen." },
     ],
   },
   concesionario: {

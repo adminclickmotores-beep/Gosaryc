@@ -59,6 +59,9 @@ import {
   Scale,
   Gem,
   BookOpen,
+  Thermometer,
+  ScrollText,
+  Trash2,
   type LucideIcon,
 } from "lucide-react";
 
@@ -210,6 +213,10 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("insumos", "Inventario de insumos", "Ingredientes, mermas y alertas de faltantes.", Boxes),
       { ...m("propinas", "Propinas y reparto", "Registro y reparto de propinas entre el equipo.", Coins), ruta: "/propinas" },
       { ...m("suscripciones", "Pedidos recurrentes", "Clientes que piden cada semana (almuerzos, corporativos).", Repeat), ruta: "/pedidos-recurrentes" },
+      m("plataformas_rest", "Rappi, DiDi Food y apps", "Ventas por cada app de domicilios, comisión que te cobran y lo que realmente te consignan.", Smartphone),
+      m("mermas_rest", "Mermas y desperdicios", "Producto dañado, vencido o devuelto a cocina, con su costo, causa y responsable.", Trash2),
+      m("sanidad_bpm", "Sanidad y buenas prácticas (BPM)", "Temperaturas de neveras, limpieza, fumigación, lavado de tanques y examen del personal manipulador.", Thermometer),
+      m("permisos_rest", "Permisos y licencias", "Concepto sanitario, bomberos, Cámara de Comercio, SAYCO-ACINPRO, uso de suelo y fechas de renovación.", ScrollText),
       FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },

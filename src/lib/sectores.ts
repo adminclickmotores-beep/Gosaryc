@@ -32,6 +32,9 @@ export const SECTORES: Sector[] = [
     { titulo: "Menú y pedidos", texto: "Arma tu menú, comparte el enlace público y recibe pedidos de mesa, para llevar y a domicilio." },
     { titulo: "Cocina y mesas", texto: "Tablero en vivo para seguir cada pedido, con comanda impresa y control de mesas." },
     { titulo: "Recetas e inventario", texto: "Conoce el costo de cada plato y descuenta ingredientes automáticamente." },
+    { titulo: "Rappi, DiDi Food y mermas", texto: "Concilia lo que te consignan las apps tras su comisión y registra lo que se desperdicia." },
+    { titulo: "Sanidad y permisos", texto: "Controla temperaturas, fumigaciones, concepto sanitario, bomberos y SAYCO-ACINPRO con alertas de vencimiento." },
+    { titulo: "Propinas, nómina y caja", texto: "Reparte propinas, liquida la nómina con reglas de Colombia y cierra la caja cada día." },
   ]),
   s("tiendas", "Tiendas", Store, "Catálogo, inventario y fiados para que tu tienda siempre esté en orden.", [
     { titulo: "Catálogo de productos", texto: "Agrega lo que vendes con su precio y véndelo desde el celular." },
