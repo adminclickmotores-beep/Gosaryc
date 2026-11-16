@@ -1778,6 +1778,42 @@ export type Database = {
         }
         Relationships: []
       }
+      resenas_registros: {
+        Row: {
+          anulado: boolean
+          contacto: string | null
+          created_at: string
+          detalle: string | null
+          estado: string
+          id: string
+          owner_id: string | null
+          tipo_negocio: string | null
+          titulo: string
+        }
+        Insert: {
+          anulado?: boolean
+          contacto?: string | null
+          created_at?: string
+          detalle?: string | null
+          estado?: string
+          id?: string
+          owner_id?: string | null
+          tipo_negocio?: string | null
+          titulo: string
+        }
+        Update: {
+          anulado?: boolean
+          contacto?: string | null
+          created_at?: string
+          detalle?: string | null
+          estado?: string
+          id?: string
+          owner_id?: string | null
+          tipo_negocio?: string | null
+          titulo?: string
+        }
+        Relationships: []
+      }
       tickets_soporte: {
         Row: {
           asunto: string

@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_app/resenas-pqrs")({
   component: ResenasPqrsPage,
 });
 
-type Registro = Tables<"modulo_registros">;
+type Registro = Tables<"resenas_registros">;
 
 const ETIQUETAS: Record<string, string> = { pendiente: "Pendiente", en_proceso: "En proceso", hecho: "Resuelto" };
 
@@ -21,9 +21,8 @@ function ResenasPqrsPage() {
 
   const cargar = useCallback(async () => {
     const { data, error } = await supabase
-      .from("modulo_registros")
+      .from("resenas_registros")
       .select("*")
-      .eq("modulo", "resenas")
       .order("created_at", { ascending: false });
     if (error) toast.error("No se pudieron cargar las reseñas.");
     setItems(data ?? []);
