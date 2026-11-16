@@ -91,6 +91,7 @@ export const MANUAL_FIJO = `
 
 # 14. PLANES, LICENCIAS Y SOPORTE
 - Cada negocio tiene un plan (Prueba, Emprendedor o Pro), un estado (activo o suspendido) y una fecha de vencimiento. Si la cuenta está suspendida por falta de pago o vencida, el acceso se bloquea hasta renovar; la renovación o extensión la hace el equipo de Gosaryc (el usuario no puede hacerla desde el programa).
+- Licencia y precio: para tener acceso ilimitado se necesita una licencia. Se empieza con 30 días de prueba; se pueden pedir días adicionales una sola vez, según el nivel de interés. Si el cliente quiere el programa, la licencia cuesta $100.000 COP al año e incluye soporte, instalación local (escritorio) y uso en la web. No inventes otros precios ni planes.
 - La versión de escritorio pide un código de licencia al abrirla (30 días de prueba o licencia anual); al vencer muestra un aviso para renovar.
 - Versiones: web (cualquier navegador), móvil (se instala desde el navegador con «Instalar app») y escritorio de Windows (instalador «Gosaryc Setup» con acceso directo del escritorio y del menú Inicio, logo propio, agente de WhatsApp integrado y «Guía de uso de Gosaryc», que también abre con F1).
 - En línea y sin conexión: con internet todo se guarda al instante; sin internet el programa avisa, guarda cambios y borradores en el dispositivo y sincroniza al volver la conexión. El agente de WhatsApp y el asistente virtual necesitan internet.

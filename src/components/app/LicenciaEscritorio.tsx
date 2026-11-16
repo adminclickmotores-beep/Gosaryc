@@ -22,7 +22,7 @@ type PuenteEscritorio = {
 const MENSAJES: Record<string, string> = {
   no_existe: "Ese código no existe. Revísalo o pídele uno nuevo al creador de Gosaryc.",
   suspendida: "Esta licencia está suspendida. Comunícate con el creador de Gosaryc.",
-  vencida: "Tu prueba o licencia ya venció. Paga la renovación y avísale al creador de Gosaryc: la activará en este mismo equipo.",
+  vencida: "Tu prueba o licencia ya venció. La licencia anual cuesta $100.000 COP e incluye soporte, instalación local y web. Paga la renovación y avísale al creador de Gosaryc: la activará en este mismo equipo.",
   otro_equipo: "Este código pertenece a otro equipo. Solicita la licencia de este equipo.",
   sin_conexion: "No hay conexión con el servidor. Conéctate a internet e intenta de nuevo.",
 };
@@ -231,6 +231,19 @@ export function LicenciaEscritorio() {
           <ShieldCheck className="h-6 w-6 shrink-0 text-primary" /> Activa Gosaryc
         </h1>
 
+        <div className="space-y-2 rounded-lg border border-primary/30 bg-primary/5 p-4 text-sm">
+          <p className="font-medium text-foreground">Cómo funciona tu licencia</p>
+          <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
+            <li>Para tener acceso ilimitado a Gosaryc se necesita una licencia.</li>
+            <li>Empiezas con una prueba gratis de 30 días, con todo incluido.</li>
+            <li>Si necesitas más tiempo, puedes pedir días adicionales una sola vez; se aprueban según tu nivel de interés.</li>
+            <li>
+              Si te gusta el programa, la licencia cuesta solo <strong className="text-foreground">$100.000 COP al año</strong>:
+              incluye soporte, instalación local en tu computador y uso en la web.
+            </li>
+          </ul>
+        </div>
+
         <button
           onClick={copiarEquipo}
           className="flex w-full items-center justify-between gap-2 rounded-lg border border-glass-border bg-glass/30 px-3 py-2.5 text-left"
@@ -255,7 +268,7 @@ export function LicenciaEscritorio() {
             <p className="text-sm text-muted-foreground">
               {solicitud === "rechazada"
                 ? "Tu solicitud no fue aprobada. Comunícate con el creador de Gosaryc."
-                : "Pide tu licencia de prueba o de 1 año: la aprobamos y se activa en este equipo."}
+                : "Pide tu prueba de 30 días o tu licencia anual: la aprobamos y se activa en este equipo."}
             </p>
             <label className="block space-y-1">
               <span className="text-xs text-muted-foreground">Tu correo</span>
