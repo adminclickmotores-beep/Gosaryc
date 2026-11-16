@@ -1,10 +1,24 @@
 User-agent: *
 Allow: /
+Allow: /menu
+Allow: /instalar
 Disallow: /restaurante
+Disallow: /negocio/
 Disallow: /modulos/
 Disallow: /dashboard
 Disallow: /settings
+Disallow: /welcome
+Disallow: /superadmin
+Disallow: /licencias
+Disallow: /panel
+Disallow: /agente
+Disallow: /asistente-virtual
 Disallow: /login
+Disallow: /registro
 Disallow: /reset-password
+Disallow: /invite/
+Disallow: /request/status/
+Disallow: /api/
+Disallow: /lovable/
 
-Sitemap: https://gosaly.lovable.app/sitemap.xml
+Sitemap: https://gosaryc.lovable.app/sitemap.xml

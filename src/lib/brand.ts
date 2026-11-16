@@ -19,7 +19,7 @@ export const BRAND = {
    * Placeholder domain used in example URLs (Commander AI input hints, etc.).
    * Keep this neutral — it should NOT match the email-sending domain.
    */
-  domain: "example.com",
+  domain: "gosaryc.lovable.app",
   /**
    * Optional support inbox surfaced in error/empty states.
    * Remixers: replace with your real support address (or set to undefined

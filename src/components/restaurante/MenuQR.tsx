@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 
-const BASE_PUBLICA = "https://gosaly.lovable.app";
+const BASE_PUBLICA = "https://gosaryc.lovable.app";
 
 export function MenuQR() {
   const [origen, setOrigen] = useState(BASE_PUBLICA);
