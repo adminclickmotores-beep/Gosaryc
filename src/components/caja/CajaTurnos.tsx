@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
+import { usePermisos } from "@/hooks/use-permisos";
 
 type Turno = Tables<"turnos_caja">;
 type Mov = Tables<"movimientos_turno">;
@@ -50,6 +51,9 @@ function resumen(turno: Turno, movs: Mov[]) {
 
 export function CajaTurnos() {
   const { negocio } = useNegocio();
+  const { esAdmin } = usePermisos();
+  // Arqueo ciego: quien no administra el negocio cuenta el efectivo sin ver cuánto debería haber.
+  const ciego = !esAdmin;
   const [turno, setTurno] = useState<Turno | null>(null);
   const [movs, setMovs] = useState<Mov[]>([]);
   const [historial, setHistorial] = useState<Turno[]>([]);
@@ -108,7 +112,7 @@ export function CajaTurnos() {
     if (!concepto.trim()) return toast.error("Escribe el concepto.");
     if (!Number.isFinite(v) || v <= 0) return toast.error("Escribe un valor mayor a cero.");
     if ((tipo === "gasto" || tipo === "retiro") && metodo === "efectivo" && r && v > r.esperado) {
-      return toast.error(`No hay tanto efectivo en caja (hay ${dinero(r.esperado)}).`);
+      return toast.error(ciego ? "No hay tanto efectivo en caja para este movimiento." : `No hay tanto efectivo en caja (hay ${dinero(r.esperado)}).`);
     }
     if (tipo === "retiro" && metodo !== "efectivo") return toast.error("Un retiro siempre es en efectivo.");
     setOcupado(true);
@@ -155,18 +159,27 @@ ${t.notas_cierre ? `<hr><p>Notas: ${esc(t.notas_cierre)}</p>` : ""}<br><br><p cl
     const c = Number(contado);
     if (!contado.trim() || !Number.isFinite(c) || c < 0) return toast.error("Cuenta el efectivo y escribe cuánto hay.");
     const dif = c - r.esperado;
-    if (dif !== 0 && !notas.trim()) return toast.error("Hay diferencia: explica el motivo en las notas del cierre.");
-    if (!window.confirm(dif === 0 ? "La caja cuadra. ¿Cerrar el turno?" : `Hay una diferencia de ${dinero(dif)}. ¿Cerrar de todos modos?`)) return;
+    if (!ciego && dif !== 0 && !notas.trim()) return toast.error("Hay diferencia: explica el motivo en las notas del cierre.");
+    const pregunta = ciego
+      ? `Vas a cerrar la caja con ${dinero(c)} contados. ¿Confirmas?`
+      : dif === 0 ? "La caja cuadra. ¿Cerrar el turno?" : `Hay una diferencia de ${dinero(dif)}. ¿Cerrar de todos modos?`;
+    if (!window.confirm(pregunta)) return;
     setOcupado(true);
-    const cierre = {
-      estado: "cerrado", cerrado_en: new Date().toISOString(), esperado_efectivo: r.esperado,
-      efectivo_contado: c, diferencia: dif, notas_cierre: notas.trim() || null,
-    };
-    const { error } = await supabase.from("turnos_caja").update(cierre).eq("id", turno.id);
+    // El servidor calcula el esperado y la diferencia; el cajero solo envía lo que contó.
+    const { data: cerrado, error } = await supabase
+      .from("turnos_caja")
+      .update({ estado: "cerrado", cerrado_en: new Date().toISOString(), efectivo_contado: c, notas_cierre: notas.trim() || null })
+      .eq("id", turno.id)
+      .select("*")
+      .single();
     setOcupado(false);
-    if (error) return toast.error("No se pudo cerrar la caja.");
-    toast.success("Caja cerrada.");
-    imprimir({ ...turno, ...cierre }, movs);
+    if (error || !cerrado) {
+      const msg = error?.message ?? "";
+      return toast.error(/sobrante|faltante|contaste/i.test(msg) ? msg : "No se pudo cerrar la caja.");
+    }
+    const d = cerrado.diferencia ?? 0;
+    toast.success(d === 0 ? "Caja cerrada: cuadra." : d > 0 ? `Caja cerrada con sobrante de ${dinero(d)}.` : `Caja cerrada con faltante de ${dinero(-d)}.`);
+    imprimir(cerrado, movs);
     setContado(""); setNotas("");
     cargar();
   };
@@ -174,7 +187,7 @@ ${t.notas_cierre ? `<hr><p>Notas: ${esc(t.notas_cierre)}</p>` : ""}<br><br><p cl
   if (cargando) return <p className="text-sm text-muted-foreground">Cargando caja…</p>;
 
   const esGasto = tipo === "gasto";
-  const diferencia = r && contado.trim() && Number.isFinite(Number(contado)) ? Number(contado) - r.esperado : null;
+  const diferencia = !ciego && r && contado.trim() && Number.isFinite(Number(contado)) ? Number(contado) - r.esperado : null;
 
   return (
     <div className="space-y-6">
@@ -202,12 +215,17 @@ ${t.notas_cierre ? `<hr><p>Notas: ${esc(t.notas_cierre)}</p>` : ""}<br><br><p cl
 
       {turno && r && (
         <>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {ciego && (
+            <GlassPanel className="p-4 text-sm text-muted-foreground">
+              Arqueo ciego: el sistema no muestra cuánto efectivo debería haber. Registra los movimientos y, al cerrar, cuenta lo que hay en la caja.
+            </GlassPanel>
+          )}
+          {!ciego && <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Efectivo esperado</p><p className="truncate text-lg font-medium text-foreground">{dinero(r.esperado)}</p></GlassPanel>
             <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Ventas del turno</p><p className="truncate text-lg font-medium text-foreground">{dinero(r.ventas)}</p></GlassPanel>
             <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Transferencias + tarjeta</p><p className="truncate text-lg font-medium text-foreground">{dinero(r.transf + r.tarjeta)}</p></GlassPanel>
             <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Gastos y retiros</p><p className="truncate text-lg font-medium text-foreground">{dinero(r.gastos + r.retiros)}</p></GlassPanel>
-          </div>
+          </div>}
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
             <div className="space-y-4">
@@ -242,18 +260,24 @@ ${t.notas_cierre ? `<hr><p>Notas: ${esc(t.notas_cierre)}</p>` : ""}<br><br><p cl
 
               <GlassPanel className="space-y-3 p-5">
                 <h2 className="flex items-center gap-2 font-medium text-foreground"><Lock className="h-4 w-4" /> Arqueo y cierre</h2>
-                <p className="text-sm text-muted-foreground">Cuenta los billetes y monedas. Debe haber {dinero(r.esperado)}.</p>
+                <p className="text-sm text-muted-foreground">
+                  {ciego
+                    ? "Cuenta los billetes y monedas y escribe cuánto hay. El sistema calcula el sobrante o faltante al cerrar."
+                    : `Cuenta los billetes y monedas. Debe haber ${dinero(r.esperado)}.`}
+                </p>
                 <input className={campo} placeholder="Efectivo contado (COP)" inputMode="decimal" value={contado} onChange={(e) => setContado(e.target.value)} />
                 {diferencia !== null && (
                   <p className={`text-sm font-medium ${diferencia === 0 ? "text-foreground" : "text-destructive"}`}>
                     {diferencia === 0 ? "La caja cuadra." : diferencia > 0 ? `Sobrante: ${dinero(diferencia)}` : `Faltante: ${dinero(-diferencia)}`}
                   </p>
                 )}
-                <textarea className={campo} rows={2} placeholder="Notas del cierre (obligatorias si hay diferencia)" value={notas} onChange={(e) => setNotas(e.target.value)} />
+                <textarea className={campo} rows={2} placeholder={ciego ? "Notas del cierre (si hay diferencia, el sistema te pedirá el motivo)" : "Notas del cierre (obligatorias si hay diferencia)"} value={notas} onChange={(e) => setNotas(e.target.value)} />
                 <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => imprimir(turno, movs)} className="inline-flex items-center justify-center gap-2 rounded-lg border border-glass-border px-3 py-2.5 text-sm text-foreground">
-                    <Printer className="h-4 w-4" /> Corte parcial
-                  </button>
+                  {!ciego ? (
+                    <button onClick={() => imprimir(turno, movs)} className="inline-flex items-center justify-center gap-2 rounded-lg border border-glass-border px-3 py-2.5 text-sm text-foreground">
+                      <Printer className="h-4 w-4" /> Corte parcial
+                    </button>
+                  ) : <span />}
                   <button onClick={cerrar} disabled={ocupado} className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-50">
                     <Lock className="h-4 w-4" /> Cerrar caja
                   </button>
