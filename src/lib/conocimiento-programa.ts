@@ -91,6 +91,9 @@ export const MANUAL_FIJO = `
 # 14. PLANES, LICENCIAS Y SOPORTE
 - Cada negocio tiene un plan (Prueba, Emprendedor o Pro), un estado (activo o suspendido) y una fecha de vencimiento. Si la cuenta está suspendida por falta de pago o vencida, el acceso se bloquea hasta renovar; la renovación o extensión la hace el equipo de Gosaryc (el usuario no puede hacerla desde el programa).
 - La versión de escritorio pide un código de licencia al abrirla (30 días de prueba o licencia anual); al vencer muestra un aviso para renovar.
+- Versiones: web (cualquier navegador), móvil (se instala desde el navegador con «Instalar app») y escritorio de Windows (instalador «Gosaryc Setup» con acceso directo del escritorio y del menú Inicio, logo propio, agente de WhatsApp integrado y «Guía de uso de Gosaryc», que también abre con F1).
+- En línea y sin conexión: con internet todo se guarda al instante; sin internet el programa avisa, guarda cambios y borradores en el dispositivo y sincroniza al volver la conexión. El agente de WhatsApp y el asistente virtual necesitan internet.
+- Agente de WhatsApp: en Mi negocio se vincula el número con un QR (WhatsApp > Dispositivos vinculados). Responde con los datos y el catálogo del negocio, aconseja y ayuda a cerrar ventas; aprende de las respuestas que da el dueño. En escritorio se enciende solo y requiere el computador encendido y con internet.
 - Soporte: contactar al equipo de Gosaryc, quien creó y diseñó el programa.
 
 # 15. SOLUCIÓN DE PROBLEMAS FRECUENTES
