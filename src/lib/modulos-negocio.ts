@@ -176,6 +176,10 @@ const CLIENTES_SERVICIOS = m("clientes_servicios", "Clientes del negocio", "Clie
 const PAGOS_SERVICIOS = m("pagos_servicios", "Pagos digitales y anticipos", "Concilia pagos con Nequi, Daviplata y Bre-B de cada cita o servicio.", Smartphone);
 const RESENAS_SERVICIOS = m("resenas_servicios", "Quejas y reseñas de clientes", "Opiniones, quejas y reclamos sobre el servicio, con seguimiento.", Star);
 const PERSONAL_SERVICIOS = m("personal_servicios", "Personal, turnos y comisiones", "Turnos de profesionales, comisiones por servicio y pagos del personal.", Briefcase);
+const PAGOS_EDUCACION = m("pagos_educacion", "Pagos de pensiones y matrículas", "Recaudo por transferencia, efectivo y datáfono de cada estudiante, con recibo.", Smartphone);
+const RESENAS_EDUCACION = m("resenas_educacion", "Quejas y peticiones de acudientes", "Reclamos, peticiones y sugerencias de padres y estudiantes, con seguimiento.", Star);
+const PERSONAL_EDUCACION = m("personal_educacion", "Docentes, turnos y pagos", "Horas de clase, pagos a docentes y novedades del personal académico.", Briefcase);
+const METAS_EDUCACION = m("metas_educacion", "Metas de matrícula y recaudo", "Metas de nuevas matrículas y de recaudo por periodo académico.", Target);
 const METAS_SERVICIOS = m("metas_servicios", "Metas de citas y ventas", "Metas semanales de servicios realizados y seguimiento por profesional.", Target);
 const FACTURAS_SALUD = m("facturas_salud", "Facturación y RIPS", "Facturas a pacientes y EPS, con RIPS, copagos y cuotas moderadoras.", Receipt);
 const PAGOS_SALUD = m("pagos_salud", "Pagos y copagos digitales", "Concilia copagos y consultas pagadas por Nequi, Daviplata o transferencia.", Smartphone);
@@ -333,7 +337,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       AGENDA,
       m("mensualidades", "Pensiones y mensualidades", "Pagos pendientes y recordatorios de cobro.", Coins),
       m("asistencia", "Asistencia y notas", "Seguimiento del avance de cada estudiante.", BadgeCheck),
-      FACTURAS, PAGOS, RESENAS,CAJA, EMPLEADOS, METAS, FINANZAS,
+      FACTURAS, PAGOS_EDUCACION, RESENAS_EDUCACION, CAJA, PERSONAL_EDUCACION, METAS_EDUCACION, FINANZAS,
     ],
   },
   {
