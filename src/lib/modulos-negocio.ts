@@ -213,6 +213,11 @@ const CLIENTES_TALLER = m("clientes_taller", "Dueños de vehículos", "Clientes 
 const PAGOS_TALLER = m("pagos_taller", "Cobros de órdenes y pagos digitales", "Cobro de mano de obra y repuestos por transferencia, efectivo o tarjeta.", Smartphone);
 const RESENAS_TALLER = m("resenas_taller", "Reclamos de trabajos y garantías", "Reclamos sobre reparaciones realizadas, con seguimiento y solución.", Star);
 const PERSONAL_TALLER = m("personal_taller", "Mecánicos, turnos y comisiones", "Turnos de mecánicos y hojalateros, comisiones por orden y novedades.", Briefcase);
+const CLIENTES_FARM = m("clientes_farm", "Clientes y pacientes de la droguería", "Clientes frecuentes, cupos de crédito y pedidos con fórmula.", Users);
+const PAGOS_FARM = m("pagos_farm", "Cobros y pagos digitales de la farmacia", "Cobro de ventas y domicilios por efectivo, tarjeta o transferencia.", Smartphone);
+const RESENAS_FARM = m("resenas_farm", "Quejas y reseñas de clientes", "Reclamos por productos, precios o entregas, con seguimiento.", Star);
+const PERSONAL_FARM = m("personal_farm", "Turnos de auxiliares y pagos", "Turnos de auxiliares y químicos, comisiones y novedades del personal.", Briefcase);
+const METAS_FARM = m("metas_farm", "Metas de ventas y rotación", "Metas de ventas mensuales y rotación de productos por categoría.", Target);
 const METAS_TALLER = m("metas_taller", "Metas de órdenes y facturación", "Metas de órdenes cerradas y facturación mensual del taller.", Target);
 const METAS_BELL = m("metas_bell", "Metas de servicios y productos", "Metas de servicios realizados y de venta de productos por profesional.", Target);
 const METAS_TRANSP = m("metas_transp", "Metas de viajes y fletes", "Metas de viajes realizados, kilómetros y fletes facturados por mes.", Target);
@@ -562,8 +567,8 @@ TIPOS_NEGOCIO.push(
       m("inventario_farm", "Inventario y reposición", "Existencias y alertas de bajo stock.", Package),
       m("vencimientos_farm", "Lotes y vencimientos", "Fechas de vencimiento por lote para rotar a tiempo.", CalendarClock),
       m("formulas", "Fórmulas y domicilios", "Pedidos con fórmula y entregas a domicilio.", ClipboardList),
-      CLIENTES,
-      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES_FARM,
+      FIADOS, FACTURAS, PAGOS_FARM, FIDELIZACION, RESENAS_FARM, CAJA, PROVEEDORES, PERSONAL_FARM, METAS_FARM, FINANZAS,
     ],
   },
   {
