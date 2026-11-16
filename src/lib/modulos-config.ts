@@ -126,6 +126,37 @@ const CAMPOS_POR_TIPO: Record<string, CampoExtra[]> = {
 
 /** Campos propios de módulos concretos (tienen prioridad sobre los de su familia). */
 const CAMPOS_ESPECIFICOS: Record<string, CampoExtra[]> = {
+  habitaciones: [
+    { clave: "numero", etiqueta: "Número o nombre de la habitación", tipo: "text" },
+    { clave: "tipo_habitacion", etiqueta: "Tipo", tipo: "select", opciones: ["Sencilla", "Doble", "Suite", "Familiar", "Dormitorio compartido", "Otro"] },
+    { clave: "capacidad", etiqueta: "Capacidad (personas)", tipo: "text" },
+    { clave: "tarifa_noche", etiqueta: "Tarifa por noche (COP)", tipo: "text" },
+    { clave: "estado_hab", etiqueta: "Estado de limpieza", tipo: "select", opciones: ["Limpia", "Sucia", "En limpieza", "En mantenimiento"] },
+    { clave: "amenidades", etiqueta: "Amenidades", tipo: "text", placeholder: "Ej. Aire, TV, baño privado" },
+  ],
+  reservas_hosp: [
+    { clave: "documento", etiqueta: "Documento o pasaporte del huésped", tipo: "text" },
+    { clave: "telefono_huesped", etiqueta: "Teléfono del huésped", tipo: "tel" },
+    { clave: "habitacion", etiqueta: "Habitación asignada", tipo: "text" },
+    { clave: "fecha_salida", etiqueta: "Fecha de salida", tipo: "date" },
+    { clave: "noches", etiqueta: "Número de noches", tipo: "text" },
+    { clave: "anticipo", etiqueta: "Anticipo recibido (COP)", tipo: "text" },
+    { clave: "canal_reserva", etiqueta: "Canal de reserva", tipo: "select", opciones: ["Directa", "WhatsApp", "Booking", "Airbnb", "Agencia", "Otro"] },
+  ],
+  servicios_extra: [
+    { clave: "huesped_habitacion", etiqueta: "Huésped o habitación", tipo: "text" },
+    { clave: "servicio", etiqueta: "Servicio adicional", tipo: "select", opciones: ["Desayuno", "Almuerzo", "Cena", "Lavandería", "Tour", "Transporte", "Minibar", "Spa", "Otro"] },
+    { clave: "cantidad", etiqueta: "Cantidad", tipo: "text" },
+    { clave: "fecha_servicio", etiqueta: "Fecha del servicio", tipo: "date" },
+    { clave: "cargado_a", etiqueta: "Cargado a", tipo: "select", opciones: ["Cuenta de habitación", "Pago inmediato"] },
+  ],
+  limpieza: [
+    { clave: "habitacion", etiqueta: "Habitación o área", tipo: "text" },
+    { clave: "tarea", etiqueta: "Tarea", tipo: "select", opciones: ["Limpieza diaria", "Limpieza profunda", "Cambio de sábanas", "Desinfección", "Reparación", "Otro"] },
+    { clave: "insumos_usados", etiqueta: "Insumos usados", tipo: "text" },
+    { clave: "estado_tarea", etiqueta: "Estado", tipo: "select", opciones: ["Pendiente", "En proceso", "Terminada", "Con novedad"] },
+    { clave: "novedad", etiqueta: "Novedad o daño encontrado", tipo: "text" },
+  ],
   cursos: [
     { clave: "docente", etiqueta: "Docente o instructor", tipo: "text" },
     { clave: "horario", etiqueta: "Horario", tipo: "text", placeholder: "Ej. Lunes y miércoles 6 a 8 p. m." },
