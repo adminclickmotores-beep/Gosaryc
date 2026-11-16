@@ -996,6 +996,24 @@ html.light .menu-card-icon {
   box-shadow: 0 6px 14px -8px oklch(0.55 0.15 var(--tono) / 0.7);
 }
 
+/* Cabecera destacada de la pantalla de inicio */
+.hero-panel {
+  background:
+    radial-gradient(70% 120% at 0% 0%, oklch(0.62 0.17 165 / 0.28), transparent 60%),
+    radial-gradient(60% 110% at 100% 0%, oklch(0.62 0.17 300 / 0.26), transparent 60%),
+    radial-gradient(60% 100% at 60% 100%, oklch(0.62 0.17 245 / 0.18), transparent 60%),
+    oklch(0.17 0.018 255 / 0.8);
+  border: 1px solid oklch(0.75 0.12 245 / 0.25);
+  box-shadow: 0 24px 60px -30px oklch(0.6 0.17 245 / 0.5);
+}
+html.light .hero-panel {
+  background:
+    radial-gradient(70% 120% at 0% 0%, oklch(0.9 0.08 165 / 0.9), transparent 60%),
+    radial-gradient(60% 110% at 100% 0%, oklch(0.9 0.08 300 / 0.8), transparent 60%),
+    oklch(0.99 0.01 245);
+  border-color: oklch(0.6 0.12 245 / 0.3);
+}
+
 /* Menú lateral con tarjetas de colores (mismo tono que las tarjetas del inicio) */
 .nav-tarjeta {
   background:

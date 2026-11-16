@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useLocation, useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { Download, ExternalLink, Trash2 } from "lucide-react";
+import { ArrowUpRight, Download, ExternalLink, Flame, ShoppingBag, Sparkles, Trash2, TrendingUp, Wallet } from "lucide-react";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { PasoAPaso } from "@/components/restaurante/PasoAPaso";
@@ -273,23 +273,68 @@ export function RestaurantePage() {
     window.dispatchEvent(new Event("negocio:cambio"));
   };
 
-  const ventasHoy = pedidos
-    .filter((p) => p.estado !== "cancelado" && new Date(p.created_at).toDateString() === new Date().toDateString())
-    .reduce((s, p) => s + p.total, 0);
+  const [saludo, setSaludo] = useState("Bienvenido");
+  const [fechaHoy, setFechaHoy] = useState("");
+  useEffect(() => {
+    const ahora = new Date();
+    const h = ahora.getHours();
+    setSaludo(h < 12 ? "Buenos días" : h < 19 ? "Buenas tardes" : "Buenas noches");
+    setFechaHoy(ahora.toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long", year: "numeric" }));
+  }, []);
+
+  const pedidosDeHoy = pedidos.filter(
+    (p) => p.estado !== "cancelado" && new Date(p.created_at).toDateString() === new Date().toDateString(),
+  );
+  const ventasHoy = pedidosDeHoy.reduce((s, p) => s + p.total, 0);
+  const pedidosHoy = pedidosDeHoy.length;
+  const pedidosActivos = pedidos.filter((p) => ["nuevo", "preparando", "listo", "en_camino"].includes(p.estado)).length;
+  const ticketPromedio = pedidosHoy > 0 ? Math.round(ventasHoy / pedidosHoy) : 0;
 
   return (
     <div className="space-y-6">
       {!completa && (
       <>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-display text-3xl text-foreground">{tipo.panel}</h1>
-          <p className="text-base italic text-primary">{GUIAS_NEGOCIO[tipo.clave].frase}</p>
-          <p className="text-sm text-muted-foreground">
-            {tipo.usaPedidos ? `Ventas de hoy: ${dinero(ventasHoy)}` : negocio?.nombre ?? tipo.etiqueta}
-          </p>
+      <div className="hero-panel relative overflow-hidden rounded-3xl p-5 md:p-7">
+        <div className="relative z-10 flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary">
+              <Sparkles className="h-3.5 w-3.5" /> {saludo}
+            </p>
+            <h1 className="mt-3 break-words font-display text-3xl text-foreground md:text-4xl">
+              {negocio?.nombre || tipo.panel}
+            </h1>
+            <p className="mt-1 text-base italic text-primary">{GUIAS_NEGOCIO[tipo.clave].frase}</p>
+            <p className="mt-1 text-sm capitalize text-muted-foreground">{fechaHoy}</p>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2 text-sm">
+
+        {tipo.usaPedidos && (
+          <div className="relative z-10 mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {[
+              { t: "Ventas de hoy", v: dinero(ventasHoy), tono: 165, Icono: Wallet },
+              { t: "Pedidos de hoy", v: String(pedidosHoy), tono: 245, Icono: ShoppingBag },
+              { t: "En proceso", v: String(pedidosActivos), tono: 20, Icono: Flame },
+              { t: "Ticket promedio", v: dinero(ticketPromedio), tono: 300, Icono: TrendingUp },
+            ].map((c) => (
+              <GlassPanel
+                key={c.t}
+                hover="lift"
+                className="menu-card flex min-w-0 items-center gap-3 p-4"
+                style={{ "--tono": c.tono } as React.CSSProperties}
+              >
+                <span className="menu-card-icon">
+                  <c.Icono className="h-5 w-5 shrink-0" />
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-xs text-muted-foreground">{c.t}</p>
+                  <p className="truncate text-base font-semibold text-foreground md:text-lg">{c.v}</p>
+                </div>
+              </GlassPanel>
+            ))}
+          </div>
+        )}
+
+        <div className="relative z-10 mt-5 flex flex-wrap items-center gap-2 text-sm">
           <select
             aria-label="Tipo de negocio"
             value={tipo.clave}
@@ -326,22 +371,26 @@ export function RestaurantePage() {
         onAbrirMenu={() => setVista("menu")}
       />
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+      <h2 className="font-display text-xl text-foreground">Tus módulos</h2>
+      <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 lg:grid-cols-3">
         {tipo.modulos.map(({ id, Icon, titulo, descripcion, estado, ruta }, i: number) => {
           const tonos = [165, 245, 300, 20, 75, 200, 340, 130];
           const contenido = (
             <GlassPanel
               hover="lift"
-              className="menu-card flex h-full items-center gap-3 p-4"
+              className="menu-card flex h-full items-start gap-3 p-4"
               style={{ "--tono": tonos[i % tonos.length] } as React.CSSProperties}
             >
               <span className="menu-card-icon">
                 <Icon className="h-5 w-5 shrink-0" />
               </span>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-foreground">{titulo}</p>
-                <p className="truncate text-xs text-muted-foreground">{estado === "Activo" ? descripcion : "Próximo"}</p>
+              <div className="min-w-0 flex-1">
+                <p className="break-words text-sm font-semibold text-foreground">{titulo}</p>
+                <p className="line-clamp-2 break-words text-xs text-muted-foreground">
+                  {estado === "Activo" ? descripcion : "Próximo"}
+                </p>
               </div>
+              {ruta && ruta !== "/restaurante" && <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
             </GlassPanel>
           );
           return ruta && ruta !== "/restaurante" ? (
