@@ -7,7 +7,7 @@ import { configModulo } from "@/lib/modulos-config";
 
 type Vehiculo = Tables<"vehiculos_inventario">;
 type Credito = Tables<"solicitudes_credito">;
-type Registro = Tables<"modulo_registros">;
+type UsadoVeh = Tables<"vehiculos_usados_registros">;
 type AlistVeh = Tables<"alistamiento_registros">;
 type CarteraVeh = Tables<"cartera_veh_registros">;
 type VentaVeh = Tables<"ventas_veh_registros">;
@@ -16,13 +16,11 @@ type ComisionVeh = Tables<"comisiones_registros">;
 const dinero = (n: number) =>
   new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
 
-const MODULOS = ["alistamiento", "cartera_veh", "costos_veh", "vehiculos_usados"];
-
 /** Tablero real del concesionario: todo sale de los registros guardados, nada simulado. */
 export function DashboardConcesionario() {
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
   const [creditos, setCreditos] = useState<Credito[]>([]);
-  const [registros, setRegistros] = useState<Registro[]>([]);
+  const [usadosVeh, setUsadosVeh] = useState<UsadoVeh[]>([]);
   const [alistVeh, setAlistVeh] = useState<AlistVeh[]>([]);
   const [carteraVeh, setCarteraVeh] = useState<CarteraVeh[]>([]);
   const [ventasVeh, setVentasVeh] = useState<VentaVeh[]>([]);
@@ -40,13 +38,13 @@ export function DashboardConcesionario() {
   useEffect(() => {
     let cancelado = false;
     (async () => {
-      const [v0, co, c, r, al, ca, vv, cv] = await Promise.all([
+      const [v0, co, c, al, ca, us, vv, cv] = await Promise.all([
         supabase.from("vehiculos_inventario").select("*").limit(2000),
         supabase.from("vehiculo_costos").select("vehiculo_id, precio_compra").limit(5000),
         supabase.from("solicitudes_credito").select("*").limit(2000),
-        supabase.from("modulo_registros").select("*").in("modulo", MODULOS).eq("anulado", false).limit(2000),
         supabase.from("alistamiento_registros").select("*").eq("anulado", false).limit(2000),
         supabase.from("cartera_veh_registros").select("*").eq("anulado", false).limit(2000),
+        supabase.from("vehiculos_usados_registros").select("*").eq("anulado", false).limit(2000),
         supabase.from("ventas_veh_registros").select("*").eq("anulado", false).limit(2000),
         supabase.from("comisiones_registros").select("*").eq("anulado", false).limit(2000),
       ]);
@@ -55,7 +53,7 @@ export function DashboardConcesionario() {
       for (const x of co.data ?? []) costos.set(x.vehiculo_id, x.precio_compra);
       setVehiculos((v0.data ?? []).map((x) => ({ ...x, precio_compra: costos.get(x.id) ?? null })));
       setCreditos(c.data ?? []);
-      setRegistros(r.data ?? []);
+      setUsadosVeh(us.data ?? []);
       setAlistVeh(al.data ?? []);
       setCarteraVeh(ca.data ?? []);
       setVentasVeh(vv.data ?? []);
@@ -71,7 +69,6 @@ export function DashboardConcesionario() {
     const sep = vehiculos.filter((v) => v.estado === "separado");
     const vend = vehiculos.filter((v) => v.estado === "vendido");
     const utilidad = vend.reduce((s, v) => s + (v.precio - (v.precio_compra ?? 0)), 0);
-    const todos = (m: string) => registros.filter((r) => r.modulo === m);
     const ventasMes = ventasVeh.filter((r) => mes && (r.fecha ?? r.created_at).startsWith(mes));
     const aprobados = creditos.filter((c) => c.estado === "aprobado").length;
     const rechazados = creditos.filter((c) => c.estado === "rechazado").length;
@@ -81,7 +78,7 @@ export function DashboardConcesionario() {
     const cartera = carteraVeh
       .filter((r) => !configModulo("cartera_veh").cerrados.includes(r.estado))
       .reduce((s, r) => s + Math.max(r.monto - r.abonado, 0), 0);
-    const retomas = todos("vehiculos_usados").length;
+    const retomas = usadosVeh.length;
     const alertas: string[] = [];
     if (hoy) {
       for (const v of vehiculos) {
@@ -96,7 +93,7 @@ export function DashboardConcesionario() {
       gastoAlistamiento, comisiones, cartera, retomas, alertas,
       valorInventario: disp.reduce((s, v) => s + v.precio, 0),
     };
-  }, [vehiculos, creditos, registros, alistVeh, carteraVeh, ventasVeh, comisionesVeh, mes, hoy]);
+  }, [vehiculos, creditos, usadosVeh, alistVeh, carteraVeh, ventasVeh, comisionesVeh, mes, hoy]);
 
   const tarjetas = [
     { t: "Inventario disponible", v: String(d.disp.length), s: dinero(d.valorInventario) },
