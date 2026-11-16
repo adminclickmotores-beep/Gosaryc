@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_app/pedidos-recurrentes")({
   component: PedidosRecurrentesPage,
 });
 
-type Registro = Tables<"modulo_registros">;
+type Registro = Tables<"suscripciones_registros">;
 
 const dinero = (n: number) =>
   new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
@@ -22,9 +22,8 @@ function PedidosRecurrentesPage() {
 
   const cargar = useCallback(async () => {
     const { data, error } = await supabase
-      .from("modulo_registros")
+      .from("suscripciones_registros")
       .select("*")
-      .eq("modulo", "suscripciones")
       .order("created_at", { ascending: false });
     if (error) toast.error("No se pudieron cargar los pedidos recurrentes.");
     setSuscripciones(data ?? []);

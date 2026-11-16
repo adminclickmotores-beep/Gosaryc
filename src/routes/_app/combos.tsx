@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_app/combos")({
   component: CombosPage,
 });
 
-type Registro = Tables<"modulo_registros">;
+type Registro = Tables<"combos_registros">;
 
 const dinero = (n: number) =>
   new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
@@ -22,9 +22,8 @@ function CombosPage() {
 
   const cargar = useCallback(async () => {
     const { data, error } = await supabase
-      .from("modulo_registros")
+      .from("combos_registros")
       .select("*")
-      .eq("modulo", "combos")
       .order("created_at", { ascending: false });
     if (error) toast.error("No se pudieron cargar los combos.");
     setCombos(data ?? []);

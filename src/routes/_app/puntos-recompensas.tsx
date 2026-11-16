@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_app/puntos-recompensas")({
   component: PuntosRecompensasPage,
 });
 
-type Registro = Tables<"modulo_registros">;
+type Registro = Tables<"fidelizacion_registros">;
 
 const dinero = (n: number) =>
   new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
@@ -22,9 +22,8 @@ function PuntosRecompensasPage() {
 
   const cargar = useCallback(async () => {
     const { data, error } = await supabase
-      .from("modulo_registros")
+      .from("fidelizacion_registros")
       .select("*")
-      .eq("modulo", "fidelizacion")
       .order("monto", { ascending: false });
     if (error) toast.error("No se pudieron cargar los puntos.");
     setClientes(data ?? []);
