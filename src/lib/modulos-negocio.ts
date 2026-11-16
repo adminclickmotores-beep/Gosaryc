@@ -205,6 +205,11 @@ const CLIENTES_TRANSP = m("clientes_transp", "Remitentes y clientes de carga", "
 const PAGOS_TRANSP = m("pagos_transp", "Cobros de fletes y pagos digitales", "Cobro de fletes, anticipos y saldos por transferencia o consignación.", Smartphone);
 const RESENAS_TRANSP = m("resenas_transp", "Reclamos de carga y entregas", "Reclamos por averías, faltantes o retrasos, con seguimiento.", Star);
 const PERSONAL_TRANSP = m("personal_transp", "Conductores, turnos y liquidaciones", "Liquidación de conductores y auxiliares de ruta por viaje y periodo.", Briefcase);
+const CLIENTES_BELL = m("clientes_bell", "Clientas y clientes del salón", "Clientas con su historial, preferencias de color o tratamiento y citas.", Users);
+const PAGOS_BELL = m("pagos_bell", "Cobros y pagos digitales del salón", "Cobro de servicios, productos y paquetes por cada medio de pago.", Smartphone);
+const RESENAS_BELL = m("resenas_bell", "Quejas y reseñas de clientas", "Opiniones y reclamos sobre servicios y productos, con seguimiento.", Star);
+const PERSONAL_BELL = m("personal_bell", "Estilistas, turnos y comisiones", "Turnos de estilistas y esteticistas, comisiones por servicio y novedades.", Briefcase);
+const METAS_BELL = m("metas_bell", "Metas de servicios y productos", "Metas de servicios realizados y de venta de productos por profesional.", Target);
 const METAS_TRANSP = m("metas_transp", "Metas de viajes y fletes", "Metas de viajes realizados, kilómetros y fletes facturados por mes.", Target);
 const METAS_TEC = m("metas_tec", "Metas de proyectos y facturación", "Metas de proyectos entregados y facturación recurrente por mes.", Target);
 const METAS_VET = m("metas_vet", "Metas de consultas y ventas", "Metas de consultas atendidas, vacunaciones y ventas de productos.", Target);
@@ -523,8 +528,8 @@ TIPOS_NEGOCIO.push(
       m("lista_espera", "Lista de espera", "Clientes por atender cuando se libere un cupo.", Bell),
       m("comisiones", "Comisiones del personal", "Pago por servicio realizado.", Percent),
       m("productos_belleza", "Productos y cosméticos", "Inventario y venta de productos.", Sparkles),
-      CLIENTES, SOLICITUDES,
-      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES_BELL, SOLICITUDES,
+      FIADOS, FACTURAS, PAGOS_BELL, FIDELIZACION, RESENAS_BELL, CAJA, PROVEEDORES, PERSONAL_BELL, METAS_BELL, FINANZAS,
     ],
   },
   {
