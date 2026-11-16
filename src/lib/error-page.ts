@@ -25,6 +25,22 @@ export function renderErrorPage(): string {
         <a class="secondary" href="/">Ir al inicio</a>
       </div>
     </div>
+    <script>
+      // Si la falla es pasajera (por ejemplo, mientras se publica una versión nueva),
+      // la página se vuelve a pedir sola unas pocas veces antes de rendirse.
+      (function () {
+        try {
+          var clave = "gosaryc:reintentos_error";
+          var n = Number(sessionStorage.getItem(clave) || "0");
+          if (n < 3) {
+            sessionStorage.setItem(clave, String(n + 1));
+            setTimeout(function () { location.reload(); }, 4000 * (n + 1));
+          } else {
+            sessionStorage.removeItem(clave);
+          }
+        } catch (e) {}
+      })();
+    </script>
   </body>
 </html>`;
 }
