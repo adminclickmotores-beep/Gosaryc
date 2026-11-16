@@ -217,6 +217,11 @@ const CLIENTES_FARM = m("clientes_farm", "Clientes y pacientes de la droguería"
 const PAGOS_FARM = m("pagos_farm", "Cobros y pagos digitales de la farmacia", "Cobro de ventas y domicilios por efectivo, tarjeta o transferencia.", Smartphone);
 const RESENAS_FARM = m("resenas_farm", "Quejas y reseñas de clientes", "Reclamos por productos, precios o entregas, con seguimiento.", Star);
 const PERSONAL_FARM = m("personal_farm", "Turnos de auxiliares y pagos", "Turnos de auxiliares y químicos, comisiones y novedades del personal.", Briefcase);
+const CLIENTES_EVENTOS = m("clientes_eventos", "Anfitriones y clientes de eventos", "Anfitriones, empresas y familias con sus eventos, contratos y saldos.", Users);
+const PAGOS_EVENTOS = m("pagos_eventos", "Anticipos y saldos de eventos", "Anticipos, abonos y saldos de cada evento por transferencia o tarjeta.", Smartphone);
+const RESENAS_EVENTOS = m("resenas_eventos", "Quejas y reseñas de anfitriones", "Opiniones y reclamos sobre el evento o el servicio, con seguimiento.", Star);
+const PERSONAL_EVENTOS = m("personal_eventos", "Staff, turnos y pagos por evento", "Meseros, fotógrafos y personal de apoyo: turnos, honorarios y novedades.", Briefcase);
+const METAS_EVENTOS = m("metas_eventos", "Metas de eventos y contratos", "Metas de eventos realizados y contratos cerrados por temporada.", Target);
 const METAS_FARM = m("metas_farm", "Metas de ventas y rotación", "Metas de ventas mensuales y rotación de productos por categoría.", Target);
 const METAS_TALLER = m("metas_taller", "Metas de órdenes y facturación", "Metas de órdenes cerradas y facturación mensual del taller.", Target);
 const METAS_BELL = m("metas_bell", "Metas de servicios y productos", "Metas de servicios realizados y de venta de productos por profesional.", Target);
@@ -581,8 +586,8 @@ TIPOS_NEGOCIO.push(
       AGENDA,
       m("paquetes_evento", "Paquetes y servicios", "Paquetes con su precio y lo que incluyen.", Gift),
       m("entregas_evento", "Entregas y pendientes", "Álbumes, archivos o materiales por entregar.", PackageCheck),
-      CLIENTES, SOLICITUDES,
-      FIADOS, FACTURAS, PAGOS, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES_EVENTOS, SOLICITUDES,
+      FIADOS, FACTURAS, PAGOS_EVENTOS, RESENAS_EVENTOS, CAJA, PROVEEDORES, PERSONAL_EVENTOS, METAS_EVENTOS, FINANZAS,
     ],
   },
   {
