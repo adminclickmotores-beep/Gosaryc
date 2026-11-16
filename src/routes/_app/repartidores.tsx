@@ -28,9 +28,8 @@ function RepartidoresPage() {
     inicio.setHours(0, 0, 0, 0);
     if (p === "mes") inicio.setDate(1);
     const { data, error } = await supabase
-      .from("modulo_registros")
+      .from("liquidaciones_repartidores")
       .select("titulo, estado, monto")
-      .eq("modulo", "repartidores")
       .gte("created_at", inicio.toISOString());
     if (error) toast.error("No se pudo cargar la liquidación.");
     setFilas(data ?? []);
