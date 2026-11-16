@@ -992,6 +992,31 @@ TIPOS_NEGOCIO.push(
   },
 );
 
+// ---- Módulo profesional de Veterinaria y Salud (consultorio, clínica, odontología) ----
+// Reemplaza los módulos genéricos (pacientes, historia, fórmulas, vacunas, agenda, insumos) por los propios con
+// tablas tipadas. Si un tipo o un módulo no existe, simplemente no se toca (nunca falla el arranque).
+const clinica = (vet: boolean): ModuloNegocio[] => [
+  m("cl_agenda", vet ? "Agenda por veterinario" : "Agenda por especialista y consultorio", "Citas por profesional y consultorio: Agendada, En consulta, Atendida o No asistió. Al finalizar pasan a Caja.", CalendarClock),
+  m("cl_pacientes", vet ? "Pacientes / Mascotas" : "Pacientes", vet ? "Ficha de cada mascota: especie, raza, peso, alergias, foto y dueño." : "Ficha de cada paciente: datos, alergias, foto y acudiente.", vet ? PawPrint : Stethoscope),
+  m("cl_historias", "Historias clínicas", "Evoluciones con motivo, signos vitales, diagnóstico, tratamiento, adjuntos y fórmula imprimible. Solo notas aclaratorias, nunca borrado.", ClipboardList),
+  m("cl_vacunas", vet ? "Carnet de vacunación y desparasitación" : "Vacunas y esquemas", "Dosis aplicadas con lote y próxima fecha, carnet imprimible.", ShieldCheck),
+  m("cl_alertas", "Alertas y recordatorios", "Próximas vacunas, controles post-operatorios y medicamentos por vencer, con aviso por WhatsApp.", Bell),
+  m("cl_caja", "Caja de consultas", "Cobro de la consulta y los medicamentos aplicados; entra a Caja y Contabilidad.", Banknote),
+  m("cl_servicios", "Servicios y tarifas", "Consultas, cirugías y procedimientos con su precio y el porcentaje de honorarios.", Tag),
+  m("cl_insumos", "Medicamentos e insumos médicos", "Existencias, precio y vencimiento; lo aplicado se descuenta solo.", Pill),
+  m("cl_comisiones", "Honorarios y comisiones", "Liquidación automática por consulta, cirugía o procedimiento de cada profesional.", Percent),
+];
+const REEMPLAZA_CLINICA: Record<string, string[]> = {
+  mascotas: ["mascotas_reg", "agenda_vet", "vacunacion", "productos_vet"],
+  salud: ["pacientes", "agenda_salud", "historia_clinica", "formulas", "insumos_salud"],
+};
+for (const clave of ["mascotas", "salud"] as const) {
+  const tipoClinica = TIPOS_NEGOCIO.find((x) => x.clave === clave);
+  if (!tipoClinica) continue;
+  const quitar = REEMPLAZA_CLINICA[clave] ?? [];
+  tipoClinica.modulos = [...clinica(clave === "mascotas"), ...tipoClinica.modulos.filter((x) => !quitar.includes(x.id))];
+}
+
 // Se agrega el módulo de cotizaciones a los tipos que cotizan y no tienen uno propio.
 // Salud (presupuestos de tratamiento), educación, hospedaje, gimnasio, mascotas, agro, farmacia y lavandería no cotizan así.
 const SIN_COTIZACIONES: TipoNegocioClave[] = ["tienda","restaurante", "cafeteria", "comida_rapida","salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro", "farmacia", "lavanderia", "belleza", "inmobiliaria", "tecnologia", "condominio", "prestamos", "papeleria", "supermercado", "carniceria", "licorera", "floristeria", "optica", "guarderia", "ganaderia", "fundacion", "iglesia", "seguridad_aseo", "alquiler_vehiculos"];

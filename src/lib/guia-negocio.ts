@@ -53,9 +53,9 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
   salud: {
     frase: "Cuidar a tus pacientes empieza por tener todo en orden.",
     pasos: [
-      { titulo: "Registra a tus pacientes", texto: "Crea la ficha de cada paciente en “Pacientes y fichas”." },
-      { titulo: "Agenda las citas", texto: "Usa “Agenda y calendario” para evitar cruces de horarios." },
-      { titulo: "Lleva la evolución", texto: "Anota cada consulta en “Historias y evoluciones” y sus tratamientos con su valor." },
+      { titulo: "Registra a tus pacientes", texto: "Crea la ficha de cada paciente en “Pacientes”, con alergias, foto y acudiente." },
+      { titulo: "Agenda por especialista", texto: "Usa “Agenda por especialista y consultorio”: Agendada, En consulta, Atendida o No asistió. Al finalizar, la consulta pasa a “Caja de consultas”." },
+      { titulo: "Lleva la evolución", texto: "Anota cada consulta en “Historias clínicas” con signos vitales, diagnóstico, adjuntos y fórmula imprimible. No se borra: solo se agregan notas aclaratorias. Los honorarios de cada profesional se liquidan en “Honorarios y comisiones”." },
       { titulo: "Pide consentimiento y guarda la historia", texto: "Registra el consentimiento informado antes de cada procedimiento. La historia clínica se conserva mínimo 20 años y solo la ve quien debe: revisa “Auditoría de accesos”." },
       { titulo: "Cobra a las EPS sin perder plata", texto: "Factura en “Facturación y RIPS”, y en “Glosas y cartera con EPS” responde cada glosa antes de su plazo." },
       { titulo: "Cumple la habilitación", texto: "En “Habilitación y calidad” y “Residuos hospitalarios” guarda REPS, calibraciones, actas del gestor de residuos y próximas fechas obligatorias." },
@@ -112,9 +112,9 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
   mascotas: {
     frase: "Mascotas sanas, dueños tranquilos.",
     pasos: [
-      { titulo: "Registra mascotas y dueños", texto: "Crea la ficha de cada mascota en “Mascotas y dueños”." },
-      { titulo: "Programa vacunas", texto: "Usa “Vacunas y desparasitación” para recordar las próximas dosis." },
-      { titulo: "Agenda consultas", texto: "Organiza las citas del día en “Agenda y calendario”." },
+      { titulo: "Registra mascotas y dueños", texto: "Crea la ficha de cada mascota en “Pacientes / Mascotas”: especie, raza, peso, alergias y foto." },
+      { titulo: "Programa vacunas", texto: "Usa “Carnet de vacunación y desparasitación” y revisa “Alertas y recordatorios” para avisar a los dueños." },
+      { titulo: "Agenda y cobra consultas", texto: "Organiza las citas en “Agenda por veterinario”; al finalizar, la consulta y los medicamentos aplicados pasan a “Caja de consultas”. Las historias clínicas no se borran, solo se aclaran con notas." },
     ],
   },
   tecnologia: {

@@ -12,6 +12,17 @@ import { CotizacionesVehiculos } from "@/components/vehiculos/CotizacionesVehicu
 import { DocumentosVehiculos } from "@/components/vehiculos/DocumentosVehiculos";
 import { VencimientosVehiculos } from "@/components/vehiculos/VencimientosVehiculos";
 import { EncargosPan, MermasPan, ProduccionPan, RecetasPan, TurnosPan } from "@/components/panaderia/PanaderiaModulos";
+import {
+  AgendaClinica,
+  AlertasClinica,
+  CajaClinica,
+  ComisionesClinica,
+  HistoriasClinica,
+  InsumosClinica,
+  PacientesClinica,
+  ServiciosClinica,
+  VacunasClinica,
+} from "@/components/clinica/ClinicaModulos";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
@@ -69,6 +80,15 @@ function ModuloPage() {
   if (id === "pan_mermas") return <MermasPan />;
   if (id === "encargos_tortas") return <EncargosPan />;
   if (id === "pan_turnos") return <TurnosPan />;
+  if (id === "cl_agenda") return <AgendaClinica />;
+  if (id === "cl_pacientes") return <PacientesClinica />;
+  if (id === "cl_historias") return <HistoriasClinica />;
+  if (id === "cl_vacunas") return <VacunasClinica />;
+  if (id === "cl_alertas") return <AlertasClinica />;
+  if (id === "cl_caja") return <CajaClinica />;
+  if (id === "cl_servicios") return <ServiciosClinica />;
+  if (id === "cl_insumos") return <InsumosClinica />;
+  if (id === "cl_comisiones") return <ComisionesClinica />;
   if (id === "vehiculos") return <InventarioVehiculos />;
   if (id === "caja_diaria") return <CajaTurnos />;
   if (id === "compras_veh") return <ComprasVehiculos />;

@@ -1563,6 +1563,7 @@ export type Database = {
           notas: string | null
           owner_id: string | null
           precio_venta: number
+          stock_vitrina: number
           tipo_negocio: string | null
           unidades_por_lote: number
         }
@@ -1575,6 +1576,7 @@ export type Database = {
           notas?: string | null
           owner_id?: string | null
           precio_venta?: number
+          stock_vitrina?: number
           tipo_negocio?: string | null
           unidades_por_lote?: number
         }
@@ -1587,8 +1589,447 @@ export type Database = {
           notas?: string | null
           owner_id?: string | null
           precio_venta?: number
+          stock_vitrina?: number
           tipo_negocio?: string | null
           unidades_por_lote?: number
+        }
+        Relationships: []
+      }
+      cl_pacientes: {
+        Row: {
+          activo: boolean
+          alergias: string | null
+          created_at: string
+          duenio_correo: string | null
+          duenio_documento: string | null
+          duenio_nombre: string
+          duenio_telefono: string | null
+          especie: string | null
+          fecha_nacimiento: string | null
+          foto_path: string | null
+          id: string
+          nombre: string
+          notas: string | null
+          owner_id: string | null
+          peso_kg: number | null
+          raza: string | null
+          sexo: string | null
+          tipo_negocio: string | null
+        }
+        Insert: {
+          activo?: boolean
+          alergias?: string | null
+          created_at?: string
+          duenio_correo?: string | null
+          duenio_documento?: string | null
+          duenio_nombre: string
+          duenio_telefono?: string | null
+          especie?: string | null
+          fecha_nacimiento?: string | null
+          foto_path?: string | null
+          id?: string
+          nombre: string
+          notas?: string | null
+          owner_id?: string | null
+          peso_kg?: number | null
+          raza?: string | null
+          sexo?: string | null
+          tipo_negocio?: string | null
+        }
+        Update: {
+          activo?: boolean
+          alergias?: string | null
+          created_at?: string
+          duenio_correo?: string | null
+          duenio_documento?: string | null
+          duenio_nombre?: string
+          duenio_telefono?: string | null
+          especie?: string | null
+          fecha_nacimiento?: string | null
+          foto_path?: string | null
+          id?: string
+          nombre?: string
+          notas?: string | null
+          owner_id?: string | null
+          peso_kg?: number | null
+          raza?: string | null
+          sexo?: string | null
+          tipo_negocio?: string | null
+        }
+        Relationships: []
+      }
+      cl_historias: {
+        Row: {
+          adjuntos: string[]
+          control_en: string | null
+          control_motivo: string | null
+          created_at: string
+          creado_por: string | null
+          diagnostico: string
+          formula: Json
+          frecuencia_cardiaca: number | null
+          frecuencia_respiratoria: number | null
+          id: string
+          motivo: string
+          otros_signos: string | null
+          owner_id: string | null
+          paciente_id: string
+          peso_kg: number | null
+          presion: string | null
+          profesional: string | null
+          temperatura: number | null
+          tipo_negocio: string | null
+          tratamiento: string | null
+        }
+        Insert: {
+          adjuntos?: string[]
+          control_en?: string | null
+          control_motivo?: string | null
+          created_at?: string
+          creado_por?: string | null
+          diagnostico: string
+          formula?: Json
+          frecuencia_cardiaca?: number | null
+          frecuencia_respiratoria?: number | null
+          id?: string
+          motivo: string
+          otros_signos?: string | null
+          owner_id?: string | null
+          paciente_id: string
+          peso_kg?: number | null
+          presion?: string | null
+          profesional?: string | null
+          temperatura?: number | null
+          tipo_negocio?: string | null
+          tratamiento?: string | null
+        }
+        Update: {
+          adjuntos?: string[]
+          control_en?: string | null
+          control_motivo?: string | null
+          created_at?: string
+          creado_por?: string | null
+          diagnostico?: string
+          formula?: Json
+          frecuencia_cardiaca?: number | null
+          frecuencia_respiratoria?: number | null
+          id?: string
+          motivo?: string
+          otros_signos?: string | null
+          owner_id?: string | null
+          paciente_id?: string
+          peso_kg?: number | null
+          presion?: string | null
+          profesional?: string | null
+          temperatura?: number | null
+          tipo_negocio?: string | null
+          tratamiento?: string | null
+        }
+        Relationships: []
+      }
+      cl_notas_aclaratorias: {
+        Row: {
+          autor: string | null
+          created_at: string
+          creado_por: string | null
+          historia_id: string
+          id: string
+          nota: string
+          owner_id: string | null
+          paciente_id: string
+          tipo_negocio: string | null
+        }
+        Insert: {
+          autor?: string | null
+          created_at?: string
+          creado_por?: string | null
+          historia_id: string
+          id?: string
+          nota: string
+          owner_id?: string | null
+          paciente_id: string
+          tipo_negocio?: string | null
+        }
+        Update: {
+          autor?: string | null
+          created_at?: string
+          creado_por?: string | null
+          historia_id?: string
+          id?: string
+          nota?: string
+          owner_id?: string | null
+          paciente_id?: string
+          tipo_negocio?: string | null
+        }
+        Relationships: []
+      }
+      cl_vacunas: {
+        Row: {
+          aplicada_en: string
+          aplicado_por: string | null
+          created_at: string
+          id: string
+          lote: string | null
+          nombre: string
+          notas: string | null
+          owner_id: string | null
+          paciente_id: string
+          proxima_en: string | null
+          tipo: string
+          tipo_negocio: string | null
+        }
+        Insert: {
+          aplicada_en?: string
+          aplicado_por?: string | null
+          created_at?: string
+          id?: string
+          lote?: string | null
+          nombre: string
+          notas?: string | null
+          owner_id?: string | null
+          paciente_id: string
+          proxima_en?: string | null
+          tipo?: string
+          tipo_negocio?: string | null
+        }
+        Update: {
+          aplicada_en?: string
+          aplicado_por?: string | null
+          created_at?: string
+          id?: string
+          lote?: string | null
+          nombre?: string
+          notas?: string | null
+          owner_id?: string | null
+          paciente_id?: string
+          proxima_en?: string | null
+          tipo?: string
+          tipo_negocio?: string | null
+        }
+        Relationships: []
+      }
+      cl_servicios: {
+        Row: {
+          activo: boolean
+          categoria: string
+          comision_pct: number
+          created_at: string
+          id: string
+          nombre: string
+          owner_id: string | null
+          precio: number
+          tipo_negocio: string | null
+        }
+        Insert: {
+          activo?: boolean
+          categoria?: string
+          comision_pct?: number
+          created_at?: string
+          id?: string
+          nombre: string
+          owner_id?: string | null
+          precio?: number
+          tipo_negocio?: string | null
+        }
+        Update: {
+          activo?: boolean
+          categoria?: string
+          comision_pct?: number
+          created_at?: string
+          id?: string
+          nombre?: string
+          owner_id?: string | null
+          precio?: number
+          tipo_negocio?: string | null
+        }
+        Relationships: []
+      }
+      cl_insumos: {
+        Row: {
+          activo: boolean
+          created_at: string
+          id: string
+          lote: string | null
+          minimo: number
+          nombre: string
+          owner_id: string | null
+          precio_venta: number
+          stock: number
+          tipo_negocio: string | null
+          unidad: string
+          vence_en: string | null
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string
+          id?: string
+          lote?: string | null
+          minimo?: number
+          nombre: string
+          owner_id?: string | null
+          precio_venta?: number
+          stock?: number
+          tipo_negocio?: string | null
+          unidad?: string
+          vence_en?: string | null
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string
+          id?: string
+          lote?: string | null
+          minimo?: number
+          nombre?: string
+          owner_id?: string | null
+          precio_venta?: number
+          stock?: number
+          tipo_negocio?: string | null
+          unidad?: string
+          vence_en?: string | null
+        }
+        Relationships: []
+      }
+      cl_citas: {
+        Row: {
+          cobro_id: string | null
+          consultorio: string | null
+          created_at: string
+          duracion_min: number
+          estado: string
+          id: string
+          inicio: string
+          motivo: string | null
+          owner_id: string | null
+          paciente_id: string
+          profesional: string
+          tipo_negocio: string | null
+        }
+        Insert: {
+          cobro_id?: string | null
+          consultorio?: string | null
+          created_at?: string
+          duracion_min?: number
+          estado?: string
+          id?: string
+          inicio: string
+          motivo?: string | null
+          owner_id?: string | null
+          paciente_id: string
+          profesional: string
+          tipo_negocio?: string | null
+        }
+        Update: {
+          cobro_id?: string | null
+          consultorio?: string | null
+          created_at?: string
+          duracion_min?: number
+          estado?: string
+          id?: string
+          inicio?: string
+          motivo?: string | null
+          owner_id?: string | null
+          paciente_id?: string
+          profesional?: string
+          tipo_negocio?: string | null
+        }
+        Relationships: []
+      }
+      cl_cobros: {
+        Row: {
+          cita_id: string | null
+          cobrado_en: string | null
+          comision_total: number
+          created_at: string
+          estado: string
+          id: string
+          items: Json
+          metodo: string | null
+          owner_id: string | null
+          paciente_id: string
+          profesional: string
+          tipo_negocio: string | null
+          total: number
+        }
+        Insert: {
+          cita_id?: string | null
+          cobrado_en?: string | null
+          comision_total?: number
+          created_at?: string
+          estado?: string
+          id?: string
+          items?: Json
+          metodo?: string | null
+          owner_id?: string | null
+          paciente_id: string
+          profesional: string
+          tipo_negocio?: string | null
+          total?: number
+        }
+        Update: {
+          cita_id?: string | null
+          cobrado_en?: string | null
+          comision_total?: number
+          created_at?: string
+          estado?: string
+          id?: string
+          items?: Json
+          metodo?: string | null
+          owner_id?: string | null
+          paciente_id?: string
+          profesional?: string
+          tipo_negocio?: string | null
+          total?: number
+        }
+        Relationships: []
+      }
+      cl_comisiones: {
+        Row: {
+          base: number
+          categoria: string
+          cobro_id: string
+          concepto: string
+          created_at: string
+          estado: string
+          fecha: string
+          id: string
+          liquidada_en: string | null
+          owner_id: string | null
+          porcentaje: number
+          profesional: string
+          tipo_negocio: string | null
+          valor: number
+        }
+        Insert: {
+          base?: number
+          categoria?: string
+          cobro_id: string
+          concepto: string
+          created_at?: string
+          estado?: string
+          fecha?: string
+          id?: string
+          liquidada_en?: string | null
+          owner_id?: string | null
+          porcentaje?: number
+          profesional: string
+          tipo_negocio?: string | null
+          valor?: number
+        }
+        Update: {
+          base?: number
+          categoria?: string
+          cobro_id?: string
+          concepto?: string
+          created_at?: string
+          estado?: string
+          fecha?: string
+          id?: string
+          liquidada_en?: string | null
+          owner_id?: string | null
+          porcentaje?: number
+          profesional?: string
+          tipo_negocio?: string | null
+          valor?: number
         }
         Relationships: []
       }
@@ -6099,6 +6540,9 @@ export type Database = {
       }
       pan_abonar_encargo: { Args: { p_id: string; p_monto: number; p_metodo: string }; Returns: number }
       pan_entregar_encargo: { Args: { p_id: string; p_metodo: string }; Returns: number }
+      cl_finalizar_cita: { Args: { p_cita: string; p_items: Json }; Returns: string }
+      cl_cobrar: { Args: { p_cobro: string; p_metodo: string }; Returns: number }
+      cl_liquidar_comisiones: { Args: { p_profesional: string; p_hasta: string }; Returns: number }
       ret_permiso: { Args: { p: string }; Returns: boolean }
       com_permiso: { Args: { p: string }; Returns: boolean }
       compra_aprobar: { Args: { p_compra: string }; Returns: undefined }

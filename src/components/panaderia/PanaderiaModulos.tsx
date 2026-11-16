@@ -190,6 +190,7 @@ export function RecetasPan() {
               <p className="text-sm text-muted-foreground">Rinde {r.unidades_por_lote} u. · {r.gramaje_unidad > 0 ? `${r.gramaje_unidad} g c/u · ` : ""}{items.filter((x) => x.receta_id === r.id).length} ingredientes</p>
               <p className="text-sm text-foreground">Costo lote {dinero(lote)} · por unidad {dinero(unit)}</p>
               {margen !== null && <p className="text-sm text-muted-foreground">Precio {dinero(r.precio_venta)} · margen {margen.toFixed(0)}%</p>}
+              <p className="text-sm text-foreground">En vitrina: <strong>{r.stock_vitrina}</strong> u.</p>
             </GlassPanel>
           );
         })}
@@ -203,7 +204,7 @@ export function RecetasPan() {
 // ============================================================
 export function ProduccionPan() {
   const insumos = usarInsumos();
-  const { recetas, items, cargando } = usarRecetas();
+  const { recetas, items, cargando, recargar: recargarRecetas } = usarRecetas();
   const [lista, setLista] = useState<Produccion[]>([]);
   const [recetaId, setRecetaId] = useState("");
   const [lotes, setLotes] = useState("1");
@@ -242,9 +243,10 @@ export function ProduccionPan() {
     });
     setGuardando(false);
     if (error) return toast.error(error.message || "No se pudo registrar la horneada.");
-    toast.success("Horneada registrada y materia prima descontada.");
+    toast.success("Horneada registrada: materia prima descontada y unidades sumadas a la vitrina.");
     setNotas("");
     void cargar();
+    void recargarRecetas();
   };
 
   const delDia = lista.filter((p) => p.fecha === hoy() && !p.anulado);
@@ -298,7 +300,7 @@ const CAUSAS = ["Quemado", "Dañado", "Vencido", "Se cayó", "Devuelto por el cl
 
 export function MermasPan() {
   const insumos = usarInsumos();
-  const { recetas, cargando } = usarRecetas();
+  const { recetas, cargando, recargar: recargarRecetas } = usarRecetas();
   const [lista, setLista] = useState<Merma[]>([]);
   const [clase, setClase] = useState<"producto" | "insumo">("producto");
   const [refId, setRefId] = useState("");
@@ -320,6 +322,10 @@ export function MermasPan() {
     if (!refId) return toast.error("Elige qué se perdió.");
     if (num(cantidad) <= 0) return toast.error("Indica la cantidad.");
     if (motivo.trim().length < 3) return toast.error("El motivo es obligatorio.");
+    if (clase === "producto") {
+      const rec = recetas.find((r) => r.id === refId);
+      if (rec && num(cantidad) > rec.stock_vitrina) return toast.error(`En vitrina solo hay ${rec.stock_vitrina} de ${rec.nombre}.`);
+    }
     setGuardando(true);
     const { error } = await supabase.rpc("pan_registrar_merma", {
       p_clase: clase,
@@ -332,10 +338,11 @@ export function MermasPan() {
     });
     setGuardando(false);
     if (error) return toast.error(error.message || "No se pudo registrar la merma.");
-    toast.success("Merma registrada y enviada a Contabilidad.");
+    toast.success("Merma registrada, descontada del stock y enviada a Contabilidad.");
     setCantidad("");
     setMotivo("");
     void cargar();
+    void recargarRecetas();
   };
 
   const perdidaHoy = lista.filter((m) => m.fecha === hoy() && !m.anulado).reduce((s, m) => s + m.costo_total, 0);
@@ -353,7 +360,7 @@ export function MermasPan() {
             <select className={campo} value={refId} onChange={(e) => setRefId(e.target.value)}>
               <option value="">Elige...</option>
               {clase === "producto"
-                ? recetas.map((r) => (<option key={r.id} value={r.id}>{r.nombre}</option>))
+                ? recetas.map((r) => (<option key={r.id} value={r.id}>{r.nombre} (en vitrina {r.stock_vitrina})</option>))
                 : insumos.map((i) => (<option key={i.id} value={i.id}>{i.nombre} (hay {i.stock} {i.unidad})</option>))}
             </select>
           </Campo>
