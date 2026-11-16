@@ -82,18 +82,31 @@ function ProveedoresComprasPage() {
     setGuardando(false);
     if (error) return toast.error("No se pudo registrar la compra.");
     if (credito) {
-      const { error: errDeuda } = await supabase.from("modulo_registros").insert({
-        modulo: "proveedores",
-        estado: "pendiente",
-        titulo: `Compra a crédito: ${cantNum} ${insumoSel.unidad} de ${insumoSel.nombre}`,
-        contacto: proveedor.trim() || insumoSel.proveedor || "Proveedor",
-        telefono: telefonoProv.trim() || null,
-        datos: { nit: nitProv.trim() || null, cantidad: cantNum, unidad: insumoSel.unidad } as unknown as Json,
-        monto: costoNum,
-        abonado: 0,
-        historial: [{ f: new Date().toISOString(), t: "Registro creado desde una compra de inventario" }] as unknown as Json,
-      });
-      if (errDeuda) toast.error("La compra entró al inventario, pero no se pudo registrar la deuda con el proveedor.");
+      // La compra ya dejó su deuda en proveedores_registros (la crea el registro de inventario):
+      // aquí solo se completa con el teléfono y el NIT del proveedor, sin duplicar la deuda.
+      const { data: ultima } = await supabase
+        .from("proveedores_registros")
+        .select("id, historial")
+        .eq("titulo", `Compra de ${insumoSel.nombre}`)
+        .eq("estado", "pendiente")
+        .order("created_at", { ascending: false })
+        .limit(1);
+      const deuda = ultima?.[0];
+      if (deuda) {
+        const historial = Array.isArray(deuda.historial) ? deuda.historial : [];
+        const { error: errDeuda } = await supabase
+          .from("proveedores_registros")
+          .update({
+            telefono: telefonoProv.trim() || null,
+            contacto: proveedor.trim() || insumoSel.proveedor || "Proveedor",
+            datos: { nit: nitProv.trim() || null, cantidad: cantNum, unidad: insumoSel.unidad } as unknown as Json,
+            historial: [...historial, { f: new Date().toISOString(), t: "Datos del proveedor completados" }] as unknown as Json,
+          })
+          .eq("id", deuda.id);
+        if (errDeuda) toast.error("La compra quedó registrada, pero no se pudieron guardar los datos del proveedor.");
+      } else {
+        toast.error("La compra entró al inventario, pero no se encontró la deuda con el proveedor.");
+      }
     } else {
       const { data: turnoAbierto } = await supabase
         .from("turnos_caja").select("id").eq("estado", "abierto").order("abierto_en", { ascending: false }).limit(1);

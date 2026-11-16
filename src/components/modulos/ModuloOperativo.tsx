@@ -6,13 +6,40 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import type { Json, Tables, TablesUpdate } from "@/integrations/supabase/types";
+import type { Json, Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { buscarModulo, resolverTipoNegocio } from "@/lib/modulos-negocio";
 import { useNegocio } from "@/hooks/use-negocio";
 import { configModulo } from "@/lib/modulos-config";
+import { TABLAS_SIN_BORRADO, tablaDeModulo } from "@/lib/tablas-modulo";
+import {
+  alertaRubro, calcularRubro, camposDelModulo, useEsquemaRubro, validarCamposRubro, vocabulario,
+  type TipoCampoRubro,
+} from "@/lib/esquemas-rubro";
 
+/**
+ * Todas las tablas de módulos (la genérica y las propias por negocio) tienen las mismas columnas,
+ * por eso comparten esta forma de fila.
+ */
 type Registro = Tables<"modulo_registros">;
+type CampoForm = {
+  clave: string;
+  etiqueta: string;
+  tipo: TipoCampoRubro;
+  opciones?: string[];
+  placeholder?: string;
+  obligatorio?: boolean;
+};
+
+/** Valores de texto guardados en `datos` (para validar y calcular). */
+const extrasComoTexto = (j: Json): Record<string, string> => {
+  const salida: Record<string, string> = {};
+  if (!j || typeof j !== "object" || Array.isArray(j)) return salida;
+  for (const [k, v] of Object.entries(j)) {
+    if (typeof v === "string" || typeof v === "number") salida[k] = String(v);
+  }
+  return salida;
+};
 type Entrada = { f: string; t: string };
 type Panel = { id: string; accion: "abono" | "renovar" | "anular" | "stock" | "seguimiento" } | null;
 
@@ -79,9 +106,19 @@ export function ModuloOperativo({ id }: { id: string }) {
     resolverTipoNegocio(negocio?.tipo_negocio).modulos.find((x) => x.id === id) ?? buscarModulo(id);
   const cfg = configModulo(id);
   const tipo = cfg.tipo;
-  // Facturación y permisos tienen tabla propia; el resto sigue en la tabla compartida.
-  const tabla =
-    id === "facturas" ? "facturas_registros" : id === "permisos_rest" ? "permisos_rest_registros" : "modulo_registros";
+  // Cada módulo con dinero escribe directo en su tabla propia; el resto, en la tabla compartida.
+  const tabla = tablaDeModulo(id);
+  const tablaTipada = tabla as "modulo_registros";
+  const sinBorrado = TABLAS_SIN_BORRADO.includes(tabla);
+  // Motor por rubro: vocabulario, campos, validaciones, alertas y cálculos propios (con respaldo si no hay esquema).
+  const esquema = useEsquemaRubro(resolverTipoNegocio(negocio?.tipo_negocio).clave);
+  const camposRubro = useMemo(() => camposDelModulo(esquema, id), [esquema, id]);
+  const campos: CampoForm[] = useMemo(() => {
+    const base: CampoForm[] = cfg.campos ?? [];
+    return [...base, ...camposRubro.filter((c) => !base.some((b) => b.clave === c.clave))];
+  }, [cfg, camposRubro]);
+  const etiquetaContacto =
+    cfg.etiquetaContacto === "Cliente" ? vocabulario(esquema, "cliente", cfg.etiquetaContacto) : cfg.etiquetaContacto;
   const conSaldo = TIPOS_SALDO.includes(tipo);
   const conStock = tipo === "stock";
   const conAlertaFecha = TIPOS_FECHA.includes(tipo) || tipo === "general";
@@ -113,14 +150,12 @@ export function ModuloOperativo({ id }: { id: string }) {
   }, []);
 
   const cargar = useCallback(async () => {
-    const { data } = await supabase
-      .from(tabla)
-      .select("*")
-      .eq("modulo", id)
+    const consulta = supabase.from(tablaTipada).select("*");
+    const { data } = await (tabla === "modulo_registros" ? consulta.eq("modulo", id) : consulta)
       .order("created_at", { ascending: false })
       .limit(500);
     setLista(data ?? []);
-  }, [id, tabla]);
+  }, [id, tabla, tablaTipada]);
 
   useEffect(() => {
     cargar();
@@ -162,7 +197,11 @@ export function ModuloOperativo({ id }: { id: string }) {
     return null;
   };
 
-  const tieneAlerta = (r: Registro) => Boolean(alertaFecha(r) || alertaStock(r));
+  /** Alerta propia del rubro (por ejemplo, un vencimiento de un campo especializado). */
+  const alertaDelRubro = (r: Registro): string | null =>
+    r.anulado || cerrado(r) ? null : alertaRubro(esquema, id, r.fecha, r.datos, hoy);
+
+  const tieneAlerta = (r: Registro) => Boolean(alertaFecha(r) || alertaStock(r) || alertaDelRubro(r));
 
   /** Todo dinero que se abona o se paga en un módulo queda también en la caja del día y en finanzas. */
   const registrarEnCaja = async (valorCaja: number, titulo: string) => {
@@ -179,11 +218,13 @@ export function ModuloOperativo({ id }: { id: string }) {
   const guardar = async (r: Registro, cambios: TablesUpdate<"modulo_registros">, texto: string) => {
     const hist = [...leerHistorial(r.historial), { f: new Date().toISOString(), t: texto }];
     const { error } = await supabase
-      .from(tabla)
+      .from(tablaTipada)
       .update({ ...cambios, historial: hist as unknown as Json })
       .eq("id", r.id);
     if (error) {
-      toast.error("No se pudo guardar el cambio.");
+      // La base explica por qué (solo el dueño anula, falta el motivo, registro ya anulado...).
+      const explicacion = /anul|dueño|motivo/i.test(error.message) ? error.message : "No se pudo guardar el cambio.";
+      toast.error(explicacion);
       return false;
     }
     await cargar();
@@ -201,6 +242,8 @@ export function ModuloOperativo({ id }: { id: string }) {
     const precio = monto.trim() ? Number(monto) : 0;
     if (!titulo.trim() || !Number.isFinite(precio) || precio < 0) return toast.error("Escribe un título y un valor válido.");
     if (cfg.exigeFecha && !fecha) return toast.error(`Indica la fecha: ${cfg.etiquetaFecha.toLowerCase()}.`);
+    const errorRubro = validarCamposRubro(camposRubro, extras);
+    if (errorRubro) return toast.error(errorRubro);
     let abonado = 0;
     let cantidad = 0;
     let minimo = 0;
@@ -225,8 +268,14 @@ export function ModuloOperativo({ id }: { id: string }) {
       estado = estadoStock(cantidad, minimo);
       if (cantidad > 0) hist.push({ f: new Date().toISOString(), t: `Existencia inicial: ${cantidad}` });
     }
-    const { error } = await supabase.from(tabla).insert({
-      modulo: id,
+    const extrasGuardados: Record<string, string | number> = Object.fromEntries(
+      Object.entries(extras).filter(([k, v]) => v.trim() && campos.some((c) => c.clave === k)),
+    );
+    // Cálculos automáticos del rubro (ej. IVA, comisión, total por cantidad) quedan guardados con el registro.
+    for (const c of calcularRubro(esquema, id, precio, extras)) extrasGuardados[c.clave] = c.valor;
+    // La tabla genérica separa por módulo; las tablas propias ya son de un solo módulo.
+    const fila: Omit<TablesInsert<"modulo_registros">, "modulo"> & { modulo?: string } = {
+      ...(tabla === "modulo_registros" ? { modulo: id } : {}),
       estado,
       titulo: titulo.trim(),
       detalle: detalle.trim() || null,
@@ -238,10 +287,9 @@ export function ModuloOperativo({ id }: { id: string }) {
       cantidad,
       minimo,
       historial: hist as unknown as Json,
-      datos: Object.fromEntries(
-        Object.entries(extras).filter(([k, v]) => v.trim() && (cfg.campos ?? []).some((c) => c.clave === k)),
-      ) as Json,
-    });
+      datos: extrasGuardados as Json,
+    };
+    const { error } = await supabase.from(tablaTipada).insert(fila as TablesInsert<"modulo_registros">);
     if (error) return toast.error("No se pudo guardar el registro.");
     await registrarEnCaja(abonado, `abono inicial · ${titulo.trim()}`);
     setTitulo(""); setDetalle(""); setContacto(""); setTelefono(""); setMonto(""); setFecha(""); setExtras({});
@@ -356,7 +404,8 @@ export function ModuloOperativo({ id }: { id: string }) {
 
   const borrar = async (r: Registro) => {
     if (!window.confirm("¿Eliminar este registro definitivamente? Si solo quieres cancelarlo, usa Anular.")) return;
-    const { error } = await supabase.from(tabla).delete().eq("id", r.id);
+    if (sinBorrado) return toast.error("Los registros con dinero no se borran: quedan anulados con su motivo.");
+    const { error } = await supabase.from(tablaTipada).delete().eq("id", r.id);
     if (error) return toast.error("Un registro con valor no se puede eliminar: usa Anular e indica el motivo.");
     cargar();
   };
@@ -385,7 +434,7 @@ export function ModuloOperativo({ id }: { id: string }) {
     </style></head><body>
       <h1>${esc(modulo?.titulo ?? "Comprobante")}</h1><div class="c">${esc(new Date().toLocaleString("es-CO"))}</div><hr>
       ${fila("Concepto", r.titulo)}
-      ${r.contacto ? fila(cfg.etiquetaContacto, r.contacto) : ""}
+      ${r.contacto ? fila(etiquetaContacto, r.contacto) : ""}
       ${r.telefono ? fila("Teléfono", r.telefono) : ""}
       ${r.fecha ? fila(cfg.etiquetaFecha, r.fecha) : ""}
       ${fila("Estado", r.anulado ? "Anulado" : textoEstado(r.estado))}
@@ -492,10 +541,18 @@ export function ModuloOperativo({ id }: { id: string }) {
             <span className="text-xs text-muted-foreground">{etiquetaCorta(cfg.placeholderTitulo)} *</span>
             <input className={campo} placeholder={cfg.placeholderTitulo} value={titulo} onChange={(e) => setTitulo(e.target.value)} />
           </label>
-          {(cfg.campos ?? []).map((c) => (
+          {campos.map((c) => (
             <label key={c.clave} className="block space-y-1">
-              <span className="text-xs text-muted-foreground">{c.etiqueta}</span>
-              {c.tipo === "select" ? (
+              <span className="text-xs text-muted-foreground">{c.etiqueta}{c.obligatorio ? " *" : ""}</span>
+              {c.tipo === "textarea" ? (
+                <textarea
+                  className={campo}
+                  rows={2}
+                  placeholder={c.placeholder ?? c.etiqueta}
+                  value={extras[c.clave] ?? ""}
+                  onChange={(e) => setExtras((x) => ({ ...x, [c.clave]: e.target.value }))}
+                />
+              ) : c.tipo === "select" ? (
                 <select className={campo} value={extras[c.clave] ?? ""} onChange={(e) => setExtras((x) => ({ ...x, [c.clave]: e.target.value }))}>
                   <option value="">Seleccionar…</option>
                   {(c.opciones ?? []).map((o) => (
@@ -505,8 +562,8 @@ export function ModuloOperativo({ id }: { id: string }) {
               ) : (
                 <input
                   className={campo}
-                  type={c.tipo}
-                  inputMode={c.tipo === "tel" ? "tel" : undefined}
+                  type={c.tipo === "number" ? "text" : c.tipo === "foto" || c.tipo === "archivo" ? "text" : c.tipo}
+                  inputMode={c.tipo === "tel" ? "tel" : c.tipo === "number" ? "decimal" : undefined}
                   placeholder={c.placeholder ?? c.etiqueta}
                   value={extras[c.clave] ?? ""}
                   onChange={(e) => setExtras((x) => ({ ...x, [c.clave]: e.target.value }))}
@@ -519,11 +576,11 @@ export function ModuloOperativo({ id }: { id: string }) {
             <textarea className={campo} rows={2} placeholder={cfg.placeholderDetalle} value={detalle} onChange={(e) => setDetalle(e.target.value)} />
           </label>
           <label className="block space-y-1">
-            <span className="text-xs text-muted-foreground">{cfg.etiquetaContacto}</span>
-            <input className={campo} placeholder={cfg.etiquetaContacto} value={contacto} onChange={(e) => setContacto(e.target.value)} />
+            <span className="text-xs text-muted-foreground">{etiquetaContacto}</span>
+            <input className={campo} placeholder={etiquetaContacto} value={contacto} onChange={(e) => setContacto(e.target.value)} />
           </label>
           <label className="block space-y-1">
-            <span className="text-xs text-muted-foreground">Teléfono de {cfg.etiquetaContacto.toLowerCase()}</span>
+            <span className="text-xs text-muted-foreground">Teléfono de {etiquetaContacto.toLowerCase()}</span>
             <input className={campo} placeholder="Teléfono" inputMode="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
           </label>
           <label className="block space-y-1">
@@ -552,6 +609,12 @@ export function ModuloOperativo({ id }: { id: string }) {
             <span className="text-xs text-muted-foreground">{cfg.etiquetaFecha}{cfg.exigeFecha ? " *" : ""}</span>
             <input className={campo} type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
           </label>
+          {calcularRubro(esquema, id, Number(monto) || 0, extras).map((c) => (
+            <p key={c.clave} className="flex justify-between text-xs text-muted-foreground">
+              <span>{c.etiqueta}</span>
+              <span className="text-foreground">{dinero(c.valor)}</span>
+            </p>
+          ))}
           <button onClick={agregar} className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90">
             Guardar registro
           </button>
@@ -645,6 +708,8 @@ export function ModuloOperativo({ id }: { id: string }) {
           {vista === "lista" && visibles.map((r) => {
             const af = alertaFecha(r);
             const as = alertaStock(r);
+            const ar = alertaDelRubro(r);
+            const calculos = calcularRubro(esquema, id, r.monto, extrasComoTexto(r.datos));
             const saldo = r.monto - r.abonado;
             const i = flujo.findIndex((e) => e.clave === r.estado);
             const sig = i >= 0 ? flujo[i + 1] : undefined;
@@ -662,9 +727,15 @@ export function ModuloOperativo({ id }: { id: string }) {
                 <p className="break-words text-xs text-muted-foreground">
                   {[r.contacto, r.telefono, r.fecha].filter(Boolean).join(" · ")}
                 </p>
-                {(af || as) && (
-                  <p className={`flex items-center gap-1.5 text-xs ${af?.critica || as ? "text-destructive" : "text-primary"}`}>
-                    <AlertTriangle className="h-3.5 w-3.5" /> {as ?? af?.texto}
+                {textoExtras(r.datos) && <p className="break-words text-xs text-muted-foreground">{textoExtras(r.datos)}</p>}
+                {(af || as || ar) && (
+                  <p className={`flex items-center gap-1.5 text-xs ${af?.critica || as || ar ? "text-destructive" : "text-primary"}`}>
+                    <AlertTriangle className="h-3.5 w-3.5" /> {as ?? af?.texto ?? ar}
+                  </p>
+                )}
+                {calculos.length > 0 && (
+                  <p className="break-words text-xs text-muted-foreground">
+                    {calculos.map((c) => `${c.etiqueta}: ${dinero(c.valor)}`).join(" · ")}
                   </p>
                 )}
                 {r.anulado && <p className="break-words text-xs text-destructive">Motivo: {r.motivo_anulacion}</p>}
@@ -726,7 +797,7 @@ export function ModuloOperativo({ id }: { id: string }) {
                   <button onClick={() => setVerHistorial(verHistorial === r.id ? null : r.id)} className={botonSec}>
                     <History className="h-3.5 w-3.5" /> Historial ({hist.length})
                   </button>
-                  {r.anulado && (
+                  {r.anulado && !sinBorrado && (
                     <button onClick={() => borrar(r)} className={botonSec}>
                       <Trash2 className="h-3.5 w-3.5" /> Eliminar
                     </button>

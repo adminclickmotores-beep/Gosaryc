@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import type { Negocio } from "@/hooks/use-negocio";
 import type { TipoNegocio } from "@/lib/modulos-negocio";
+import { agruparPorTabla } from "@/lib/tablas-modulo";
 
 type Props = {
   negocio: Negocio | null;
@@ -20,16 +21,25 @@ export function PasoAPaso({ negocio, tipo, onAbrirNegocio, onAbrirMenu }: Props)
   useEffect(() => {
     let vivo = true;
     (async () => {
-      const consulta = tipo.usaPedidos
-        ? supabase.from("restaurante_productos").select("id", { count: "exact", head: true })
-        : supabase.from("modulo_registros").select("id", { count: "exact", head: true });
-      const { count } = await consulta;
-      if (vivo) setPrimerRegistro((count ?? 0) > 0);
+      if (tipo.usaPedidos) {
+        const { count } = await supabase.from("restaurante_productos").select("id", { count: "exact", head: true });
+        if (vivo) setPrimerRegistro((count ?? 0) > 0);
+        return;
+      }
+      // El primer registro puede estar en cualquiera de las tablas propias de los módulos del negocio.
+      const conteos = await Promise.all(
+        Array.from(agruparPorTabla(tipo.modulos.map((m) => m.id)).entries()).map(async ([tabla, modulos]) => {
+          const consulta = supabase.from(tabla as "modulo_registros").select("id", { count: "exact", head: true });
+          const { count } = await (tabla === "modulo_registros" ? consulta.in("modulo", modulos) : consulta);
+          return count ?? 0;
+        }),
+      );
+      if (vivo) setPrimerRegistro(conteos.some((n) => n > 0));
     })();
     return () => {
       vivo = false;
     };
-  }, [tipo.usaPedidos]);
+  }, [tipo]);
 
   const primerModulo = tipo.modulos.find((m) => m.ruta?.startsWith("/modulos/"));
 

@@ -1553,6 +1553,165 @@ export type Database = {
         }
         Relationships: []
       }
+      costos_veh: {
+        Row: {
+          abonado: number
+          adjuntos: Json
+          anulado: boolean
+          anulado_en: string | null
+          anulado_por: string | null
+          cantidad: number
+          contacto: string | null
+          created_at: string
+          datos: Json
+          detalle: string | null
+          estado: string
+          fecha: string | null
+          historial: Json
+          id: string
+          minimo: number
+          monto: number
+          motivo_anulacion: string | null
+          owner_id: string | null
+          telefono: string | null
+          tipo_negocio: string | null
+          titulo: string
+        }
+        Insert: {
+          abonado?: number
+          adjuntos?: Json
+          anulado?: boolean
+          anulado_en?: string | null
+          anulado_por?: string | null
+          cantidad?: number
+          contacto?: string | null
+          created_at?: string
+          datos?: Json
+          detalle?: string | null
+          estado?: string
+          fecha?: string | null
+          historial?: Json
+          id?: string
+          minimo?: number
+          monto?: number
+          motivo_anulacion?: string | null
+          owner_id?: string | null
+          telefono?: string | null
+          tipo_negocio?: string | null
+          titulo: string
+        }
+        Update: {
+          abonado?: number
+          adjuntos?: Json
+          anulado?: boolean
+          anulado_en?: string | null
+          anulado_por?: string | null
+          cantidad?: number
+          contacto?: string | null
+          created_at?: string
+          datos?: Json
+          detalle?: string | null
+          estado?: string
+          fecha?: string | null
+          historial?: Json
+          id?: string
+          minimo?: number
+          monto?: number
+          motivo_anulacion?: string | null
+          owner_id?: string | null
+          telefono?: string | null
+          tipo_negocio?: string | null
+          titulo?: string
+        }
+        Relationships: []
+      }
+      esquemas_rubro: {
+        Row: {
+          activo: boolean
+          alertas: Json
+          calculos: Json
+          created_at: string
+          nombre: string
+          tipo_negocio: string
+          updated_at: string
+          version: number
+          vocabulario: Json
+        }
+        Insert: {
+          activo?: boolean
+          alertas?: Json
+          calculos?: Json
+          created_at?: string
+          nombre: string
+          tipo_negocio: string
+          updated_at?: string
+          version?: number
+          vocabulario?: Json
+        }
+        Update: {
+          activo?: boolean
+          alertas?: Json
+          calculos?: Json
+          created_at?: string
+          nombre?: string
+          tipo_negocio?: string
+          updated_at?: string
+          version?: number
+          vocabulario?: Json
+        }
+        Relationships: []
+      }
+      esquemas_rubro_campos: {
+        Row: {
+          activo: boolean
+          ayuda: string | null
+          clave: string
+          created_at: string
+          etiqueta: string
+          id: string
+          modulo: string
+          obligatorio: boolean
+          opciones: Json
+          orden: number
+          placeholder: string | null
+          tipo: string
+          tipo_negocio: string
+          validacion: Json
+        }
+        Insert: {
+          activo?: boolean
+          ayuda?: string | null
+          clave: string
+          created_at?: string
+          etiqueta: string
+          id?: string
+          modulo: string
+          obligatorio?: boolean
+          opciones?: Json
+          orden?: number
+          placeholder?: string | null
+          tipo?: string
+          tipo_negocio: string
+          validacion?: Json
+        }
+        Update: {
+          activo?: boolean
+          ayuda?: string | null
+          clave?: string
+          created_at?: string
+          etiqueta?: string
+          id?: string
+          modulo?: string
+          obligatorio?: boolean
+          opciones?: Json
+          orden?: number
+          placeholder?: string | null
+          tipo?: string
+          tipo_negocio?: string
+          validacion?: Json
+        }
+        Relationships: []
+      }
       modulo_registros: {
         Row: {
           abonado: number

@@ -5,6 +5,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import type { TipoNegocio } from "@/lib/modulos-negocio";
 import { configModulo } from "@/lib/modulos-config";
+import { agruparPorTabla } from "@/lib/tablas-modulo";
 
 type Registro = Tables<"modulo_registros">;
 type Alerta = { id: string; titulo: string; modulo: string; texto: string };
@@ -34,13 +35,17 @@ export function IndicadoresNegocio({ tipo }: { tipo: TipoNegocio }) {
   useEffect(() => {
     let cancelado = false;
     (async () => {
-      const { data } = await supabase
-        .from("modulo_registros")
-        .select("*")
-        .in("modulo", ids)
-        .eq("anulado", false)
-        .limit(2000);
-      if (!cancelado) setRegistros(data ?? []);
+      // Cada módulo se lee de su tabla propia (o de la genérica) y todo se junta en un solo resumen.
+      const grupos = Array.from(agruparPorTabla(ids).entries());
+      const resultados = await Promise.all(
+        grupos.map(async ([tabla, modulos]): Promise<Registro[]> => {
+          const consulta = supabase.from(tabla as "modulo_registros").select("*").eq("anulado", false);
+          const { data } = await (tabla === "modulo_registros" ? consulta.in("modulo", modulos) : consulta).limit(2000);
+          // Las tablas propias son de un solo módulo: se marca de cuál es cada fila.
+          return (data ?? []).map((r) => (tabla === "modulo_registros" ? r : { ...r, modulo: modulos[0] }));
+        }),
+      );
+      if (!cancelado) setRegistros(resultados.flat());
     })();
     return () => {
       cancelado = true;
