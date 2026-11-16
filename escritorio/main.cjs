@@ -129,6 +129,7 @@ function crearVentana() {
     minWidth: 380,
     minHeight: 600,
     title: "Gosaryc",
+    icon: path.join(__dirname, "build", "icon.png"),
     backgroundColor: "#0b0b14",
     autoHideMenuBar: true,
     show: false,

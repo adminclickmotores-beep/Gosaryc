@@ -8,9 +8,10 @@
   "scripts": {
     "iniciar": "electron .",
     "start": "electron .",
-    "instalador:windows": "electron-builder --win",
-    "instalador:mac": "electron-builder --mac",
-    "instalador:linux": "electron-builder --linux"
+    "icono": "electron generar-icono.cjs",
+    "instalador:windows": "npm run icono && electron-builder --win",
+    "instalador:mac": "npm run icono && electron-builder --mac",
+    "instalador:linux": "npm run icono && electron-builder --linux"
   },
   "devDependencies": {
     "electron": "^33.0.0",
@@ -20,7 +21,7 @@
     "appId": "app.gosaryc.escritorio",
     "productName": "Gosaryc",
     "directories": { "output": "instaladores" },
-    "files": ["main.cjs", "preload.cjs", "package.json"],
+    "files": ["main.cjs", "preload.cjs", "package.json", "build/icon.png"],
     "extraResources": [
       {
         "from": "../whatsapp-local",
@@ -28,12 +29,16 @@
         "filter": ["**/*", "!.sesion/**", "!token.txt", "!lineas.json"]
       }
     ],
-    "win": { "target": "nsis" },
+    "win": { "target": "nsis", "icon": "build/icon.png" },
+    "mac": { "icon": "build/icon.png" },
+    "linux": { "icon": "build/icon.png" },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "Gosaryc",
+      "runAfterFinish": true
     }
   }
 }
