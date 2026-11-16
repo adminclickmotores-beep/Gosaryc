@@ -209,6 +209,11 @@ const CLIENTES_BELL = m("clientes_bell", "Clientas y clientes del salón", "Clie
 const PAGOS_BELL = m("pagos_bell", "Cobros y pagos digitales del salón", "Cobro de servicios, productos y paquetes por cada medio de pago.", Smartphone);
 const RESENAS_BELL = m("resenas_bell", "Quejas y reseñas de clientas", "Opiniones y reclamos sobre servicios y productos, con seguimiento.", Star);
 const PERSONAL_BELL = m("personal_bell", "Estilistas, turnos y comisiones", "Turnos de estilistas y esteticistas, comisiones por servicio y novedades.", Briefcase);
+const CLIENTES_TALLER = m("clientes_taller", "Dueños de vehículos", "Clientes del taller con sus vehículos, órdenes abiertas y saldos.", Users);
+const PAGOS_TALLER = m("pagos_taller", "Cobros de órdenes y pagos digitales", "Cobro de mano de obra y repuestos por transferencia, efectivo o tarjeta.", Smartphone);
+const RESENAS_TALLER = m("resenas_taller", "Reclamos de trabajos y garantías", "Reclamos sobre reparaciones realizadas, con seguimiento y solución.", Star);
+const PERSONAL_TALLER = m("personal_taller", "Mecánicos, turnos y comisiones", "Turnos de mecánicos y hojalateros, comisiones por orden y novedades.", Briefcase);
+const METAS_TALLER = m("metas_taller", "Metas de órdenes y facturación", "Metas de órdenes cerradas y facturación mensual del taller.", Target);
 const METAS_BELL = m("metas_bell", "Metas de servicios y productos", "Metas de servicios realizados y de venta de productos por profesional.", Target);
 const METAS_TRANSP = m("metas_transp", "Metas de viajes y fletes", "Metas de viajes realizados, kilómetros y fletes facturados por mes.", Target);
 const METAS_TEC = m("metas_tec", "Metas de proyectos y facturación", "Metas de proyectos entregados y facturación recurrente por mes.", Target);
@@ -543,8 +548,8 @@ TIPOS_NEGOCIO.push(
       m("cotizaciones_taller", "Presupuestos de reparación", "Valor de mano de obra y repuestos antes de aprobar.", FileText),
       m("repuestos_taller", "Repuestos e inventario", "Existencias, costos y alertas de faltantes.", Cog),
       m("recordatorio_mant", "Mantenimientos próximos", "Aviso de cambio de aceite, revisiones y vencimientos.", CalendarClock),
-      AGENDA, CLIENTES, GARANTIAS,
-      FIADOS, FACTURAS, PAGOS, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      AGENDA, CLIENTES_TALLER, GARANTIAS,
+      FIADOS, FACTURAS, PAGOS_TALLER, RESENAS_TALLER, CAJA, PROVEEDORES, PERSONAL_TALLER, METAS_TALLER, FINANZAS,
     ],
   },
   {
