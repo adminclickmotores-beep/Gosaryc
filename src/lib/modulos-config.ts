@@ -126,6 +126,42 @@ const CAMPOS_POR_TIPO: Record<string, CampoExtra[]> = {
 
 /** Campos propios de módulos concretos (tienen prioridad sobre los de su familia). */
 const CAMPOS_ESPECIFICOS: Record<string, CampoExtra[]> = {
+  cultivos: [
+    { clave: "lote", etiqueta: "Lote o parcela", tipo: "text" },
+    { clave: "cultivo", etiqueta: "Cultivo o variedad", tipo: "text", placeholder: "Ej. Café Castillo, maíz" },
+    { clave: "hectareas", etiqueta: "Área (hectáreas)", tipo: "text" },
+    { clave: "fecha_siembra", etiqueta: "Fecha de siembra", tipo: "date" },
+    { clave: "fecha_cosecha_estimada", etiqueta: "Cosecha estimada", tipo: "date" },
+    { clave: "etapa", etiqueta: "Etapa", tipo: "select", opciones: ["Preparación", "Siembra", "Crecimiento", "Floración", "Cosecha", "Finalizado"] },
+    { clave: "responsable_lote", etiqueta: "Responsable del lote", tipo: "text" },
+  ],
+  cosechas: [
+    { clave: "lote_cosecha", etiqueta: "Lote de origen", tipo: "text" },
+    { clave: "cantidad_cosechada", etiqueta: "Cantidad cosechada", tipo: "text", placeholder: "Ej. 1.200 kg" },
+    { clave: "calidad", etiqueta: "Calidad", tipo: "select", opciones: ["Primera", "Segunda", "Tercera", "Descarte"] },
+    { clave: "fecha_cosecha", etiqueta: "Fecha de cosecha", tipo: "date" },
+    { clave: "precio_kg", etiqueta: "Precio por unidad o kilo (COP)", tipo: "text" },
+    { clave: "comprador", etiqueta: "Comprador", tipo: "text" },
+    { clave: "forma_pago", etiqueta: "Forma de pago", tipo: "select", opciones: ["Efectivo", "Transferencia", "Crédito", "Trueque"] },
+  ],
+  insumos_agro: [
+    { clave: "tipo_insumo", etiqueta: "Tipo de insumo", tipo: "select", opciones: ["Semilla", "Fertilizante", "Agroquímico", "Abono orgánico", "Herramienta", "Otro"] },
+    { clave: "referencia", etiqueta: "Referencia o registro ICA", tipo: "text" },
+    { clave: "dosis", etiqueta: "Dosis recomendada", tipo: "text" },
+    { clave: "lote_uso", etiqueta: "Lote donde se usa", tipo: "text" },
+    { clave: "fecha_vencimiento", etiqueta: "Fecha de vencimiento", tipo: "date" },
+    { clave: "cantidad", etiqueta: "Cantidad en bodega", tipo: "text" },
+    { clave: "minimo", etiqueta: "Stock mínimo", tipo: "text" },
+  ],
+  animales: [
+    { clave: "identificacion", etiqueta: "Arete o identificación", tipo: "text" },
+    { clave: "especie_animal", etiqueta: "Especie y raza", tipo: "text", placeholder: "Ej. Bovino Brahman" },
+    { clave: "sexo_animal", etiqueta: "Sexo", tipo: "select", opciones: ["Macho", "Hembra"] },
+    { clave: "nacimiento", etiqueta: "Fecha de nacimiento", tipo: "date" },
+    { clave: "peso_animal", etiqueta: "Peso (kg)", tipo: "text" },
+    { clave: "proxima_vacuna", etiqueta: "Próxima vacuna o tratamiento", tipo: "date" },
+    { clave: "vacuna_aplicada", etiqueta: "Último tratamiento aplicado", tipo: "text" },
+  ],
   proyectos_obra: [
     { clave: "direccion_obra", etiqueta: "Dirección de la obra", tipo: "text" },
     { clave: "tipo_obra", etiqueta: "Tipo de obra", tipo: "select", opciones: ["Remodelación", "Construcción nueva", "Reparación", "Instalaciones", "Acabados", "Otro"] },
