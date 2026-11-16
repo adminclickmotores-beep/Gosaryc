@@ -235,6 +235,10 @@ const PERSONAL_COND = m("personal_cond", "Vigilancia, aseo y nómina", "Turnos d
 const CLIENTES_PREST = m("clientes_prest", "Clientes y deudores", "Prestatarios y avalistas con su historial de pagos y calificación de riesgo.", Users);
 const PAGOS_PREST = m("pagos_prest", "Recaudos y abonos a préstamos", "Abonos a cuotas y recaudos en efectivo, transferencia o consignación.", Smartphone);
 const PERSONAL_PREST = m("personal_prest", "Cobradores, turnos y comisiones", "Rutas de cobro, comisiones por recaudo y novedades de cada cobrador.", Briefcase);
+const CLIENTES_TEXTIL = m("clientes_textil", "Marcas y clientes de confección", "Marcas, colegios y clientes que encargan prendas, con sus pedidos y saldos.", Users);
+const PAGOS_TEXTIL = m("pagos_textil", "Anticipos y pagos de pedidos", "Anticipos de pedidos y pagos por transferencia o consignación.", Smartphone);
+const PERSONAL_TEXTIL = m("personal_textil", "Operarios, destajos y nómina", "Pago por destajo de cada operario y novedades del taller de confección.", Briefcase);
+const METAS_TEXTIL = m("metas_textil", "Metas de prendas y pedidos", "Metas de prendas confeccionadas y pedidos entregados por mes.", Target);
 const METAS_PREST = m("metas_prest", "Metas de colocación y recuperación", "Metas de préstamos colocados y de cartera recuperada por mes.", Target);
 const METAS_COND = m("metas_cond", "Metas de recaudo de cuotas", "Metas de recaudo mensual y cartera recuperada por torre.", Target);
 const METAS_LAV = m("metas_lav", "Metas de kilos y facturación", "Metas de kilos lavados, órdenes y facturación por semana.", Target);
@@ -677,7 +681,7 @@ TIPOS_NEGOCIO.push(
       m("ordenes_confeccion", "Órdenes de confección", "Prendas por talla y color, estado y fecha de entrega.", Shirt),
       m("destajo", "Pago por destajo", "Prendas terminadas por operario y valor a pagar.", Percent),
       m("insumos_textil", "Telas e insumos", "Telas, hilos, botones y existencias.", Boxes),
-      CLIENTES, AGENDA, FIADOS, FACTURAS, PAGOS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES_TEXTIL, AGENDA, FIADOS, FACTURAS, PAGOS_TEXTIL, CAJA, PROVEEDORES, PERSONAL_TEXTIL, METAS_TEXTIL, FINANZAS,
     ],
   },
   {
