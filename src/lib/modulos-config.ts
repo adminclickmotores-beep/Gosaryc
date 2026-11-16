@@ -1406,6 +1406,7 @@ const VOCABULARIO_EXTRA: Record<string, Partial<ConfigModulo>> = {
   prospectos_veh: vc("Prospecto (nombre y vehículo de interés)", "Presupuesto, medio de contacto, forma de pago y seguimientos", "Asesor asignado", "Presupuesto del cliente (COP)", "Próximo seguimiento", "Prospectos activos",
     est(["pendiente", "Nuevo"], ["en_proceso", "En seguimiento"], ["hecho", "Vendido o perdido"])),
   garantias: vc("Reclamo o garantía (producto o vehículo)", "Falla reportada, factura de origen y solución", "Cliente", "Costo de la garantía (COP)", "Fecha límite de respuesta", "Garantías abiertas"),
+  taller: vc("Orden de servicio (placa y trabajo)", "Falla reportada, mano de obra, repuestos y técnico asignado", "Técnico o asesor", "Valor de la orden (COP)", "Fecha de entrega del vehículo", "Órdenes de servicio abiertas"),
   // Taller
   vehiculos_clientes: vc("Vehículo (placa, marca y modelo)", "Kilometraje, color, año y historial de servicios", "Dueño", "Valor del último servicio (COP)", "Próximo mantenimiento", "Vehículos en seguimiento"),
   cotizaciones_taller: vc("Presupuesto (placa y trabajo)", "Mano de obra, repuestos y tiempo estimado", "Dueño del vehículo", "Valor del presupuesto (COP)", "Vigente hasta", "Presupuestos por aprobar"),
