@@ -31,7 +31,7 @@ function PagosDigitalesPage() {
     const desde = inicio.toISOString();
     const [pedidosRes, pagosRes] = await Promise.all([
       supabase.from("restaurante_pedidos").select("total").eq("estado", "entregado").gte("created_at", desde),
-      supabase.from("modulo_registros").select("monto, estado").eq("modulo", "pagos_digitales").gte("created_at", desde),
+      supabase.from("pagos_digitales_registros").select("monto, estado").gte("created_at", desde),
     ]);
     if (pedidosRes.error || pagosRes.error) toast.error("No se pudo cargar la conciliación.");
     const listaPedidos = pedidosRes.data ?? [];
