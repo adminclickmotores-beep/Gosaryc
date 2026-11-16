@@ -14,8 +14,13 @@ Crea un instalador de Windows (`Gosaryc Setup x.x.x.exe`). La app instalada:
 ## Armar el instalador (la forma fácil)
 1. Descomprime la carpeta completa del proyecto (deben quedar juntas `escritorio` y `whatsapp-local`).
 2. Entra a la carpeta `escritorio` y haz doble clic en `crear-instalador-windows.bat`.
-3. Espera varios minutos. Al terminar se abre la carpeta `instaladores` con `Gosaryc Setup 1.0.0.exe`.
+3. Espera varios minutos. Al terminar se abre la carpeta `instaladores` con `Gosaryc Setup 1.2.3.exe`.
 4. Ese `.exe` es el que le entregas a tus clientes: doble clic, "Instalar" y listo.
+
+## Sin instalar nada: crear el instalador en la nube
+1. En GitHub, abre el repositorio del proyecto > pestaña **Actions** > **Instalador de Windows** > **Run workflow**.
+2. Espera unos minutos y descarga el archivo **Gosaryc-instalador-windows** (contiene el `.exe`).
+Úsalo si en tu computador falla la descarga de Electron.
 
 ## Con comandos (opcional)
 Dentro de `whatsapp-local`:

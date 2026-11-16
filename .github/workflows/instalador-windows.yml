@@ -1,0 +1,42 @@
+name: Instalador de Windows
+
+# Crea el instalador (.exe) en la nube, sin instalar nada en tu computador.
+# Uso: en GitHub entra a Actions > "Instalador de Windows" > Run workflow.
+# Al terminar, descarga el archivo "Gosaryc-instalador-windows" al final de la ejecucion.
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: API local de WhatsApp
+        working-directory: whatsapp-local
+        shell: cmd
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: "true"
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+        run: npm install --omit=dev
+
+      - name: Dependencias de escritorio
+        working-directory: escritorio
+        run: npm install
+
+      - name: Crear instalador
+        working-directory: escritorio
+        run: npm run instalador:windows
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Gosaryc-instalador-windows
+          path: escritorio/instaladores/*.exe
+          if-no-files-found: error
