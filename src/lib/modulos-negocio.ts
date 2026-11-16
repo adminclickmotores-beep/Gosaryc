@@ -692,7 +692,7 @@ TIPOS_NEGOCIO.push(
       m("plazos", "Plazos y vencimientos", "Términos legales, declaraciones y entregas.", CalendarClock),
       m("documentos_prof", "Documentos por cliente", "Contratos y archivos importantes.", FolderOpen),
       ...propios("prof", "agenda"), CLIENTES_PROF, SOLICITUDES,
-      FACTURAS, PAGOS_PROF, RESENAS_PROF, ...propios("prof", "caja"), PERSONAL_PROF, METAS_PROF, ...propios("prof", "finanzas"),
+      ...propios("prof", "cuentas"), FACTURAS, PAGOS_PROF, RESENAS_PROF, ...propios("prof", "caja", "proveedores"), PERSONAL_PROF, METAS_PROF, ...propios("prof", "finanzas"),
     ],
   },
   {
@@ -737,7 +737,7 @@ TIPOS_NEGOCIO.push(
       m("cronograma_cuotas", "Cronograma de cuotas", "Simulación de cuotas y fechas de pago.", CalendarDays),
       m("cobranza_diaria", "Cobranza diaria y mensual", "Cuotas por cobrar hoy, en mora y promesas de pago.", Coins),
       m("garantias_prest", "Garantías de préstamo", "Bienes o avales que respaldan cada préstamo.", ShieldCheck),
-      CLIENTES_PREST, ...propios("prest", "agenda"), FACTURAS, PAGOS_PREST, ...propios("prest", "caja"), PERSONAL_PREST, METAS_PREST, ...propios("prest", "finanzas"),
+      CLIENTES_PREST, ...propios("prest", "agenda"), FACTURAS, PAGOS_PREST, ...propios("prest", "cuentas", "caja", "proveedores"), PERSONAL_PREST, METAS_PREST, ...propios("prest", "finanzas"),
     ],
   },
   {
@@ -896,7 +896,7 @@ TIPOS_NEGOCIO.push(
       m("asistencia_guarderia", "Asistencia y recogida diaria", "Hora de entrada y salida, estado de salud y quién lo recoge.", BadgeCheck),
       m("recogida_guarderia", "Personas autorizadas a recoger", "Quién puede llevarse a cada niño, con documento y foto.", ShieldCheck),
       m("reportes_guarderia", "Reporte diario al acudiente", "Comidas, siestas, pañales y actividades del día.", ClipboardList),
-      ...propios("guard", "clientes", "mensualidades", "agenda", "facturas", "pagos", "caja", "personal", "metas", "finanzas"),
+      ...propios("guard", "clientes", "mensualidades", "agenda", "facturas", "pagos", "caja", "proveedores", "personal", "metas", "finanzas"),
     ],
   },
   {

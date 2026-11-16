@@ -5,6 +5,7 @@ import { PROPIOS_OPERACION_3 } from "@/lib/modulos-propios-operacion-3";
 import { PROPIOS_OPERACION_4 } from "@/lib/modulos-propios-operacion-4";
 import { PROPIOS_OPERACION_5 } from "@/lib/modulos-propios-operacion-5";
 import { PROPIOS_OPERACION_6 } from "@/lib/modulos-propios-operacion-6";
+import { PROPIOS_OPERACION_7 } from "@/lib/modulos-propios-operacion-7";
 
 /**
  * Módulos propios (clientes, facturación, pagos, personal, metas, puntos...) de los negocios que antes
@@ -275,7 +276,7 @@ export const PROPIOS: Record<string, Record<string, FamiliaPropia>> = {
 };
 
 // Caja, proveedores, finanzas, cuentas por cobrar, agenda y clientes propios de cada negocio.
-for (const grupo of [PROPIOS_OPERACION, PROPIOS_OPERACION_2, PROPIOS_OPERACION_3, PROPIOS_OPERACION_4, PROPIOS_OPERACION_5, PROPIOS_OPERACION_6]) {
+for (const grupo of [PROPIOS_OPERACION, PROPIOS_OPERACION_2, PROPIOS_OPERACION_3, PROPIOS_OPERACION_4, PROPIOS_OPERACION_5, PROPIOS_OPERACION_6, PROPIOS_OPERACION_7]) {
   for (const [suf, fams] of Object.entries(grupo)) {
     PROPIOS[suf] = { ...(PROPIOS[suf] ?? {}), ...fams };
   }
