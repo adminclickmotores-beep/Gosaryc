@@ -126,6 +126,25 @@ const CAMPOS_POR_TIPO: Record<string, CampoExtra[]> = {
 
 /** Campos propios de módulos concretos (tienen prioridad sobre los de su familia). */
 const CAMPOS_ESPECIFICOS: Record<string, CampoExtra[]> = {
+  vacunacion: [
+    { clave: "nombre_mascota", etiqueta: "Nombre de la mascota", tipo: "text" },
+    { clave: "vacuna", etiqueta: "Vacuna o desparasitante", tipo: "text", placeholder: "Ej. Triple felina, Desparasitación" },
+    { clave: "lote_vacuna", etiqueta: "Lote de la vacuna", tipo: "text" },
+    { clave: "fecha_aplicada", etiqueta: "Fecha de aplicación", tipo: "date" },
+    { clave: "proxima_dosis", etiqueta: "Próxima dosis", tipo: "date" },
+    { clave: "veterinario", etiqueta: "Veterinario que aplicó", tipo: "text" },
+    { clave: "telefono_duenio", etiqueta: "Teléfono del dueño", tipo: "tel" },
+  ],
+  productos_vet: [
+    { clave: "tipo_producto", etiqueta: "Tipo", tipo: "select", opciones: ["Alimento", "Medicamento", "Accesorio", "Higiene", "Juguete", "Otro"] },
+    { clave: "especie_destino", etiqueta: "Para especie", tipo: "select", opciones: ["Perro", "Gato", "Ave", "Roedor", "Reptil", "Todas"] },
+    { clave: "presentacion_vet", etiqueta: "Presentación o peso", tipo: "text", placeholder: "Ej. Bulto 15 kg" },
+    { clave: "lote_vet", etiqueta: "Lote", tipo: "text" },
+    { clave: "vencimiento_vet", etiqueta: "Fecha de vencimiento", tipo: "date" },
+    { clave: "cantidad_vet", etiqueta: "Cantidad en inventario", tipo: "text" },
+    { clave: "minimo_vet", etiqueta: "Stock mínimo", tipo: "text" },
+    { clave: "requiere_receta", etiqueta: "Requiere fórmula veterinaria", tipo: "select", opciones: ["No", "Sí"] },
+  ],
   arrendatarios: [
     { clave: "documento", etiqueta: "Cédula del arrendatario", tipo: "text" },
     { clave: "inmueble_arrendado", etiqueta: "Inmueble arrendado", tipo: "text" },
