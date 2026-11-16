@@ -225,6 +225,11 @@ const CLIENTES_PROF = m("clientes_prof", "Clientes y contrapartes del despacho",
 const PAGOS_PROF = m("pagos_prof", "Pagos de honorarios y consignaciones", "Abonos de honorarios, consignaciones a terceros y pagos por transferencia.", Smartphone);
 const RESENAS_PROF = m("resenas_prof", "Quejas y reseñas de clientes", "Observaciones y reclamos de clientes sobre la atención, con seguimiento.", Star);
 const PERSONAL_PROF = m("personal_prof", "Asociados, asistentes y pagos", "Honorarios de asociados, horas de asistentes y novedades del equipo.", Briefcase);
+const CLIENTES_LAV = m("clientes_lav", "Clientes de la lavandería", "Clientes frecuentes, empresas con contrato de ropa y su historial de prendas.", Users);
+const PAGOS_LAV = m("pagos_lav", "Cobros y pagos digitales", "Cobro de servicios y domicilios por efectivo, tarjeta o transferencia.", Smartphone);
+const RESENAS_LAV = m("resenas_lav", "Reclamos por prendas y entregas", "Prendas dañadas o perdidas, retrasos y reclamos, con seguimiento.", Star);
+const PERSONAL_LAV = m("personal_lav", "Operarios, turnos y pagos", "Turnos de planchado y lavado, destajos y novedades del personal.", Briefcase);
+const METAS_LAV = m("metas_lav", "Metas de kilos y facturación", "Metas de kilos lavados, órdenes y facturación por semana.", Target);
 const METAS_PROF = m("metas_prof", "Metas de casos y honorarios", "Metas de casos cerrados y honorarios facturados por mes.", Target);
 const METAS_EVENTOS = m("metas_eventos", "Metas de eventos y contratos", "Metas de eventos realizados y contratos cerrados por temporada.", Target);
 const METAS_FARM = m("metas_farm", "Metas de ventas y rotación", "Metas de ventas mensuales y rotación de productos por categoría.", Target);
@@ -619,8 +624,8 @@ TIPOS_NEGOCIO.push(
       m("tarifas_lavado", "Tarifas por servicio", "Precio por prenda, kilo o tipo de lavado.", Tag),
       m("entregas_lav", "Recogida y entrega", "Rutas de recogida y entrega a domicilio.", Bike),
       m("insumos_lav", "Insumos", "Jabones, químicos y consumibles.", Boxes),
-      CLIENTES, AGENDA,
-      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES_LAV, AGENDA,
+      FIADOS, FACTURAS, PAGOS_LAV, FIDELIZACION, RESENAS_LAV, CAJA, PROVEEDORES, PERSONAL_LAV, METAS_LAV, FINANZAS,
     ],
   },
 );
