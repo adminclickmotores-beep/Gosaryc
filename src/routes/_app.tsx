@@ -57,6 +57,13 @@ function AppShell() {
   const { esAdmin, puede, cargando: cargandoPermisos } = usePermisos();
   useAnunciarPresencia(user?.id, negocio?.nombre ?? "Sin nombre", tipoNegocio.etiqueta);
   const [bloqueo, setBloqueo] = useState<"suspendido" | "vencido" | null>(null);
+  // Entrada del logo: se reproduce una sola vez por sesión del navegador, al entrar a la cuenta.
+  const [logoIntro, setLogoIntro] = useState(false);
+  useEffect(() => {
+    if (window.sessionStorage.getItem("logo:intro")) return;
+    window.sessionStorage.setItem("logo:intro", "1");
+    setLogoIntro(true);
+  }, []);
   // Empleados (no administrador) en el panel: pantalla completa fija, sin menú lateral.
   // El administrador conserva el menú para probar módulo por módulo.
   const enRutaPanel = loc.pathname.startsWith("/restaurante") || loc.pathname.startsWith("/negocio/");
@@ -245,7 +252,7 @@ function AppShell() {
         >
           <div className={`flex items-center ${collapsed ? "justify-center px-1" : "justify-between gap-1 px-4"} py-5`}>
             <Link to="/" className="flex min-w-0 items-center gap-2 text-foreground">
-              <BrandHexLogo size={collapsed ? 32 : 34} />
+              <BrandHexLogo key={logoIntro ? "intro" : "base"} intro={logoIntro} size={collapsed ? 32 : 34} />
               {!collapsed && <span className="font-display text-base tracking-tight truncate">{BRAND.name}</span>}
             </Link>
             {!collapsed && (
@@ -352,7 +359,7 @@ function AppShell() {
           {/* Mobile top bar */}
           <header className={`sticky top-0 z-30 ${completaFinal ? "hidden" : "flex"} items-center justify-between border-b border-glass-border bg-background/80 px-4 py-3 backdrop-blur-xl md:hidden`}>
             <Link to="/" className="flex items-center gap-2 text-foreground">
-              <BrandHexLogo size={26} />
+              <BrandHexLogo key={logoIntro ? "intro-m" : "base-m"} intro={logoIntro} size={26} />
               <span className="font-display text-base tracking-tight">{BRAND.name}</span>
             </Link>
             <div className="flex items-center gap-2">

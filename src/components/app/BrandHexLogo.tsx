@@ -2,6 +2,7 @@
  * BrandHexLogo — the gradient-border hex monogram from the auth screen,
  * extracted so the sidebar/header use the same mark as /login.
  */
+import { motion, useReducedMotion } from "framer-motion";
 import { BRAND } from "@/lib/brand";
 
 const HEX_CLIP = "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)";
@@ -10,17 +11,28 @@ interface BrandHexLogoProps {
   /** Height in px. Width is auto (sqrt(3)/2 * height). */
   size?: number;
   className?: string;
+  /** Al entrar a la cuenta: el logo gira, crece y pulsa una vez. */
+  intro?: boolean;
 }
 
-export function BrandHexLogo({ size = 42, className }: BrandHexLogoProps) {
+export function BrandHexLogo({ size = 42, className, intro = false }: BrandHexLogoProps) {
   const h = size;
   const w = Math.round((Math.sqrt(3) / 2) * h * 10) / 10;
   const mono = Math.round(h * 0.42);
+  const reduce = useReducedMotion();
+  const animarEntrada = intro && !reduce;
   return (
-    <span
+    <motion.span
       className={`group relative grid place-items-center shrink-0${className ? ` ${className}` : ""}`}
       style={{ height: h, width: w }}
       aria-label={BRAND.name}
+      initial={animarEntrada ? { scale: 0.4, rotate: -180, opacity: 0 } : false}
+      animate={
+        animarEntrada
+          ? { scale: [0.4, 1.12, 1], rotate: [-180, 0, 0], opacity: [0, 1, 1] }
+          : { scale: 1, rotate: 0, opacity: 1 }
+      }
+      transition={animarEntrada ? { duration: 0.9, ease: [0.23, 1, 0.32, 1], times: [0, 0.6, 1] } : { duration: 0 }}
     >
       {/* Outer glow */}
       <span
@@ -85,6 +97,6 @@ export function BrandHexLogo({ size = 42, className }: BrandHexLogoProps) {
           strokeLinejoin="round"
         />
       </svg>
-    </span>
+    </motion.span>
   );
 }
