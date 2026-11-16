@@ -126,6 +126,40 @@ const CAMPOS_POR_TIPO: Record<string, CampoExtra[]> = {
 
 /** Campos propios de módulos concretos (tienen prioridad sobre los de su familia). */
 const CAMPOS_ESPECIFICOS: Record<string, CampoExtra[]> = {
+  proyectos_obra: [
+    { clave: "direccion_obra", etiqueta: "Dirección de la obra", tipo: "text" },
+    { clave: "tipo_obra", etiqueta: "Tipo de obra", tipo: "select", opciones: ["Remodelación", "Construcción nueva", "Reparación", "Instalaciones", "Acabados", "Otro"] },
+    { clave: "maestro", etiqueta: "Maestro o responsable en obra", tipo: "text" },
+    { clave: "avance", etiqueta: "Avance (%)", tipo: "text" },
+    { clave: "presupuesto", etiqueta: "Presupuesto aprobado (COP)", tipo: "text" },
+    { clave: "fecha_entrega", etiqueta: "Fecha de entrega prometida", tipo: "date" },
+    { clave: "licencia", etiqueta: "Licencia o permiso de construcción", tipo: "text" },
+  ],
+  cotizaciones_obra: [
+    { clave: "alcance", etiqueta: "Alcance del trabajo", tipo: "text", placeholder: "Qué se va a construir o reparar" },
+    { clave: "mano_obra", etiqueta: "Mano de obra (COP)", tipo: "text" },
+    { clave: "materiales_cot", etiqueta: "Materiales (COP)", tipo: "text" },
+    { clave: "plazo_dias", etiqueta: "Plazo de ejecución (días)", tipo: "text" },
+    { clave: "anticipo_pct", etiqueta: "Anticipo (%)", tipo: "text" },
+    { clave: "vigencia", etiqueta: "Vigente hasta", tipo: "date" },
+  ],
+  materiales: [
+    { clave: "referencia", etiqueta: "Referencia o código", tipo: "text" },
+    { clave: "unidad", etiqueta: "Unidad de medida", tipo: "select", opciones: ["Unidad", "Bulto", "Metro", "Metro cuadrado", "Kilo", "Galón", "Caneca", "Viaje"] },
+    { clave: "cantidad", etiqueta: "Cantidad en bodega", tipo: "text" },
+    { clave: "minimo", etiqueta: "Stock mínimo", tipo: "text" },
+    { clave: "costo", etiqueta: "Costo unitario (COP)", tipo: "text" },
+    { clave: "obra_asignada", etiqueta: "Obra donde se usa", tipo: "text" },
+    { clave: "ubicacion", etiqueta: "Ubicación en bodega", tipo: "text" },
+  ],
+  contratistas: [
+    { clave: "documento", etiqueta: "Cédula o NIT", tipo: "text" },
+    { clave: "oficio", etiqueta: "Oficio", tipo: "select", opciones: ["Maestro de obra", "Electricista", "Plomero", "Pintor", "Carpintero", "Soldador", "Otro"] },
+    { clave: "tarifa", etiqueta: "Tarifa acordada (COP)", tipo: "text" },
+    { clave: "forma_cobro", etiqueta: "Forma de cobro", tipo: "select", opciones: ["Por día", "Por obra", "Por avance", "Por hora"] },
+    { clave: "obra", etiqueta: "Obra asignada", tipo: "text" },
+    { clave: "telefono_contratista", etiqueta: "Teléfono", tipo: "tel" },
+  ],
   control_acceso: [
     { clave: "documento", etiqueta: "Documento del socio", tipo: "text" },
     { clave: "plan_activo", etiqueta: "Plan activo", tipo: "text", placeholder: "Ej. Mensual" },
