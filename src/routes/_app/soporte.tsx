@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_app/soporte")({
 
 type Ticket = Tables<"tickets_soporte">;
 
-const CORREO_SOPORTE = "gosarycsoporte@gmail.com";
+const CORREO_SOPORTE = "gosarycsoftware@gmail.com";
 
 const CATEGORIAS: { valor: string; etiqueta: string }[] = [
   { valor: "falla", etiqueta: "Algo no funciona" },

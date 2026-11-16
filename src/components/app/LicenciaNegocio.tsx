@@ -101,7 +101,7 @@ export function LicenciaNegocio({ modo }: { modo: "bloqueo" | "aviso" }) {
         <>
           <p className="text-sm text-muted-foreground">
             La licencia anual cuesta $100.000 COP e incluye soporte, instalación local y web. Paga y sube aquí el comprobante:
-            sin pago no se activa. Al aprobarla recibirás la licencia por correo y WhatsApp.
+            sin pago no se activa. Al aprobarla recibirás la licencia por correo y WhatsApp. Soporte: gosarycsoftware@gmail.com.
           </p>
           {pagoPendiente ? (
             <p className="text-sm text-foreground">Tu comprobante está en revisión. Te avisaremos cuando se apruebe.</p>

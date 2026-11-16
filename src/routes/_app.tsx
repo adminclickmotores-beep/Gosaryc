@@ -434,8 +434,8 @@ function AppShell() {
                 </h1>
                 <p className="mt-2 text-sm text-muted-foreground">
                   {bloqueo === "suspendido"
-                    ? "Tu cuenta está suspendida por falta de pago. Comunícate con Gosaryc para reactivarla."
-                    : "El periodo de uso de tu cuenta venció. Para seguir con acceso ilimitado, la licencia cuesta $100.000 COP al año e incluye soporte, instalación local y web. Comunícate con Gosaryc para renovarla."}
+                    ? "Tu cuenta está suspendida por falta de pago. Escríbenos a gosarycsoftware@gmail.com para reactivarla."
+                    : "El periodo de uso de tu cuenta venció. Para seguir con acceso ilimitado, la licencia cuesta $100.000 COP al año e incluye soporte, instalación local y web. Escríbenos a gosarycsoftware@gmail.com para renovarla."}
                 </p>
                 <LicenciaNegocio modo="bloqueo" />
               </div>
