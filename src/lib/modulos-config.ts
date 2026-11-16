@@ -1381,6 +1381,10 @@ const VOCABULARIO_EXTRA: Record<string, Partial<ConfigModulo>> = {
   // Tienda y finanzas
   productos: vc("Producto (nombre y referencia)", "Cantidad, talla o color, ubicación y código de barras", "Proveedor", "Precio de venta (COP)", "Último ingreso", "Productos por reponer"),
   apartados: vc("Producto apartado", "Abonos recibidos, talla o color y condiciones", "Cliente", "Valor total (COP)", "Fecha límite para retirar", "Apartados por entregar"),
+  pagos_tienda: vc("Pago digital (cliente, app y referencia)", "Monto recibido, referencia de la transferencia y venta asociada", "Cajero que concilió", "Valor del pago (COP)", "Fecha del pago", "Pagos por conciliar"),
+  personal_tienda: vc("Vendedor y turno o novedad", "Horario, comisión del mes, descuentos y novedades", "Vendedor", "Pago o comisión (COP)", "Fecha de pago", "Pagos del personal"),
+  metas_tienda: vc("Meta de venta (vendedor y periodo)", "Monto meta, ventas logradas y estrategia de la semana", "Vendedor", "Meta de venta (COP)", "Fecha de cierre de la meta", "Metas en curso"),
+  resenas_tienda: vc("Queja, reclamo o reseña (cliente y producto)", "Descripción, evidencia, respuesta dada y solución", "Cliente", "Valor en disputa (COP)", "Fecha límite de respuesta", "Reclamos abiertos"),
   clientes_tienda: vc("Cliente (nombre y teléfono)", "Compras frecuentes, crédito, talla o marca preferida y observaciones", "Vendedor que atendió", "Valor de compras acumuladas (COP)", "Última compra", "Clientes frecuentes"),
   devoluciones: vc("Producto y motivo del cambio o devolución", "Factura de origen, estado del producto y solución (cambio, nota crédito)", "Cliente", "Valor devuelto (COP)", "Fecha de la devolución", "Devoluciones por resolver"),
   facturas: vc("Factura o documento soporte (número)", "Prefijo, CUFE, concepto e impuestos", "Cliente o proveedor", "Total facturado (COP)", "Fecha de emisión", "Facturas por cobrar"),
@@ -1435,7 +1439,7 @@ const VOCABULARIO_EXTRA: Record<string, Partial<ConfigModulo>> = {
   estudiantes: vc("Nombre del estudiante", "Documento, grado o curso, y observaciones", "Acudiente o padre/madre", "Valor de la matrícula (COP)", "Fecha de inscripción", "Estudiantes por cerrar"),
   mensualidades: vc("Pensión (estudiante y mes)", "Mes cobrado, abonos y acuerdo de pago", "Acudiente", "Valor adeudado (COP)", "Fecha de vencimiento de la pensión", "Pensiones por cobrar"),
   // Hospedaje
-  reservas_hosp: vc("Reserva (huésped y habitación)", "Número de personas, anticipo, noches y observaciones", "Huésped", "Valor de la estadía (COP)", "Fecha de llegada", "Reservas por recibir",
+  reservas_hosp: vc("Reserva (huésped y habitación)", "Número de personas, anticipo, noches y observaciones", "Hu��sped", "Valor de la estadía (COP)", "Fecha de llegada", "Reservas por recibir",
     est(["pendiente", "Reservada"], ["abonado", "Con anticipo"], ["entregado", "Salió"], ["cancelado", "Cancelada"])),
   huespedes: vc("Nombre del huésped", "Documento, nacionalidad, habitación, placa y preferencias", "Acompañante o empresa", "Valor de la estadía (COP)", "Fecha de llegada", "Huéspedes por cobrar"),
   limpieza: vc("Habitación o área a limpiar", "Tarea, insumos, estado y novedades", "Encargado de limpieza", "Costo (COP)", "Fecha de la tarea", "Tareas en curso"),

@@ -168,6 +168,10 @@ const CLIENTES: ModuloNegocio = {
   estado: "Activo",
 };
 const CLIENTES_TIENDA = m("clientes_tienda", "Clientes de la tienda", "Clientes frecuentes, compras, crédito y talla o marca preferida.", Users);
+const PAGOS_TIENDA = m("pagos_tienda", "Pagos digitales de la tienda", "Concilia pagos con Nequi, Daviplata y Bre-B contra tus ventas del día.", Smartphone);
+const PERSONAL_TIENDA = m("personal_tienda", "Vendedores, turnos y comisiones", "Turnos de vendedores, comisiones y pagos del personal de la tienda.", Briefcase);
+const METAS_TIENDA = m("metas_tienda", "Metas de venta por vendedor", "Metas semanales de venta y seguimiento por vendedor.", Target);
+const RESENAS_TIENDA = m("resenas_tienda", "Cambios, quejas y reseñas", "Quejas, reclamos y opiniones de clientes de la tienda con seguimiento.", Star);
 const AGENDA: ModuloNegocio = {
   id: "agenda",
   titulo: "Agenda y calendario",
@@ -258,7 +262,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("apartados", "Apartados (plan separe)", "Abonos y entrega de productos separados.", Tag),
       m("devoluciones", "Cambios y devoluciones", "Control de cambios y notas crédito.", Repeat),
       CLIENTES_TIENDA,
-      FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      FIADOS, FACTURAS, PAGOS_TIENDA, FIDELIZACION, RESENAS_TIENDA, CAJA, PROVEEDORES, PERSONAL_TIENDA, METAS_TIENDA, FINANZAS,
     ],
   },
   {
