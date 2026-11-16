@@ -126,6 +126,33 @@ const CAMPOS_POR_TIPO: Record<string, CampoExtra[]> = {
 
 /** Campos propios de módulos concretos (tienen prioridad sobre los de su familia). */
 const CAMPOS_ESPECIFICOS: Record<string, CampoExtra[]> = {
+  arrendatarios: [
+    { clave: "documento", etiqueta: "Cédula del arrendatario", tipo: "text" },
+    { clave: "inmueble_arrendado", etiqueta: "Inmueble arrendado", tipo: "text" },
+    { clave: "canon", etiqueta: "Canon mensual (COP)", tipo: "text" },
+    { clave: "deposito", etiqueta: "Depósito recibido (COP)", tipo: "text" },
+    { clave: "inicio_contrato", etiqueta: "Inicio del contrato", tipo: "date" },
+    { clave: "vence_contrato", etiqueta: "Vencimiento del contrato", tipo: "date" },
+    { clave: "codeudor", etiqueta: "Codeudor (nombre y teléfono)", tipo: "text" },
+    { clave: "reajuste", etiqueta: "Reajuste anual (%)", tipo: "text", placeholder: "Ej. IPC" },
+  ],
+  cobro_canon: [
+    { clave: "mes_canon", etiqueta: "Mes cobrado", tipo: "text", placeholder: "Ej. Marzo 2027" },
+    { clave: "inmueble_cobro", etiqueta: "Inmueble", tipo: "text" },
+    { clave: "fecha_pago_canon", etiqueta: "Fecha límite de pago", tipo: "date" },
+    { clave: "mora", etiqueta: "Días en mora", tipo: "text" },
+    { clave: "intereses_mora", etiqueta: "Intereses de mora (COP)", tipo: "text" },
+    { clave: "abonado", etiqueta: "Abonos recibidos (COP)", tipo: "text" },
+    PAGO,
+  ],
+  visitas: [
+    { clave: "inmueble_visita", etiqueta: "Inmueble a visitar", tipo: "text" },
+    { clave: "fecha_visita", etiqueta: "Fecha de la visita", tipo: "date" },
+    { clave: "hora_visita", etiqueta: "Hora", tipo: "text", placeholder: "Ej. 3:00 p. m." },
+    { clave: "asesor", etiqueta: "Asesor que acompaña", tipo: "text" },
+    { clave: "interes_visita", etiqueta: "Nivel de interés", tipo: "select", opciones: ["Alto", "Medio", "Bajo", "Solo curioseando"] },
+    { clave: "presupuesto_visita", etiqueta: "Presupuesto del interesado (COP)", tipo: "text" },
+  ],
   cultivos: [
     { clave: "lote", etiqueta: "Lote o parcela", tipo: "text" },
     { clave: "cultivo", etiqueta: "Cultivo o variedad", tipo: "text", placeholder: "Ej. Café Castillo, maíz" },
