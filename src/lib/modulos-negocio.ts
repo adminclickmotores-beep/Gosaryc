@@ -179,6 +179,10 @@ const PERSONAL_SERVICIOS = m("personal_servicios", "Personal, turnos y comisione
 const PAGOS_EDUCACION = m("pagos_educacion", "Pagos de pensiones y matrículas", "Recaudo por transferencia, efectivo y datáfono de cada estudiante, con recibo.", Smartphone);
 const RESENAS_EDUCACION = m("resenas_educacion", "Quejas y peticiones de acudientes", "Reclamos, peticiones y sugerencias de padres y estudiantes, con seguimiento.", Star);
 const PERSONAL_EDUCACION = m("personal_educacion", "Docentes, turnos y pagos", "Horas de clase, pagos a docentes y novedades del personal académico.", Briefcase);
+const PAGOS_HOSP = m("pagos_hosp", "Cobros y pagos de huéspedes", "Recaudo de estadías, anticipos y cargos adicionales por medio de pago.", Smartphone);
+const RESENAS_HOSP = m("resenas_hosp", "Quejas y reseñas de huéspedes", "Opiniones, quejas y solicitudes de los huéspedes, con seguimiento.", Star);
+const PERSONAL_HOSP = m("personal_hosp", "Personal, turnos y comisiones", "Turnos de recepción, limpieza y pagos o comisiones del personal.", Briefcase);
+const METAS_HOSP = m("metas_hosp", "Metas de ocupación e ingresos", "Metas de ocupación y de ingresos por temporada.", Target);
 const METAS_EDUCACION = m("metas_educacion", "Metas de matrícula y recaudo", "Metas de nuevas matrículas y de recaudo por periodo académico.", Target);
 const METAS_SERVICIOS = m("metas_servicios", "Metas de citas y ventas", "Metas semanales de servicios realizados y seguimiento por profesional.", Target);
 const FACTURAS_SALUD = m("facturas_salud", "Facturación y RIPS", "Facturas a pacientes y EPS, con RIPS, copagos y cuotas moderadoras.", Receipt);
@@ -351,7 +355,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("huespedes", "Huéspedes", "Registro y preferencias de tus huéspedes.", Users),
       m("servicios_extra", "Servicios adicionales", "Desayunos, tours, lavandería y otros cargos.", Tag),
       m("limpieza", "Limpieza y mantenimiento", "Tareas por habitación y estado.", Wrench),
-      FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      FACTURAS, PAGOS_HOSP, FIDELIZACION, RESENAS_HOSP, CAJA, PROVEEDORES, PERSONAL_HOSP, METAS_HOSP, FINANZAS,
     ],
   },
   {
