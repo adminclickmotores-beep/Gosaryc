@@ -63,7 +63,7 @@ const PASOS = [
 ];
 
 const CIFRAS = [
-  { valor: "31", texto: "tipos de negocio" },
+  { valor: `${SECTORES.length}`, texto: "sectores de negocio" },
   { valor: "100%", texto: "desde el celular" },
   { valor: "24/7", texto: "disponible siempre" },
   { valor: "1", texto: "solo panel para todo" },
@@ -210,7 +210,7 @@ function LandingPage() {
           <p className="text-eyebrow text-center">Sectores</p>
           <h2 id="para-quien" className="mt-3 text-center font-display text-3xl sm:text-4xl">Hecho para todo tipo de negocio</h2>
           <p className="mx-auto mt-3 max-w-xl text-center text-sm text-muted-foreground">Cada negocio recibe los módulos y los textos que necesita.</p>
-          <ul className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7">
+          <ul className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
             {SECTORES.map(({ Icon, label, slug }) => (
               <li key={slug}>
                 <Link to="/sectores/$slug" params={{ slug }} className="group block h-full">

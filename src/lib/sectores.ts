@@ -2,7 +2,7 @@ import type { ComponentType } from "react";
 import {
   UtensilsCrossed, Store, Scissors, Stethoscope, GraduationCap, BedDouble, Dumbbell, Hammer, Sprout,
   Building2, PawPrint, Laptop, Truck, Car, Cake, Coffee, Wrench, Pill, PartyPopper, Briefcase, Shirt,
-  Gem, Banknote, Smartphone, Layers,
+  Gem, Banknote, Smartphone, Layers, Gift, Sparkles, Palette, Users,
 } from "lucide-react";
 
 export type Sector = {
@@ -157,6 +157,126 @@ export const SECTORES: Sector[] = [
     { titulo: "Catálogo e inventario", texto: "Organiza tus productos y recibe alertas de stock bajo." },
     { titulo: "Pedidos", texto: "Recibe y entrega pedidos sin olvidar ninguno." },
     { titulo: "Cartera de clientes", texto: "Controla lo que te deben y los abonos." },
+  ]),
+  s("ferreterias", "Ferreterías", Wrench, "Inventario amplio, precios y fiados a clientes de confianza.", [
+    { titulo: "Inventario por referencia", texto: "Registra miles de productos con su costo, precio y stock mínimo." },
+    { titulo: "Ventas y cotizaciones", texto: "Cotiza obras y materiales y cobra rápido en mostrador." },
+    { titulo: "Cartera de constructores", texto: "Controla fiados, abonos y fechas de pago." },
+  ]),
+  s("supermercados", "Supermercados y minimercados", Store, "Venta rápida, inventario y proveedores en un solo lugar.", [
+    { titulo: "Punto de venta", texto: "Cobra en segundos con caja diaria y cierre de turno." },
+    { titulo: "Inventario y reposición", texto: "Recibe alertas de productos por agotarse o por vencer." },
+    { titulo: "Proveedores y compras", texto: "Registra pedidos a proveedores y sus pagos." },
+  ]),
+  s("carnicerias-y-fruver", "Carnicerías y fruver", Store, "Control de producto fresco, pérdidas y ventas del día.", [
+    { titulo: "Inventario de frescos", texto: "Lleva existencias por peso y controla mermas." },
+    { titulo: "Ventas y caja", texto: "Registra ventas del día y cierra tu caja sin errores." },
+    { titulo: "Pedidos a domicilio", texto: "Recibe pedidos por WhatsApp y organiza las entregas." },
+  ]),
+  s("licoreras", "Licoreras y tiendas de bebidas", Coffee, "Inventario, ventas y domicilios para tu licorera.", [
+    { titulo: "Inventario por marca", texto: "Controla existencias, costos y márgenes de cada referencia." },
+    { titulo: "Ventas y domicilios", texto: "Atiende mostrador y pedidos a domicilio." },
+    { titulo: "Combos y promociones", texto: "Crea combos y promociones para vender más." },
+  ]),
+  s("floristerias", "Floristerías y regalos", Gift, "Pedidos por encargo, fechas especiales y entregas.", [
+    { titulo: "Pedidos por encargo", texto: "Anota cada arreglo con su fecha, dedicatoria y dirección." },
+    { titulo: "Catálogo de arreglos", texto: "Muestra tus productos con foto y precio." },
+    { titulo: "Entregas", texto: "Organiza las rutas de entrega del día." },
+  ]),
+  s("barberias", "Barberías y peluquerías", Scissors, "Agenda, servicios y comisiones por barbero.", [
+    { titulo: "Agenda de citas", texto: "Organiza el turno de cada barbero sin cruces." },
+    { titulo: "Servicios y precios", texto: "Define cada corte o servicio con su valor." },
+    { titulo: "Comisiones del equipo", texto: "Calcula lo que le corresponde a cada persona." },
+  ]),
+  s("spas-y-estetica", "Spas y centros de estética", Sparkles, "Citas, paquetes y fidelización de tus clientes.", [
+    { titulo: "Agenda de tratamientos", texto: "Reserva cabinas y profesionales por horario." },
+    { titulo: "Paquetes y sesiones", texto: "Vende paquetes y lleva el control de sesiones usadas." },
+    { titulo: "Puntos y recompensas", texto: "Premia a tus clientes frecuentes." },
+  ]),
+  s("odontologia", "Odontología y consultorios", Stethoscope, "Pacientes, citas y tratamientos con sus cobros.", [
+    { titulo: "Fichas de pacientes", texto: "Guarda datos y evolución de cada paciente." },
+    { titulo: "Agenda de citas", texto: "Programa consultas y recordatorios." },
+    { titulo: "Tratamientos y abonos", texto: "Controla el valor de cada tratamiento y sus pagos." },
+  ]),
+  s("opticas", "Ópticas", Stethoscope, "Fórmulas, monturas y ventas en un solo lugar.", [
+    { titulo: "Clientes y fórmulas", texto: "Guarda la fórmula y el historial de cada cliente." },
+    { titulo: "Inventario de monturas", texto: "Controla referencias, costos y precios." },
+    { titulo: "Pedidos de laboratorio", texto: "Sigue cada pedido hasta la entrega." },
+  ]),
+  s("colegios-y-academias", "Colegios y academias", GraduationCap, "Matrículas, pensiones y grupos sin complicaciones.", [
+    { titulo: "Matrículas", texto: "Registra estudiantes y acudientes." },
+    { titulo: "Pensiones", texto: "Mira quién está al día y quién tiene saldo." },
+    { titulo: "Cursos y horarios", texto: "Organiza grupos, docentes y cupos." },
+  ]),
+  s("guarderias", "Guarderías y jardines", GraduationCap, "Niños inscritos, mensualidades y comunicación con acudientes.", [
+    { titulo: "Inscripciones", texto: "Registra a cada niño con sus datos importantes." },
+    { titulo: "Mensualidades", texto: "Controla pagos y saldos pendientes." },
+    { titulo: "Asistencia", texto: "Lleva el ingreso y salida diaria." },
+  ]),
+  s("lavaderos-de-autos", "Lavaderos de autos", Car, "Servicios por vehículo, turnos y comisiones.", [
+    { titulo: "Servicios por vehículo", texto: "Registra placa, servicio y valor." },
+    { titulo: "Turnos y empleados", texto: "Organiza quién atiende cada vehículo." },
+    { titulo: "Cierre de caja", texto: "Cuadra lo cobrado cada día." },
+  ]),
+  s("mecanica-y-repuestos", "Mecánica y repuestos", Wrench, "Órdenes de trabajo, repuestos y mantenimientos.", [
+    { titulo: "Órdenes de trabajo", texto: "Registra diagnóstico, repuestos y mano de obra." },
+    { titulo: "Inventario de repuestos", texto: "Controla existencias y proveedores." },
+    { titulo: "Recordatorios", texto: "Avisa a tus clientes de su próximo mantenimiento." },
+  ]),
+  s("alquiler-de-vehiculos", "Alquiler de vehículos", Car, "Reservas, contratos y entregas de tu flota.", [
+    { titulo: "Flota disponible", texto: "Mira qué vehículo está libre u ocupado." },
+    { titulo: "Reservas y contratos", texto: "Registra fechas, depósitos y cobros." },
+    { titulo: "Vencimientos", texto: "Controla SOAT, seguros y revisiones." },
+  ]),
+  s("mensajeria-y-domicilios", "Mensajería y domicilios", Truck, "Repartidores, rutas y cobros de cada entrega.", [
+    { titulo: "Pedidos y rutas", texto: "Asigna cada entrega a un repartidor." },
+    { titulo: "Tarifas por zona", texto: "Define el valor de cada domicilio." },
+    { titulo: "Liquidación", texto: "Cuadra lo que le corresponde a cada repartidor." },
+  ]),
+  s("hostales-y-cabanas", "Hostales y cabañas", BedDouble, "Reservas, disponibilidad y limpieza de tu alojamiento.", [
+    { titulo: "Calendario de reservas", texto: "Evita sobreventas con un calendario claro." },
+    { titulo: "Anticipos y pagos", texto: "Controla cada abono y saldo." },
+    { titulo: "Limpieza", texto: "Programa el aseo de cada habitación." },
+  ]),
+  s("restaurantes-de-comida-rapida", "Comida rápida y food trucks", UtensilsCrossed, "Pedidos ágiles, combos y cobro inmediato.", [
+    { titulo: "Venta rápida", texto: "Toma pedidos y cobra en segundos." },
+    { titulo: "Combos", texto: "Crea combos y promociones." },
+    { titulo: "Cocina en vivo", texto: "Sigue cada pedido hasta que sale." },
+  ]),
+  s("heladerias-y-dulces", "Heladerías y dulcerías", Cake, "Ventas, sabores e inventario de insumos.", [
+    { titulo: "Catálogo de sabores", texto: "Muestra tus productos con precio y foto." },
+    { titulo: "Inventario de insumos", texto: "Controla lo que usas cada día." },
+    { titulo: "Pedidos por encargo", texto: "Recibe pedidos para eventos y fechas especiales." },
+  ]),
+  s("fotografia-y-produccion", "Fotografía y producción", Palette, "Sesiones, entregas y cobros de tu estudio.", [
+    { titulo: "Agenda de sesiones", texto: "Reserva fechas con anticipo." },
+    { titulo: "Paquetes y cotizaciones", texto: "Envía cotizaciones claras a tus clientes." },
+    { titulo: "Entregas", texto: "Controla qué trabajos están pendientes de entregar." },
+  ]),
+  s("abogados-y-contadores", "Abogados y contadores", Briefcase, "Clientes, casos, honorarios y vencimientos.", [
+    { titulo: "Clientes y casos", texto: "Organiza cada asunto con su estado." },
+    { titulo: "Honorarios", texto: "Controla lo facturado y lo pendiente por cobrar." },
+    { titulo: "Alertas de vencimientos", texto: "No dejes pasar ningún plazo." },
+  ]),
+  s("seguridad-y-aseo", "Empresas de aseo y seguridad", Users, "Personal, contratos y pagos de tu empresa de servicios.", [
+    { titulo: "Personal y turnos", texto: "Organiza a tu equipo por cliente y turno." },
+    { titulo: "Contratos", texto: "Controla fechas y valores de cada contrato." },
+    { titulo: "Nómina", texto: "Calcula y registra los pagos de tu equipo." },
+  ]),
+  s("ganaderia-y-avicola", "Ganadería y avícola", Sprout, "Animales, producción y ventas de tu finca.", [
+    { titulo: "Control de animales", texto: "Registra lotes, vacunas y producción." },
+    { titulo: "Insumos y alimento", texto: "Controla concentrados y medicinas." },
+    { titulo: "Ventas", texto: "Lleva lo vendido y lo que te deben." },
+  ]),
+  s("ong-y-fundaciones", "Fundaciones y organizaciones", Users, "Beneficiarios, aportes y proyectos de tu organización.", [
+    { titulo: "Beneficiarios", texto: "Registra a quienes atiendes y su seguimiento." },
+    { titulo: "Aportes y donaciones", texto: "Controla lo recibido y su destino." },
+    { titulo: "Proyectos", texto: "Organiza actividades y presupuestos." },
+  ]),
+  s("iglesias-y-clubes", "Iglesias, clubes y asociaciones", Users, "Miembros, cuotas y eventos de tu comunidad.", [
+    { titulo: "Miembros", texto: "Registra a cada persona de tu comunidad." },
+    { titulo: "Cuotas y aportes", texto: "Mira quién está al día." },
+    { titulo: "Eventos", texto: "Organiza actividades y reservas." },
   ]),
 ];
 
