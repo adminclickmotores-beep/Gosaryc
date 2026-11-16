@@ -185,6 +185,11 @@ const PERSONAL_HOSP = m("personal_hosp", "Personal, turnos y comisiones", "Turno
 const PAGOS_GYM = m("pagos_gym", "Cobros de membresías y pagos digitales", "Recaudo de planes, inscripciones y tienda del gimnasio por cada medio de pago.", Smartphone);
 const RESENAS_GYM = m("resenas_gym", "Quejas y sugerencias de socios", "Reclamos, sugerencias y reseñas de socios, con seguimiento.", Star);
 const PERSONAL_GYM = m("personal_gym", "Entrenadores, turnos y pagos", "Horarios de entrenadores, pagos por clase y novedades del personal.", Briefcase);
+const CLIENTES_OBRA = m("clientes_obra", "Clientes y propietarios", "Clientes, propietarios y obras asociadas, con su contacto y saldos.", Users);
+const PAGOS_OBRA = m("pagos_obra", "Pagos de obra y anticipos", "Anticipos, abonos y pagos de cada obra, por transferencia o efectivo.", Smartphone);
+const RESENAS_OBRA = m("resenas_obra", "Reclamos y garantías de obra", "Reclamos y observaciones de clientes sobre el trabajo, con seguimiento.", Star);
+const PERSONAL_OBRA = m("personal_obra", "Oficiales, jornales y pagos", "Jornales, destajos y pagos de oficiales por obra.", Briefcase);
+const METAS_OBRA = m("metas_obra", "Metas de obras y facturación", "Metas de obras entregadas y facturación por periodo.", Target);
 const METAS_GYM = m("metas_gym", "Metas de socios y recaudo", "Metas de nuevos socios, renovaciones y recaudo por mes.", Target);
 const METAS_HOSP = m("metas_hosp", "Metas de ocupación e ingresos", "Metas de ocupación y de ingresos por temporada.", Target);
 const METAS_EDUCACION = m("metas_educacion", "Metas de matrícula y recaudo", "Metas de nuevas matrículas y de recaudo por periodo académico.", Target);
@@ -385,7 +390,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("cotizaciones_obra", "Cotizaciones", "Propuestas y seguimiento hasta el cierre.", FileText),
       m("materiales", "Materiales y herramientas", "Inventario y consumo por obra.", Package),
       m("contratistas", "Contratistas y pagos", "Cuentas por pagar a maestros y subcontratistas.", Handshake),
-      AGENDA, CLIENTES, GARANTIAS, FIADOS, FACTURAS, PAGOS, RESENAS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      AGENDA, CLIENTES_OBRA, GARANTIAS, FIADOS, FACTURAS, PAGOS_OBRA, RESENAS_OBRA, CAJA, PROVEEDORES, PERSONAL_OBRA, METAS_OBRA, FINANZAS,
     ],
   },
   {
