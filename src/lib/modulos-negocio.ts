@@ -195,6 +195,10 @@ const PERSONAL_AGRO = m("personal_agro", "Jornaleros, turnos y pagos", "Jornales
 const CLIENTES_INMO = m("clientes_inmo", "Propietarios, interesados y arrendatarios", "Propietarios, compradores e interesados en arriendo, con sus inmuebles y saldos.", Users);
 const PAGOS_INMO = m("pagos_inmo", "Pagos de arriendos y consignaciones", "Cánones, administración y consignaciones a propietarios por medio de pago.", Smartphone);
 const PERSONAL_INMO = m("personal_inmo", "Asesores, turnos y comisiones", "Comisiones de asesores y pagos del personal de la inmobiliaria.", Briefcase);
+const PAGOS_VET = m("pagos_vet", "Cobros de consultas y pagos digitales", "Cobro de consultas, cirugías, vacunas y productos por cada medio de pago.", Smartphone);
+const RESENAS_VET = m("resenas_vet", "Quejas y reseñas de dueños", "Reclamos, sugerencias y reseñas de los dueños de mascotas, con seguimiento.", Star);
+const PERSONAL_VET = m("personal_vet", "Veterinarios, turnos y pagos", "Turnos de veterinarios y auxiliares, honorarios y novedades del personal.", Briefcase);
+const METAS_VET = m("metas_vet", "Metas de consultas y ventas", "Metas de consultas atendidas, vacunaciones y ventas de productos.", Target);
 const METAS_INMO = m("metas_inmo", "Metas de negocios cerrados", "Metas de arriendos y ventas cerradas por asesor y mes.", Target);
 const METAS_AGRO = m("metas_agro", "Metas de producción y ventas", "Metas de producción por lote y de ventas por temporada.", Target);
 const METAS_OBRA = m("metas_obra", "Metas de obras y facturación", "Metas de obras entregadas y facturación por periodo.", Target);
@@ -437,7 +441,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       AGENDA,
       m("vacunacion", "Vacunas y desparasitación", "Próximas dosis y recordatorios.", ShieldCheck),
       m("productos_vet", "Productos y alimentos", "Inventario y ventas.", ShoppingBag),
-      FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      FACTURAS, PAGOS_VET, FIDELIZACION, RESENAS_VET, CAJA, PROVEEDORES, PERSONAL_VET, METAS_VET, FINANZAS,
     ],
   },
   {
