@@ -345,9 +345,10 @@ const ICONOS_PROPIOS: Record<string, LucideIcon> = {
 };
 /** Módulos propios de un negocio (clientes, facturación, pagos, personal, metas...) con sus textos y formularios. */
 const propios = (suf: string, ...familias: string[]): ModuloNegocio[] =>
-  familias.map((fam) => {
-    const f = PROPIOS[suf][fam];
-    return m(`${fam}_${suf}`, f.titulo, f.desc, ICONOS_PROPIOS[fam]);
+  familias.flatMap((fam) => {
+    const f = PROPIOS[suf]?.[fam];
+    if (!f) return [];
+    return [m(`${fam}_${suf}`, f.titulo ?? "", f.desc ?? "", ICONOS_PROPIOS[fam])];
   });
 
 export const TIPOS_NEGOCIO: TipoNegocio[] = [
@@ -599,8 +600,12 @@ const comida = (
     .map((x): ModuloNegocio => {
       if (!suf || !x.id.endsWith("_rest")) return x;
       const fam = x.id.replace(/_rest$/, "");
+      // Solo las familias que este negocio tiene propias (caja, cuentas...). Las demás que terminan en
+      // _rest (mermas_rest, plataformas_rest, permisos_rest) se comparten tal cual con el restaurante.
+      const propia = PROPIOS[suf]?.[fam];
+      if (!propia) return x;
       const id = `${fam}_${suf}`;
-      return { ...x, id, ruta: `/modulos/${id}`, titulo: PROPIOS[suf][fam].titulo, descripcion: PROPIOS[suf][fam].desc };
+      return { ...x, id, ruta: `/modulos/${id}`, titulo: propia.titulo ?? x.titulo, descripcion: propia.desc ?? x.descripcion };
     });
   mods.splice(2, 0, ...extras);
   return { clave, etiqueta, panel, usaPedidos: true, modulos: mods };
