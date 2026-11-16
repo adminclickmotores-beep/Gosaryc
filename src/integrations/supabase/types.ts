@@ -1595,6 +1595,39 @@ export type Database = {
         }
         Relationships: []
       }
+      agente_whatsapp: {
+        Row: {
+          activo: boolean
+          clave: string
+          created_at: string
+          id: string
+          instrucciones: string | null
+          negocio_id: string
+          nombre_agente: string
+          owner_id: string
+        }
+        Insert: {
+          activo?: boolean
+          clave?: string
+          created_at?: string
+          id?: string
+          instrucciones?: string | null
+          negocio_id: string
+          nombre_agente?: string
+          owner_id: string
+        }
+        Update: {
+          activo?: boolean
+          clave?: string
+          created_at?: string
+          id?: string
+          instrucciones?: string | null
+          negocio_id?: string
+          nombre_agente?: string
+          owner_id?: string
+        }
+        Relationships: []
+      }
       negocio_config: {
         Row: {
           aviso_entrega: string | null

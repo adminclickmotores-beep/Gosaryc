@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
+import { AgenteWhatsApp } from "@/components/restaurante/AgenteWhatsApp";
 import { TIPOS_NEGOCIO, resolverTipoNegocio } from "@/lib/modulos-negocio";
 
 const campo =
@@ -173,6 +174,7 @@ export function NegocioConfig() {
   };
 
   return (
+    <div className="space-y-4">
     <GlassPanel className="space-y-4 p-5">
       <div>
         <h2 className="font-medium text-foreground">Datos de tu negocio</h2>
@@ -337,5 +339,7 @@ export function NegocioConfig() {
         {guardando ? "Guardando…" : "Guardar cambios"}
       </button>
     </GlassPanel>
+    <AgenteWhatsApp />
+    </div>
   );
 }

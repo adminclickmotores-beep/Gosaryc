@@ -1,13 +1,14 @@
 {
   "name": "gosaryc-whatsapp-local",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "API local de WhatsApp para Gosaryc: envía mensajes desde el WhatsApp del negocio, en tu propio computador.",
+  "description": "API local de WhatsApp para Gosaryc: varios números, agente de ventas y atención al cliente, envío de recordatorios.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
+    "qrcode": "^1.5.3",
     "qrcode-terminal": "^0.12.0",
     "whatsapp-web.js": "^1.26.0"
   }
