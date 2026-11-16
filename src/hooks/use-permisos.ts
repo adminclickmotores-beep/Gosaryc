@@ -4,17 +4,37 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export type Acceso = { admin: boolean; modulos: string[] };
 
+const REINTENTOS = 2;
+const espera = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
 /** Permisos de la cuenta actual: el administrador lo ve todo; el resto, solo los módulos que le asignaron. */
 export function usePermisos() {
   const { user } = useAuth();
   const [acceso, setAcceso] = useState<Acceso | null>(null);
+  const [error, setError] = useState(false);
 
   const cargar = useCallback(async () => {
     if (!user) return;
-    await supabase.rpc("reclamar_acceso");
-    const { data } = await supabase.rpc("mi_acceso");
-    const d = (data ?? {}) as { admin?: boolean; modulos?: string[] };
-    setAcceso({ admin: !!d.admin, modulos: Array.isArray(d.modulos) ? d.modulos : [] });
+    // Nunca se queda cargando para siempre: si la base responde con error se reintenta
+    // y, si sigue fallando, se marca el error para que la pantalla ofrezca reintentar
+    // (en vez de mostrar "sin acceso" a quien sí lo tiene).
+    for (let intento = 0; intento <= REINTENTOS; intento++) {
+      try {
+        await supabase.rpc("reclamar_acceso");
+        const { data, error: errRpc } = await supabase.rpc("mi_acceso");
+        if (!errRpc) {
+          const d = (data ?? {}) as { admin?: boolean; modulos?: string[] };
+          setAcceso({ admin: !!d.admin, modulos: Array.isArray(d.modulos) ? d.modulos : [] });
+          setError(false);
+          return;
+        }
+      } catch {
+        /* se reintenta */
+      }
+      if (intento < REINTENTOS) await espera(800 * (intento + 1));
+    }
+    setAcceso((prev) => prev ?? { admin: false, modulos: [] });
+    setError(true);
   }, [user]);
 
   useEffect(() => {
@@ -31,5 +51,5 @@ export function usePermisos() {
     [acceso],
   );
 
-  return { acceso, cargando: acceso === null, esAdmin: !!acceso?.admin, puede };
+  return { acceso, cargando: acceso === null, esAdmin: !!acceso?.admin, puede, error, recargar: cargar };
 }

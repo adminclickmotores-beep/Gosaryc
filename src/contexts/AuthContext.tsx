@@ -67,8 +67,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch {
         /* almacenamiento bloqueado */
       }
-      const { data } = await supabase.auth.getSession();
-      apply(data.session);
+      // Si la lectura de la sesión falla (red, almacenamiento), se sigue sin sesión
+      // en vez de quedarse en "Iniciando" para siempre.
+      try {
+        const { data } = await supabase.auth.getSession();
+        apply(data.session);
+      } catch {
+        apply(null);
+      }
     })();
 
     return () => subscription.unsubscribe();

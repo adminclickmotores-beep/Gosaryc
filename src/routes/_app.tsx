@@ -55,7 +55,7 @@ function AppShell() {
   const pathnameRef = useRef(loc.pathname);
   const { negocio } = useNegocio();
   const tipoNegocio = resolverTipoNegocio(negocio?.tipo_negocio);
-  const { esAdmin, puede, cargando: cargandoPermisos } = usePermisos();
+  const { esAdmin, puede, cargando: cargandoPermisos, error: errorPermisos, recargar: recargarPermisos } = usePermisos();
   useAnunciarPresencia(user?.id, negocio?.nombre ?? "Sin nombre", tipoNegocio.etiqueta);
   const [bloqueo, setBloqueo] = useState<"suspendido" | "vencido" | null>(null);
   // Entrada del logo: se reproduce una sola vez por sesión del navegador, al entrar a la cuenta.
@@ -93,11 +93,12 @@ function AppShell() {
   const enPanel = enRutaPanel;
   const sinAcceso =
     !cargandoPermisos &&
+    !errorPermisos &&
     !esAdmin &&
     ((enPanel && !verPanel) || (modulosDeLaRuta.length > 0 && !modulosDeLaRuta.some((m) => puede(m.id))));
   const primeraRutaPermitida = navItems.find((n) => n.to !== rutaPanel && n.to !== "/restaurante")?.to;
   useEffect(() => {
-    if (!cargandoPermisos && !esAdmin && enPanel && !verPanel && primeraRutaPermitida) {
+    if (!cargandoPermisos && !errorPermisos && !esAdmin && enPanel && !verPanel && primeraRutaPermitida) {
       nav({ to: primeraRutaPermitida as never, replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -440,6 +441,20 @@ function AppShell() {
                     : "El periodo de uso de tu cuenta venció. Para seguir con acceso ilimitado, la licencia cuesta $100.000 COP al año e incluye soporte, instalación local y web. Envía el soporte de pago al WhatsApp 333 276 5584 o a gosarycsoftware@gmail.com para renovarla."}
                 </p>
                 <LicenciaNegocio modo="bloqueo" />
+              </div>
+            ) : errorPermisos && !esAdmin ? (
+              <div className="mx-auto mt-10 max-w-md rounded-2xl border border-glass-border bg-glass/30 p-8 text-center">
+                <h1 className="font-display text-2xl">No pudimos cargar tus permisos</h1>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Hubo un problema de conexión al revisar tu acceso. Tus datos están a salvo; intenta de nuevo.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => void recargarPermisos()}
+                  className="mt-4 inline-flex rounded-lg border border-glass-border bg-glass/40 px-4 py-2 text-sm text-foreground hover:bg-glass/60"
+                >
+                  Reintentar
+                </button>
               </div>
             ) : sinAcceso ? (
               <div className="mx-auto mt-10 max-w-md rounded-2xl border border-glass-border bg-glass/30 p-8 text-center">

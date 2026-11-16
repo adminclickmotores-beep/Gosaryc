@@ -1,16 +1,11 @@
--- Auditoría de seguridad de las tablas propias por negocio.
--- Mantiene lo que ya estaba bien (RLS activo, aislamiento por negocio y por tipo de negocio,
--- permiso del módulo en equipo_negocio) y corrige tres cosas:
---   1. La política "FOR ALL" permitía a cualquier miembro con permiso borrar registros:
---      se separa por operación y el borrado queda solo para el dueño del negocio.
---   2. Se asegura que ninguna política permita acceso sin sesión (anon sin permisos).
---   3. Se quitan privilegios innecesarios (TRUNCATE, TRIGGER, REFERENCES) a los roles de la API,
---      porque TRUNCATE ignora RLS.
--- No borra datos ni toca los triggers de sincronización (son SECURITY DEFINER).
+-- Auditoría de seguridad de las tablas propias por negocio (versión con fecha única).
+-- Antes compartía la fecha 20270114120000 con otra migración y el orden de aplicación era ambiguo.
+-- Es idempotente: si ya se aplicó, solo vuelve a dejar las mismas políticas.
+-- Separa la política "FOR ALL" por operación; el borrado queda solo para el dueño del negocio.
+-- No borra datos ni toca los triggers de sincronización.
 
 DO $$
 DECLARE
-  par text[];
   t text;
   m text;
   pares text[][] := ARRAY[
@@ -38,37 +33,28 @@ BEGIN
 
     EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', t);
 
-    -- Política antigua "FOR ALL".
     EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', t || '_personal', t);
-
-    -- Políticas por operación (por si se vuelve a ejecutar).
     EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', t || '_leer', t);
     EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', t || '_crear', t);
     EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', t || '_editar', t);
     EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', t || '_borrar', t);
 
-    -- Leer: mismo negocio + permiso del módulo.
     EXECUTE format(
       'CREATE POLICY %I ON public.%I FOR SELECT TO authenticated USING (owner_id = public.mi_negocio_id() AND public.tiene_permiso(%L))',
       t || '_leer', t, m);
 
-    -- Crear: solo en su negocio y con permiso del módulo.
     EXECUTE format(
       'CREATE POLICY %I ON public.%I FOR INSERT TO authenticated WITH CHECK (owner_id = public.mi_negocio_id() AND public.tiene_permiso(%L))',
       t || '_crear', t, m);
 
-    -- Editar: no puede mover el registro a otro negocio.
     EXECUTE format(
       'CREATE POLICY %I ON public.%I FOR UPDATE TO authenticated USING (owner_id = public.mi_negocio_id() AND public.tiene_permiso(%L)) WITH CHECK (owner_id = public.mi_negocio_id() AND public.tiene_permiso(%L))',
       t || '_editar', t, m, m);
 
-    -- Borrar: solo el dueño del negocio (o el superadmin), no un miembro del equipo.
     EXECUTE format(
       'CREATE POLICY %I ON public.%I FOR DELETE TO authenticated USING (owner_id = public.mi_negocio_id() AND (public.es_admin() OR public.es_superadmin()))',
       t || '_borrar', t);
 
-    -- La política restrictiva por tipo de negocio (ya existente) se conserva tal cual;
-    -- se recrea solo si faltara.
     IF NOT EXISTS (
       SELECT 1 FROM pg_policies
       WHERE schemaname = 'public' AND tablename = t AND policyname = t || '_solo_tipo_actual'
@@ -78,7 +64,6 @@ BEGIN
         t || '_solo_tipo_actual', t);
     END IF;
 
-    -- Sin acceso anónimo y sin privilegios que ignoran RLS.
     EXECUTE format('REVOKE ALL ON public.%I FROM anon', t);
     EXECUTE format('REVOKE TRUNCATE, TRIGGER, REFERENCES ON public.%I FROM authenticated', t);
   END LOOP;

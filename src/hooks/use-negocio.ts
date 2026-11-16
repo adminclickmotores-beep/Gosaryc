@@ -22,11 +22,16 @@ export function useNegocio(duenoId?: string | null) {
         return;
       }
     }
-    let consulta = supabase.from("negocio_config").select("*");
-    if (duenoId) consulta = consulta.eq("owner_id", duenoId);
-    const { data } = await consulta.order("created_at").limit(1).maybeSingle();
-    setNegocio(data);
-    setCargando(false);
+    try {
+      let consulta = supabase.from("negocio_config").select("*");
+      if (duenoId) consulta = consulta.eq("owner_id", duenoId);
+      const { data } = await consulta.order("created_at").limit(1).maybeSingle();
+      setNegocio(data);
+    } catch {
+      /* si la consulta falla se deja el negocio como estaba */
+    } finally {
+      setCargando(false);
+    }
   }, [duenoId]);
 
   useEffect(() => {
