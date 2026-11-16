@@ -167,6 +167,7 @@ const CLIENTES: ModuloNegocio = {
   ruta: "/leads",
   estado: "Activo",
 };
+const CLIENTES_TIENDA = m("clientes_tienda", "Clientes de la tienda", "Clientes frecuentes, compras, crédito y talla o marca preferida.", Users);
 const AGENDA: ModuloNegocio = {
   id: "agenda",
   titulo: "Agenda y calendario",
@@ -256,7 +257,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("productos", "Productos e inventario", "Productos, precios, existencias y alertas de bajo stock.", ShoppingBag),
       m("apartados", "Apartados (plan separe)", "Abonos y entrega de productos separados.", Tag),
       m("devoluciones", "Cambios y devoluciones", "Control de cambios y notas crédito.", Repeat),
-      CLIENTES,
+      CLIENTES_TIENDA,
       FIADOS, FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
     ],
   },

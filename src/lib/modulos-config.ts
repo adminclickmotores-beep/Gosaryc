@@ -1381,6 +1381,7 @@ const VOCABULARIO_EXTRA: Record<string, Partial<ConfigModulo>> = {
   // Tienda y finanzas
   productos: vc("Producto (nombre y referencia)", "Cantidad, talla o color, ubicación y código de barras", "Proveedor", "Precio de venta (COP)", "Último ingreso", "Productos por reponer"),
   apartados: vc("Producto apartado", "Abonos recibidos, talla o color y condiciones", "Cliente", "Valor total (COP)", "Fecha límite para retirar", "Apartados por entregar"),
+  clientes_tienda: vc("Cliente (nombre y teléfono)", "Compras frecuentes, crédito, talla o marca preferida y observaciones", "Vendedor que atendió", "Valor de compras acumuladas (COP)", "Última compra", "Clientes frecuentes"),
   devoluciones: vc("Producto y motivo del cambio o devolución", "Factura de origen, estado del producto y solución (cambio, nota crédito)", "Cliente", "Valor devuelto (COP)", "Fecha de la devolución", "Devoluciones por resolver"),
   facturas: vc("Factura o documento soporte (número)", "Prefijo, CUFE, concepto e impuestos", "Cliente o proveedor", "Total facturado (COP)", "Fecha de emisión", "Facturas por cobrar"),
   caja_diaria: vc("Movimiento de caja (apertura, cierre o gasto)", "Concepto, soporte y responsable del turno", "Responsable de caja", "Valor (COP)", "Fecha", "Movimientos por revisar"),
