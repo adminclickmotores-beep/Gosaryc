@@ -1,3 +1,5 @@
+import { PRESET_SECTORES, VOCAB_SECTORES, CAMPOS_SECTORES } from "@/lib/modulos-config-sectores";
+
 /** Reglas y etiquetas propias de cada módulo (estados, campos y qué cuenta como "pendiente"). */
 export type EstadoModulo = { clave: string; texto: string };
 
@@ -1800,11 +1802,11 @@ const COMPORTAMIENTO_EXTRA: Record<string, keyof typeof PRESETS> = {
 };
 
 export function configModulo(id: string): ConfigModulo {
-  const preset = POR_MODULO[id] ?? COMPORTAMIENTO_EXTRA[id];
+  const preset = POR_MODULO[id] ?? COMPORTAMIENTO_EXTRA[id] ?? (PRESET_SECTORES[id] as keyof typeof PRESETS | undefined);
   const principal: ConfigModulo = preset ? { ...base, ...PRESETS[preset], tipo: preset } : base;
-  const vocab = VOCABULARIO[id] ?? VOCABULARIO_EXTRA[id];
+  const vocab = VOCABULARIO[id] ?? VOCABULARIO_EXTRA[id] ?? VOCAB_SECTORES[id];
   const resultado = vocab ? { ...principal, ...vocab, tipo: principal.tipo } : principal;
-  const campos = CAMPOS_EXTRA[id] ?? CAMPOS_ESPECIFICOS[id] ?? CAMPOS_POR_TIPO[principal.tipo];
+  const campos = CAMPOS_EXTRA[id] ?? CAMPOS_ESPECIFICOS[id] ?? CAMPOS_SECTORES[id] ?? CAMPOS_POR_TIPO[principal.tipo];
   if (!campos || campos.length === 0) return resultado;
   return campos ? { ...resultado, campos } : resultado;
 }

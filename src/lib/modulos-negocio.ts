@@ -62,6 +62,14 @@ import {
   Thermometer,
   ScrollText,
   Trash2,
+  Flower2,
+  Glasses,
+  Baby,
+  Beef,
+  ShoppingCart,
+  Wine,
+  Church,
+  HeartHandshake,
   type LucideIcon,
 } from "lucide-react";
 
@@ -96,7 +104,19 @@ export type TipoNegocioClave =
   | "joyeria"
   | "celulares"
   | "papeleria"
-  | "moda";
+  | "moda"
+  | "ferreteria"
+  | "supermercado"
+  | "carniceria"
+  | "licorera"
+  | "floristeria"
+  | "optica"
+  | "guarderia"
+  | "alquiler_vehiculos"
+  | "seguridad_aseo"
+  | "ganaderia"
+  | "fundacion"
+  | "iglesia";
 
 export type ModuloNegocio = {
   id: string;
@@ -762,9 +782,173 @@ TIPOS_NEGOCIO.push(
   },
 );
 
+// ---- Sectores con operación propia (cada uno con sus módulos específicos) ----
+TIPOS_NEGOCIO.push(
+  {
+    clave: "ferreteria",
+    etiqueta: "Ferretería / materiales de construcción",
+    panel: "Ferretería",
+    usaPedidos: false,
+    modulos: [
+      m("referencias_ferr", "Referencias e inventario", "Miles de referencias con unidad, venta por corte, costo, margen y stock mínimo.", Package),
+      m("cotizaciones_ferr", "Cotizaciones de materiales", "Lista de materiales para constructores y maestros, con descuento y flete.", FileText),
+      m("despachos_ferr", "Despachos a obra", "Remisión, conductor y quién recibe el material en la obra.", Truck),
+      m("listas_precios_ferr", "Listas de precios de proveedores", "Actualiza costos cuando un proveedor sube precios.", Tag),
+      CLIENTES, FIADOS, FACTURAS, PAGOS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "supermercado",
+    etiqueta: "Supermercado / minimercado / autoservicio",
+    panel: "Supermercado",
+    usaPedidos: false,
+    modulos: [
+      m("productos_super", "Productos y código de barras", "Catálogo por categoría con IVA, góndola, costo y stock mínimo.", ShoppingCart),
+      m("vencimientos_super", "Productos por vencer", "Lotes próximos a vencer con acción: rotar, descuento o devolver.", CalendarClock),
+      m("promociones_super", "Promociones", "2x1, precios especiales y combos con vigencia.", Percent),
+      m("reposicion_super", "Reposición y pedidos a proveedores", "Qué se agotó, día de visita del proveedor y pedido mínimo.", Boxes),
+      FIADOS, FACTURAS, PAGOS, FIDELIZACION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "carniceria",
+    etiqueta: "Carnicería / fruver / pescadería",
+    panel: "Frescos",
+    usaPedidos: false,
+    modulos: [
+      m("cortes_carne", "Productos frescos por peso", "Existencias por kilo, costo, merma esperada y registro sanitario.", Beef),
+      m("mermas_fresco", "Mermas y pérdidas", "Producto que se maduró, venció o se recortó, con su costo.", Trash2),
+      m("cadena_frio", "Cadena de frío", "Temperatura de neveras y cuartos fríos, con acción correctiva.", Thermometer),
+      m("pedidos_fresco", "Pedidos y domicilios por peso", "Pedidos por WhatsApp con pesos, dirección y hora de entrega.", Bike),
+      FIADOS, FACTURAS, PAGOS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "licorera",
+    etiqueta: "Licorera / tienda de bebidas / estanco",
+    panel: "Licorera",
+    usaPedidos: false,
+    modulos: [
+      m("referencias_licor", "Referencias por marca y presentación", "Botella, media, litro o caja, con grados, estampilla y costo.", Wine),
+      m("combos_licor", "Combos y promociones", "Combos por ocasión: fin de semana, quincena, partido o fiesta.", Percent),
+      m("domicilios_licor", "Domicilios con verificación de edad", "Registro de mayoría de edad por documento y repartidor.", Bike),
+      m("permisos_licor", "Permisos y horarios de venta", "Licencia de funcionamiento, bomberos y horario permitido con fecha de renovación.", ScrollText),
+      FIADOS, FACTURAS, PAGOS, FIDELIZACION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "floristeria",
+    etiqueta: "Floristería / regalos",
+    panel: "Floristería",
+    usaPedidos: false,
+    modulos: [
+      m("arreglos_flor", "Catálogo de arreglos", "Ramos, cajas y arreglos con flores incluidas, tamaño y costo de armado.", Flower2),
+      m("encargos_flor", "Encargos con dedicatoria y entrega", "Destinatario, dirección, tarjeta, hora y foto de entrega.", Gift),
+      m("flores_frescas", "Flores frescas y vida útil", "Tallos recibidos, días de vida y merma por proveedor.", Sprout),
+      m("fechas_especiales", "Fechas especiales", "San Valentín, Día de la Madre y otras: pedidos esperados y compras anticipadas.", CalendarDays),
+      FACTURAS, PAGOS, FIDELIZACION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "optica",
+    etiqueta: "Óptica / optometría",
+    panel: "Óptica",
+    usaPedidos: false,
+    modulos: [
+      m("formulas_optica", "Fórmulas de clientes", "Esfera, cilindro, eje, adición y distancia pupilar de cada ojo, con vigencia.", Glasses),
+      m("examenes_visuales", "Exámenes visuales", "Agenda de optometría y controles con el optómetra.", CalendarClock),
+      m("monturas_optica", "Monturas y vitrina", "Marca, material, género y existencias de monturas.", Package),
+      m("pedidos_lab_optica", "Pedidos al laboratorio", "Tipo de lente, tratamiento, fecha prometida y saldo por cobrar.", ClipboardList),
+      CLIENTES, GARANTIAS, FIADOS, FACTURAS, PAGOS, FIDELIZACION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "guarderia",
+    etiqueta: "Guardería / jardín infantil",
+    panel: "Guardería",
+    usaPedidos: false,
+    modulos: [
+      m("ninos_inscritos", "Niños inscritos", "Grupo, jornada, alergias, EPS y acudientes de cada niño.", Baby),
+      m("asistencia_guarderia", "Asistencia y recogida diaria", "Hora de entrada y salida, estado de salud y quién lo recoge.", BadgeCheck),
+      m("recogida_guarderia", "Personas autorizadas a recoger", "Quién puede llevarse a cada niño, con documento y foto.", ShieldCheck),
+      m("reportes_guarderia", "Reporte diario al acudiente", "Comidas, siestas, pañales y actividades del día.", ClipboardList),
+      m("mensualidades", "Pensiones y mensualidades", "Pagos pendientes y recordatorios de cobro.", Coins),
+      AGENDA, FACTURAS, PAGOS, CAJA, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "alquiler_vehiculos",
+    etiqueta: "Alquiler de vehículos",
+    panel: "Alquiler",
+    usaPedidos: false,
+    modulos: [
+      m("flota_alquiler", "Flota y disponibilidad", "Cada vehículo con tarifa, kilometraje, SOAT, tecnomecánica y mantenimiento.", Car),
+      m("reservas_alquiler", "Reservas", "Fechas de salida y devolución, depósito y kilometraje permitido.", CalendarClock),
+      m("contratos_alquiler", "Contratos de alquiler", "Licencia, póliza, combustible y kilometraje de salida, con firma.", FileText),
+      m("entregas_alq", "Entregas y devoluciones", "Inspección de daños, combustible y cobros extra al regresar.", PackageCheck),
+      m("multas_alquiler", "Multas y peajes", "Comparendos por placa que se trasladan al cliente.", Coins),
+      CLIENTES, FIADOS, FACTURAS, PAGOS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "seguridad_aseo",
+    etiqueta: "Empresa de seguridad / aseo / servicios generales",
+    panel: "Servicios generales",
+    usaPedidos: false,
+    modulos: [
+      m("puestos_seg", "Puestos y contratos", "Cada cliente y sede con cantidad de personal, turno, supervisor y valor mensual.", Shield),
+      m("turnos_seg", "Turnos y reemplazos", "Quién cubre cada puesto, descansos y reemplazos.", CalendarClock),
+      m("dotacion_seg", "Dotación y entregas", "Uniformes, botas y elementos con fecha de próxima entrega obligatoria.", Shirt),
+      m("novedades_seg", "Novedades e incidentes", "Incidentes, faltas y quejas de clientes con la acción tomada.", ClipboardList),
+      CLIENTES, COTIZACIONES, FIADOS, FACTURAS, PAGOS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "ganaderia",
+    etiqueta: "Ganadería / avícola / porcícola",
+    panel: "Ganadería",
+    usaPedidos: false,
+    modulos: [
+      m("lotes_ganado", "Lotes y animales", "Especie, cantidad, potrero o galpón, peso promedio y meta.", Sprout),
+      m("produccion_pecuaria", "Producción de leche, huevos y carne", "Registro diario de lo producido y su destino de venta.", PackageCheck),
+      m("sanidad_pecuaria", "Vacunas y sanidad", "Aftosa, brucelosis, desparasitantes y próxima aplicación con registro ICA.", ShieldCheck),
+      m("alimentacion_pecuaria", "Alimentación y medicinas", "Concentrado, sal y medicinas con stock mínimo y lote que los consume.", Boxes),
+      m("guias_movilizacion", "Guías de movilización ICA", "Origen, destino, cantidad y vencimiento de cada guía.", ScrollText),
+      CLIENTES_AGRO, FACTURAS, PAGOS_AGRO, FIADOS, CAJA, PROVEEDORES, PERSONAL_AGRO, METAS_AGRO, FINANZAS,
+    ],
+  },
+  {
+    clave: "fundacion",
+    etiqueta: "Fundación / ONG / organización social",
+    panel: "Fundación",
+    usaPedidos: false,
+    modulos: [
+      m("beneficiarios_fund", "Beneficiarios", "Programa, necesidad atendida, acudiente y consentimiento.", HeartHandshake),
+      m("donaciones_fund", "Donaciones y certificados", "Dinero o especie, proyecto destino y certificado de donación.", Gift),
+      m("proyectos_fund", "Proyectos y financiadores", "Presupuesto, ejecución, indicadores y fecha de informes.", ClipboardList),
+      m("voluntarios_fund", "Voluntarios", "Área, horas al mes y certificado de voluntariado.", Users),
+      AGENDA, FACTURAS, PAGOS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "iglesia",
+    etiqueta: "Iglesia / club / asociación",
+    panel: "Comunidad",
+    usaPedidos: false,
+    modulos: [
+      m("miembros_iglesia", "Miembros", "Ministerio, célula, bautizo y datos de contacto.", Church),
+      m("aportes_iglesia", "Diezmos, ofrendas y aportes", "Aportes por concepto y miembro, con número de recibo.", Coins),
+      m("eventos_iglesia", "Eventos y reservas", "Cultos especiales, retiros y congresos con presupuesto.", PartyPopper),
+      m("grupos_iglesia", "Grupos y células", "Líder, día de reunión, integrantes y asistencia.", Users),
+      m("visitas_iglesia", "Visitas pastorales", "Hospital, consejería y seguimiento a nuevos.", CalendarClock),
+      AGENDA, FACTURAS, PAGOS, CAJA, PROVEEDORES, EMPLEADOS, FINANZAS,
+    ],
+  },
+);
+
 // Se agrega el módulo de cotizaciones a los tipos que cotizan y no tienen uno propio.
 // Salud (presupuestos de tratamiento), educación, hospedaje, gimnasio, mascotas, agro, farmacia y lavandería no cotizan así.
-const SIN_COTIZACIONES: TipoNegocioClave[] = ["tienda","restaurante", "cafeteria", "comida_rapida","salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro", "farmacia", "lavanderia", "belleza", "inmobiliaria", "tecnologia", "condominio", "prestamos", "papeleria"];
+const SIN_COTIZACIONES: TipoNegocioClave[] = ["tienda","restaurante", "cafeteria", "comida_rapida","salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro", "farmacia", "lavanderia", "belleza", "inmobiliaria", "tecnologia", "condominio", "prestamos", "papeleria", "supermercado", "carniceria", "licorera", "floristeria", "optica", "guarderia", "ganaderia", "fundacion", "iglesia", "seguridad_aseo", "alquiler_vehiculos"];
 for (const t of TIPOS_NEGOCIO) {
   if (SIN_COTIZACIONES.includes(t.clave)) continue;
   if (t.modulos.some((x) => x.id === COTIZACIONES.id || x.id.startsWith("cotizaciones_"))) continue;
@@ -796,6 +980,18 @@ export function resolverTipoNegocio(valor: string | null | undefined): TipoNegoc
   if (!t) return por("restaurante");
   const directo = TIPOS_NEGOCIO.find((x) => x.clave === t);
   if (directo) return directo;
+  if (/ferreter|materiales de construccion|tornillo/.test(t)) return por("ferreteria");
+  if (/supermercado|autoservicio|abarrote|minimercado/.test(t)) return por("supermercado");
+  if (/carnicer|fruver|frutas y verduras|verduler|pescader|charcuter/.test(t)) return por("carniceria");
+  if (/licorer|estanco|vinoteca|tienda de bebidas|licor/.test(t)) return por("licorera");
+  if (/florister|flores|arreglos florales|regalos/.test(t)) return por("floristeria");
+  if (/optica|optometr|lentes|gafas/.test(t)) return por("optica");
+  if (/guarderi|jardin infantil|preescolar|hogar infantil|sala cuna/.test(t)) return por("guarderia");
+  if (/alquiler de (vehic|carro|auto|moto)|renta de (carro|auto)|rent a car/.test(t)) return por("alquiler_vehiculos");
+  if (/seguridad|vigilancia|vigilante|aseo|servicios generales/.test(t)) return por("seguridad_aseo");
+  if (/ganader|avicola|porcicol|lecher|pecuari/.test(t)) return por("ganaderia");
+  if (/fundacion|ong\b|sin animo de lucro|beneficencia|corporacion social/.test(t)) return por("fundacion");
+  if (/iglesia|parroquia|congregacion|templo|club|asociacion|cristian/.test(t)) return por("iglesia");
   if (/condominio|conjunto residencial|administracion de edificio|propiedad horizontal/.test(t)) return por("condominio");
   if (/prestamo|cobranza|gota a gota|microcredito|financiera/.test(t)) return por("prestamos");
   if (/textil|confeccion|costura|destajo/.test(t)) return por("textil");

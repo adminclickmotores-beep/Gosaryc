@@ -7,7 +7,11 @@ export type GuiaNegocio = {
   pasos: { titulo: string; texto: string }[];
 };
 
-export const GUIAS_NEGOCIO: Record<TipoNegocioClave, GuiaNegocio> = {
+type TiposNuevos =
+  | "ferreteria" | "supermercado" | "carniceria" | "licorera" | "floristeria" | "optica"
+  | "guarderia" | "alquiler_vehiculos" | "seguridad_aseo" | "ganaderia" | "fundacion" | "iglesia";
+
+const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = {
   restaurante: {
     frase: "Cada pedido a tiempo, cada cliente feliz.",
     pasos: [
@@ -282,6 +286,117 @@ export const GUIAS_NEGOCIO: Record<TipoNegocioClave, GuiaNegocio> = {
       { titulo: "Fideliza clientes", texto: "Guarda sus datos y ofrece puntos o promociones." },
     ],
   },
+};
+
+export const GUIAS_NEGOCIO = { ...GUIAS_BASE } as Record<TipoNegocioClave, GuiaNegocio>;
+
+GUIAS_NEGOCIO.ferreteria = {
+  frase: "Cada referencia a la mano, cada obra bien surtida.",
+  pasos: [
+    { titulo: "Carga tus referencias", texto: "En “Referencias e inventario” agrega cada producto con su unidad (metro, bulto, galón), costo y margen." },
+    { titulo: "Cotiza a constructores", texto: "En “Cotizaciones de materiales” arma la lista de una obra con descuento y flete." },
+    { titulo: "Despacha a la obra", texto: "En “Despachos a obra” anota la remisión, el conductor y quién recibe." },
+    { titulo: "Cobra a tiempo", texto: "Usa “Cartera y fiados” para los constructores de confianza y actualiza las listas de precios de tus proveedores." },
+  ],
+};
+GUIAS_NEGOCIO.supermercado = {
+  frase: "Góndolas llenas, cero producto vencido.",
+  pasos: [
+    { titulo: "Carga tus productos", texto: "En “Productos y código de barras” registra categoría, IVA y stock mínimo." },
+    { titulo: "Vigila los vencimientos", texto: "En “Productos por vencer” anota lote y fecha, y decide si rotar, poner en descuento o devolver." },
+    { titulo: "Crea promociones", texto: "En “Promociones” define 2x1 o precios especiales con vigencia." },
+    { titulo: "Repón a tiempo", texto: "En “Reposición” revisa qué se agotó y el día de visita de cada proveedor." },
+  ],
+};
+GUIAS_NEGOCIO.carniceria = {
+  frase: "Producto fresco, merma controlada.",
+  pasos: [
+    { titulo: "Registra tus productos por peso", texto: "En “Productos frescos por peso” anota existencias en kilos, costo por kilo y merma esperada." },
+    { titulo: "Controla el frío", texto: "En “Cadena de frío” registra la temperatura de neveras y cuartos fríos cada día." },
+    { titulo: "Anota las mermas", texto: "En “Mermas y pérdidas” registra lo que se maduró, venció o se recortó." },
+    { titulo: "Recibe pedidos", texto: "En “Pedidos y domicilios por peso” guarda el pedido con su peso, dirección y hora de entrega." },
+  ],
+};
+GUIAS_NEGOCIO.licorera = {
+  frase: "Tu licorera en regla y vendiendo.",
+  pasos: [
+    { titulo: "Carga tus referencias", texto: "En “Referencias por marca y presentación” registra grados, estampilla, costo y stock." },
+    { titulo: "Cumple los permisos", texto: "En “Permisos y horarios de venta” guarda licencia, bomberos y horario permitido con su vencimiento." },
+    { titulo: "Verifica la edad en domicilios", texto: "En “Domicilios con verificación de edad” registra el documento antes de entregar y rechaza si es menor." },
+    { titulo: "Arma combos", texto: "En “Combos y promociones” crea ofertas por ocasión." },
+  ],
+};
+GUIAS_NEGOCIO.floristeria = {
+  frase: "Cada arreglo a tiempo, cada flor fresca.",
+  pasos: [
+    { titulo: "Arma tu catálogo", texto: "En “Catálogo de arreglos” registra flores incluidas, tamaño y costo de armado." },
+    { titulo: "Recibe encargos", texto: "En “Encargos con dedicatoria y entrega” anota destinatario, dirección, tarjeta y hora." },
+    { titulo: "Cuida la frescura", texto: "En “Flores frescas y vida útil” registra tallos recibidos y usa primero los que vencen antes." },
+    { titulo: "Prepara las fechas fuertes", texto: "En “Fechas especiales” planea San Valentín o Día de la Madre con pedidos esperados y compras anticipadas." },
+  ],
+};
+GUIAS_NEGOCIO.optica = {
+  frase: "Cada fórmula exacta, cada cliente viendo bien.",
+  pasos: [
+    { titulo: "Guarda la fórmula", texto: "En “Fórmulas de clientes” anota esfera, cilindro, eje, adición y distancia pupilar de cada ojo." },
+    { titulo: "Agenda los exámenes", texto: "En “Exámenes visuales” programa optometría y controles." },
+    { titulo: "Controla tus monturas", texto: "En “Monturas y vitrina” registra marca, material y existencias." },
+    { titulo: "Sigue el laboratorio", texto: "En “Pedidos al laboratorio” controla la fecha prometida y el saldo de cada pedido." },
+  ],
+};
+GUIAS_NEGOCIO.guarderia = {
+  frase: "Cada niño seguro, cada acudiente tranquilo.",
+  pasos: [
+    { titulo: "Inscribe a los niños", texto: "En “Niños inscritos” registra grupo, jornada, alergias, EPS y acudientes." },
+    { titulo: "Autoriza quién recoge", texto: "En “Personas autorizadas a recoger” guarda documento y foto de cada persona." },
+    { titulo: "Registra la asistencia", texto: "En “Asistencia y recogida diaria” anota hora de entrada, salida y estado de salud." },
+    { titulo: "Informa a los acudientes", texto: "En “Reporte diario” cuenta comidas, siestas y actividades, y cobra en “Pensiones”." },
+  ],
+};
+GUIAS_NEGOCIO.alquiler_vehiculos = {
+  frase: "Cada vehículo en la calle, con sus papeles al día.",
+  pasos: [
+    { titulo: "Registra tu flota", texto: "En “Flota y disponibilidad” carga placa, tarifa, SOAT, tecnomecánica y seguro." },
+    { titulo: "Reserva y firma", texto: "En “Reservas” y “Contratos de alquiler” anota fechas, depósito, licencia y combustible de salida." },
+    { titulo: "Inspecciona al regresar", texto: "En “Entregas y devoluciones” registra kilometraje, combustible y daños." },
+    { titulo: "Traslada las multas", texto: "En “Multas y peajes” asocia cada comparendo a la placa y al cliente." },
+  ],
+};
+GUIAS_NEGOCIO.seguridad_aseo = {
+  frase: "Cada puesto cubierto, cada contrato cumplido.",
+  pasos: [
+    { titulo: "Registra tus contratos", texto: "En “Puestos y contratos” anota cliente, sede, personal, turno y valor mensual." },
+    { titulo: "Organiza los turnos", texto: "En “Turnos y reemplazos” asigna quién cubre cada puesto." },
+    { titulo: "Entrega la dotación", texto: "En “Dotación y entregas” controla uniformes y la fecha de la próxima entrega obligatoria." },
+    { titulo: "Reporta novedades", texto: "En “Novedades e incidentes” deja constancia de lo que pasa en cada puesto." },
+  ],
+};
+GUIAS_NEGOCIO.ganaderia = {
+  frase: "Cada lote sano, cada guía al día.",
+  pasos: [
+    { titulo: "Crea tus lotes", texto: "En “Lotes y animales” registra especie, cantidad, potrero o galpón y peso." },
+    { titulo: "Registra la producción", texto: "En “Producción” anota litros, huevos o kilos de carne cada día." },
+    { titulo: "Cumple la sanidad", texto: "En “Vacunas y sanidad” programa aftosa, brucelosis y desparasitantes con su registro ICA." },
+    { titulo: "Moviliza con guía", texto: "En “Guías de movilización ICA” controla origen, destino y vencimiento." },
+  ],
+};
+GUIAS_NEGOCIO.fundacion = {
+  frase: "Cada aporte con destino, cada beneficiario atendido.",
+  pasos: [
+    { titulo: "Registra beneficiarios", texto: "En “Beneficiarios” anota programa, necesidad y consentimiento." },
+    { titulo: "Anota las donaciones", texto: "En “Donaciones y certificados” registra el donante, el proyecto destino y emite su certificado." },
+    { titulo: "Controla los proyectos", texto: "En “Proyectos y financiadores” sigue presupuesto, ejecución y fecha de informes." },
+    { titulo: "Cuenta con voluntarios", texto: "En “Voluntarios” guarda su área y horas." },
+  ],
+};
+GUIAS_NEGOCIO.iglesia = {
+  frase: "Una comunidad unida, cuentas claras.",
+  pasos: [
+    { titulo: "Registra a tus miembros", texto: "En “Miembros” anota ministerio, célula y datos de contacto." },
+    { titulo: "Lleva los aportes", texto: "En “Diezmos, ofrendas y aportes” registra cada aporte con su recibo." },
+    { titulo: "Organiza grupos y eventos", texto: "En “Grupos y células” y “Eventos y reservas” programa reuniones y actividades." },
+    { titulo: "Visita y acompaña", texto: "En “Visitas pastorales” da seguimiento a quienes lo necesitan." },
+  ],
 };
 
 /** Pasos que valen para cualquier tipo de negocio. */
