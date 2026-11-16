@@ -28,9 +28,8 @@ function PropinasPage() {
     inicio.setHours(0, 0, 0, 0);
     if (p === "mes") inicio.setDate(1);
     const { data, error } = await supabase
-      .from("modulo_registros")
+      .from("propinas_registros")
       .select("titulo, estado, monto")
-      .eq("modulo", "propinas")
       .gte("created_at", inicio.toISOString());
     if (error) toast.error("No se pudieron cargar las propinas.");
     setFilas(data ?? []);
