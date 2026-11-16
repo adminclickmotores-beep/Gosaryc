@@ -1017,6 +1017,19 @@ for (const clave of ["mascotas", "salud"] as const) {
   tipoClinica.modulos = [...clinica(clave === "mascotas"), ...tipoClinica.modulos.filter((x) => !quitar.includes(x.id))];
 }
 
+// ---- POS comercial (Tienda, Supermercado, Ferretería, Carnicería y Fruver) ----
+// Se agregan al inicio del menú el punto de venta con código de barras y los productos con precios múltiples.
+// Si un tipo no existe, simplemente no se toca (nunca falla el arranque).
+for (const clave of ["tienda", "supermercado", "ferreteria", "carniceria"] as const) {
+  const tipoComercio = TIPOS_NEGOCIO.find((x) => x.clave === clave);
+  if (!tipoComercio || tipoComercio.modulos.some((x) => x.id === "com_pos")) continue;
+  tipoComercio.modulos = [
+    m("com_pos", "Punto de venta (POS)", "Escanea el código de barras, vende por peso, fracción o caja, con precios detal, mayorista y especial, e impuestos discriminados.", ShoppingCart),
+    m("com_productos", "Productos y precios", "Código de barras o SKU, unidad de venta, precios múltiples, IVA o Impoconsumo y stock de cada producto.", Package),
+    ...tipoComercio.modulos,
+  ];
+}
+
 // Se agrega el módulo de cotizaciones a los tipos que cotizan y no tienen uno propio.
 // Salud (presupuestos de tratamiento), educación, hospedaje, gimnasio, mascotas, agro, farmacia y lavandería no cotizan así.
 const SIN_COTIZACIONES: TipoNegocioClave[] = ["tienda","restaurante", "cafeteria", "comida_rapida","salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro", "farmacia", "lavanderia", "belleza", "inmobiliaria", "tecnologia", "condominio", "prestamos", "papeleria", "supermercado", "carniceria", "licorera", "floristeria", "optica", "guarderia", "ganaderia", "fundacion", "iglesia", "seguridad_aseo", "alquiler_vehiculos"];

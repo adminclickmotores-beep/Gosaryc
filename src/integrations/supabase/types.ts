@@ -2255,6 +2255,255 @@ export type Database = {
         }
         Relationships: []
       }
+      com_productos: {
+        Row: {
+          activo: boolean
+          codigo_barras: string | null
+          costo: number
+          created_at: string
+          id: string
+          impuesto_pct: number
+          nombre: string
+          owner_id: string | null
+          precio_detal: number
+          precio_especial: number | null
+          precio_incluye_impuesto: boolean
+          precio_mayorista: number | null
+          sku: string | null
+          stock: number
+          stock_minimo: number
+          tipo_impuesto: string
+          tipo_negocio: string | null
+          unidad_base: string
+          unidades_por_caja: number | null
+        }
+        Insert: {
+          activo?: boolean
+          codigo_barras?: string | null
+          costo?: number
+          created_at?: string
+          id?: string
+          impuesto_pct?: number
+          nombre: string
+          owner_id?: string | null
+          precio_detal?: number
+          precio_especial?: number | null
+          precio_incluye_impuesto?: boolean
+          precio_mayorista?: number | null
+          sku?: string | null
+          stock?: number
+          stock_minimo?: number
+          tipo_impuesto?: string
+          tipo_negocio?: string | null
+          unidad_base?: string
+          unidades_por_caja?: number | null
+        }
+        Update: {
+          activo?: boolean
+          codigo_barras?: string | null
+          costo?: number
+          created_at?: string
+          id?: string
+          impuesto_pct?: number
+          nombre?: string
+          owner_id?: string | null
+          precio_detal?: number
+          precio_especial?: number | null
+          precio_incluye_impuesto?: boolean
+          precio_mayorista?: number | null
+          sku?: string | null
+          stock?: number
+          stock_minimo?: number
+          tipo_impuesto?: string
+          tipo_negocio?: string | null
+          unidad_base?: string
+          unidades_por_caja?: number | null
+        }
+        Relationships: []
+      }
+      com_movimientos_stock: {
+        Row: {
+          created_at: string
+          delta: number
+          id: string
+          motivo: string
+          owner_id: string | null
+          producto_id: string
+          stock_resultante: number
+          tipo_negocio: string | null
+        }
+        Insert: {
+          created_at?: string
+          delta: number
+          id?: string
+          motivo: string
+          owner_id?: string | null
+          producto_id: string
+          stock_resultante: number
+          tipo_negocio?: string | null
+        }
+        Update: {
+          created_at?: string
+          delta?: number
+          id?: string
+          motivo?: string
+          owner_id?: string | null
+          producto_id?: string
+          stock_resultante?: number
+          tipo_negocio?: string | null
+        }
+        Relationships: []
+      }
+      com_ventas: {
+        Row: {
+          autorizado_por: string | null
+          base: number
+          cliente: string | null
+          created_at: string
+          fiado_id: string | null
+          id: string
+          impoconsumo: number
+          iva: number
+          metodo: string
+          motivo_autorizacion: string | null
+          owner_id: string | null
+          registrado_por: string | null
+          telefono: string | null
+          tipo_negocio: string | null
+          tipo_precio: string
+          total: number
+        }
+        Insert: {
+          autorizado_por?: string | null
+          base?: number
+          cliente?: string | null
+          created_at?: string
+          fiado_id?: string | null
+          id?: string
+          impoconsumo?: number
+          iva?: number
+          metodo?: string
+          motivo_autorizacion?: string | null
+          owner_id?: string | null
+          registrado_por?: string | null
+          telefono?: string | null
+          tipo_negocio?: string | null
+          tipo_precio?: string
+          total?: number
+        }
+        Update: {
+          autorizado_por?: string | null
+          base?: number
+          cliente?: string | null
+          created_at?: string
+          fiado_id?: string | null
+          id?: string
+          impoconsumo?: number
+          iva?: number
+          metodo?: string
+          motivo_autorizacion?: string | null
+          owner_id?: string | null
+          registrado_por?: string | null
+          telefono?: string | null
+          tipo_negocio?: string | null
+          tipo_precio?: string
+          total?: number
+        }
+        Relationships: []
+      }
+      com_venta_items: {
+        Row: {
+          base: number
+          cantidad: number
+          cantidad_base: number
+          created_at: string
+          id: string
+          impuesto: number
+          impuesto_pct: number
+          nombre: string
+          owner_id: string | null
+          precio_base: number
+          producto_id: string
+          tipo_impuesto: string
+          tipo_negocio: string | null
+          total: number
+          unidad: string
+          venta_id: string
+        }
+        Insert: {
+          base?: number
+          cantidad: number
+          cantidad_base: number
+          created_at?: string
+          id?: string
+          impuesto?: number
+          impuesto_pct?: number
+          nombre: string
+          owner_id?: string | null
+          precio_base?: number
+          producto_id: string
+          tipo_impuesto?: string
+          tipo_negocio?: string | null
+          total?: number
+          unidad: string
+          venta_id: string
+        }
+        Update: {
+          base?: number
+          cantidad?: number
+          cantidad_base?: number
+          created_at?: string
+          id?: string
+          impuesto?: number
+          impuesto_pct?: number
+          nombre?: string
+          owner_id?: string | null
+          precio_base?: number
+          producto_id?: string
+          tipo_impuesto?: string
+          tipo_negocio?: string | null
+          total?: number
+          unidad?: string
+          venta_id?: string
+        }
+        Relationships: []
+      }
+      com_cupos: {
+        Row: {
+          cliente: string
+          cliente_clave: string
+          created_at: string
+          cupo_maximo: number
+          id: string
+          owner_id: string | null
+          plazo_dias: number
+          telefono: string | null
+          tipo_negocio: string | null
+        }
+        Insert: {
+          cliente: string
+          cliente_clave: string
+          created_at?: string
+          cupo_maximo?: number
+          id?: string
+          owner_id?: string | null
+          plazo_dias?: number
+          telefono?: string | null
+          tipo_negocio?: string | null
+        }
+        Update: {
+          cliente?: string
+          cliente_clave?: string
+          created_at?: string
+          cupo_maximo?: number
+          id?: string
+          owner_id?: string | null
+          plazo_dias?: number
+          telefono?: string | null
+          tipo_negocio?: string | null
+        }
+        Relationships: []
+      }
       pan_turnos: {
         Row: {
           created_at: string
@@ -6505,6 +6754,19 @@ export type Database = {
       mi_licencia_vigente: { Args: never; Returns: Json }
       mi_acceso: { Args: never; Returns: Json }
       mi_negocio_id: { Args: never; Returns: string }
+      com_registrar_venta: {
+        Args: {
+          p_items: Json
+          p_cliente: string
+          p_telefono: string
+          p_tipo_precio: string
+          p_metodo: string
+          p_autorizar: boolean
+          p_motivo: string
+        }
+        Returns: Json
+      }
+      com_estado_credito: { Args: { p_cliente: string; p_telefono: string }; Returns: Json }
       pan_registrar_horneada: {
         Args: { p_receta: string; p_lotes: number; p_horneado_por: string; p_notas: string }
         Returns: string

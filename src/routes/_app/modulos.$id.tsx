@@ -23,6 +23,7 @@ import {
   ServiciosClinica,
   VacunasClinica,
 } from "@/components/clinica/ClinicaModulos";
+import { PosComercial, ProductosComercial } from "@/components/comercio/ComercioModulos";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
@@ -80,6 +81,8 @@ function ModuloPage() {
   if (id === "pan_mermas") return <MermasPan />;
   if (id === "encargos_tortas") return <EncargosPan />;
   if (id === "pan_turnos") return <TurnosPan />;
+  if (id === "com_pos") return <PosComercial />;
+  if (id === "com_productos") return <ProductosComercial />;
   if (id === "cl_agenda") return <AgendaClinica />;
   if (id === "cl_pacientes") return <PacientesClinica />;
   if (id === "cl_historias") return <HistoriasClinica />;

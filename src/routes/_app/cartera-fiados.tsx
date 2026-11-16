@@ -4,6 +4,14 @@ import { ArrowLeft, Coins, Send } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import type { Tables } from "@/integrations/supabase/types";
+import { usePermisos } from "@/hooks/use-permisos";
+
+type Cupo = Tables<"com_cupos">;
+const claveCliente = (nombre: string | null, tel: string | null): string => {
+  const d = (tel ?? "").replace(/\D/g, "");
+  return d || (nombre ?? "").trim().toLowerCase();
+};
 
 export const Route = createFileRoute("/_app/cartera-fiados")({
   head: () => ({ meta: [{ title: "Cartera y fiados" }] }),
@@ -27,6 +35,12 @@ const dinero = (n: number) =>
 function CarteraFiadosPage() {
   const [filas, setFilas] = useState<Fila[]>([]);
   const [cargando, setCargando] = useState(true);
+  const { esAdmin } = usePermisos();
+  const [cupos, setCupos] = useState<Cupo[]>([]);
+  const [nuevoNombre, setNuevoNombre] = useState("");
+  const [nuevoTel, setNuevoTel] = useState("");
+  const [nuevoCupo, setNuevoCupo] = useState("");
+  const [nuevoPlazo, setNuevoPlazo] = useState("30");
 
   const cargar = useCallback(async () => {
     const { data, error } = await supabase
@@ -34,8 +48,38 @@ function CarteraFiadosPage() {
       .select("titulo, contacto, telefono, estado, monto, abonado, anulado, fecha");
     if (error) toast.error("No se pudo cargar la cartera.");
     setFilas(data ?? []);
+    const { data: c } = await supabase.from("com_cupos").select("*");
+    setCupos(c ?? []);
     setCargando(false);
   }, []);
+
+  const cupoDe = (nombre: string | null, tel: string | null): Cupo | undefined =>
+    cupos.find((c) => c.cliente_clave === claveCliente(nombre, tel) || c.cliente_clave === (nombre ?? "").trim().toLowerCase());
+
+  const guardarCupo = async (nombre: string, tel: string | null, cupoTxt: string, plazoTxt: string) => {
+    const cupo = Number(cupoTxt.replace(",", "."));
+    const plazo = Math.floor(Number(plazoTxt));
+    if (!nombre.trim()) return toast.error("Escribe el nombre del cliente.");
+    if (!Number.isFinite(cupo) || cupo < 0) return toast.error("El cupo debe ser un número válido.");
+    if (!Number.isFinite(plazo) || plazo < 0 || plazo > 365) return toast.error("El plazo debe estar entre 0 y 365 días.");
+    const clave = claveCliente(nombre, tel);
+    const existente = cupos.find((c) => c.cliente_clave === clave);
+    const { error } = existente
+      ? await supabase.from("com_cupos").update({ cupo_maximo: cupo, plazo_dias: plazo, cliente: nombre.trim(), telefono: tel }).eq("id", existente.id)
+      : await supabase.from("com_cupos").insert({ cliente_clave: clave, cliente: nombre.trim(), telefono: tel, cupo_maximo: cupo, plazo_dias: plazo });
+    if (error) return toast.error("No se pudo guardar el cupo. Solo el dueño puede cambiarlo.");
+    toast.success("Cupo guardado.");
+    cargar();
+  };
+
+  const editarCupo = (nombre: string, tel: string | null) => {
+    const actual = cupoDe(nombre, tel);
+    const c = window.prompt(`Cupo máximo de crédito para ${nombre} (COP):`, String(actual?.cupo_maximo ?? 0));
+    if (c === null) return;
+    const p = window.prompt("Días de plazo para pagar:", String(actual?.plazo_dias ?? 30));
+    if (p === null) return;
+    void guardarCupo(nombre, tel, c, p);
+  };
 
   useEffect(() => {
     cargar();
@@ -101,14 +145,15 @@ function CarteraFiadosPage() {
     const hoy = new Date().toISOString().slice(0, 10);
     const mapa = new Map<
       string,
-      { contacto: string | null; telefono: string | null; debe: number; abonado: number; vencido: string | null }
+      { contacto: string | null; telefono: string | null; debe: number; abonado: number; vencido: string | null; detalle: string[] }
     >();
     for (const f of filas) {
       if (f.anulado || f.estado === "pagado") continue;
       const saldo = f.monto - f.abonado;
       if (saldo <= 0) continue;
       const clave = (f.contacto ?? f.titulo).trim() || f.titulo;
-      const actual = mapa.get(clave) ?? { contacto: f.contacto, telefono: f.telefono, debe: 0, abonado: 0, vencido: null };
+      const actual = mapa.get(clave) ?? { contacto: f.contacto, telefono: f.telefono, debe: 0, abonado: 0, vencido: null, detalle: [] };
+      actual.detalle.push(`- ${f.titulo}: ${dinero(saldo)}${f.fecha ? ` (vence ${f.fecha}${f.fecha < hoy ? ", VENCIDO" : ""})` : ""}`);
       actual.debe += saldo;
       actual.abonado += f.abonado;
       if (!actual.telefono && f.telefono) actual.telefono = f.telefono;
@@ -123,6 +168,7 @@ function CarteraFiadosPage() {
         debe: v.debe,
         abonado: v.abonado,
         vencido: v.vencido,
+        detalle: v.detalle,
       }))
       .sort((a, b) => b.debe - a.debe);
   }, [filas]);
@@ -218,22 +264,60 @@ function CarteraFiadosPage() {
             </GlassPanel>
           )}
 
+          {esAdmin && (
+            <GlassPanel className="space-y-3 p-4">
+              <p className="text-sm font-medium text-foreground">Cupo de crédito por cliente</p>
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+                <input className="rounded-md border border-glass-border bg-transparent px-3 py-2 text-base text-foreground" placeholder="Cliente" value={nuevoNombre} onChange={(e) => setNuevoNombre(e.target.value)} />
+                <input className="rounded-md border border-glass-border bg-transparent px-3 py-2 text-base text-foreground" placeholder="Celular" inputMode="tel" value={nuevoTel} onChange={(e) => setNuevoTel(e.target.value)} />
+                <input className="rounded-md border border-glass-border bg-transparent px-3 py-2 text-base text-foreground" placeholder="Cupo máximo (COP)" inputMode="decimal" value={nuevoCupo} onChange={(e) => setNuevoCupo(e.target.value)} />
+                <input className="rounded-md border border-glass-border bg-transparent px-3 py-2 text-base text-foreground" placeholder="Plazo (días)" inputMode="numeric" value={nuevoPlazo} onChange={(e) => setNuevoPlazo(e.target.value)} />
+                <button
+                  type="button"
+                  className="rounded-full bg-primary px-4 py-2 text-sm text-primary-foreground"
+                  onClick={async () => {
+                    await guardarCupo(nuevoNombre, nuevoTel.trim() || null, nuevoCupo, nuevoPlazo);
+                    setNuevoNombre(""); setNuevoTel(""); setNuevoCupo("");
+                  }}
+                >
+                  Guardar cupo
+                </button>
+              </div>
+              {cupos.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Con cupo: {cupos.map((c) => `${c.cliente} (${dinero(c.cupo_maximo)}, ${c.plazo_dias} d)`).join(" · ")}
+                </p>
+              )}
+            </GlassPanel>
+          )}
+
           <div className="space-y-2">
-            {deudores.map((d) => (
+            {deudores.map((d) => {
+              const nombreCli = d.contacto ?? d.nombre;
+              const cupo = cupoDe(nombreCli, d.telefono);
+              const estadoCuenta = `Hola ${nombreCli}, este es tu estado de cuenta:\n${d.detalle.join("\n")}\nTotal pendiente: ${dinero(d.debe)}${cupo ? `\nCupo disponible: ${dinero(Math.max(cupo.cupo_maximo - d.debe, 0))}` : ""}\n¡Gracias!`;
+              return (
               <GlassPanel key={d.nombre} className="flex flex-wrap items-center justify-between gap-3 p-4">
                 <div className="min-w-0 flex-1">
-                  <p className="break-words text-sm font-medium text-foreground">{d.contacto ?? d.nombre}</p>
+                  <p className="break-words text-sm font-medium text-foreground">{nombreCli}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {cupo ? `Cupo ${dinero(cupo.cupo_maximo)} · Disponible ${dinero(Math.max(cupo.cupo_maximo - d.debe, 0))} · Plazo ${cupo.plazo_dias} días` : "Sin cupo asignado"}
+                    {d.vencido ? ` · Vencido desde ${d.vencido}` : ""}
+                  </p>
                 </div>
+                {esAdmin && (
+                  <button type="button" onClick={() => editarCupo(nombreCli, d.telefono)} className="shrink-0 rounded-full border border-glass-border px-3 py-1 text-xs text-foreground">
+                    Cupo y plazo
+                  </button>
+                )}
                 {d.telefono && (
                   <a
-                    href={`https://wa.me/${d.telefono.replace(/\D/g, "")}?text=${encodeURIComponent(
-                      `Hola ${d.contacto ?? d.nombre}, te recordamos tu saldo pendiente de ${dinero(d.debe)}. ¡Gracias!`,
-                    )}`}
+                    href={`https://wa.me/${d.telefono.replace(/\D/g, "")}?text=${encodeURIComponent(estadoCuenta)}`}
                     target="_blank"
                     rel="noreferrer"
                     className="shrink-0 rounded-full border border-glass-border px-3 py-1 text-xs text-primary"
                   >
-                    Recordar por WhatsApp
+                    Enviar estado de cuenta
                   </a>
                 )}
                 <div className="shrink-0 text-right">
@@ -241,7 +325,8 @@ function CarteraFiadosPage() {
                   {d.abonado > 0 && <p className="text-xs text-muted-foreground">Ha abonado {dinero(d.abonado)}</p>}
                 </div>
               </GlassPanel>
-            ))}
+              );
+            })}
           </div>
         </>
       )}
