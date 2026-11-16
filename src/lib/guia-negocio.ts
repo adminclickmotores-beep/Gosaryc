@@ -52,6 +52,9 @@ export const GUIAS_NEGOCIO: Record<TipoNegocioClave, GuiaNegocio> = {
       { titulo: "Registra a tus pacientes", texto: "Crea la ficha de cada paciente en “Pacientes y fichas”." },
       { titulo: "Agenda las citas", texto: "Usa “Agenda y calendario” para evitar cruces de horarios." },
       { titulo: "Lleva la evolución", texto: "Anota cada consulta en “Historias y evoluciones” y sus tratamientos con su valor." },
+      { titulo: "Pide consentimiento y guarda la historia", texto: "Registra el consentimiento informado antes de cada procedimiento. La historia clínica se conserva mínimo 20 años y solo la ve quien debe: revisa “Auditoría de accesos”." },
+      { titulo: "Cobra a las EPS sin perder plata", texto: "Factura en “Facturación y RIPS”, y en “Glosas y cartera con EPS” responde cada glosa antes de su plazo." },
+      { titulo: "Cumple la habilitación", texto: "En “Habilitación y calidad” y “Residuos hospitalarios” guarda REPS, calibraciones, actas del gestor de residuos y próximas fechas obligatorias." },
     ],
   },
   educacion: {

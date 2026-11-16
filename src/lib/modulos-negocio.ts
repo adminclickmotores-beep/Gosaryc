@@ -177,6 +177,14 @@ const PAGOS_SERVICIOS = m("pagos_servicios", "Pagos digitales y anticipos", "Con
 const RESENAS_SERVICIOS = m("resenas_servicios", "Quejas y reseñas de clientes", "Opiniones, quejas y reclamos sobre el servicio, con seguimiento.", Star);
 const PERSONAL_SERVICIOS = m("personal_servicios", "Personal, turnos y comisiones", "Turnos de profesionales, comisiones por servicio y pagos del personal.", Briefcase);
 const METAS_SERVICIOS = m("metas_servicios", "Metas de citas y ventas", "Metas semanales de servicios realizados y seguimiento por profesional.", Target);
+const FACTURAS_SALUD = m("facturas_salud", "Facturación y RIPS", "Facturas a pacientes y EPS, con RIPS, copagos y cuotas moderadoras.", Receipt);
+const PAGOS_SALUD = m("pagos_salud", "Pagos y copagos digitales", "Concilia copagos y consultas pagadas por Nequi, Daviplata o transferencia.", Smartphone);
+const RESENAS_SALUD = m("resenas_salud", "Quejas y satisfacción de pacientes", "Quejas, reclamos y sugerencias de pacientes, con respuesta y plazo.", Star);
+const PERSONAL_SALUD = m("personal_salud", "Personal asistencial y nómina", "Turnos, contratos, honorarios por consulta y novedades del personal de salud.", Briefcase);
+const METAS_SALUD = m("metas_salud", "Metas de atención", "Metas de consultas, procedimientos e ingresos por profesional.", Target);
+const GLOSAS_SALUD = m("glosas_salud", "Glosas y cartera con EPS", "Glosas recibidas, respuesta dentro del plazo y pagos pendientes de aseguradoras.", Landmark);
+const HABILITACION_SALUD = m("habilitacion_salud", "Habilitación y calidad", "REPS, autoevaluación de habilitación, calibración de equipos y planes de mejora.", ShieldCheck);
+const RESIDUOS_SALUD = m("residuos_salud", "Residuos hospitalarios (PGIRASA)", "Bioseguridad, recolección y registro de residuos peligrosos y cortopunzantes.", Trash2);
 const AGENDA: ModuloNegocio = {
   id: "agenda",
   titulo: "Agenda y calendario",
@@ -310,7 +318,8 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("auditoria_clinica", "Auditoría de accesos", "Registro de quién consultó o modificó información clínica.", ShieldCheck),
       m("insumos_salud", "Insumos y medicamentos", "Existencias y alertas de faltantes.", Package),
       m("autorizaciones", "Autorizaciones y EPS", "Seguimiento de autorizaciones y cobros a aseguradoras.", Landmark),
-      FACTURAS, PAGOS, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      GLOSAS_SALUD, HABILITACION_SALUD, RESIDUOS_SALUD,
+      FACTURAS_SALUD, PAGOS_SALUD, RESENAS_SALUD, CAJA, PROVEEDORES, PERSONAL_SALUD, METAS_SALUD, FINANZAS,
     ],
   },
   {

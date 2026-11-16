@@ -50,6 +50,8 @@ export const SECTORES: Sector[] = [
     { titulo: "Pacientes y fichas", texto: "Crea la ficha de cada paciente con sus datos importantes." },
     { titulo: "Citas", texto: "Agenda consultas y evita cruces de horarios." },
     { titulo: "Historias y tratamientos", texto: "Lleva la evolución de cada consulta y el valor de cada tratamiento." },
+    { titulo: "Facturación, RIPS y glosas", texto: "Factura a pacientes y EPS, y responde las glosas dentro del plazo." },
+    { titulo: "Habilitación y residuos", texto: "Controla REPS, calibración de equipos y residuos hospitalarios con alertas de fechas." },
   ]),
   s("educacion", "Educación", GraduationCap, "Cursos, matrículas y pensiones sin hojas de cálculo.", [
     { titulo: "Cursos y grupos", texto: "Registra horarios, cupos y docentes." },
