@@ -259,7 +259,7 @@ export const GUIAS_NEGOCIO: Record<TipoNegocioClave, GuiaNegocio> = {
     frase: "Ventas y reparaciones sin perder ningún equipo.",
     pasos: [
       { titulo: "Carga tu inventario", texto: "Agrega equipos, accesorios y repuestos con su precio." },
-      { titulo: "Registra ventas", texto: "Vende y lleva el control de cada cobro." },
+      { titulo: "Registra ventas", texto: "Vende, cobra y factura cada equipo desde la caja y la facturación propia de la tienda." },
       { titulo: "Recibe reparaciones", texto: "Anota el equipo, la falla y el estado hasta entregarlo." },
       { titulo: "Avisa a tus clientes", texto: "Comunica cuando su equipo esté listo." },
     ],
@@ -268,7 +268,7 @@ export const GUIAS_NEGOCIO: Record<TipoNegocioClave, GuiaNegocio> = {
     frase: "Tu papelería surtida y las ventas al día.",
     pasos: [
       { titulo: "Carga tus productos", texto: "Agrega artículos con precio y existencias." },
-      { titulo: "Vende rápido", texto: "Registra cada venta desde el punto de venta." },
+      { titulo: "Vende rápido", texto: "Registra cada venta desde el punto de venta y cuadra la caja del día." },
       { titulo: "Surte a tiempo", texto: "Revisa qué se está agotando y haz tus compras." },
       { titulo: "Revisa tus ventas", texto: "Consulta los reportes del día y del mes." },
     ],
@@ -277,7 +277,7 @@ export const GUIAS_NEGOCIO: Record<TipoNegocioClave, GuiaNegocio> = {
     frase: "Tu colección ordenada y vendiendo todos los días.",
     pasos: [
       { titulo: "Carga tu colección", texto: "Agrega prendas con tallas, colores y precios." },
-      { titulo: "Registra ventas", texto: "Vende en tienda o por pedido y controla los cobros." },
+      { titulo: "Registra ventas", texto: "Vende en tienda o por pedido, controla los cobros y factura cada compra con su talla y color." },
       { titulo: "Controla el inventario", texto: "Revisa existencias por talla y color." },
       { titulo: "Fideliza clientes", texto: "Guarda sus datos y ofrece puntos o promociones." },
     ],
