@@ -246,6 +246,10 @@ const CLIENTES_CEL = m("clientes_cel", "Clientes de celulares", "Clientes con su
 const PAGOS_CEL = m("pagos_cel", "Cobros de equipos y reparaciones", "Cobro de celulares, accesorios y reparaciones por cada medio de pago.", Smartphone);
 const RESENAS_CEL = m("resenas_cel", "Garantías y reclamos de equipos", "Reclamos por fallas, reparaciones o garantías, con seguimiento.", Star);
 const PERSONAL_CEL = m("personal_cel", "Vendedores, técnicos y comisiones", "Comisiones de vendedores, pagos a técnicos y novedades del equipo.", Briefcase);
+const CLIENTES_PAPEL = m("clientes_papel", "Colegios, empresas y clientes", "Colegios, empresas y clientes que compran útiles, copias o listas.", Users);
+const PAGOS_PAPEL = m("pagos_papel", "Cobros y pagos digitales de la papelería", "Cobro de útiles, copias y pedidos de colegios por cada medio de pago.", Smartphone);
+const PERSONAL_PAPEL = m("personal_papel", "Vendedores, turnos y pagos", "Turnos de vendedores, comisiones y novedades del personal de la papelería.", Briefcase);
+const METAS_PAPEL = m("metas_papel", "Metas de temporada escolar", "Metas de ventas de útiles y listas escolares por temporada.", Target);
 const METAS_CEL = m("metas_cel", "Metas de ventas y reparaciones", "Metas de equipos vendidos, reparaciones y líneas activadas por mes.", Target);
 const METAS_JOY = m("metas_joy", "Metas de ventas y encargos", "Metas de ventas de piezas y de encargos cerrados por mes.", Target);
 const METAS_TEXTIL = m("metas_textil", "Metas de prendas y pedidos", "Metas de prendas confeccionadas y pedidos entregados por mes.", Target);
@@ -728,7 +732,7 @@ TIPOS_NEGOCIO.push(
       m("productos_papel", "Útiles y libros", "Inventario de útiles escolares y libros por ISBN.", BookOpen),
       m("copias_impresiones", "Copias e impresiones", "Servicios de fotocopia, impresión y su cobro.", FileText),
       m("lista_escolar", "Listas escolares", "Listas de útiles por colegio y pedidos de temporada.", ClipboardList),
-      CLIENTES, FIADOS, FACTURAS, PAGOS, FIDELIZACION, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      CLIENTES_PAPEL, FIADOS, FACTURAS, PAGOS_PAPEL, FIDELIZACION, CAJA, PROVEEDORES, PERSONAL_PAPEL, METAS_PAPEL, FINANZAS,
     ],
   },
   {
