@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { LifeBuoy, Send, GraduationCap, Sparkles } from "lucide-react";
+import { LifeBuoy, Send, GraduationCap, Sparkles, MessageCircle } from "lucide-react";
+import { BRAND, enlaceWhatsappSoporte } from "@/lib/brand";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,7 +16,7 @@ export const Route = createFileRoute("/_app/soporte")({
 
 type Ticket = Tables<"tickets_soporte">;
 
-const CORREO_SOPORTE = "gosarycsoftware@gmail.com";
+const CORREO_SOPORTE = BRAND.supportEmail;
 
 const CATEGORIAS: { valor: string; etiqueta: string }[] = [
   { valor: "falla", etiqueta: "Algo no funciona" },
@@ -135,6 +136,32 @@ function SoportePage() {
           </Link>
         </div>
       </div>
+
+      <GlassPanel className="p-5">
+        <h2 className="font-display text-lg">Renovación y pago de la licencia</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Envía el soporte de tu renovación o de tu pago al WhatsApp {BRAND.supportWhatsappTexto} o al correo{" "}
+          <a href={`mailto:${CORREO_SOPORTE}`} className="break-all text-primary">{CORREO_SOPORTE}</a>. Sin pago no se activa la licencia.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <a
+            href={enlaceWhatsappSoporte(`Hola, te envío el soporte de renovación de mi licencia de Gosaryc. Negocio: ${negocio?.nombre ?? ""}. Correo: ${user?.email ?? ""}.`)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground"
+          >
+            <MessageCircle className="h-4 w-4" /> Enviar soporte de renovación
+          </a>
+          <a
+            href={enlaceWhatsappSoporte(`Hola, te envío el soporte de pago de mi licencia anual de Gosaryc ($100.000). Negocio: ${negocio?.nombre ?? ""}. Correo: ${user?.email ?? ""}.`)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-lg border border-glass-border bg-glass/40 px-4 py-2.5 text-sm hover:bg-glass/70"
+          >
+            <MessageCircle className="h-4 w-4 text-primary" /> Enviar soporte de pago
+          </a>
+        </div>
+      </GlassPanel>
 
       <GlassPanel className="p-5">
         <h2 className="font-display text-lg">Crear un ticket</h2>

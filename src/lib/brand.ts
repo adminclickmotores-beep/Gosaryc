@@ -25,7 +25,15 @@ export const BRAND = {
    * Remixers: replace with your real support address (or set to undefined
    * to hide the "Contact support" affordance everywhere).
    */
-  supportEmail: "support@example.com",
+  supportEmail: "gosarycsoftware@gmail.com",
+  /** WhatsApp de soporte (renovación y soporte de pago), con indicativo de país. */
+  supportWhatsapp: "573332765584",
+  /** WhatsApp de soporte como se muestra en pantalla. */
+  supportWhatsappTexto: "333 276 5584",
 } as const;
+
+/** Enlace de WhatsApp al soporte con un mensaje ya escrito. */
+export const enlaceWhatsappSoporte = (mensaje: string) =>
+  `https://wa.me/${BRAND.supportWhatsapp}?text=${encodeURIComponent(mensaje)}`;
 
 export type Brand = typeof BRAND;

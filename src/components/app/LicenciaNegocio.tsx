@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
+import { BRAND } from "@/lib/brand";
 
 type Suscripcion = Tables<"suscripciones_negocio">;
 type Pago = Tables<"pagos_licencia">;
@@ -101,7 +102,7 @@ export function LicenciaNegocio({ modo }: { modo: "bloqueo" | "aviso" }) {
         <>
           <p className="text-sm text-muted-foreground">
             La licencia anual cuesta $100.000 COP e incluye soporte, instalación local y web. Paga y sube aquí el comprobante:
-            sin pago no se activa. Al aprobarla recibirás la licencia por correo y WhatsApp. Soporte: gosarycsoftware@gmail.com.
+            sin pago no se activa. Al aprobarla recibirás la licencia por correo y WhatsApp. También puedes enviar el soporte de pago al WhatsApp {BRAND.supportWhatsappTexto} o a {BRAND.supportEmail}.
           </p>
           {pagoPendiente ? (
             <p className="text-sm text-foreground">Tu comprobante está en revisión. Te avisaremos cuando se apruebe.</p>
