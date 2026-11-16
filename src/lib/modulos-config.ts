@@ -126,6 +126,22 @@ const CAMPOS_POR_TIPO: Record<string, CampoExtra[]> = {
 
 /** Campos propios de módulos concretos (tienen prioridad sobre los de su familia). */
 const CAMPOS_ESPECIFICOS: Record<string, CampoExtra[]> = {
+  control_acceso: [
+    { clave: "documento", etiqueta: "Documento del socio", tipo: "text" },
+    { clave: "plan_activo", etiqueta: "Plan activo", tipo: "text", placeholder: "Ej. Mensual" },
+    { clave: "hora_ingreso", etiqueta: "Hora de ingreso", tipo: "text", placeholder: "Ej. 6:15 a. m." },
+    { clave: "metodo", etiqueta: "Método de ingreso", tipo: "select", opciones: ["Código QR", "Huella", "Tarjeta", "Manual en recepción"] },
+    { clave: "acceso", etiqueta: "Resultado", tipo: "select", opciones: ["Permitido", "Plan vencido", "Sin pago", "Denegado"] },
+  ],
+  planes_entreno: [
+    { clave: "objetivo", etiqueta: "Objetivo del socio", tipo: "select", opciones: ["Ganar masa", "Perder peso", "Tonificar", "Resistencia", "Rehabilitación", "Salud general"] },
+    { clave: "entrenador", etiqueta: "Entrenador asignado", tipo: "text" },
+    { clave: "peso", etiqueta: "Peso (kg)", tipo: "text" },
+    { clave: "estatura", etiqueta: "Estatura (cm)", tipo: "text" },
+    { clave: "medidas", etiqueta: "Medidas corporales", tipo: "text", placeholder: "Cintura, pecho, brazo" },
+    { clave: "lesiones", etiqueta: "Lesiones o restricciones", tipo: "text" },
+    { clave: "proxima_evaluacion", etiqueta: "Próxima evaluación", tipo: "date" },
+  ],
   habitaciones: [
     { clave: "numero", etiqueta: "Número o nombre de la habitación", tipo: "text" },
     { clave: "tipo_habitacion", etiqueta: "Tipo", tipo: "select", opciones: ["Sencilla", "Doble", "Suite", "Familiar", "Dormitorio compartido", "Otro"] },
