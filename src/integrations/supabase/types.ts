@@ -2198,6 +2198,90 @@ export type Database = {
         }
         Relationships: []
       }
+      facturas_registros: {
+        Row: {
+          anulado: boolean
+          contacto: string | null
+          created_at: string
+          detalle: string | null
+          estado: string
+          fecha: string | null
+          id: string
+          monto: number
+          owner_id: string | null
+          tipo_negocio: string | null
+          titulo: string
+        }
+        Insert: {
+          anulado?: boolean
+          contacto?: string | null
+          created_at?: string
+          detalle?: string | null
+          estado?: string
+          fecha?: string | null
+          id?: string
+          monto?: number
+          owner_id?: string | null
+          tipo_negocio?: string | null
+          titulo: string
+        }
+        Update: {
+          anulado?: boolean
+          contacto?: string | null
+          created_at?: string
+          detalle?: string | null
+          estado?: string
+          fecha?: string | null
+          id?: string
+          monto?: number
+          owner_id?: string | null
+          tipo_negocio?: string | null
+          titulo?: string
+        }
+        Relationships: []
+      }
+      permisos_rest_registros: {
+        Row: {
+          anulado: boolean
+          contacto: string | null
+          created_at: string
+          detalle: string | null
+          estado: string
+          fecha: string | null
+          id: string
+          monto: number
+          owner_id: string | null
+          tipo_negocio: string | null
+          titulo: string
+        }
+        Insert: {
+          anulado?: boolean
+          contacto?: string | null
+          created_at?: string
+          detalle?: string | null
+          estado?: string
+          fecha?: string | null
+          id?: string
+          monto?: number
+          owner_id?: string | null
+          tipo_negocio?: string | null
+          titulo: string
+        }
+        Update: {
+          anulado?: boolean
+          contacto?: string | null
+          created_at?: string
+          detalle?: string | null
+          estado?: string
+          fecha?: string | null
+          id?: string
+          monto?: number
+          owner_id?: string | null
+          tipo_negocio?: string | null
+          titulo?: string
+        }
+        Relationships: []
+      }
       resenas_registros: {
         Row: {
           anulado: boolean
