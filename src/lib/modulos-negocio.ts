@@ -344,6 +344,7 @@ const FINANZAS: ModuloNegocio = {
 const ICONOS_PROPIOS: Record<string, LucideIcon> = {
   clientes: Users, facturas: Receipt, pagos: Smartphone, personal: Briefcase, metas: Target,
   fidelizacion: Gift, garantias: BadgeCheck, cotizaciones: FileText, mensualidades: Coins,
+  caja: Banknote, proveedores: Truck, finanzas: Wallet, cuentas: Coins, agenda: CalendarDays,
 };
 /** Módulos propios de un negocio (clientes, facturación, pagos, personal, metas...) con sus textos y formularios. */
 const propios = (suf: string, ...familias: string[]): ModuloNegocio[] =>
@@ -809,7 +810,7 @@ TIPOS_NEGOCIO.push(
       m("cotizaciones_ferr", "Cotizaciones de materiales", "Lista de materiales para constructores y maestros, con descuento y flete.", FileText),
       m("despachos_ferr", "Despachos a obra", "Remisión, conductor y quién recibe el material en la obra.", Truck),
       m("listas_precios_ferr", "Listas de precios de proveedores", "Actualiza costos cuando un proveedor sube precios.", Tag),
-      ...propios("ferr", "clientes"), FIADOS, ...propios("ferr", "facturas", "pagos"), CAJA, PROVEEDORES, ...propios("ferr", "personal", "metas"), FINANZAS,
+      ...propios("ferr", "clientes", "cuentas", "facturas", "pagos", "caja", "proveedores", "personal", "metas", "finanzas"),
     ],
   },
   {
@@ -822,7 +823,7 @@ TIPOS_NEGOCIO.push(
       m("vencimientos_super", "Productos por vencer", "Lotes próximos a vencer con acción: rotar, descuento o devolver.", CalendarClock),
       m("promociones_super", "Promociones", "2x1, precios especiales y combos con vigencia.", Percent),
       m("reposicion_super", "Reposición y pedidos a proveedores", "Qué se agotó, día de visita del proveedor y pedido mínimo.", Boxes),
-      FIADOS, ...propios("super", "facturas", "pagos", "fidelizacion"), CAJA, PROVEEDORES, ...propios("super", "personal", "metas"), FINANZAS,
+      ...propios("super", "clientes", "cuentas", "facturas", "pagos", "fidelizacion", "caja", "proveedores", "personal", "metas", "finanzas"),
     ],
   },
   {
@@ -835,7 +836,7 @@ TIPOS_NEGOCIO.push(
       m("mermas_fresco", "Mermas y pérdidas", "Producto que se maduró, venció o se recortó, con su costo.", Trash2),
       m("cadena_frio", "Cadena de frío", "Temperatura de neveras y cuartos fríos, con acción correctiva.", Thermometer),
       m("pedidos_fresco", "Pedidos y domicilios por peso", "Pedidos por WhatsApp con pesos, dirección y hora de entrega.", Bike),
-      FIADOS, ...propios("carn", "facturas", "pagos"), CAJA, PROVEEDORES, ...propios("carn", "personal", "metas"), FINANZAS,
+      ...propios("carn", "clientes", "cuentas", "facturas", "pagos", "caja", "proveedores", "personal", "metas", "finanzas"),
     ],
   },
   {
@@ -848,7 +849,7 @@ TIPOS_NEGOCIO.push(
       m("combos_licor", "Combos y promociones", "Combos por ocasión: fin de semana, quincena, partido o fiesta.", Percent),
       m("domicilios_licor", "Domicilios con verificación de edad", "Registro de mayoría de edad por documento y repartidor.", Bike),
       m("permisos_licor", "Permisos y horarios de venta", "Licencia de funcionamiento, bomberos y horario permitido con fecha de renovación.", ScrollText),
-      FIADOS, ...propios("licor", "facturas", "pagos", "fidelizacion"), CAJA, PROVEEDORES, ...propios("licor", "personal", "metas"), FINANZAS,
+      ...propios("licor", "clientes", "cuentas", "facturas", "pagos", "fidelizacion", "caja", "proveedores", "personal", "metas", "finanzas"),
     ],
   },
   {
@@ -861,7 +862,7 @@ TIPOS_NEGOCIO.push(
       m("encargos_flor", "Encargos con dedicatoria y entrega", "Destinatario, dirección, tarjeta, hora y foto de entrega.", Gift),
       m("flores_frescas", "Flores frescas y vida útil", "Tallos recibidos, días de vida y merma por proveedor.", Sprout),
       m("fechas_especiales", "Fechas especiales", "San Valentín, Día de la Madre y otras: pedidos esperados y compras anticipadas.", CalendarDays),
-      ...propios("flor", "facturas", "pagos", "fidelizacion"), CAJA, PROVEEDORES, ...propios("flor", "personal", "metas"), FINANZAS,
+      ...propios("flor", "clientes", "facturas", "pagos", "fidelizacion", "caja", "proveedores", "personal", "metas", "finanzas"),
     ],
   },
   {
@@ -874,7 +875,7 @@ TIPOS_NEGOCIO.push(
       m("examenes_visuales", "Exámenes visuales", "Agenda de optometría y controles con el optómetra.", CalendarClock),
       m("monturas_optica", "Monturas y vitrina", "Marca, material, género y existencias de monturas.", Package),
       m("pedidos_lab_optica", "Pedidos al laboratorio", "Tipo de lente, tratamiento, fecha prometida y saldo por cobrar.", ClipboardList),
-      ...propios("optica", "clientes", "garantias"), FIADOS, ...propios("optica", "facturas", "pagos", "fidelizacion"), CAJA, PROVEEDORES, ...propios("optica", "personal", "metas"), FINANZAS,
+      ...propios("optica", "clientes", "garantias", "cuentas", "facturas", "pagos", "fidelizacion", "caja", "proveedores", "personal", "metas", "finanzas"),
     ],
   },
   {
@@ -887,8 +888,7 @@ TIPOS_NEGOCIO.push(
       m("asistencia_guarderia", "Asistencia y recogida diaria", "Hora de entrada y salida, estado de salud y quién lo recoge.", BadgeCheck),
       m("recogida_guarderia", "Personas autorizadas a recoger", "Quién puede llevarse a cada niño, con documento y foto.", ShieldCheck),
       m("reportes_guarderia", "Reporte diario al acudiente", "Comidas, siestas, pañales y actividades del día.", ClipboardList),
-      ...propios("guard", "mensualidades"),
-      AGENDA, ...propios("guard", "facturas", "pagos"), CAJA, ...propios("guard", "personal", "metas"), FINANZAS,
+      ...propios("guard", "clientes", "mensualidades", "agenda", "facturas", "pagos", "caja", "personal", "metas", "finanzas"),
     ],
   },
   {
@@ -902,7 +902,7 @@ TIPOS_NEGOCIO.push(
       m("contratos_alquiler", "Contratos de alquiler", "Licencia, póliza, combustible y kilometraje de salida, con firma.", FileText),
       m("entregas_alq", "Entregas y devoluciones", "Inspección de daños, combustible y cobros extra al regresar.", PackageCheck),
       m("multas_alquiler", "Multas y peajes", "Comparendos por placa que se trasladan al cliente.", Coins),
-      ...propios("alq", "clientes"), FIADOS, ...propios("alq", "facturas", "pagos"), CAJA, PROVEEDORES, ...propios("alq", "personal", "metas"), FINANZAS,
+      ...propios("alq", "clientes", "cuentas", "facturas", "pagos", "caja", "proveedores", "personal", "metas", "finanzas"),
     ],
   },
   {
@@ -915,7 +915,7 @@ TIPOS_NEGOCIO.push(
       m("turnos_seg", "Turnos y reemplazos", "Quién cubre cada puesto, descansos y reemplazos.", CalendarClock),
       m("dotacion_seg", "Dotación y entregas", "Uniformes, botas y elementos con fecha de próxima entrega obligatoria.", Shirt),
       m("novedades_seg", "Novedades e incidentes", "Incidentes, faltas y quejas de clientes con la acción tomada.", ClipboardList),
-      ...propios("seg", "clientes", "cotizaciones"), FIADOS, ...propios("seg", "facturas", "pagos"), CAJA, PROVEEDORES, ...propios("seg", "personal", "metas"), FINANZAS,
+      ...propios("seg", "clientes", "cotizaciones", "cuentas", "facturas", "pagos", "caja", "proveedores", "personal", "metas", "finanzas"),
     ],
   },
   {
@@ -929,7 +929,7 @@ TIPOS_NEGOCIO.push(
       m("sanidad_pecuaria", "Vacunas y sanidad", "Aftosa, brucelosis, desparasitantes y próxima aplicación con registro ICA.", ShieldCheck),
       m("alimentacion_pecuaria", "Alimentación y medicinas", "Concentrado, sal y medicinas con stock mínimo y lote que los consume.", Boxes),
       m("guias_movilizacion", "Guías de movilización ICA", "Origen, destino, cantidad y vencimiento de cada guía.", ScrollText),
-      ...propios("gan", "clientes", "facturas", "pagos"), FIADOS, CAJA, PROVEEDORES, ...propios("gan", "personal", "metas"), FINANZAS,
+      ...propios("gan", "clientes", "cuentas", "facturas", "pagos", "caja", "proveedores", "personal", "metas", "finanzas"),
     ],
   },
   {
@@ -942,7 +942,7 @@ TIPOS_NEGOCIO.push(
       m("donaciones_fund", "Donaciones y certificados", "Dinero o especie, proyecto destino y certificado de donación.", Gift),
       m("proyectos_fund", "Proyectos y financiadores", "Presupuesto, ejecución, indicadores y fecha de informes.", ClipboardList),
       m("voluntarios_fund", "Voluntarios", "Área, horas al mes y certificado de voluntariado.", Users),
-      AGENDA, ...propios("fund", "facturas", "pagos"), CAJA, PROVEEDORES, ...propios("fund", "personal", "metas"), FINANZAS,
+      ...propios("fund", "clientes", "agenda", "facturas", "pagos", "caja", "proveedores", "personal", "metas", "finanzas"),
     ],
   },
   {
@@ -956,7 +956,7 @@ TIPOS_NEGOCIO.push(
       m("eventos_iglesia", "Eventos y reservas", "Cultos especiales, retiros y congresos con presupuesto.", PartyPopper),
       m("grupos_iglesia", "Grupos y células", "Líder, día de reunión, integrantes y asistencia.", Users),
       m("visitas_iglesia", "Visitas pastorales", "Hospital, consejería y seguimiento a nuevos.", CalendarClock),
-      AGENDA, ...propios("igl", "facturas", "pagos"), CAJA, PROVEEDORES, ...propios("igl", "personal"), FINANZAS,
+      ...propios("igl", "agenda", "facturas", "pagos", "caja", "proveedores", "personal", "finanzas"),
     ],
   },
 );

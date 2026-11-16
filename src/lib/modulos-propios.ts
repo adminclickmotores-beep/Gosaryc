@@ -1,4 +1,5 @@
 import type { CampoExtra, ConfigModulo } from "@/lib/modulos-config";
+import { PROPIOS_OPERACION } from "@/lib/modulos-propios-operacion";
 
 /**
  * Módulos propios (clientes, facturación, pagos, personal, metas, puntos...) de los negocios que antes
@@ -268,8 +269,14 @@ export const PROPIOS: Record<string, Record<string, FamiliaPropia>> = {
   },
 };
 
+// Caja, proveedores, finanzas, cuentas por cobrar, agenda y clientes propios de cada negocio.
+for (const [suf, fams] of Object.entries(PROPIOS_OPERACION)) {
+  PROPIOS[suf] = { ...(PROPIOS[suf] ?? {}), ...fams };
+}
+
 const PRESET_FAMILIA: Record<string, string> = {
   facturas: "pago", pagos: "pago", personal: "pago", metas: "proyecto", garantias: "proyecto", cotizaciones: "venta", mensualidades: "cartera",
+  caja: "pago", proveedores: "pago", finanzas: "pago", cuentas: "cartera", agenda: "cita",
 };
 
 export const PRESET_PROPIOS: Record<string, string> = {};
