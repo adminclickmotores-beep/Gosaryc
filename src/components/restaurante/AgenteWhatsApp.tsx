@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Bot, Eye, EyeOff, Link2, RefreshCw } from "lucide-react";
+import { Bot, Eye, EyeOff, Link2, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
@@ -9,6 +9,9 @@ import type { Tables } from "@/integrations/supabase/types";
 
 type AgenteFila = Tables<"agente_whatsapp">;
 type LineaLocal = { id: string; nombre: string; estado: string; agente: boolean; conClave: boolean; qr: string; aviso: string };
+type ReglaEditable = { palabras: string; respuesta: string; asesor: boolean };
+type RespuestasEditables = { saludo: string; sinRespuesta: string; reglas: ReglaEditable[] };
+type RespuestasApi = { saludo: string; sinRespuesta: string; reglas: Array<{ palabras: string[]; respuesta: string; asesor: boolean }> };
 
 const API_LOCAL = "http://localhost:3001";
 const ETIQUETA_ESTADO: Record<string, string> = {
@@ -18,46 +21,21 @@ const ETIQUETA_ESTADO: Record<string, string> = {
   desconectado: "Desconectado",
 };
 
-/** Configura el agente de ventas y atención por WhatsApp del negocio y conecta su número en la API local. */
+/** Configura el agente de atención por WhatsApp del negocio (respuestas propias, sin IA) y conecta su número en la API local. */
 export function AgenteWhatsApp() {
   const { negocio } = useNegocio();
   const { user } = useAuth();
   const [agente, setAgente] = useState<AgenteFila | null>(null);
   const [nombreAgente, setNombreAgente] = useState("Asistente");
-  const [instrucciones, setInstrucciones] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [claveLocal, setClaveLocal] = useState("");
   const [verClave, setVerClave] = useState(false);
   const [linea, setLinea] = useState<LineaLocal | null>(null);
   const [apiCaida, setApiCaida] = useState(false);
+  const [respuestas, setRespuestas] = useState<RespuestasEditables | null>(null);
+  const [guardandoResp, setGuardandoResp] = useState(false);
 
   const idLinea = (negocio?.id ?? "").slice(0, 8) || "negocio";
-  const [memoria, setMemoria] = useState<Tables<"agente_memoria">[]>([]);
-
-  const cargarMemoria = useCallback(async () => {
-    if (!negocio) return;
-    const { data } = await supabase
-      .from("agente_memoria")
-      .select("*")
-      .eq("negocio_id", negocio.id)
-      .order("veces", { ascending: false })
-      .order("created_at", { ascending: false })
-      .limit(30);
-    setMemoria(data ?? []);
-  }, [negocio]);
-
-  useEffect(() => {
-    void cargarMemoria();
-  }, [cargarMemoria]);
-
-  const olvidar = async (id: string) => {
-    const { error } = await supabase.from("agente_memoria").delete().eq("id", id);
-    if (error) {
-      toast.error("No se pudo borrar");
-      return;
-    }
-    setMemoria((m) => m.filter((x) => x.id !== id));
-  };
 
   useEffect(() => {
     setClaveLocal(localStorage.getItem("whatsapp_local_token") ?? "");
@@ -67,10 +45,7 @@ export function AgenteWhatsApp() {
     if (!negocio) return;
     const { data } = await supabase.from("agente_whatsapp").select("*").eq("negocio_id", negocio.id).maybeSingle();
     setAgente(data);
-    if (data) {
-      setNombreAgente(data.nombre_agente);
-      setInstrucciones(data.instrucciones ?? "");
-    }
+    if (data) setNombreAgente(data.nombre_agente);
   }, [negocio]);
 
   useEffect(() => {
@@ -99,7 +74,61 @@ export function AgenteWhatsApp() {
     return () => clearInterval(t);
   }, [consultarLinea]);
 
-  const guardar = async (cambios: Partial<Pick<AgenteFila, "activo" | "nombre_agente" | "instrucciones">>) => {
+  const existeLinea = !!linea;
+  const cargarRespuestas = useCallback(async () => {
+    if (!claveLocal.trim()) return;
+    try {
+      const r = await fetch(`${API_LOCAL}/respuestas?linea=${encodeURIComponent(idLinea)}`, {
+        headers: { Authorization: `Bearer ${claveLocal.trim()}` },
+      });
+      if (!r.ok) return;
+      const j = (await r.json()) as { respuestas: RespuestasApi };
+      setRespuestas({
+        saludo: j.respuestas.saludo,
+        sinRespuesta: j.respuestas.sinRespuesta,
+        reglas: j.respuestas.reglas.map((x) => ({ palabras: x.palabras.join(", "), respuesta: x.respuesta, asesor: x.asesor })),
+      });
+    } catch {
+      /* la API local no está abierta */
+    }
+  }, [claveLocal, idLinea]);
+
+  useEffect(() => {
+    if (existeLinea) void cargarRespuestas();
+  }, [existeLinea, cargarRespuestas]);
+
+  const guardarRespuestas = async () => {
+    if (!respuestas) return;
+    setGuardandoResp(true);
+    try {
+      const cuerpo: RespuestasApi = {
+        saludo: respuestas.saludo,
+        sinRespuesta: respuestas.sinRespuesta,
+        reglas: respuestas.reglas.map((x) => ({
+          palabras: x.palabras.split(",").map((p) => p.trim()).filter(Boolean),
+          respuesta: x.respuesta,
+          asesor: x.asesor,
+        })),
+      };
+      const r = await fetch(`${API_LOCAL}/respuestas`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${claveLocal.trim()}` },
+        body: JSON.stringify({ linea: idLinea, respuestas: cuerpo }),
+      });
+      if (!r.ok) throw new Error("Error");
+      toast.success("Respuestas guardadas en este computador");
+      void cargarRespuestas();
+    } catch {
+      toast.error("No se pudieron guardar. Abre la API local en este computador.");
+    } finally {
+      setGuardandoResp(false);
+    }
+  };
+
+  const cambiarRegla = (i: number, cambios: Partial<ReglaEditable>) =>
+    setRespuestas((r) => (r ? { ...r, reglas: r.reglas.map((x, j) => (j === i ? { ...x, ...cambios } : x)) } : r));
+
+  const guardar = async (cambios: Partial<Pick<AgenteFila, "activo" | "nombre_agente">>) => {
     if (!negocio || !user) return;
     setGuardando(true);
     const { data, error } = agente
@@ -119,10 +148,6 @@ export function AgenteWhatsApp() {
   };
 
   const conectar = async () => {
-    if (!agente) {
-      toast.error("Primero guarda el agente");
-      return;
-    }
     if (!claveLocal.trim()) {
       toast.error("Pega la clave de acceso de la API local");
       return;
@@ -132,7 +157,7 @@ export function AgenteWhatsApp() {
       const r = await fetch(`${API_LOCAL}/lineas`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${claveLocal.trim()}` },
-        body: JSON.stringify({ id: idLinea, nombre: negocio?.nombre ?? idLinea, clave: agente.clave, agente: agente.activo }),
+        body: JSON.stringify({ id: idLinea, nombre: negocio?.nombre ?? idLinea, clave: agente?.clave ?? "", agente: agente?.activo ?? true }),
       });
       if (!r.ok) throw new Error(r.status === 401 ? "Clave incorrecta" : "Error");
       toast.success("Número agregado. Escanea el código con el WhatsApp de este negocio.");
@@ -151,7 +176,7 @@ export function AgenteWhatsApp() {
         <div className="min-w-0">
           <h3 className="font-display text-lg">Agente de WhatsApp</h3>
           <p className="text-sm text-muted-foreground">
-            Responde a tus clientes, resuelve dudas, asesora y ayuda a cerrar ventas con los datos y el catálogo de este negocio.
+            Atiende a tus clientes por WhatsApp con las respuestas que tú configures. Funciona en este computador, sin inteligencia artificial.
           </p>
         </div>
       </div>
@@ -168,7 +193,7 @@ export function AgenteWhatsApp() {
       </label>
 
       <label className="block text-sm">
-        <span className="mb-1 block text-muted-foreground">Nombre con el que se presenta</span>
+        <span className="mb-1 block text-muted-foreground">Nombre del agente</span>
         <input
           className="w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base"
           value={nombreAgente}
@@ -176,41 +201,9 @@ export function AgenteWhatsApp() {
           onChange={(e) => setNombreAgente(e.target.value)}
         />
       </label>
-
-      <p className="rounded-lg border border-glass-border bg-glass/40 p-3 text-sm text-muted-foreground">
-        El agente aprende solo: guarda tus respuestas reales cuando contestas desde el celular y las lecciones de cada conversación, y las usa en las siguientes. Las instrucciones de abajo son opcionales.
-      </p>
-
-      {memoria.length > 0 && (
-        <div className="space-y-2">
-          <h4 className="text-sm font-medium">Lo que ha aprendido ({memoria.length})</h4>
-          <ul className="max-h-60 space-y-1.5 overflow-y-auto">
-            {memoria.map((m) => (
-              <li key={m.id} className="flex items-start justify-between gap-2 rounded-lg bg-background/50 p-2 text-sm">
-                <span className="min-w-0 break-words">{m.contenido}</span>
-                <button onClick={() => void olvidar(m.id)} className="shrink-0 text-xs text-muted-foreground underline">
-                  Olvidar
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <label className="block text-sm">
-        <span className="mb-1 block text-muted-foreground">Instrucciones propias, opcional (promociones, políticas, forma de pago, tono…)</span>
-        <textarea
-          className="min-h-28 w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base"
-          value={instrucciones}
-          maxLength={3000}
-          onChange={(e) => setInstrucciones(e.target.value)}
-          placeholder="Ej.: Aceptamos Nequi y efectivo. Los pedidos de más de $100.000 tienen envío gratis."
-        />
-      </label>
-
       <button
         disabled={guardando}
-        onClick={() => void guardar({ nombre_agente: nombreAgente.trim() || "Asistente", instrucciones: instrucciones.trim() || null })}
+        onClick={() => void guardar({ nombre_agente: nombreAgente.trim() || "Asistente" })}
         className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-60"
       >
         {guardando ? "Guardando…" : agente ? "Guardar agente" : "Crear agente"}
@@ -241,7 +234,6 @@ export function AgenteWhatsApp() {
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => void conectar()}
-            disabled={!agente}
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-60"
           >
             <Link2 className="h-4 w-4" /> Conectar este número
@@ -267,6 +259,85 @@ export function AgenteWhatsApp() {
           </div>
         )}
       </div>
+
+      {respuestas && (
+        <div className="space-y-3 border-t border-glass-border/60 pt-4">
+          <h4 className="text-sm font-medium">Respuestas del agente</h4>
+          <p className="text-xs text-muted-foreground">
+            Cuando el mensaje del cliente contiene alguna de las palabras de una regla, el agente envía esa respuesta. Usa {"{negocio}"} para poner el nombre de tu negocio. Si marcas «Pasa a una persona», el agente se pausa 6 horas en ese chat para que lo atiendas tú. Si contestas desde tu celular, el agente también se pausa.
+          </p>
+          <label className="block text-sm">
+            <span className="mb-1 block text-muted-foreground">Saludo (primer mensaje de un cliente)</span>
+            <textarea
+              className="min-h-16 w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base"
+              value={respuestas.saludo}
+              maxLength={600}
+              onChange={(e) => setRespuestas({ ...respuestas, saludo: e.target.value })}
+            />
+          </label>
+          <ul className="space-y-3">
+            {respuestas.reglas.map((r, i) => (
+              <li key={i} className="space-y-2 rounded-lg bg-background/50 p-3">
+                <label className="block text-sm">
+                  <span className="mb-1 block text-muted-foreground">Si el cliente escribe (palabras separadas por coma)</span>
+                  <input
+                    className="w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base"
+                    value={r.palabras}
+                    onChange={(e) => cambiarRegla(i, { palabras: e.target.value })}
+                  />
+                </label>
+                <label className="block text-sm">
+                  <span className="mb-1 block text-muted-foreground">El agente responde</span>
+                  <textarea
+                    className="min-h-20 w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base"
+                    value={r.respuesta}
+                    maxLength={1000}
+                    onChange={(e) => cambiarRegla(i, { respuesta: e.target.value })}
+                  />
+                </label>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" className="h-4 w-4" checked={r.asesor} onChange={(e) => cambiarRegla(i, { asesor: e.target.checked })} />
+                    Pasa a una persona
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setRespuestas({ ...respuestas, reglas: respuestas.reglas.filter((_, j) => j !== i) })}
+                    className="inline-flex items-center gap-1 text-xs text-muted-foreground underline"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> Quitar
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={() => setRespuestas({ ...respuestas, reglas: [...respuestas.reglas, { palabras: "", respuesta: "", asesor: false }] })}
+            className="inline-flex items-center gap-2 rounded-lg border border-glass-border px-4 py-2.5 text-sm"
+          >
+            <Plus className="h-4 w-4" /> Agregar respuesta
+          </button>
+          <label className="block text-sm">
+            <span className="mb-1 block text-muted-foreground">Si no entiende el mensaje, responde</span>
+            <textarea
+              className="min-h-16 w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base"
+              value={respuestas.sinRespuesta}
+              maxLength={600}
+              onChange={(e) => setRespuestas({ ...respuestas, sinRespuesta: e.target.value })}
+            />
+          </label>
+          <div>
+            <button
+              disabled={guardandoResp}
+              onClick={() => void guardarRespuestas()}
+              className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-60"
+            >
+              {guardandoResp ? "Guardando…" : "Guardar respuestas"}
+            </button>
+          </div>
+        </div>
+      )}
     </GlassPanel>
   );
 }

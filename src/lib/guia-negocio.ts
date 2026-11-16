@@ -283,6 +283,6 @@ export const PASOS_GENERALES: { titulo: string; texto: string }[] = [
   { titulo: "Usa el menú lateral", texto: "Ahí aparecen todas las herramientas de tu tipo de negocio. Con el buscador encuentras cualquiera." },
   { titulo: "Invita a tu equipo", texto: "En Configuración > Equipo y permisos autorizas personas y eliges qué puede usar cada una." },
   { titulo: "Instala la app", texto: "Con “Instalar app” la tienes en tu celular o computador; en Windows también hay instalador con accesos directos y guía de uso." },
-  { titulo: "Conecta tu WhatsApp", texto: "En Mi negocio vincula tu número con el QR y el agente atiende a tus clientes y te ayuda a cerrar ventas." },
+  { titulo: "Conecta tu WhatsApp", texto: "En Mi negocio vincula tu número con el QR y el agente atiende a tus clientes con las respuestas que tú configures." },
   { titulo: "Pregunta al asistente", texto: "El Asistente virtual te explica cualquier pantalla paso a paso. Usa Ctrl+K para buscar módulos." },
 ];

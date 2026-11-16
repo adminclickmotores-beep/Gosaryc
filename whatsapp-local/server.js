@@ -2,7 +2,9 @@
  * API local de WhatsApp para Gosaryc.
  * Corre en TU computador (http://localhost:3001). Maneja VARIOS números (uno por negocio):
  *  - Envía mensajes (recordatorios, cobros) con el WhatsApp del negocio.
- *  - Atiende y vende: responde a los clientes con el agente de cada negocio (clave del agente).
+ *  - Atiende a los clientes con las RESPUESTAS CONFIGURADAS de cada negocio (respuestas-<id>.json),
+ *    sin inteligencia artificial y sin depender de internet para decidir qué contestar.
+ *  - La IA (Gemini) queda solo para el tutorial / asistente virtual del panel.
  * No guarda claves de la base de datos.
  */
 const http = require("http");
@@ -19,7 +21,6 @@ fs.mkdirSync(CARPETA, { recursive: true });
 const PUERTO = Number(process.env.PUERTO || 3001);
 const ARCHIVO_TOKEN = path.join(CARPETA, "token.txt");
 const ARCHIVO_LINEAS = path.join(CARPETA, "lineas.json");
-const AGENTE_URL = process.env.AGENTE_URL || "https://gosaryc.lovable.app/api/public/agente-cliente";
 const PAUSA_HUMANO_MS = Number(process.env.PAUSA_HORAS || 6) * 3600 * 1000;
 
 let TOKEN = process.env.TOKEN || "";
@@ -50,19 +51,70 @@ function guardarLineas() {
   fs.writeFileSync(ARCHIVO_LINEAS, JSON.stringify(lista, null, 2));
 }
 
-async function preguntarAlAgente(linea, chat) {
-  const r = await fetch(AGENTE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${linea.clave}` },
-    body: JSON.stringify({ mensajes: chat.historial.slice(-20) }),
-  });
-  const json = await r.json().catch(() => ({}));
-  if (!r.ok) {
-    const err = new Error(json.error || `Error ${r.status}`);
-    err.estado = r.status;
-    throw err;
+// ---------- Agente local: responde con las respuestas configuradas (sin IA, sin internet) ----------
+const RESPUESTAS_BASE = {
+  saludo: "¡Hola! Bienvenido a {negocio}. ¿En qué te puedo ayudar?",
+  sinRespuesta: "Gracias por escribirnos a {negocio}. Una persona del equipo te responde en breve.",
+  reglas: [
+    { palabras: ["hola", "buenas", "buenos dias", "buenas tardes", "buenas noches"], respuesta: "¡Hola! Bienvenido a {negocio}. ¿Qué producto o servicio te interesa?", asesor: false },
+    { palabras: ["horario", "hora", "abren", "abierto", "cierran"], respuesta: "Con gusto te informamos nuestro horario. Una persona del equipo te lo confirma enseguida.", asesor: true },
+    { palabras: ["direccion", "ubicacion", "donde estan", "donde queda", "como llego"], respuesta: "Con gusto te compartimos la ubicación. Una persona del equipo te la envía enseguida.", asesor: true },
+    { palabras: ["precio", "precios", "cuanto cuesta", "cuanto vale", "valor", "catalogo", "menu", "carta"], respuesta: "Con gusto te contamos precios y opciones. Dime qué producto o servicio buscas y una persona del equipo te confirma el valor.", asesor: true },
+    { palabras: ["domicilio", "envio", "envios", "entregan"], respuesta: "Sí, consúltanos por entregas. Dime tu barrio o zona y una persona del equipo te confirma cobertura y costo.", asesor: true },
+    { palabras: ["pago", "pagos", "nequi", "daviplata", "transferencia", "tarjeta", "efectivo"], respuesta: "Te confirmamos los medios de pago disponibles. Una persona del equipo te los indica enseguida.", asesor: true },
+    { palabras: ["pedido", "pedir", "comprar", "quiero", "reservar", "cita", "cotizacion", "cotizar"], respuesta: "¡Perfecto! Cuéntame qué necesitas, la cantidad y, si es entrega, tu dirección. Una persona del equipo confirma tu pedido.", asesor: true },
+    { palabras: ["asesor", "persona", "humano", "hablar con alguien", "reclamo", "queja"], respuesta: "Claro, una persona del equipo continúa contigo enseguida.", asesor: true },
+    { palabras: ["gracias", "muchas gracias", "listo", "ok", "vale"], respuesta: "¡Con gusto! Cualquier cosa, escríbenos.", asesor: false },
+  ],
+};
+
+const archivoRespuestas = (id) => path.join(CARPETA, `respuestas-${id}.json`);
+
+function cargarRespuestas(id) {
+  try {
+    const f = archivoRespuestas(id);
+    if (fs.existsSync(f)) {
+      const c = JSON.parse(fs.readFileSync(f, "utf8"));
+      if (c && Array.isArray(c.reglas)) return c;
+    }
+  } catch (_) {}
+  return JSON.parse(JSON.stringify(RESPUESTAS_BASE));
+}
+
+function limpiarRespuestas(c) {
+  const texto = (v, max) => String(v || "").trim().slice(0, max);
+  const reglas = (Array.isArray(c && c.reglas) ? c.reglas : []).slice(0, 60).map((r) => ({
+    palabras: (Array.isArray(r.palabras) ? r.palabras : []).map((p) => texto(p, 40)).filter(Boolean).slice(0, 20),
+    respuesta: texto(r.respuesta, 1000),
+    asesor: !!r.asesor,
+  })).filter((r) => r.palabras.length && r.respuesta);
+  return { saludo: texto(c && c.saludo, 600), sinRespuesta: texto(c && c.sinRespuesta, 600), reglas };
+}
+
+const normalizar = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9ñ ]/g, " ").replace(/\s+/g, " ").trim();
+
+function coincide(textoNorm, palabra) {
+  const p = normalizar(palabra);
+  if (!p) return false;
+  return (" " + textoNorm + " ").includes(" " + p + " ") || (p.length > 4 && textoNorm.includes(p));
+}
+
+function responderLocal(linea, chat) {
+  const cfg = cargarRespuestas(linea.id);
+  const poner = (t) => String(t || "").replace(/\{negocio\}/gi, linea.nombre);
+  // Mensajes del cliente desde la última respuesta del agente.
+  const nuevos = [];
+  for (let i = chat.historial.length - 1; i >= 0 && chat.historial[i].role === "user"; i--) nuevos.unshift(chat.historial[i].content);
+  const texto = normalizar(nuevos.join(" "));
+  const primera = !chat.historial.some((m) => m.role === "assistant");
+  const regla = cfg.reglas.find((r) => r.palabras.some((p) => coincide(texto, p)));
+  const esSaludo = regla && /hola|buenas/.test(normalizar(regla.palabras.join(" "))) && regla.palabras.some((p) => /hola|buenas/.test(normalizar(p)));
+  if (primera && cfg.saludo && (!regla || esSaludo)) return { texto: poner(cfg.saludo), escalar: false };
+  if (regla) {
+    const cuerpo = poner(regla.respuesta);
+    return { texto: primera && cfg.saludo ? `${poner(cfg.saludo)}\n\n${cuerpo}` : cuerpo, escalar: !!regla.asesor };
   }
-  return json;
+  return { texto: poner(cfg.sinRespuesta || RESPUESTAS_BASE.sinRespuesta), escalar: true };
 }
 
 async function atender(linea, jid, chat) {
@@ -72,7 +124,7 @@ async function atender(linea, jid, chat) {
     const wa = await linea.cliente.getChatById(jid);
     try { await wa.sendSeen(); } catch (_) {}
     try { await wa.sendStateTyping(); } catch (_) {}
-    const { texto, escalar } = await preguntarAlAgente(linea, chat);
+    const { texto, escalar } = responderLocal(linea, chat);
     await esperar(Math.min(4000, 800 + texto.length * 15)); // se ve natural, como si escribiera una persona
     const enviado = await linea.cliente.sendMessage(jid, texto);
     if (enviado?.id?._serialized) linea.propios.add(enviado.id._serialized);
@@ -121,16 +173,6 @@ function alEscribirYo(linea, msg) {
   else {
     chat = { historial: [], pausadoHasta: Date.now() + PAUSA_HUMANO_MS, ocupado: false, timer: null, avisoMedia: 0 };
     linea.chats.set(msg.to, chat);
-  }
-  // Aprende: la respuesta real del dueño a la última pregunta del cliente queda en la memoria del agente.
-  if (linea.clave && linea.agente && msg.type === "chat" && msg.body && chat.ultimaPregunta) {
-    const pregunta = chat.ultimaPregunta;
-    chat.ultimaPregunta = "";
-    fetch(AGENTE_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${linea.clave}` },
-      body: JSON.stringify({ accion: "aprender", pregunta, respuesta: msg.body.slice(0, 400) }),
-    }).catch(() => {});
   }
 }
 
@@ -254,6 +296,22 @@ const servidor = http.createServer(async (req, res) => {
 
   try {
     if (ruta === "/lineas" && req.method === "GET") return responder(200, { lineas: [...lineas.values()].map(resumen) });
+
+    // GET /respuestas?linea=id  -> respuestas configuradas del agente local
+    if (ruta === "/respuestas" && req.method === "GET") {
+      const id = url.searchParams.get("linea") || "";
+      if (!lineas.has(id)) return responder(404, { error: "No existe esa línea" });
+      return responder(200, { respuestas: cargarRespuestas(id) });
+    }
+
+    // POST /respuestas { linea, respuestas } -> guarda las respuestas del agente local
+    if (ruta === "/respuestas" && req.method === "POST") {
+      const { linea: id, respuestas } = await leerCuerpo(req);
+      if (!lineas.has(id)) return responder(404, { error: "No existe esa línea" });
+      const limpio = limpiarRespuestas(respuestas);
+      fs.writeFileSync(archivoRespuestas(id), JSON.stringify(limpio, null, 2));
+      return responder(200, { respuestas: limpio });
+    }
 
     // POST /lineas { nombre, clave }  -> agrega un número (negocio) nuevo o actualiza su clave del agente
     if (ruta === "/lineas" && req.method === "POST") {
