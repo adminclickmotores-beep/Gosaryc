@@ -126,6 +126,39 @@ const CAMPOS_POR_TIPO: Record<string, CampoExtra[]> = {
 
 /** Campos propios de módulos concretos (tienen prioridad sobre los de su familia). */
 const CAMPOS_ESPECIFICOS: Record<string, CampoExtra[]> = {
+  proyectos_tec: [
+    { clave: "alcance_tec", etiqueta: "Alcance o tipo de entregable", tipo: "select", opciones: ["Sitio web", "App móvil", "Software a medida", "Diseño", "Integración", "Mantenimiento", "Otro"] },
+    { clave: "tecnologias", etiqueta: "Tecnologías o stack", tipo: "text", placeholder: "Ej. React, Supabase" },
+    { clave: "responsable_tec", etiqueta: "Responsable del equipo", tipo: "text" },
+    { clave: "avance_tec", etiqueta: "Avance (%)", tipo: "text" },
+    { clave: "entrega_hito", etiqueta: "Próximo hito", tipo: "text" },
+    { clave: "repo_enlace", etiqueta: "Enlace del repositorio o demo", tipo: "text" },
+    { clave: "horas_estimadas", etiqueta: "Horas estimadas", tipo: "text" },
+  ],
+  tickets: [
+    { clave: "tipo_ticket", etiqueta: "Tipo", tipo: "select", opciones: ["Error", "Solicitud de cambio", "Pregunta", "Caída del servicio", "Otro"] },
+    { clave: "proyecto_ticket", etiqueta: "Proyecto relacionado", tipo: "text" },
+    { clave: "prioridad_ticket", etiqueta: "Prioridad", tipo: "select", opciones: ["Baja", "Media", "Alta", "Urgente"] },
+    { clave: "estado_ticket", etiqueta: "Estado", tipo: "select", opciones: ["Nuevo", "En revisión", "En progreso", "Esperando al cliente", "Resuelto"] },
+    { clave: "contacto_ticket", etiqueta: "Contacto del cliente", tipo: "text" },
+    { clave: "tiempo_respuesta", etiqueta: "Acuerdo de respuesta (horas)", tipo: "text" },
+  ],
+  suscripciones_tec: [
+    { clave: "plan_tec", etiqueta: "Plan", tipo: "text", placeholder: "Ej. Hosting + soporte mensual" },
+    { clave: "valor_mensual_tec", etiqueta: "Valor mensual (COP)", tipo: "text" },
+    { clave: "proximo_cobro", etiqueta: "Próximo cobro", tipo: "date" },
+    { clave: "dominio_tec", etiqueta: "Dominio o servicio contratado", tipo: "text" },
+    { clave: "vence_servicio", etiqueta: "Vence el servicio", tipo: "date" },
+    { clave: "correo_facturacion", etiqueta: "Correo de facturación", tipo: "email" },
+  ],
+  horas: [
+    { clave: "fecha_horas", etiqueta: "Fecha", tipo: "date" },
+    { clave: "cantidad_horas", etiqueta: "Horas trabajadas", tipo: "text" },
+    { clave: "tarifa_hora", etiqueta: "Tarifa por hora (COP)", tipo: "text" },
+    { clave: "tarea_horas", etiqueta: "Tarea realizada", tipo: "text" },
+    { clave: "facturable", etiqueta: "Facturable al cliente", tipo: "select", opciones: ["Sí", "No"] },
+    { clave: "quien_trabajo", etiqueta: "Quién trabajó", tipo: "text" },
+  ],
   vacunacion: [
     { clave: "nombre_mascota", etiqueta: "Nombre de la mascota", tipo: "text" },
     { clave: "vacuna", etiqueta: "Vacuna o desparasitante", tipo: "text", placeholder: "Ej. Triple felina, Desparasitación" },
