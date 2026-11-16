@@ -182,6 +182,10 @@ const PERSONAL_EDUCACION = m("personal_educacion", "Docentes, turnos y pagos", "
 const PAGOS_HOSP = m("pagos_hosp", "Cobros y pagos de huéspedes", "Recaudo de estadías, anticipos y cargos adicionales por medio de pago.", Smartphone);
 const RESENAS_HOSP = m("resenas_hosp", "Quejas y reseñas de huéspedes", "Opiniones, quejas y solicitudes de los huéspedes, con seguimiento.", Star);
 const PERSONAL_HOSP = m("personal_hosp", "Personal, turnos y comisiones", "Turnos de recepción, limpieza y pagos o comisiones del personal.", Briefcase);
+const PAGOS_GYM = m("pagos_gym", "Cobros de membresías y pagos digitales", "Recaudo de planes, inscripciones y tienda del gimnasio por cada medio de pago.", Smartphone);
+const RESENAS_GYM = m("resenas_gym", "Quejas y sugerencias de socios", "Reclamos, sugerencias y reseñas de socios, con seguimiento.", Star);
+const PERSONAL_GYM = m("personal_gym", "Entrenadores, turnos y pagos", "Horarios de entrenadores, pagos por clase y novedades del personal.", Briefcase);
+const METAS_GYM = m("metas_gym", "Metas de socios y recaudo", "Metas de nuevos socios, renovaciones y recaudo por mes.", Target);
 const METAS_HOSP = m("metas_hosp", "Metas de ocupación e ingresos", "Metas de ocupación y de ingresos por temporada.", Target);
 const METAS_EDUCACION = m("metas_educacion", "Metas de matrícula y recaudo", "Metas de nuevas matrículas y de recaudo por periodo académico.", Target);
 const METAS_SERVICIOS = m("metas_servicios", "Metas de citas y ventas", "Metas semanales de servicios realizados y seguimiento por profesional.", Target);
@@ -368,7 +372,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("clases", "Clases y cupos", "Horarios de clases con cupos y asistentes.", CalendarDays),
       m("control_acceso", "Control de ingreso", "Registro de asistencia de los socios.", QrCode),
       m("planes_entreno", "Rutinas y seguimiento", "Planes y medidas de cada socio.", ClipboardList),
-      FACTURAS, PAGOS, FIDELIZACION, RESENAS,CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+      FACTURAS, PAGOS_GYM, FIDELIZACION, RESENAS_GYM, CAJA, PROVEEDORES, PERSONAL_GYM, METAS_GYM, FINANZAS,
     ],
   },
   {
