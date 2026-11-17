@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Bot, Eye, EyeOff, Link2, Plus, RefreshCw, Send, Trash2, UserCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -61,6 +61,7 @@ export function AgenteWhatsApp() {
   const [nuevaRespuesta, setNuevaRespuesta] = useState("");
 
   const idLinea = (negocio?.id ?? "").slice(0, 8) || "negocio";
+  const tipoNegocio = ((negocio as unknown as { tipo_negocio?: string | null } | null)?.tipo_negocio ?? "").slice(0, 80);
 
   useEffect(() => {
     setClaveLocal(localStorage.getItem("whatsapp_local_token") ?? "");
@@ -135,6 +136,51 @@ export function AgenteWhatsApp() {
   }, [consultarLinea]);
 
   const existeLinea = !!linea;
+  const avisosVistos = useRef(0);
+  // Alerta sonora y aviso del sistema cuando llega un pedido, una cita o un cliente que espera humano.
+  useEffect(() => {
+    const total = avisosLocal.length;
+    if (total <= avisosVistos.current) {
+      avisosVistos.current = total;
+      return;
+    }
+    avisosVistos.current = total;
+    const ultimo = avisosLocal[avisosLocal.length - 1];
+    try {
+      const Ventana = window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext };
+      const Ctx = Ventana.AudioContext ?? Ventana.webkitAudioContext;
+      if (Ctx) {
+        const ctx = new Ctx();
+        [523, 659, 784].forEach((f, i) => {
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.connect(g);
+          g.connect(ctx.destination);
+          o.frequency.value = f;
+          const t = ctx.currentTime + i * 0.15;
+          g.gain.setValueAtTime(0.001, t);
+          g.gain.exponentialRampToValueAtTime(0.3, t + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+          o.start(t);
+          o.stop(t + 0.15);
+        });
+        setTimeout(() => void ctx.close(), 800);
+      }
+    } catch {
+      /* sin sonido en este equipo */
+    }
+    try {
+      if ("Notification" in window) {
+        if (Notification.permission === "granted" && ultimo) {
+          new Notification(ultimo.titulo || "Aviso del agente", { body: String(ultimo.detalle || "").slice(0, 150) });
+        } else if (Notification.permission === "default") {
+          void Notification.requestPermission();
+        }
+      }
+    } catch {
+      /* sin notificaciones en este equipo */
+    }
+  }, [avisosLocal]);
   useEffect(() => {
     if (!existeLinea) return;
     void consultarVivo();
@@ -212,6 +258,22 @@ export function AgenteWhatsApp() {
       return;
     }
     setAgente(data);
+    // El servicio local habla como el experto de este giro: se le envían el tipo de negocio y las instrucciones.
+    if (claveLocal.trim()) {
+      try {
+        await fetch(`${API_LOCAL}/lineas`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${claveLocal.trim()}` },
+          body: JSON.stringify({
+            id: idLinea,
+            perfil: tipoNegocio,
+            instrucciones: typeof cambios.instrucciones === "string" ? cambios.instrucciones : instrucciones,
+          }),
+        });
+      } catch {
+        /* se aplica al reconectar */
+      }
+    }
     toast.success("Agente guardado");
   };
 
@@ -241,7 +303,7 @@ export function AgenteWhatsApp() {
       const r = await fetch(`${API_LOCAL}/lineas`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${claveLocal.trim()}` },
-        body: JSON.stringify({ id: idLinea, nombre: negocio?.nombre ?? idLinea, clave: agente?.clave ?? "", agente: iaActiva && (agente?.activo ?? true) }),
+        body: JSON.stringify({ id: idLinea, nombre: negocio?.nombre ?? idLinea, clave: agente?.clave ?? "", agente: iaActiva && (agente?.activo ?? true), perfil: tipoNegocio, instrucciones }),
       });
       if (!r.ok) throw new Error(r.status === 401 ? "Clave incorrecta" : "Error");
       toast.success("Número agregado. Escanea el código con el WhatsApp de este negocio.");

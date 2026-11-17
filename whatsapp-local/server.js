@@ -1,9 +1,12 @@
 /**
- * API local de WhatsApp para Gosaryc.
+ * API local de WhatsApp para Gosaryc (agente multi-especialista 24/7).
  * Corre en TU computador (http://localhost:3001). Maneja VARIOS números (uno por negocio):
  *  - Envía mensajes (recordatorios, cobros) con el WhatsApp del negocio.
- *  - Atiende a los clientes con las RESPUESTAS CONFIGURADAS de cada negocio (respuestas-<id>.json),
- *    sin inteligencia artificial y sin depender de internet para decidir qué contestar.
+ *  - Atiende a los clientes con las RESPUESTAS CONFIGURADAS de cada negocio (respuestas-<id>.json)
+ *    más el PERFIL EXPERTO de su giro (panadero, mecánico, vendedor de autos, veterinario...),
+ *    sin depender de internet para decidir qué contestar. Sirve con WhatsApp normal y Business.
+ *  - Sesión permanente: reconexión automática con espera progresiva y sesión guardada en disco;
+ *    "Cambiar número / Nuevo QR" genera un código nuevo SIN borrar respuestas ni aprendizaje.
  *  - La IA (Gemini) queda solo para el tutorial / asistente virtual del panel.
  * No guarda claves de la base de datos.
  */
@@ -75,7 +78,7 @@ const numeroWa = (t) => {
 const lineas = new Map(); // id -> { id, nombre, clave, estado, qr, cliente, chats }
 
 function guardarLineas() {
-  const lista = [...lineas.values()].map((l) => ({ id: l.id, nombre: l.nombre, clave: l.clave, agente: l.agente }));
+  const lista = [...lineas.values()].map((l) => ({ id: l.id, nombre: l.nombre, clave: l.clave, agente: l.agente, perfil: l.perfil || "", instrucciones: l.instrucciones || "" }));
   fs.writeFileSync(ARCHIVO_LINEAS, JSON.stringify(lista, null, 2));
 }
 
@@ -95,6 +98,34 @@ const RESPUESTAS_BASE = {
     { palabras: ["gracias", "muchas gracias", "listo", "ok", "vale"], respuesta: "¡Con gusto! Cualquier cosa, escríbenos.", asesor: false },
   ],
 };
+
+// ---------- Cerebro multi-especialista: habla como el experto del giro de cada negocio ----------
+// El panel envía el tipo de negocio (perfil) y las instrucciones del dueño en POST /lineas.
+// Cada entrada: palabras que identifican el giro + pregunta experta que cierra el pedido/cita.
+const PERFILES_EXPERTO = [
+  { claves: ["panader", "pastel", "reposter", "torta", "ponque"], nombre: "panadero", guia: "Asesora sabores, porciones y tortas por encargo (tamaño en libras o porciones, pisos, relleno, fecha de entrega y anticipo).", cierra: "¿Para cuántas personas es y para qué fecha la necesitas?" },
+  { claves: ["taller", "mecan", "moto", "llanta", "freno", "aceite"], nombre: "mecánico", guia: "Pregunta placa y síntomas del vehículo, cotiza mantenimiento y repuestos, y agenda la recepción en el taller.", cierra: "¿Me confirmas la placa y qué síntomas presenta el vehículo?" },
+  { claves: ["concesionario", "vehiculo", "carro", "auto", "camioneta", "motocicleta"], nombre: "vendedor de autos", guia: "Asesora modelos, versiones y financiación, y agenda el test-drive en la vitrina.", cierra: "¿Qué modelo te interesa? Te cuento la financiación y te agendo el test-drive." },
+  { claves: ["veterinaria", "mascota", "peluqueria canina", "pet"], nombre: "veterinario", guia: "Pregunta síntomas y desde cuándo, diferencia urgencia de cita normal y agenda la consulta.", cierra: "Cuéntame los síntomas y desde cuándo los notas, para agendarte la cita." },
+  { claves: ["ferreter", "constru", "obra", "material"], nombre: "ferretero", guia: "Cotiza por medidas y unidades con stock real y sugiere el material equivalente si algo se agota.", cierra: "¿Qué medidas y cuántas unidades necesitas? Te confirmo el stock." },
+  { claves: ["farmacia", "droguer", "optica", "lente", "laboratorio", "clinica", "odont", "salud", "medic"], nombre: "auxiliar de salud", guia: "Orienta con cercanía, pide la fórmula o los datos del examen cuando aplique y agenda la cita o confirma disponibilidad. Nunca diagnostica ni cambia dosis.", cierra: "¿Tienes la fórmula o el nombre exacto del producto para confirmarte?" },
+  { claves: ["restaurante", "comida", "pizza", "hamburguesa", "asadero", "cafeteria", "helader"], nombre: "mesero experto", guia: "Toma el pedido completo (platos, cantidades, dirección o mesa) y confirma tiempos de entrega.", cierra: "¿Qué platos quieres y cuántos? Si es a domicilio, dime tu dirección." },
+  { claves: ["belleza", "peluquer", "barber", "spa", "unas", "maquillaje"], nombre: "asesor de belleza", guia: "Recomienda servicios según la ocasión y agenda la cita con profesional y hora.", cierra: "¿Qué servicio te interesa y para qué día y hora te agendo?" },
+  { claves: ["hotel", "hostal", "alojamiento", "cabana"], nombre: "recepcionista", guia: "Cotiza habitaciones por fechas y número de huéspedes, y confirma la reserva con abono.", cierra: "¿Para qué fechas y cuántas personas es la reserva?" },
+  { claves: ["educacion", "colegio", "curso", "academia", "instituto", "jardin"], nombre: "asesor académico", guia: "Explica programas, horarios y matrículas, y agenda la visita o la inscripción.", cierra: "¿Para quién es el cupo y en qué horario te sirve?" },
+  { claves: ["ropa", "moda", "boutique", "calzado", "zapater"], nombre: "asesor de moda", guia: "Pregunta talla, color y ocasión, y confirma disponibilidad antes de prometer.", cierra: "¿Qué talla y color buscas? Te confirmo disponibilidad." },
+  { claves: ["licor", "bar", "trago"], nombre: "licorero", guia: "Vende por unidades y combos verificando mayoría de edad y confirma domicilio.", cierra: "¿Qué licor y cuántas unidades quieres? Confírmame que eres mayor de edad y tu dirección." },
+  { claves: ["parqueadero", "parqueo", "parking"], nombre: "operador de parqueadero", guia: "Registra placa, hora de entrada y tarifa por horas o mensualidad.", cierra: "¿Me confirmas la placa para registrar tu ingreso?" },
+  { claves: ["lavander", "tintorer"], nombre: "operador de lavandería", guia: "Recibe prendas por tipo y servicio (lavado, planchado, domicilio) y confirma fecha de entrega.", cierra: "¿Qué prendas son y las necesitas solo lavadas o también planchadas?" },
+  { claves: ["inmobiliar", "arriendo", "venta de casas", "finca raiz"], nombre: "asesor inmobiliario", guia: "Filtra por presupuesto, zona y tipo de inmueble, y agenda la visita.", cierra: "¿Cuál es tu presupuesto y en qué zona buscas?" },
+  { claves: ["transporte", "mudanza", "acarreo", "domicilio"], nombre: "despachador", guia: "Cotiza por origen, destino y carga, y confirma fecha y hora del servicio.", cierra: "¿Cuál es el origen, el destino y qué hay que llevar?" },
+];
+
+function buscarPerfil(tipo) {
+  const t = String(tipo || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  if (!t) return null;
+  return PERFILES_EXPERTO.find((p) => p.claves.some((c) => t.includes(c))) || null;
+}
 
 const archivoRespuestas = (id) => path.join(CARPETA, `respuestas-${id}.json`);
 
@@ -130,19 +161,31 @@ function coincide(textoNorm, palabra) {
 function responderLocal(linea, chat) {
   const cfg = cargarRespuestas(linea.id);
   const poner = (t) => String(t || "").replace(/\{negocio\}/gi, linea.nombre);
+  const perfil = buscarPerfil(linea.perfil);
   // Mensajes del cliente desde la última respuesta del agente.
   const nuevos = [];
   for (let i = chat.historial.length - 1; i >= 0 && chat.historial[i].role === "user"; i--) nuevos.unshift(chat.historial[i].content);
   const texto = normalizar(nuevos.join(" "));
   const primera = !chat.historial.some((m) => m.role === "assistant");
   const regla = cfg.reglas.find((r) => r.palabras.some((p) => coincide(texto, p)));
+  // Pregunta experta de cierre: solo cuando el cliente muestra intención (pedido, precio, cita).
+  const cierra = perfil && regla && /pedido|pedir|comprar|quiero|reservar|cita|cotiz|precio|cuanto|valor|catalogo|menu|domicilio|modelo|torta|placa/i.test(nuevos.join(" "))
+    ? ` ${perfil.cierra}`
+    : "";
+  const conCierre = (t) => (cierra && !t.includes(perfil.cierra) ? `${t}${cierra}` : t);
   const esSaludo = regla && /hola|buenas/.test(normalizar(regla.palabras.join(" "))) && regla.palabras.some((p) => /hola|buenas/.test(normalizar(p)));
-  if (primera && cfg.saludo && (!regla || esSaludo)) return { texto: poner(cfg.saludo), escalar: false };
+  if (primera && cfg.saludo && (!regla || esSaludo)) {
+    const base = cfg.saludo === RESPUESTAS_BASE.saludo && perfil
+      ? `¡Hola! Soy el asistente de ${linea.nombre}. ${perfil.guia} ¿En qué te puedo ayudar?`
+      : poner(cfg.saludo);
+    return { texto: base, escalar: false };
+  }
   if (regla) {
     const cuerpo = poner(regla.respuesta);
-    return { texto: primera && cfg.saludo ? `${poner(cfg.saludo)}\n\n${cuerpo}` : cuerpo, escalar: !!regla.asesor };
+    const completo = conCierre(primera && cfg.saludo ? `${poner(cfg.saludo)}\n\n${cuerpo}` : cuerpo);
+    return { texto: completo, escalar: !!regla.asesor };
   }
-  return { texto: poner(cfg.sinRespuesta || RESPUESTAS_BASE.sinRespuesta), escalar: true };
+  return { texto: conCierre(poner(cfg.sinRespuesta || RESPUESTAS_BASE.sinRespuesta)), escalar: true };
 }
 
 async function atender(linea, jid, chat) {
@@ -206,9 +249,10 @@ function alMensaje(linea, msg) {
   }
   if (chat.historial.length > 40) chat.historial.splice(0, chat.historial.length - 40);
 
-  // Espera un momento por si el cliente escribe varios mensajes seguidos.
+  // Espera 3 segundos por si el cliente escribe varios mensajes seguidos: se agrupan
+  // y se responde una sola vez, de forma completa (cero respuestas pendientes).
   clearTimeout(chat.timer);
-  chat.timer = setTimeout(() => atender(linea, jid, chat), 2500);
+  chat.timer = setTimeout(() => atender(linea, jid, chat), 3000);
 }
 
 function alEscribirYo(linea, msg) {
@@ -251,12 +295,15 @@ async function vaciarCola(linea) {
   }
 }
 
-function crearLinea({ id, nombre, clave, agente }) {
+function crearLinea({ id, nombre, clave, agente, perfil, instrucciones }) {
   const linea = {
     id,
     nombre: nombre || id,
     clave: clave || "",
     agente: agente !== false,
+    perfil: String(perfil || ""),
+    instrucciones: String(instrucciones || "").slice(0, 1000),
+    reintentos: 0,
     estado: "iniciando",
     qr: "",
     chats: new Map(),
@@ -282,12 +329,26 @@ function crearLinea({ id, nombre, clave, agente }) {
   linea.cliente.on("ready", () => {
     linea.estado = "listo";
     linea.qr = "";
+    linea.reintentos = 0;
     console.log(`[${linea.nombre}] WhatsApp conectado.${linea.clave ? " Agente de ventas y atención activo." : ""}`);
     void vaciarCola(linea);
   });
-  linea.cliente.on("disconnected", (motivo) => {
+  linea.cliente.on("auth_failure", (m) => {
     linea.estado = "desconectado";
-    console.log(`[${linea.nombre}] WhatsApp desconectado:`, motivo);
+    linea.avisoClave = "La sesión se cerró desde el celular. Usa «Cambiar número / Nuevo QR» en el panel.";
+    console.log(`[${linea.nombre}] Sesión no válida:`, m);
+  });
+  linea.cliente.on("disconnected", (motivo) => {
+    // Sesión inmortal: reintenta sola con espera progresiva (5 s, 10 s, 20 s... hasta 5 min).
+    linea.estado = "desconectado";
+    linea.reintentos = (linea.reintentos || 0) + 1;
+    const espera = Math.min(300000, 5000 * Math.pow(2, linea.reintentos - 1));
+    console.log(`[${linea.nombre}] WhatsApp desconectado:`, motivo, `| reintento en ${Math.round(espera / 1000)} s`);
+    setTimeout(() => {
+      if (linea.estado === "desconectado" && lineas.get(linea.id) === linea) {
+        linea.cliente.initialize().catch((e) => console.log(`[${linea.nombre}] Reintento falló:`, e.message));
+      }
+    }, espera);
   });
   linea.cliente.on("message", (msg) => alMensaje(linea, msg));
   linea.cliente.on("message_create", (msg) => alEscribirYo(linea, msg));
@@ -314,6 +375,7 @@ const resumen = (l) => ({
   estado: l.estado,
   agente: l.agente,
   conClave: !!l.clave,
+  perfil: l.perfil || "",
   qr: l.qr,
   aviso: l.avisoClave,
 });
@@ -396,7 +458,7 @@ const servidor = http.createServer(async (req, res) => {
       if (!l) return responder(404, { error: "No existe esa línea" });
       try { await l.cliente.logout(); } catch (_) {}
       try { await l.cliente.destroy(); } catch (_) {}
-      const datos = { id: l.id, nombre: l.nombre, clave: l.clave, agente: l.agente };
+      const datos = { id: l.id, nombre: l.nombre, clave: l.clave, agente: l.agente, perfil: l.perfil, instrucciones: l.instrucciones };
       lineas.delete(id);
       const nueva = crearLinea(datos);
       guardarLineas();
@@ -484,20 +546,22 @@ const servidor = http.createServer(async (req, res) => {
       return responder(200, { cola: leerJson(ARCHIVO_COLA, []) });
     }
 
-    // POST /lineas { nombre, clave }  -> agrega un número (negocio) nuevo o actualiza su clave del agente
+    // POST /lineas { id, nombre, clave, agente, perfil, instrucciones } -> agrega o actualiza un número
     if (ruta === "/lineas" && req.method === "POST") {
-      const { id, nombre, clave, agente } = await leerCuerpo(req);
+      const { id, nombre, clave, agente, perfil, instrucciones } = await leerCuerpo(req);
       const idLimpio = String(id || nombre || "").toLowerCase().replace(/[^a-z0-9_-]/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
       if (!idLimpio) return responder(400, { error: "Falta el nombre del negocio" });
       const existente = lineas.get(idLimpio);
       if (existente) {
         if (typeof clave === "string") existente.clave = clave.trim();
         if (typeof agente === "boolean") existente.agente = agente;
+        if (typeof perfil === "string") existente.perfil = perfil.slice(0, 80);
+        if (typeof instrucciones === "string") existente.instrucciones = instrucciones.slice(0, 1000);
         existente.avisoClave = "";
         guardarLineas();
         return responder(200, { linea: resumen(existente) });
       }
-      const nueva = crearLinea({ id: idLimpio, nombre: String(nombre || idLimpio), clave: String(clave || "").trim(), agente: agente !== false });
+      const nueva = crearLinea({ id: idLimpio, nombre: String(nombre || idLimpio), clave: String(clave || "").trim(), agente: agente !== false, perfil: String(perfil || "").slice(0, 80), instrucciones: String(instrucciones || "").slice(0, 1000) });
       guardarLineas();
       return responder(200, { linea: resumen(nueva) });
     }

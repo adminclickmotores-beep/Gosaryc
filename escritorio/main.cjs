@@ -1,7 +1,7 @@
 // Gosaryc - envoltorio de escritorio (Electron).
 // Abre la web publicada de Gosaryc dentro de una ventana propia.
 // Para apuntar a otra dirección: GOSARYC_URL=https://tu-dominio.com npm run iniciar
-const { app, BrowserWindow, shell, ipcMain, Menu } = require("electron");
+const { app, BrowserWindow, shell, ipcMain, Menu, Tray, Notification } = require("electron");
 const os = require("os");
 const path = require("path");
 const fs = require("fs");
@@ -10,6 +10,9 @@ const { execFileSync, spawn } = require("child_process");
 
 // ---- API local de WhatsApp (varios números + agente), integrada en segundo plano ----
 let procesoWa = null;
+let appSaliendo = false;
+let reintentosWa = 0;
+let reintentosImp = 0;
 // ---- API local de impresión silenciosa + cola offline (tirillas 58/80 mm) ----
 let procesoImpresion = null;
 const carpetaImpresion = () => (app.isPackaged ? path.join(process.resourcesPath, "api-impresion") : path.join(__dirname, "api-impresion"));
@@ -45,7 +48,14 @@ function iniciarWhatsApp() {
   });
   procesoWa.on("exit", () => {
     procesoWa = null;
+    // El agente debe correr 24/7: si se cae, se reinicia solo con espera progresiva.
+    if (!appSaliendo) {
+      reintentosWa += 1;
+      const espera = Math.min(120000, 5000 * reintentosWa);
+      setTimeout(() => { if (!procesoWa && !appSaliendo) iniciarWhatsApp(); }, espera);
+    }
   });
+  procesoWa.on("spawn", () => { reintentosWa = 0; });
 }
 
 function iniciarImpresion() {
@@ -60,7 +70,13 @@ function iniciarImpresion() {
   });
   procesoImpresion.on("exit", () => {
     procesoImpresion = null;
+    if (!appSaliendo) {
+      reintentosImp += 1;
+      const espera = Math.min(120000, 5000 * reintentosImp);
+      setTimeout(() => { if (!procesoImpresion && !appSaliendo) iniciarImpresion(); }, espera);
+    }
   });
+  procesoImpresion.on("spawn", () => { reintentosImp = 0; });
 }
 
 // Deja la clave de la API local lista en el panel, para no copiarla a mano.
@@ -140,6 +156,42 @@ const PAGINA_SIN_CONEXION = `data:text/html;charset=utf-8,${encodeURIComponent(`
 </div></body></html>`)}`;
 
 let ventanaPrincipal = null;
+let bandeja = null;
+
+// Bandeja del sistema: al cerrar o minimizar, Gosaryc sigue corriendo en segundo plano
+// (al lado del reloj) para que el agente de WhatsApp atienda 24/7.
+function crearBandeja() {
+  if (bandeja) return;
+  try {
+    const icono = path.join(__dirname, "build", "icon.png");
+    if (!fs.existsSync(icono)) return;
+    bandeja = new Tray(icono);
+    bandeja.setToolTip("Gosaryc (agente de WhatsApp activo)");
+    bandeja.setContextMenu(
+      Menu.buildFromTemplate([
+        { label: "Abrir Gosaryc", click: () => { if (ventanaPrincipal) { ventanaPrincipal.show(); ventanaPrincipal.focus(); } else crearVentana(); } },
+        { label: "Guía de uso", click: abrirGuia },
+        { type: "separator" },
+        { label: "Salir (apaga el agente)", click: () => { appSaliendo = true; app.quit(); } },
+      ]),
+    );
+    bandeja.on("click", () => {
+      if (ventanaPrincipal) { ventanaPrincipal.show(); ventanaPrincipal.focus(); }
+      else crearVentana();
+    });
+  } catch {
+    /* sin bandeja en este equipo */
+  }
+}
+
+function avisarEnBandeja(titulo, texto) {
+  try {
+    if (bandeja) bandeja.displayBalloon({ title: titulo, content: String(texto).slice(0, 200) });
+    else if (Notification.isSupported()) new Notification({ title: titulo, body: String(texto).slice(0, 200) }).show();
+  } catch {
+    /* aviso silencioso */
+  }
+}
 
 // Guía de uso incluida en el instalador (funciona sin internet).
 function abrirGuia() {
@@ -183,6 +235,19 @@ function crearVentana() {
   });
   ventanaPrincipal = ventana;
   ventana.once("ready-to-show", () => ventana.show());
+  // Minimizado o cierre = a la bandeja (segundo plano 24/7), no se apaga el agente.
+  ventana.on("close", (evento) => {
+    if (!appSaliendo) {
+      evento.preventDefault();
+      ventana.hide();
+    }
+  });
+  ventana.on("minimize", (evento) => {
+    if (!appSaliendo) {
+      evento.preventDefault();
+      ventana.hide();
+    }
+  });
   ventana.on("closed", () => {
     ventanaPrincipal = null;
   });
@@ -233,6 +298,7 @@ if (!app.requestSingleInstanceLock()) {
     }
   });
   app.on("before-quit", () => {
+    appSaliendo = true;
     for (const p of [procesoWa, procesoImpresion]) {
       try {
         if (p) p.kill();
@@ -244,6 +310,9 @@ if (!app.requestSingleInstanceLock()) {
     procesoImpresion = null;
   });
   app.whenReady().then(() => {
+    // Inicio automático con Windows para operación 24/7.
+    try { app.setLoginItemSettings({ openAtLogin: true, name: "Gosaryc" }); } catch { /* sin permiso */ }
+    crearBandeja();
     iniciarWhatsApp();
     iniciarImpresion();
     crearMenu();
@@ -265,5 +334,6 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit();
+  // No se sale: la app queda en la bandeja del sistema para que el agente siga atendiendo.
+  if (process.platform === "darwin") return;
 });

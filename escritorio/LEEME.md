@@ -2,7 +2,7 @@
 
 Crea un instalador de Windows (`Gosaryc Setup x.x.x.exe`). La app instalada:
 - Abre el panel de Gosaryc en su propia ventana, con acceso directo en el escritorio y en el menú Inicio.
-- Trae la API local de WhatsApp con el agente IA comercial y de servicio: arranca sola en segundo plano y le pasa la clave al panel (no hay que copiarla). Incluye bandeja de chats en vivo, avisos de pedidos y de clientes que esperan humano, aprendizaje de tus respuestas, cambio de número con QR nuevo sin perder nada y cola de mensajes sin internet.
+- Trae la API local de WhatsApp con el agente IA multi-especialista (habla como el experto de tu giro: panadero, mecánico, vendedor de autos, veterinario, etc.): arranca sola en segundo plano, queda en la bandeja del sistema al cerrar o minimizar (no se apaga), inicia con Windows y reconecta sola si se cae el internet, con sesión permanente. Le pasa la clave al panel (no hay que copiarla). Incluye bandeja de chats en vivo, avisos de pedidos y de clientes que esperan humano (con alerta en el panel), aprendizaje de tus respuestas, cambio de número con QR nuevo sin perder nada y cola de mensajes sin internet.
 - Trae la API local de impresión silenciosa (http://127.0.0.1:8765): imprime tirillas de 58/80 mm directo en la impresora predeterminada, sin diálogos del navegador, y guarda en cola local las facturas emitidas sin internet para sincronizarlas al volver la conexión.
 - Usa el Microsoft Edge o Google Chrome que ya tiene el computador para conectar WhatsApp.
 - Sin internet muestra una pantalla con el botón "Reintentar".
@@ -40,7 +40,7 @@ npm run instalador:windows   (crea el instalador en "instaladores")
 1. Inicia sesión en la app.
 2. Entra a **Mi negocio > Agente de WhatsApp**, pulsa **Crear agente** y luego **Conectar este número**.
 3. Escanea el código QR con el WhatsApp de ese negocio. Repite en cada negocio con su propio número.
-4. Mantén la app abierta (puedes minimizarla): si la cierras, el agente deja de responder.
+4. Mantén la app minimizada o ciérrala sin miedo: queda en la bandeja del sistema (al lado del reloj) atendiendo 24/7. Para salir del todo usa clic derecho en el icono > Salir. Para cambiar de celular usa «Cambiar número / Vincular nuevo QR»: no se borra nada.
 
 ## Cambiar la dirección del panel
 Por defecto abre `https://gosaryc.lovable.app`. Con otro dominio, define `GOSARYC_URL` antes de abrir la app y agrega ese dominio en la variable `ORIGENES` de la API local.
