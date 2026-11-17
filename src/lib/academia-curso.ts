@@ -197,6 +197,19 @@ export const CURSO_GOSARYC = {
           practica: { ruta: "/restaurante", etiqueta: "Ir a Mi negocio" },
         },
         {
+          id: "sst-ocupacional",
+          titulo: "Salud ocupacional y SG-SST",
+          minutos: 8,
+          descripcion: "Empresas cliente, exámenes médicos, estándares 0312 y capacitaciones.",
+          pasos: [
+            "Registra cada empresa cliente con su riesgo ARL en «Empresas cliente y convenios».",
+            "Registra trabajadores y guarda evaluaciones (Ingreso, Periódico, Egreso, Alturas): emite el Certificado de Aptitud en PDF con código seguro.",
+            "Define el profesiograma por cargo (peligros GTC 45, EPP y periodicidad) y evalúa los estándares mínimos 7/21/60 con plan anual y COPASST.",
+            "Lleva incapacidades por programa SVE, programa capacitaciones con asistencia digital y actualiza la normativa con el botón IA.",
+          ],
+          practica: { ruta: "/restaurante", etiqueta: "Abrir mi panel" },
+        },
+        {
           id: "pedir-soporte",
           titulo: "Pedir ayuda: Agente, Academia y Soporte",
           minutos: 4,

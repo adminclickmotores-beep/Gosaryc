@@ -496,6 +496,42 @@ const POR_MODULO: Record<string, Instructivo> = {
       "Cada abono baja el saldo y entra a Caja y Contabilidad; la lista logística se chulea tarea por tarea.",
     ],
   },
+  sst_empresas: {
+    titulo: "Empresas cliente y convenios",
+    paraQue: "Llevar cada empresa con su riesgo ARL y sus trabajadores cubiertos.",
+    pasos: ["Registra la empresa con NIT, contacto y número de trabajadores.", "Marca su nivel de riesgo ARL (I a V).", "Descarga o comparte el estado por WhatsApp."],
+  },
+  sst_evaluaciones: {
+    titulo: "Medicina del trabajo y aptitud",
+    paraQue: "Evaluar trabajadores y emitir el certificado de aptitud con código seguro.",
+    pasos: ["Registra al trabajador con documento, cargo y vencimiento del examen.", "Guarda la evaluación (Ingreso, Periódico, Egreso, Post-Incapacidad, Alturas o Espacios Confinados) con su concepto.", "Genera el certificado en PDF: trae código seguro y no incluye historia clínica.", "Cobra el examen: entra a Caja y Contabilidad. Avisa vencimientos por WhatsApp."],
+    consejo: "La historia clínica nunca se escribe aquí: solo el concepto de aptitud.",
+  },
+  sst_profesiograma: {
+    titulo: "Profesiograma y matriz IPVR",
+    paraQue: "Definir peligros GTC 45, controles y EPP por cargo.",
+    pasos: ["Por cada empresa y cargo escribe peligros, controles y EPP obligatorio.", "Define cada cuántos meses se repite el examen.", "El vencimiento se avisa desde Medicina del trabajo por WhatsApp."],
+  },
+  sst_estandares: {
+    titulo: "SG-SST y estándares mínimos",
+    paraQue: "Evaluar 7, 21 o 60 estándares (Res. 0312) y llevar plan anual y ATEL.",
+    pasos: ["Elige tamaño y riesgo: el programa dice cuántos estándares aplican.", "Anota cuántos cumples: el porcentaje sale solo.", "Guarda plan anual, COPASST y comité de convivencia.", "Registra cada accidente o enfermedad y avanza su investigación hasta cerrarla."],
+  },
+  sst_sve: {
+    titulo: "Vigilancia y ausentismo (SVE)",
+    paraQue: "Controlar incapacidades por programa de vigilancia.",
+    pasos: ["Registra cada incapacidad con trabajador, empresa, programa y días.", "Arriba ves los días perdidos por programa para actuar donde más duele."],
+  },
+  sst_capacitaciones: {
+    titulo: "Capacitaciones y brigadas",
+    paraQue: "Programar temas, tomar asistencia y certificar.",
+    pasos: ["Programa cada capacitación con tema, empresa y fecha.", "Marca la asistencia de cada persona.", "Genera la lista en PDF y los certificados.", "Cobra el contrato: entra a Caja y Contabilidad."],
+  },
+  sst_normativa: {
+    titulo: "Normativa SST Colombia (IA)",
+    paraQue: "Tener vigentes Decreto 1072, Res. 0312, alturas y GTC 45.",
+    pasos: ["Pulsa «Actualizar normativa SST Colombia (IA)» para verificar y guardar las normas.", "Exporta el listado a Excel para tus auditorías."],
+  },
 };
 
 const GENERICO ="Para guardar cambios toca el botón de guardar; todo queda registrado en tu cuenta.";

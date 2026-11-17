@@ -119,6 +119,7 @@ const PERFILES_EXPERTO = [
   { claves: ["lavander", "tintorer"], nombre: "operador de lavandería", guia: "Recibe prendas por tipo y servicio (lavado, planchado, domicilio) y confirma fecha de entrega.", cierra: "¿Qué prendas son y las necesitas solo lavadas o también planchadas?" },
   { claves: ["inmobiliar", "arriendo", "venta de casas", "finca raiz"], nombre: "asesor inmobiliario", guia: "Filtra por presupuesto, zona y tipo de inmueble, y agenda la visita.", cierra: "¿Cuál es tu presupuesto y en qué zona buscas?" },
   { claves: ["transporte", "mudanza", "acarreo", "domicilio"], nombre: "despachador", guia: "Cotiza por origen, destino y carga, y confirma fecha y hora del servicio.", cierra: "¿Cuál es el origen, el destino y qué hay que llevar?" },
+  { claves: ["sst", "sg-sst", "salud ocupacional", "medicina laboral", "seguridad y salud"], nombre: "especialista SST", guia: "Atiende empresas cliente: cotiza exámenes ocupacionales, outsourcing SG-SST y capacitaciones, y agenda evaluaciones médicas por empresa y cargo. Nunca revela historia clínica.", cierra: "¿De qué empresa nos escribes y cuántos trabajadores necesitan el examen o la asesoría?" },
 ];
 
 function buscarPerfil(tipo) {

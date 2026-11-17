@@ -31,6 +31,7 @@ import { ComisionesTaller, OrdenesTaller, ProyectosMedida, RepuestosTaller } fro
 import { AgroLotes, ObrasConstructora, PropiedadesInmobiliaria, TransporteManifiestos } from "@/components/medida/MedidaModulos";
 import { AcademicoEducacion, ControlFarmacia, EventosSalon, FormulasOptica, HabitacionesHotel, MatriculasEducacion, MatrizModa, PensionesEducacion, ReservasHotel } from "@/components/turismo/TurismoModulos";
 import { FacturaFiscal } from "@/components/fiscal/FacturaFiscal";
+import { CapacitacionesBrigadas, EmpresasSST, EstandaresSST, NormativaSST, ProfesiogramaMatriz, TrabajadoresEvaluaciones, VigilanciaAusentismo } from "@/components/sst/SaludOcupacionalModulos";
 import { JoyeriaPiezas, LavanderiaOrdenes, LicoreraDomicilios, PapeleriaEncargos, ParqueaderoTurnos, ProfesionalCasos, TecnologiaProyectos } from "@/components/oficios/OficiosModulos";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
@@ -116,6 +117,13 @@ function ModuloPage() {
   if (id === "opt_formulas") return <FormulasOptica />;
   if (id === "eve_eventos") return <EventosSalon />;
   if (id === "lav_ordenes") return <LavanderiaOrdenes />;
+  if (id === "sst_empresas") return <EmpresasSST />;
+  if (id === "sst_evaluaciones") return <TrabajadoresEvaluaciones />;
+  if (id === "sst_profesiograma") return <ProfesiogramaMatriz />;
+  if (id === "sst_estandares") return <EstandaresSST />;
+  if (id === "sst_sve") return <VigilanciaAusentismo />;
+  if (id === "sst_capacitaciones") return <CapacitacionesBrigadas />;
+  if (id === "sst_normativa") return <NormativaSST />;
   if (id === "prof_casos") return <ProfesionalCasos />;
   if (id === "tec_proyectos") return <TecnologiaProyectos />;
   if (id === "pap_encargos") return <PapeleriaEncargos />;

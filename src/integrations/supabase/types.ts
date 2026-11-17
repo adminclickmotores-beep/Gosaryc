@@ -2540,6 +2540,66 @@ export type Database = {
         Update: { abono?: number; created_at?: string; entrada?: string; estado?: string; horas?: number; id?: string; owner_id?: string | null; placa?: string; salida?: string | null; tarifa?: number; tipo_negocio?: string | null; total?: number }
         Relationships: []
       }
+      sst_empresas: {
+        Row: { contacto: string | null; created_at: string; estado: string; id: string; n_trabajadores: number; nit: string | null; nombre: string; owner_id: string | null; riesgo: string; telefono: string | null; tipo_negocio: string | null }
+        Insert: { contacto?: string | null; created_at?: string; estado?: string; id?: string; n_trabajadores?: number; nit?: string | null; nombre: string; owner_id?: string | null; riesgo?: string; telefono?: string | null; tipo_negocio?: string | null }
+        Update: { contacto?: string | null; created_at?: string; estado?: string; id?: string; n_trabajadores?: number; nit?: string | null; nombre?: string; owner_id?: string | null; riesgo?: string; telefono?: string | null; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      sst_trabajadores: {
+        Row: { cargo: string; created_at: string; documento: string; empresa_id: string | null; examen_vence: string | null; id: string; nombre: string; owner_id: string | null; telefono: string | null; tipo_negocio: string | null }
+        Insert: { cargo?: string; created_at?: string; documento?: string; empresa_id?: string | null; examen_vence?: string | null; id?: string; nombre: string; owner_id?: string | null; telefono?: string | null; tipo_negocio?: string | null }
+        Update: { cargo?: string; created_at?: string; documento?: string; empresa_id?: string | null; examen_vence?: string | null; id?: string; nombre?: string; owner_id?: string | null; telefono?: string | null; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      sst_evaluaciones: {
+        Row: { abono: number; codigo_seguro: string; concepto: string; created_at: string; empresa: string; estado: string; fecha: string; id: string; owner_id: string | null; restricciones: string; tipo: string; tipo_negocio: string | null; trabajador: string; trabajador_id: string | null; valor: number; vence: string | null }
+        Insert: { abono?: number; codigo_seguro?: string; concepto?: string; created_at?: string; empresa?: string; estado?: string; fecha?: string; id?: string; owner_id?: string | null; restricciones?: string; tipo?: string; tipo_negocio?: string | null; trabajador?: string; trabajador_id?: string | null; valor?: number; vence?: string | null }
+        Update: { abono?: number; codigo_seguro?: string; concepto?: string; created_at?: string; empresa?: string; estado?: string; fecha?: string; id?: string; owner_id?: string | null; restricciones?: string; tipo?: string; tipo_negocio?: string | null; trabajador?: string; trabajador_id?: string | null; valor?: number; vence?: string | null }
+        Relationships: []
+      }
+      sst_profesiogramas: {
+        Row: { cargo: string; controles: string; created_at: string; empresa: string; epp: string; id: string; owner_id: string | null; peligros: string; periodicidad_meses: number; tipo_negocio: string | null }
+        Insert: { cargo?: string; controles?: string; created_at?: string; empresa?: string; epp?: string; id?: string; owner_id?: string | null; peligros?: string; periodicidad_meses?: number; tipo_negocio?: string | null }
+        Update: { cargo?: string; controles?: string; created_at?: string; empresa?: string; epp?: string; id?: string; owner_id?: string | null; peligros?: string; periodicidad_meses?: number; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      sst_estandares: {
+        Row: { convivencia: string; copasst: string; created_at: string; cumple: number; empresa: string; id: string; owner_id: string | null; plan_anual: string; riesgo: string; tamano: string; tipo_negocio: string | null; total_aplica: number }
+        Insert: { convivencia?: string; copasst?: string; created_at?: string; cumple?: number; empresa?: string; id?: string; owner_id?: string | null; plan_anual?: string; riesgo?: string; tamano?: string; tipo_negocio?: string | null; total_aplica?: number }
+        Update: { convivencia?: string; copasst?: string; created_at?: string; cumple?: number; empresa?: string; id?: string; owner_id?: string | null; plan_anual?: string; riesgo?: string; tamano?: string; tipo_negocio?: string | null; total_aplica?: number }
+        Relationships: []
+      }
+      sst_atel: {
+        Row: { created_at: string; descripcion: string; empresa: string; estado: string; fecha: string; id: string; owner_id: string | null; tipo: string; tipo_negocio: string | null; trabajador: string }
+        Insert: { created_at?: string; descripcion?: string; empresa?: string; estado?: string; fecha?: string; id?: string; owner_id?: string | null; tipo?: string; tipo_negocio?: string | null; trabajador?: string }
+        Update: { created_at?: string; descripcion?: string; empresa?: string; estado?: string; fecha?: string; id?: string; owner_id?: string | null; tipo?: string; tipo_negocio?: string | null; trabajador?: string }
+        Relationships: []
+      }
+      sst_ausentismo: {
+        Row: { created_at: string; dias: number; empresa: string; fecha: string; id: string; owner_id: string | null; programa: string; tipo_negocio: string | null; trabajador: string }
+        Insert: { created_at?: string; dias?: number; empresa?: string; fecha?: string; id?: string; owner_id?: string | null; programa?: string; tipo_negocio?: string | null; trabajador?: string }
+        Update: { created_at?: string; dias?: number; empresa?: string; fecha?: string; id?: string; owner_id?: string | null; programa?: string; tipo_negocio?: string | null; trabajador?: string }
+        Relationships: []
+      }
+      sst_capacitaciones: {
+        Row: { abono: number; created_at: string; empresa: string; estado: string; fecha: string; id: string; owner_id: string | null; tema: string; tipo_negocio: string | null; valor: number }
+        Insert: { abono?: number; created_at?: string; empresa?: string; estado?: string; fecha?: string; id?: string; owner_id?: string | null; tema: string; tipo_negocio?: string | null; valor?: number }
+        Update: { abono?: number; created_at?: string; empresa?: string; estado?: string; fecha?: string; id?: string; owner_id?: string | null; tema?: string; tipo_negocio?: string | null; valor?: number }
+        Relationships: []
+      }
+      sst_asistencias: {
+        Row: { capacitacion_id: string | null; created_at: string; documento: string; id: string; nombre: string; owner_id: string | null }
+        Insert: { capacitacion_id?: string | null; created_at?: string; documento?: string; id?: string; nombre?: string; owner_id?: string | null }
+        Update: { capacitacion_id?: string | null; created_at?: string; documento?: string; id?: string; nombre?: string; owner_id?: string | null }
+        Relationships: []
+      }
+      sst_novedades: {
+        Row: { aplicada: boolean; created_at: string; fuente: string; id: string; resumen: string; titulo: string; vigencia_desde: string | null }
+        Insert: { aplicada?: boolean; created_at?: string; fuente?: string; id?: string; resumen?: string; titulo: string; vigencia_desde?: string | null }
+        Update: { aplicada?: boolean; created_at?: string; fuente?: string; id?: string; resumen?: string; titulo?: string; vigencia_desde?: string | null }
+        Relationships: []
+      }
       tal_ordenes: {
         Row: {
           abono: number
@@ -7892,6 +7952,7 @@ export type Database = {
         Returns: Json
       }
       ofi_cobrar: { Args: { p_tabla: string; p_id: string; p_valor: number; p_metodo: string }; Returns: Json }
+      sst_cobrar: { Args: { p_tabla: string; p_id: string; p_valor: number; p_metodo: string }; Returns: Json }
       obr_registrar_vale: {
         Args: { p_obra: string; p_capitulo: string | null; p_items: Json; p_entregado: string | null }
         Returns: Json

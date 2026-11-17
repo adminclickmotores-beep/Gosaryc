@@ -1221,7 +1221,22 @@ for (const [clave, nuevos] of Object.entries(MODULOS_OFICIOS)) {
   tipoOfi.modulos = [...faltan, ...tipoOfi.modulos.filter((x) => !quitar.includes(x.id))];
 }
 
-// Se agrega el módulo de cotizaciones a los tipos que cotizan y no tienen uno propio.
+// ---- Salud ocupacional y SG-SST (medicina laboral, profesiograma, estándares 0312, SVE, capacitación) ----
+const MODULOS_SST: ModuloNegocio[] = [
+  m("sst_empresas", "Empresas cliente y convenios", "Convenios con empresas, riesgo ARL y trabajadores cubiertos.", Handshake),
+  m("sst_evaluaciones", "Medicina del trabajo y aptitud", "Evaluaciones de ingreso, periódico, egreso, alturas y certificado de aptitud con código seguro.", Stethoscope),
+  m("sst_profesiograma", "Profesiograma y matriz IPVR", "Peligros GTC 45, controles, EPP y periodicidad de exámenes por cargo.", ClipboardList),
+  m("sst_estandares", "SG-SST y estándares mínimos", "Evaluación 7, 21 o 60 estándares (Res. 0312), plan anual, COPASST, convivencia e investigación ATEL.", ShieldCheck),
+  m("sst_sve", "Vigilancia y ausentismo (SVE)", "Riesgo psicosocial, osteomuscular, auditivo y control de incapacidades por días.", TrendingUp),
+  m("sst_capacitaciones", "Capacitaciones y brigadas", "Cronograma por temas, asistencia digital y certificados en PDF.", GraduationCap),
+  m("sst_normativa", "Normativa SST Colombia (IA)", "Decreto 1072, Res. 0312, alturas y GTC 45 con actualización automática.", Scale),
+];
+for (const t of TIPOS_NEGOCIO) {
+  if (t.clave !== "salud") continue;
+  const faltan = MODULOS_SST.filter((e) => !t.modulos.some((x) => x.id === e.id));
+  if (faltan.length > 0) t.modulos = [...faltan, ...t.modulos];
+  break;
+}
 // Salud (presupuestos de tratamiento), educación, hospedaje, gimnasio, mascotas, agro, farmacia y lavandería no cotizan así.
 const SIN_COTIZACIONES: TipoNegocioClave[] = ["tienda","restaurante", "cafeteria", "comida_rapida","salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro", "farmacia", "lavanderia", "belleza", "inmobiliaria", "tecnologia", "condominio", "prestamos", "papeleria", "supermercado", "carniceria", "licorera", "floristeria", "optica", "guarderia", "ganaderia", "fundacion", "iglesia", "seguridad_aseo", "alquiler_vehiculos", "parqueadero"];
 for (const t of TIPOS_NEGOCIO) {
@@ -1282,6 +1297,7 @@ export function resolverTipoNegocio(valor: string | null | undefined): TipoNegoc
   if (/evento|fotograf|boda|salon social|matrimonio|quince/.test(t)) return por("eventos");
   if (/abogad|juridic|legal|contab|consultor|notari|despacho|asesor/.test(t)) return por("profesional");
   if (/salud|clinic|consultorio|odont|dental|medic|fisio|psicolog|laborator/.test(t)) return por("salud");
+  if (/sst\b|sg-sst|salud ocupacional|medicina laboral|seguridad y salud/.test(t)) return por("salud");
   if (/educa|academ|colegio|curso|escuela|jardin|capacit/.test(t)) return por("educacion");
   if (/hotel|hostal|hospeda|turism|cabana|glamping/.test(t)) return por("hospedaje");
   if (/gimnas|gym|deporte|yoga|crossfit|bienestar/.test(t)) return por("gimnasio");

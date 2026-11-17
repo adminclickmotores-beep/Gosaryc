@@ -64,6 +64,7 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
       { titulo: "Pide consentimiento y guarda la historia", texto: "Registra el consentimiento informado antes de cada procedimiento. La historia clínica se conserva mínimo 20 años y solo la ve quien debe: revisa “Auditoría de accesos”." },
       { titulo: "Cobra a las EPS sin perder plata", texto: "Factura en “Facturación y RIPS”, y en “Glosas y cartera con EPS” responde cada glosa antes de su plazo." },
       { titulo: "Cumple la habilitación", texto: "En “Habilitación y calidad” y “Residuos hospitalarios” guarda REPS, calibraciones, actas del gestor de residuos y próximas fechas obligatorias." },
+      { titulo: "Monta tu outsourcing SST", texto: "En “Empresas cliente y convenios” registra cada empresa con su riesgo ARL; en “Medicina del trabajo y aptitud” guarda evaluaciones y emite el certificado con código seguro; en “Profesiograma y matriz IPVR” define peligros GTC 45 y EPP por cargo; en “SG-SST y estándares mínimos” evalúa 7, 21 o 60 estándares con plan anual, COPASST y ATEL; en “Vigilancia y ausentismo” lleva días perdidos por programa; en “Capacitaciones y brigadas” programa temas y toma asistencia; y en “Normativa SST” actualiza las normas 2026." },
     ],
   },
   educacion: {
