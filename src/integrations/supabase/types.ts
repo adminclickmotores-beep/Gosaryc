@@ -7594,6 +7594,32 @@ export type Database = {
         Args: { p_proyecto: string; p_monto: number; p_metodo: string; p_es_abono: boolean }
         Returns: Json
       }
+      ofi_cobrar: { Args: { p_tabla: string; p_id: string; p_valor: number; p_metodo: string }; Returns: Json }
+      obr_registrar_vale: {
+        Args: { p_obra: string; p_capitulo: string | null; p_items: Json; p_entregado: string | null }
+        Returns: Json
+      }
+      obr_cobrar_corte: { Args: { p_corte: string; p_metodo: string }; Returns: Json }
+      inm_cobrar_canon: { Args: { p_cobro: string; p_metodo: string }; Returns: Json }
+      inm_liquidar: { Args: { p_contrato: string; p_metodo: string }; Returns: Json }
+      agr_aplicar: {
+        Args: { p_lote: string; p_insumo: string; p_cantidad: number; p_dosis: string | null }
+        Returns: Json
+      }
+      agr_vender: {
+        Args: { p_lote: string; p_cantidad: number; p_precio: number; p_cliente: string | null; p_metodo: string }
+        Returns: Json
+      }
+      tra_anticipo: {
+        Args: { p_manifiesto: string; p_concepto: string; p_detalle: string | null; p_valor: number }
+        Returns: Json
+      }
+      tra_cobrar_flete: { Args: { p_manifiesto: string; p_metodo: string }; Returns: Json }
+      tra_liquidar: { Args: { p_manifiesto: string; p_pago: number; p_metodo: string }; Returns: Json }
+      fac_emitir: {
+        Args: { p_cliente: string; p_cliente_doc: string | null; p_items: Json; p_iva: number; p_formato: string }
+        Returns: Json
+      }
       accept_org_invite: { Args: { _token: string }; Returns: string }
       es_superadmin: { Args: never; Returns: boolean }
       verificar_licencia: { Args: { p_codigo: string }; Returns: Json }
