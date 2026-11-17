@@ -266,7 +266,7 @@ export const CURSO_GOSARYC = {
           pasos: [
             "En el calendario de obligaciones mira lo que vence este mes: PILA, retención, nómina electrónica, cesantías, primas y vacaciones.",
             "En módulos de permisos o vencimientos de tu giro (sanidad, habilitación, SOAT, tecnomecánica) guarda cada fecha de renovación para recibir la alerta a tiempo.",
-            "Lleva la facturación electrónica en «Facturación DIAN»: número, cliente, valor y estado de cobro. Si contratas la DIAN, cada factura guarda su CUFE y QR oficial.",
+            "Lleva la facturación electrónica en «Facturación DIAN»: número, cliente, valor y estado de cobro. Si contratas la DIAN, cada factura guarda su CUFE y QR oficial. En Finanzas, «Contador Pro Colombia» genera tu cronograma de vencimientos con semáforo, pre-liquida Retefuente, IVA e ICA, valida tus terceros para la exógena y actualiza la normativa con IA.",
             "Consulta siempre a tu contador: Gosaryc es una guía de control, no reemplaza la asesoría contable ni la liquidación oficial.",
           ],
           practica: { ruta: "/equipo-nomina", etiqueta: "Ver calendario" },

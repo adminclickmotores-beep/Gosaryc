@@ -4511,6 +4511,11 @@ export type Database = {
           resolucion_vence: string | null
           iva_defecto: number
           dian_activa: boolean
+          contador_nombre: string | null
+          contador_telefono: string | null
+          contador_correo: string | null
+          ica_municipio: string | null
+          ica_ciuu: string | null
         }
         Insert: {
           aviso_entrega?: string | null
@@ -4547,6 +4552,11 @@ export type Database = {
           resolucion_vence?: string | null
           iva_defecto?: number
           dian_activa?: boolean
+          contador_nombre?: string | null
+          contador_telefono?: string | null
+          contador_correo?: string | null
+          ica_municipio?: string | null
+          ica_ciuu?: string | null
         }
         Update: {
           aviso_entrega?: string | null
@@ -4583,6 +4593,11 @@ export type Database = {
           resolucion_vence?: string | null
           iva_defecto?: number
           dian_activa?: boolean
+          contador_nombre?: string | null
+          contador_telefono?: string | null
+          contador_correo?: string | null
+          ica_municipio?: string | null
+          ica_ciuu?: string | null
         }
         Relationships: []
       }
@@ -4628,6 +4643,144 @@ export type Database = {
           resolucion?: string | null
           token_api?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      calendario_tributario_oficial: {
+        Row: {
+          anio: number
+          created_at: string
+          fecha_vencimiento: string
+          id: string
+          impuesto: string
+          municipio: string | null
+          periodicidad: string
+          periodo: string
+          ultimo_digito: string | null
+        }
+        Insert: {
+          anio: number
+          created_at?: string
+          fecha_vencimiento: string
+          id?: string
+          impuesto: string
+          municipio?: string | null
+          periodicidad?: string
+          periodo?: string
+          ultimo_digito?: string | null
+        }
+        Update: {
+          anio?: number
+          created_at?: string
+          fecha_vencimiento?: string
+          id?: string
+          impuesto?: string
+          municipio?: string | null
+          periodicidad?: string
+          periodo?: string
+          ultimo_digito?: string | null
+        }
+        Relationships: []
+      }
+      obligaciones_tributarias_negocio: {
+        Row: {
+          acuse_url: string | null
+          anio: number
+          created_at: string
+          estado: string
+          fecha_vencimiento: string
+          id: string
+          impuesto: string
+          notas: string | null
+          owner_id: string | null
+          periodo: string
+          soporte_url: string | null
+        }
+        Insert: {
+          acuse_url?: string | null
+          anio: number
+          created_at?: string
+          estado?: string
+          fecha_vencimiento: string
+          id?: string
+          impuesto: string
+          notas?: string | null
+          owner_id?: string | null
+          periodo?: string
+          soporte_url?: string | null
+        }
+        Update: {
+          acuse_url?: string | null
+          anio?: number
+          created_at?: string
+          estado?: string
+          fecha_vencimiento?: string
+          id?: string
+          impuesto?: string
+          notas?: string | null
+          owner_id?: string | null
+          periodo?: string
+          soporte_url?: string | null
+        }
+        Relationships: []
+      }
+      novedades_normativas: {
+        Row: {
+          aplicada: boolean
+          created_at: string
+          fuente: string
+          id: string
+          resumen: string
+          titulo: string
+          vigencia_desde: string | null
+        }
+        Insert: {
+          aplicada?: boolean
+          created_at?: string
+          fuente?: string
+          id?: string
+          resumen?: string
+          titulo: string
+          vigencia_desde?: string | null
+        }
+        Update: {
+          aplicada?: boolean
+          created_at?: string
+          fuente?: string
+          id?: string
+          resumen?: string
+          titulo?: string
+          vigencia_desde?: string | null
+        }
+        Relationships: []
+      }
+      ica_tarifas: {
+        Row: {
+          actividad: string
+          ciuu: string
+          created_at: string
+          id: string
+          municipio: string
+          owner_id: string | null
+          tarifa_por_mil: number
+        }
+        Insert: {
+          actividad?: string
+          ciuu?: string
+          created_at?: string
+          id?: string
+          municipio?: string
+          owner_id?: string | null
+          tarifa_por_mil?: number
+        }
+        Update: {
+          actividad?: string
+          ciuu?: string
+          created_at?: string
+          id?: string
+          municipio?: string
+          owner_id?: string | null
+          tarifa_por_mil?: number
         }
         Relationships: []
       }
@@ -4711,6 +4864,9 @@ export type Database = {
           nombre: string
           notas: string | null
           telefono: string
+          documento: string | null
+          digito_verificacion: string | null
+          correo: string | null
           total_gastado: number
           total_pedidos: number
           ultimo_pedido: string | null
@@ -4722,6 +4878,9 @@ export type Database = {
           nombre: string
           notas?: string | null
           telefono: string
+          documento?: string | null
+          digito_verificacion?: string | null
+          correo?: string | null
           total_gastado?: number
           total_pedidos?: number
           ultimo_pedido?: string | null
@@ -4733,6 +4892,9 @@ export type Database = {
           nombre?: string
           notas?: string | null
           telefono?: string
+          documento?: string | null
+          digito_verificacion?: string | null
+          correo?: string | null
           total_gastado?: number
           total_pedidos?: number
           ultimo_pedido?: string | null

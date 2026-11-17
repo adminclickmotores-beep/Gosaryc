@@ -81,8 +81,9 @@ const POR_RUTA: Record<string, Instructivo> = {
       "En “Libro diario” pulsa “Nuevo asiento”: el total del debe y del haber debe ser igual para poder guardar.",
       "Usa los filtros de fecha, cuenta y tipo para ver lo que necesites.",
       "El libro mayor muestra cada cuenta por separado y el balance comprueba que todo cuadre.",
+      "En “Contador Pro Colombia” genera tu cronograma anual de vencimientos (semáforo rojo, amarillo y verde), pre-liquida Retefuente, IVA e ICA con tus asientos reales, valida tus terceros para la exógena y actualiza la normativa con IA.",
     ],
-    consejo: "Ejemplo de gasto: debe en la cuenta de gasto (arriendo) y haber en Caja por el mismo valor.",
+    consejo: "Ejemplo de gasto: debe en la cuenta de gasto (arriendo) y haber en Caja por el mismo valor. Todo es estimado: tu contador confirma antes de declarar.",
   },
   "/pagos-digitales": {
     titulo: "Nequi, Daviplata y Bre-B",

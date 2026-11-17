@@ -442,4 +442,5 @@ export const PASOS_GENERALES: { titulo: string; texto: string }[] = [
   { titulo: "Pide soporte si algo falla", texto: "Si el Agente virtual y la Academia no lo resuelven, entra a “Soporte” en el menú lateral y crea un ticket; el equipo te responde ahí y ves su estado." },
   { titulo: "Carga tu inventario de una vez", texto: "En Productos usa “Importar desde Excel o CSV”: descarga la plantilla, llénala y súbela; el programa te muestra los errores antes de guardar." },
   { titulo: "Manda el cierre al dueño", texto: "Con “Enviar cierre por WhatsApp” (en Caja, Reportes, Configuración o el Agente) le llega al dueño ventas, efectivo, créditos y stock crítico." },
+  { titulo: "No se te pase ningún impuesto", texto: "En Finanzas abre “Contador Pro Colombia” y genera tu cronograma anual: te avisa cada vencimiento con semáforo y por WhatsApp." },
 ];

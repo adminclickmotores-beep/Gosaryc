@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { exportarExcel, imprimirReporte } from "@/lib/exportes";
+import { ContadorPro } from "@/components/fiscal/ContadorPro";
 
 type Cuenta = Tables<"cuentas_contables">;
 type Asiento = Tables<"asientos_contables">;
@@ -608,6 +609,9 @@ export function Contabilidad() {
           </div>
         </div>
       )}
+
+      {/* Contador Pro Colombia: vencimientos, impuestos, exógena y normativa */}
+      {!cargando && cuentas.length > 0 && <ContadorPro cuentas={cuentas} filas={filas} />}
     </section>
   );
 }
