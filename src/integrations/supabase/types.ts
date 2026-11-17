@@ -4366,6 +4366,7 @@ export type Database = {
           activo: boolean
           clave: string
           created_at: string
+          ia_activa: boolean
           id: string
           instrucciones: string | null
           negocio_id: string
@@ -4376,6 +4377,7 @@ export type Database = {
           activo?: boolean
           clave?: string
           created_at?: string
+          ia_activa?: boolean
           id?: string
           instrucciones?: string | null
           negocio_id: string
@@ -4386,11 +4388,78 @@ export type Database = {
           activo?: boolean
           clave?: string
           created_at?: string
+          ia_activa?: boolean
           id?: string
           instrucciones?: string | null
           negocio_id?: string
           nombre_agente?: string
           owner_id?: string
+        }
+        Relationships: []
+      }
+      whatsapp_avisos: {
+        Row: {
+          chat_id: string | null
+          created_at: string
+          detalle: string | null
+          id: string
+          leido: boolean
+          negocio_id: string
+          owner_id: string
+          tipo: string
+          titulo: string
+        }
+        Insert: {
+          chat_id?: string | null
+          created_at?: string
+          detalle?: string | null
+          id?: string
+          leido?: boolean
+          negocio_id: string
+          owner_id: string
+          tipo?: string
+          titulo: string
+        }
+        Update: {
+          chat_id?: string | null
+          created_at?: string
+          detalle?: string | null
+          id?: string
+          leido?: boolean
+          negocio_id?: string
+          owner_id?: string
+          tipo?: string
+          titulo?: string
+        }
+        Relationships: []
+      }
+      whatsapp_conocimiento_negocio: {
+        Row: {
+          created_at: string
+          frecuencia: number
+          id: string
+          negocio_id: string
+          owner_id: string
+          pregunta_patron: string
+          respuesta_aprendida: string
+        }
+        Insert: {
+          created_at?: string
+          frecuencia?: number
+          id?: string
+          negocio_id: string
+          owner_id: string
+          pregunta_patron: string
+          respuesta_aprendida: string
+        }
+        Update: {
+          created_at?: string
+          frecuencia?: number
+          id?: string
+          negocio_id?: string
+          owner_id?: string
+          pregunta_patron?: string
+          respuesta_aprendida?: string
         }
         Relationships: []
       }

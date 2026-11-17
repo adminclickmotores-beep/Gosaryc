@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Bot, Eye, EyeOff, Link2, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { Bot, Eye, EyeOff, Link2, Plus, RefreshCw, Send, Trash2, UserCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
@@ -8,10 +8,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import type { Tables } from "@/integrations/supabase/types";
 
 type AgenteFila = Tables<"agente_whatsapp">;
+type Conocimiento = Tables<"whatsapp_conocimiento_negocio">;
+type AvisoDB = Tables<"whatsapp_avisos">;
 type LineaLocal = { id: string; nombre: string; estado: string; agente: boolean; conClave: boolean; qr: string; aviso: string };
 type ReglaEditable = { palabras: string; respuesta: string; asesor: boolean };
 type RespuestasEditables = { saludo: string; sinRespuesta: string; reglas: ReglaEditable[] };
 type RespuestasApi = { saludo: string; sinRespuesta: string; reglas: Array<{ palabras: string[]; respuesta: string; asesor: boolean }> };
+type MensajeChat = { role: string; content: string };
+type ChatVivo = { jid: string; telefono: string; nombre: string; visto: string; noLeidos: number; humano: boolean; historial: MensajeChat[] };
+type AvisoLocal = { id: string; linea: string; nombre: string; tipo: string; titulo: string; detalle: string; chat: string; fecha: string };
+type PendAprend = { id: string; linea: string; pregunta: string; respuesta: string; fecha: string };
 
 const API_LOCAL = "http://localhost:3001";
 const ETIQUETA_ESTADO: Record<string, string> = {
@@ -20,13 +26,22 @@ const ETIQUETA_ESTADO: Record<string, string> = {
   listo: "Conectado",
   desconectado: "Desconectado",
 };
+const ETIQUETA_AVISO: Record<string, string> = {
+  nuevo_pedido: "Posible pedido o cita",
+  espera_humano: "Cliente espera a una persona",
+  stock_critico: "Stock crítico",
+  cierre_turno: "Cierre de turno",
+  otro: "Aviso",
+};
 
-/** Configura el agente de atención por WhatsApp del negocio (respuestas propias, sin IA) y conecta su número en la API local. */
+/** Panel de control del Agente WhatsApp IA: conexión y QR, bandeja de chats en vivo, IA por negocio y entrenamiento. */
 export function AgenteWhatsApp() {
   const { negocio } = useNegocio();
   const { user } = useAuth();
   const [agente, setAgente] = useState<AgenteFila | null>(null);
   const [nombreAgente, setNombreAgente] = useState("Asistente");
+  const [instrucciones, setInstrucciones] = useState("");
+  const [iaActiva, setIaActiva] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [claveLocal, setClaveLocal] = useState("");
   const [verClave, setVerClave] = useState(false);
@@ -34,6 +49,16 @@ export function AgenteWhatsApp() {
   const [apiCaida, setApiCaida] = useState(false);
   const [respuestas, setRespuestas] = useState<RespuestasEditables | null>(null);
   const [guardandoResp, setGuardandoResp] = useState(false);
+  const [chats, setChats] = useState<ChatVivo[]>([]);
+  const [chatSel, setChatSel] = useState("");
+  const [textoHumano, setTextoHumano] = useState("");
+  const [enviandoHumano, setEnviandoHumano] = useState(false);
+  const [avisosLocal, setAvisosLocal] = useState<AvisoLocal[]>([]);
+  const [avisosDB, setAvisosDB] = useState<AvisoDB[]>([]);
+  const [conocimiento, setConocimiento] = useState<Conocimiento[]>([]);
+  const [pendientes, setPendientes] = useState<PendAprend[]>([]);
+  const [nuevaPregunta, setNuevaPregunta] = useState("");
+  const [nuevaRespuesta, setNuevaRespuesta] = useState("");
 
   const idLinea = (negocio?.id ?? "").slice(0, 8) || "negocio";
 
@@ -45,12 +70,30 @@ export function AgenteWhatsApp() {
     if (!negocio) return;
     const { data } = await supabase.from("agente_whatsapp").select("*").eq("negocio_id", negocio.id).maybeSingle();
     setAgente(data);
-    if (data) setNombreAgente(data.nombre_agente);
+    if (data) {
+      setNombreAgente(data.nombre_agente);
+      setInstrucciones(data.instrucciones ?? "");
+      setIaActiva(data.ia_activa);
+    }
   }, [negocio]);
 
   useEffect(() => {
     void cargar();
   }, [cargar]);
+
+  const cargarConocimiento = useCallback(async () => {
+    if (!negocio) return;
+    const [c, a] = await Promise.all([
+      supabase.from("whatsapp_conocimiento_negocio").select("*").eq("negocio_id", negocio.id).order("frecuencia", { ascending: false }).limit(100),
+      supabase.from("whatsapp_avisos").select("*").eq("negocio_id", negocio.id).order("created_at", { ascending: false }).limit(30),
+    ]);
+    setConocimiento(c.data ?? []);
+    setAvisosDB(a.data ?? []);
+  }, [negocio]);
+
+  useEffect(() => {
+    void cargarConocimiento();
+  }, [cargarConocimiento]);
 
   const consultarLinea = useCallback(async () => {
     if (!claveLocal.trim()) return;
@@ -68,6 +111,23 @@ export function AgenteWhatsApp() {
     }
   }, [claveLocal, idLinea]);
 
+  const consultarVivo = useCallback(async () => {
+    if (!claveLocal.trim()) return;
+    try {
+      const auth = { Authorization: `Bearer ${claveLocal.trim()}` };
+      const [rc, ra, rp] = await Promise.all([
+        fetch(`${API_LOCAL}/chats?linea=${encodeURIComponent(idLinea)}`, { headers: auth }),
+        fetch(`${API_LOCAL}/avisos?linea=${encodeURIComponent(idLinea)}`, { headers: auth }),
+        fetch(`${API_LOCAL}/aprendizaje?linea=${encodeURIComponent(idLinea)}`, { headers: auth }),
+      ]);
+      if (rc.ok) setChats(((await rc.json()) as { chats: ChatVivo[] }).chats ?? []);
+      if (ra.ok) setAvisosLocal(((await ra.json()) as { avisos: AvisoLocal[] }).avisos ?? []);
+      if (rp.ok) setPendientes(((await rp.json()) as { pendientes: PendAprend[] }).pendientes ?? []);
+    } catch {
+      /* la API local no está abierta */
+    }
+  }, [claveLocal, idLinea]);
+
   useEffect(() => {
     void consultarLinea();
     const t = setInterval(() => void consultarLinea(), 5000);
@@ -75,6 +135,14 @@ export function AgenteWhatsApp() {
   }, [consultarLinea]);
 
   const existeLinea = !!linea;
+  useEffect(() => {
+    if (!existeLinea) return;
+    void consultarVivo();
+    const t = setInterval(() => void consultarVivo(), 8000);
+    return () => clearInterval(t);
+  }, [existeLinea, consultarVivo]);
+
+  const existeLineaResp = existeLinea;
   const cargarRespuestas = useCallback(async () => {
     if (!claveLocal.trim()) return;
     try {
@@ -94,8 +162,8 @@ export function AgenteWhatsApp() {
   }, [claveLocal, idLinea]);
 
   useEffect(() => {
-    if (existeLinea) void cargarRespuestas();
-  }, [existeLinea, cargarRespuestas]);
+    if (existeLineaResp) void cargarRespuestas();
+  }, [existeLineaResp, cargarRespuestas]);
 
   const guardarRespuestas = async () => {
     if (!respuestas) return;
@@ -128,7 +196,7 @@ export function AgenteWhatsApp() {
   const cambiarRegla = (i: number, cambios: Partial<ReglaEditable>) =>
     setRespuestas((r) => (r ? { ...r, reglas: r.reglas.map((x, j) => (j === i ? { ...x, ...cambios } : x)) } : r));
 
-  const guardar = async (cambios: Partial<Pick<AgenteFila, "activo" | "nombre_agente">>) => {
+  const guardar = async (cambios: Partial<Pick<AgenteFila, "activo" | "nombre_agente" | "instrucciones" | "ia_activa">>) => {
     if (!negocio || !user) return;
     setGuardando(true);
     const { data, error } = agente
@@ -147,6 +215,22 @@ export function AgenteWhatsApp() {
     toast.success("Agente guardado");
   };
 
+  const cambiarIA = async (v: boolean) => {
+    setIaActiva(v);
+    if (claveLocal.trim() && existeLinea) {
+      try {
+        await fetch(`${API_LOCAL}/lineas`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${claveLocal.trim()}` },
+          body: JSON.stringify({ id: idLinea, agente: v }),
+        });
+      } catch {
+        /* se aplica al reconectar */
+      }
+    }
+    await guardar({ ia_activa: v });
+  };
+
   const conectar = async () => {
     if (!claveLocal.trim()) {
       toast.error("Pega la clave de acceso de la API local");
@@ -157,7 +241,7 @@ export function AgenteWhatsApp() {
       const r = await fetch(`${API_LOCAL}/lineas`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${claveLocal.trim()}` },
-        body: JSON.stringify({ id: idLinea, nombre: negocio?.nombre ?? idLinea, clave: agente?.clave ?? "", agente: agente?.activo ?? true }),
+        body: JSON.stringify({ id: idLinea, nombre: negocio?.nombre ?? idLinea, clave: agente?.clave ?? "", agente: iaActiva && (agente?.activo ?? true) }),
       });
       if (!r.ok) throw new Error(r.status === 401 ? "Clave incorrecta" : "Error");
       toast.success("Número agregado. Escanea el código con el WhatsApp de este negocio.");
@@ -167,6 +251,174 @@ export function AgenteWhatsApp() {
     }
   };
 
+  const revincular = async () => {
+    if (!claveLocal.trim()) {
+      toast.error("Pega la clave de acceso de la API local");
+      return;
+    }
+    try {
+      const r = await fetch(`${API_LOCAL}/lineas/revincular`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${claveLocal.trim()}` },
+        body: JSON.stringify({ id: idLinea }),
+      });
+      if (!r.ok) throw new Error("Error");
+      toast.success("Se generó un código nuevo. Escanéalo; tu configuración y lo aprendido se conservan.");
+      void consultarLinea();
+    } catch {
+      toast.error("No se pudo generar el código. Revisa que la API local esté abierta.");
+    }
+  };
+
+  const chatActual = chats.find((c) => c.jid === chatSel) ?? null;
+
+  const verChat = async (jid: string) => {
+    setChatSel(jid);
+    try {
+      await fetch(`${API_LOCAL}/chats?linea=${encodeURIComponent(idLinea)}&ver=${encodeURIComponent(jid)}`, {
+        headers: { Authorization: `Bearer ${claveLocal.trim()}` },
+      });
+    } catch {
+      /* solo marca lectura local */
+    }
+  };
+
+  const responderHumano = async () => {
+    if (!chatActual || !textoHumano.trim()) return;
+    setEnviandoHumano(true);
+    try {
+      const r = await fetch(`${API_LOCAL}/chats/responder`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${claveLocal.trim()}` },
+        body: JSON.stringify({ linea: idLinea, chat: chatActual.jid, mensaje: textoHumano.trim() }),
+      });
+      if (!r.ok) throw new Error("Error");
+      setTextoHumano("");
+      toast.success("Mensaje enviado. La IA queda en pausa en este chat.");
+      void consultarVivo();
+    } catch {
+      toast.error("No se pudo enviar. Revisa que WhatsApp esté conectado.");
+    } finally {
+      setEnviandoHumano(false);
+    }
+  };
+
+  const alternarHumano = async (c: ChatVivo) => {
+    try {
+      await fetch(`${API_LOCAL}/chats/modo-humano`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${claveLocal.trim()}` },
+        body: JSON.stringify({ linea: idLinea, chat: c.jid, humano: !c.humano }),
+      });
+      void consultarVivo();
+    } catch {
+      toast.error("No se pudo cambiar el modo del chat.");
+    }
+  };
+
+  const llevarAlPanel = async (a: AvisoLocal) => {
+    if (!negocio || !user) return;
+    const { error } = await supabase.from("whatsapp_avisos").insert({
+      negocio_id: negocio.id,
+      owner_id: user.id,
+      tipo: a.tipo,
+      titulo: a.titulo,
+      detalle: a.detalle,
+      chat_id: a.chat,
+    });
+    if (error) {
+      toast.error("No se pudo guardar el aviso");
+      return;
+    }
+    try {
+      await fetch(`${API_LOCAL}/avisos/leido`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${claveLocal.trim()}` },
+        body: JSON.stringify({ id: a.id }),
+      });
+    } catch {
+      /* ya quedó en el panel */
+    }
+    toast.success("Aviso guardado en el panel");
+    void consultarVivo();
+    void cargarConocimiento();
+  };
+
+  const marcarAvisoDB = async (a: AvisoDB, leido: boolean) => {
+    await supabase.from("whatsapp_avisos").update({ leido }).eq("id", a.id);
+    void cargarConocimiento();
+  };
+
+  const borrarAvisoDB = async (a: AvisoDB) => {
+    await supabase.from("whatsapp_avisos").delete().eq("id", a.id);
+    void cargarConocimiento();
+  };
+
+  const guardarConocimiento = async () => {
+    if (!negocio || !user || nuevaPregunta.trim().length < 3 || nuevaRespuesta.trim().length < 3) {
+      toast.error("Escribe la pregunta y la respuesta que debe aprender.");
+      return;
+    }
+    const { error } = await supabase.from("whatsapp_conocimiento_negocio").insert({
+      negocio_id: negocio.id,
+      owner_id: user.id,
+      pregunta_patron: nuevaPregunta.trim().slice(0, 300),
+      respuesta_aprendida: nuevaRespuesta.trim().slice(0, 1000),
+    });
+    if (error) {
+      toast.error("No se pudo guardar");
+      return;
+    }
+    setNuevaPregunta("");
+    setNuevaRespuesta("");
+    toast.success("El agente ya aprendió esa respuesta");
+    void cargarConocimiento();
+  };
+
+  const borrarConocimiento = async (id: string) => {
+    await supabase.from("whatsapp_conocimiento_negocio").delete().eq("id", id);
+    void cargarConocimiento();
+  };
+
+  const aprobarPendiente = async (p: PendAprend) => {
+    if (!negocio || !user) return;
+    const { error } = await supabase.from("whatsapp_conocimiento_negocio").insert({
+      negocio_id: negocio.id,
+      owner_id: user.id,
+      pregunta_patron: p.pregunta.slice(0, 300),
+      respuesta_aprendida: p.respuesta.slice(0, 1000),
+    });
+    if (error) {
+      toast.error("No se pudo aprobar");
+      return;
+    }
+    try {
+      await fetch(`${API_LOCAL}/aprendizaje/quitar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${claveLocal.trim()}` },
+        body: JSON.stringify({ id: p.id }),
+      });
+    } catch {
+      /* ya quedó guardado */
+    }
+    toast.success("Respuesta aprobada: el agente la usará");
+    void consultarVivo();
+    void cargarConocimiento();
+  };
+
+  const descartarPendiente = async (p: PendAprend) => {
+    try {
+      await fetch(`${API_LOCAL}/aprendizaje/quitar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${claveLocal.trim()}` },
+        body: JSON.stringify({ id: p.id }),
+      });
+    } catch {
+      /* sin API local */
+    }
+    void consultarVivo();
+  };
+
   if (!negocio) return null;
 
   return (
@@ -174,23 +426,23 @@ export function AgenteWhatsApp() {
       <div className="flex items-start gap-3">
         <span className="icon-chip h-10 w-10 shrink-0 rounded-xl"><Bot className="h-5 w-5" /></span>
         <div className="min-w-0">
-          <h3 className="font-display text-lg">Agente de WhatsApp</h3>
+          <h3 className="font-display text-lg">Agente WhatsApp IA</h3>
           <p className="text-sm text-muted-foreground">
-            Atiende a tus clientes por WhatsApp con las respuestas que tú configures. Funciona en este computador, sin inteligencia artificial.
+            Atiende y vende por WhatsApp con los datos reales de tu negocio. Si un cliente se molesta o pide una persona, la IA se pausa sola en ese chat y te avisa aquí.
           </p>
         </div>
       </div>
 
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          className="h-4 w-4"
-          checked={agente?.activo ?? true}
-          onChange={(e) => void guardar({ activo: e.target.checked })}
-          disabled={guardando || !agente}
-        />
-        Agente activo en este negocio
-      </label>
+      <div className="flex flex-wrap items-center gap-4 rounded-xl border border-glass-border bg-background/40 px-3 py-2.5">
+        <label className="flex cursor-pointer items-center gap-2 text-sm">
+          <input type="checkbox" className="h-4 w-4" checked={agente?.activo ?? true} onChange={(e) => void guardar({ activo: e.target.checked })} disabled={guardando || !agente} />
+          Agente activo en este negocio
+        </label>
+        <label className="flex cursor-pointer items-center gap-2 text-sm">
+          <input type="checkbox" className="h-4 w-4" checked={iaActiva} onChange={(e) => void cambiarIA(e.target.checked)} disabled={guardando} />
+          IA comercial y de servicio activada
+        </label>
+      </div>
 
       <label className="block text-sm">
         <span className="mb-1 block text-muted-foreground">Nombre del agente</span>
@@ -201,9 +453,19 @@ export function AgenteWhatsApp() {
           onChange={(e) => setNombreAgente(e.target.value)}
         />
       </label>
+      <label className="block text-sm">
+        <span className="mb-1 block text-muted-foreground">Cómo debe atender (tono, reglas de tu negocio, qué nunca prometer)</span>
+        <textarea
+          className="min-h-20 w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base"
+          value={instrucciones}
+          maxLength={1000}
+          placeholder="Ej: Saluda con alegría, siempre confirma el barrio antes de prometer un domicilio, nunca inventes precios."
+          onChange={(e) => setInstrucciones(e.target.value)}
+        />
+      </label>
       <button
         disabled={guardando}
-        onClick={() => void guardar({ nombre_agente: nombreAgente.trim() || "Asistente" })}
+        onClick={() => void guardar({ nombre_agente: nombreAgente.trim() || "Asistente", instrucciones: instrucciones.trim() || null })}
         className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-60"
       >
         {guardando ? "Guardando…" : agente ? "Guardar agente" : "Crear agente"}
@@ -212,7 +474,7 @@ export function AgenteWhatsApp() {
       <div className="space-y-3 border-t border-glass-border/60 pt-4">
         <h4 className="text-sm font-medium">Conectar el número de este negocio</h4>
         <p className="text-xs text-muted-foreground">
-          Abre la API local en este computador (iniciar-whatsapp), pega su clave de acceso y escanea el código con el WhatsApp de este negocio.
+          Abre la API local en este computador (iniciar-whatsapp), pega su clave de acceso y escanea el código con el WhatsApp de este negocio. Funciona con WhatsApp normal y WhatsApp Business.
         </p>
         <div className="flex gap-2">
           <input
@@ -244,6 +506,15 @@ export function AgenteWhatsApp() {
           >
             <RefreshCw className="h-4 w-4" /> Actualizar estado
           </button>
+          {existeLinea && (
+            <button
+              onClick={() => void revincular()}
+              className="inline-flex items-center gap-2 rounded-lg border border-glass-border px-4 py-2.5 text-sm"
+              title="Genera un código QR nuevo sin borrar tu configuración ni lo aprendido"
+            >
+              <RefreshCw className="h-4 w-4" /> Cambiar número / Vincular nuevo QR
+            </button>
+          )}
         </div>
 
         {apiCaida && <p className="text-sm text-muted-foreground">No encuentro la API local. Ábrela con iniciar-whatsapp en este computador.</p>}
@@ -259,6 +530,105 @@ export function AgenteWhatsApp() {
           </div>
         )}
       </div>
+
+      {existeLinea && (
+        <div className="space-y-3 border-t border-glass-border/60 pt-4">
+          <h4 className="text-sm font-medium">Chats en vivo</h4>
+          <p className="text-xs text-muted-foreground">
+            Mira las conversaciones y responde tú cuando quieras: al hacerlo, la IA se pausa en ese chat. Si el cliente se molesta o pide una persona, el chat queda marcado para ti.
+          </p>
+          {chats.length === 0 && <p className="text-sm text-muted-foreground">Aún no hay conversaciones en este computador.</p>}
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,14rem)_minmax(0,1fr)]">
+            <ul className="max-h-72 space-y-1 overflow-y-auto">
+              {chats.map((c) => (
+                <li key={c.jid}>
+                  <button
+                    type="button"
+                    onClick={() => void verChat(c.jid)}
+                    className={`w-full rounded-lg border px-3 py-2 text-left text-sm ${chatSel === c.jid ? "border-primary/60 bg-primary/10" : "border-glass-border"}`}
+                  >
+                    <span className="flex items-center justify-between gap-2">
+                      <span className="min-w-0 truncate font-medium">{c.nombre || c.telefono}</span>
+                      {c.noLeidos > 0 && <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">{c.noLeidos}</span>}
+                    </span>
+                    <span className="block truncate text-xs text-muted-foreground">{c.visto || c.telefono}</span>
+                    {c.humano && <span className="text-xs text-amber-500">Atendido por humano</span>}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div className="space-y-2">
+              {!chatActual && <p className="text-sm text-muted-foreground">Elige un chat para verlo y responder.</p>}
+              {chatActual && (
+                <>
+                  <div className="max-h-72 space-y-2 overflow-y-auto rounded-lg border border-glass-border p-3">
+                    {chatActual.historial.map((m, i) => (
+                      <p key={i} className={`max-w-[90%] break-words rounded-xl px-3 py-2 text-sm ${m.role === "user" ? "bg-glass-strong" : "ml-auto bg-primary/15"}`}>
+                        {m.content}
+                      </p>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      className="min-w-0 flex-1 rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base"
+                      placeholder="Responder como humano…"
+                      value={textoHumano}
+                      onChange={(e) => setTextoHumano(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") void responderHumano(); }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => void responderHumano()}
+                      disabled={enviandoHumano || !textoHumano.trim()}
+                      aria-label="Enviar como humano"
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-40"
+                    >
+                      <Send className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void alternarHumano(chatActual)}
+                    className="inline-flex items-center gap-2 text-xs text-muted-foreground underline"
+                  >
+                    <UserCheck className="h-3.5 w-3.5" />
+                    {chatActual.humano ? "Reactivar la IA en este chat" : "Pausar la IA en este chat (lo atiendo yo)"}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {(avisosLocal.length > 0 || avisosDB.length > 0) && (
+        <div className="space-y-3 border-t border-glass-border/60 pt-4">
+          <h4 className="text-sm font-medium">Avisos del agente</h4>
+          {avisosLocal.length > 0 && (
+            <ul className="space-y-2">
+              {avisosLocal.map((a) => (
+                <li key={a.id} className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-3 text-sm">
+                  <p className="font-medium">{ETIQUETA_AVISO[a.tipo] ?? a.titulo} · {a.chat}</p>
+                  <p className="mt-1 whitespace-pre-wrap text-xs text-muted-foreground">{a.detalle}</p>
+                  <button type="button" onClick={() => void llevarAlPanel(a)} className="mt-2 text-xs text-primary hover:underline">
+                    Llevar al panel (queda guardado aunque apagues el computador)
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {avisosDB.filter((a) => !a.leido).map((a) => (
+            <div key={a.id} className="rounded-lg border border-glass-border p-3 text-sm">
+              <p className="font-medium">{ETIQUETA_AVISO[a.tipo] ?? a.titulo}{a.chat_id ? ` · ${a.chat_id}` : ""}</p>
+              {a.detalle && <p className="mt-1 whitespace-pre-wrap text-xs text-muted-foreground">{a.detalle}</p>}
+              <div className="mt-2 flex gap-3 text-xs">
+                <button type="button" onClick={() => void marcarAvisoDB(a, true)} className="text-primary hover:underline">Marcar atendido</button>
+                <button type="button" onClick={() => void borrarAvisoDB(a)} className="text-muted-foreground hover:underline">Borrar</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {respuestas && (
         <div className="space-y-3 border-t border-glass-border/60 pt-4">
@@ -338,6 +708,62 @@ export function AgenteWhatsApp() {
           </div>
         </div>
       )}
+
+      <div className="space-y-3 border-t border-glass-border/60 pt-4">
+        <h4 className="text-sm font-medium">Lo que el agente aprendió de tu negocio</h4>
+        <p className="text-xs text-muted-foreground">
+          Cuando respondes a un cliente con tus propias palabras, el agente lo anota aquí para aprenderlo. Aprueba lo que sí debe decir siempre. También puedes enseñarle cosas nuevas escribiéndolas abajo.
+        </p>
+        {pendientes.length > 0 && (
+          <ul className="space-y-2">
+            {pendientes.map((p) => (
+              <li key={p.id} className="rounded-lg border border-sky-500/40 bg-sky-500/5 p-3 text-sm">
+                <p className="text-xs text-muted-foreground">Si preguntan: «{p.pregunta}»</p>
+                <p className="mt-1">Responder: «{p.respuesta}»</p>
+                <div className="mt-2 flex gap-3 text-xs">
+                  <button type="button" onClick={() => void aprobarPendiente(p)} className="text-primary hover:underline">Aprobar y enseñar</button>
+                  <button type="button" onClick={() => void descartarPendiente(p)} className="text-muted-foreground hover:underline">Descartar</button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="grid gap-2 md:grid-cols-2">
+          <input
+            className="rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base"
+            placeholder="Si el cliente pregunta… (ej: ¿hacen domicilios a El Caney?)"
+            value={nuevaPregunta}
+            onChange={(e) => setNuevaPregunta(e.target.value)}
+          />
+          <input
+            className="rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base"
+            placeholder="El agente debe responder… (ej: Sí, con $5.000 de envío)"
+            value={nuevaRespuesta}
+            onChange={(e) => setNuevaRespuesta(e.target.value)}
+          />
+        </div>
+        <button
+          type="button"
+          onClick={() => void guardarConocimiento()}
+          className="inline-flex items-center gap-2 rounded-lg border border-glass-border px-4 py-2.5 text-sm"
+        >
+          <Plus className="h-4 w-4" /> Enseñar al agente
+        </button>
+        {conocimiento.length > 0 && (
+          <ul className="space-y-1">
+            {conocimiento.map((c) => (
+              <li key={c.id} className="flex items-start justify-between gap-2 rounded-lg border border-glass-border px-3 py-2 text-sm">
+                <span className="min-w-0">
+                  <span className="block truncate">«{c.pregunta_patron}» → «{c.respuesta_aprendida}»</span>
+                </span>
+                <button type="button" onClick={() => void borrarConocimiento(c.id)} aria-label="Olvidar" className="shrink-0 text-muted-foreground hover:text-destructive">
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </GlassPanel>
   );
 }

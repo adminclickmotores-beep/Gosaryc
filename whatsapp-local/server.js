@@ -22,6 +22,34 @@ const PUERTO = Number(process.env.PUERTO || 3001);
 const ARCHIVO_TOKEN = path.join(CARPETA, "token.txt");
 const ARCHIVO_LINEAS = path.join(CARPETA, "lineas.json");
 const PAUSA_HUMANO_MS = Number(process.env.PAUSA_HORAS || 6) * 3600 * 1000;
+const ARCHIVO_COLA = path.join(CARPETA, "cola-mensajes.json");
+const ARCHIVO_AVISOS = path.join(CARPETA, "avisos.json");
+const ARCHIVO_APREND = path.join(CARPETA, "aprendizaje-pendiente.json");
+
+function leerJson(f, respaldo) {
+  try {
+    if (fs.existsSync(f)) {
+      const d = JSON.parse(fs.readFileSync(f, "utf8"));
+      return d === undefined || d === null ? respaldo : d;
+    }
+  } catch (_) {}
+  return respaldo;
+}
+function escribirJson(f, d) {
+  try { fs.writeFileSync(f, JSON.stringify(d, null, 2)); } catch (_) {}
+}
+
+// Aviso interno para el panel (el dueño lo ve y lo convierte en pedido, cita o ticket).
+function registrarAviso(lineaId, nombre, tipo, titulo, detalle, chatId) {
+  const lista = leerJson(ARCHIVO_AVISOS, []);
+  lista.push({
+    id: `${Date.now()}-${Math.floor(Math.random() * 1e6)}`,
+    linea: lineaId, nombre, tipo, titulo,
+    detalle: String(detalle || "").slice(0, 1000),
+    chat: chatId || "", fecha: new Date().toISOString(),
+  });
+  escribirJson(ARCHIVO_AVISOS, lista.slice(-200));
+}
 
 let TOKEN = process.env.TOKEN || "";
 if (!TOKEN) {
@@ -129,7 +157,21 @@ async function atender(linea, jid, chat) {
     const enviado = await linea.cliente.sendMessage(jid, texto);
     if (enviado?.id?._serialized) linea.propios.add(enviado.id._serialized);
     chat.historial.push({ role: "assistant", content: texto });
-    if (escalar) {
+    chat.noLeidos = 0;
+    // Escalado a humano: cliente molesto, pago con problema o el agente no supo responder.
+    const ultimos = chat.historial.filter((m) => m.role === "user").slice(-3).map((m) => normalizar(m.content)).join(" ");
+    const todo = chat.historial.map((m) => normalizar(m.content)).join(" ");
+    const molesto = /molest|enojad|estafa|ladr|demanda|abogado|superintendencia|\bsic\b|pesim|nadie responde|pago fall|no pas[óo] el pago|me cobraron|devuelv|reembolso/.test(ultimos);
+    const confirma = /confirmo|confirmado|si acepto|acepto el pedido|listo el pedido|agendar/.test(ultimos) && /pedido|cita|reserva|turno|domicilio|llevar|consulta/.test(todo);
+    const tel = String(jid || "").replace(/@c\.us$/, "");
+    const extracto = chat.historial.slice(-4).map((m) => `${m.role === "user" ? "Cliente" : "Agente"}: ${m.content}`).join("\n").slice(0, 800);
+    if (molesto || escalar) {
+      chat.pausadoHasta = Date.now() + PAUSA_HUMANO_MS;
+      console.log(`[${linea.nombre}] ${jid}: pasa a una persona del equipo (el agente se pausa ${PAUSA_HUMANO_MS / 3600000} h).`);
+      registrarAviso(linea.id, linea.nombre, "espera_humano", `Cliente espera a una persona (${tel})`, extracto, tel);
+    } else if (confirma) {
+      registrarAviso(linea.id, linea.nombre, "nuevo_pedido", `Posible pedido o cita por confirmar (${tel})`, extracto, tel);
+    } else if (escalar) {
       chat.pausadoHasta = Date.now() + PAUSA_HUMANO_MS;
       console.log(`[${linea.nombre}] ${jid}: pasa a una persona del equipo (el agente se pausa ${PAUSA_HUMANO_MS / 3600000} h).`);
     }
@@ -146,8 +188,14 @@ function alMensaje(linea, msg) {
   if (!linea.agente) return;
   if (msg.fromMe || msg.isStatus || msg.from === "status@broadcast" || msg.from.endsWith("@g.us")) return;
   const jid = msg.from;
-  const chat = linea.chats.get(jid) || { historial: [], pausadoHasta: 0, ocupado: false, timer: null, avisoMedia: 0 };
+  const chat = linea.chats.get(jid) || { historial: [], pausadoHasta: 0, ocupado: false, timer: null, avisoMedia: 0, nombre: String(jid).replace(/@c\.us$/, ""), noLeidos: 0, visto: "" };
   linea.chats.set(jid, chat);
+  chat.noLeidos = (chat.noLeidos || 0) + 1;
+  try {
+    const alias = msg._data && msg._data.notifyName ? String(msg._data.notifyName).slice(0, 60) : "";
+    if (alias) chat.nombre = alias;
+  } catch (_) {}
+  if (msg.type === "chat" && msg.body) chat.visto = String(msg.body).slice(0, 120);
   if (msg.type === "chat" && msg.body) chat.ultimaPregunta = msg.body.slice(0, 300);
   if (Date.now() < chat.pausadoHasta) return; // una persona del equipo atiende este chat
 
@@ -171,8 +219,35 @@ function alEscribirYo(linea, msg) {
   let chat = linea.chats.get(msg.to);
   if (chat) chat.pausadoHasta = Date.now() + PAUSA_HUMANO_MS;
   else {
-    chat = { historial: [], pausadoHasta: Date.now() + PAUSA_HUMANO_MS, ocupado: false, timer: null, avisoMedia: 0 };
+    chat = { historial: [], pausadoHasta: Date.now() + PAUSA_HUMANO_MS, ocupado: false, timer: null, avisoMedia: 0, noLeidos: 0 };
     linea.chats.set(msg.to, chat);
+  }
+  // Aprendizaje: lo que el dueño responde a mano queda pendiente de aprobar en el panel.
+  try {
+    const cuerpo = String(msg.body || "").slice(0, 500);
+    const preg = chat.ultimaPregunta ? String(chat.ultimaPregunta).slice(0, 300) : "";
+    if (cuerpo.length > 1 && preg) {
+      const pend = leerJson(ARCHIVO_APREND, []);
+      const dup = pend.some((p) => p.linea === linea.id && p.pregunta === preg);
+      if (!dup) {
+        pend.push({ id: `${Date.now()}-${Math.floor(Math.random() * 1e6)}`, linea: linea.id, pregunta: preg, respuesta: cuerpo, fecha: new Date().toISOString() });
+        escribirJson(ARCHIVO_APREND, pend.slice(-200));
+      }
+    }
+  } catch (_) {}
+}
+
+// Envía lo que quedó en cola sin internet apenas vuelve la conexión.
+async function vaciarCola(linea) {
+  const cola = leerJson(ARCHIVO_COLA, []).filter((m) => !m.linea || m.linea === linea.id);
+  if (cola.length === 0) return;
+  for (const m of cola) {
+    try {
+      const enviado = await linea.cliente.sendMessage(`${numeroWa(m.telefono)}@c.us`, String(m.mensaje));
+      if (enviado?.id?._serialized) linea.propios.add(enviado.id._serialized);
+      escribirJson(ARCHIVO_COLA, leerJson(ARCHIVO_COLA, []).filter((x) => x.id !== m.id));
+      await esperar(3000);
+    } catch (_) { break; }
   }
 }
 
@@ -208,6 +283,7 @@ function crearLinea({ id, nombre, clave, agente }) {
     linea.estado = "listo";
     linea.qr = "";
     console.log(`[${linea.nombre}] WhatsApp conectado.${linea.clave ? " Agente de ventas y atención activo." : ""}`);
+    void vaciarCola(linea);
   });
   linea.cliente.on("disconnected", (motivo) => {
     linea.estado = "desconectado";
@@ -313,6 +389,101 @@ const servidor = http.createServer(async (req, res) => {
       return responder(200, { respuestas: limpio });
     }
 
+    // POST /lineas/revincular { id } -> genera un QR nuevo sin borrar respuestas ni aprendizaje
+    if (ruta === "/lineas/revincular" && req.method === "POST") {
+      const { id } = await leerCuerpo(req);
+      const l = lineas.get(id);
+      if (!l) return responder(404, { error: "No existe esa línea" });
+      try { await l.cliente.logout(); } catch (_) {}
+      try { await l.cliente.destroy(); } catch (_) {}
+      const datos = { id: l.id, nombre: l.nombre, clave: l.clave, agente: l.agente };
+      lineas.delete(id);
+      const nueva = crearLinea(datos);
+      guardarLineas();
+      return responder(200, { linea: resumen(nueva) });
+    }
+
+    // GET /chats?linea=id[&ver=jid] -> bandeja de chats en vivo para intervenir como humano
+    if (ruta === "/chats" && req.method === "GET") {
+      const id = url.searchParams.get("linea") || "";
+      const l = lineas.get(id);
+      if (!l) return responder(404, { error: "No existe esa línea" });
+      const ver = url.searchParams.get("ver") || "";
+      if (ver && l.chats.get(ver)) l.chats.get(ver).noLeidos = 0;
+      const chats = [...l.chats.entries()].map(([jid, c]) => ({
+        jid,
+        telefono: String(jid).replace(/@c\.us$/, ""),
+        nombre: c.nombre || String(jid).replace(/@c\.us$/, ""),
+        visto: c.visto || "",
+        noLeidos: c.noLeidos || 0,
+        humano: Date.now() < (c.pausadoHasta || 0),
+        historial: (c.historial || []).slice(-20),
+      })).sort((a, b) => (b.noLeidos - a.noLeidos));
+      return responder(200, { chats });
+    }
+
+    // POST /chats/responder { linea, chat, mensaje } -> responde como humano y pausa la IA
+    if (ruta === "/chats/responder" && req.method === "POST") {
+      const { linea: id, chat: jid, mensaje } = await leerCuerpo(req);
+      const l = lineas.get(id);
+      if (!l || l.estado !== "listo") return responder(409, { error: "WhatsApp no está listo" });
+      if (!jid || !mensaje) return responder(400, { error: "Falta chat o mensaje" });
+      const enviado = await l.cliente.sendMessage(jid, String(mensaje));
+      if (enviado?.id?._serialized) l.propios.add(enviado.id._serialized);
+      let c = l.chats.get(jid);
+      if (!c) {
+        c = { historial: [], pausadoHasta: 0, ocupado: false, timer: null, avisoMedia: 0, noLeidos: 0 };
+        l.chats.set(jid, c);
+      }
+      c.historial.push({ role: "assistant", content: String(mensaje) });
+      c.pausadoHasta = Date.now() + PAUSA_HUMANO_MS;
+      c.noLeidos = 0;
+      return responder(200, { ok: true });
+    }
+
+    // POST /chats/modo-humano { linea, chat, humano } -> pausar o reactivar la IA en un chat
+    if (ruta === "/chats/modo-humano" && req.method === "POST") {
+      const { linea: id, chat: jid, humano } = await leerCuerpo(req);
+      const l = lineas.get(id);
+      const c = l && l.chats.get(jid);
+      if (!c) return responder(404, { error: "No existe ese chat" });
+      c.pausadoHasta = humano ? Date.now() + PAUSA_HUMANO_MS : 0;
+      return responder(200, { ok: true, humano: !!humano });
+    }
+
+    // GET /avisos?linea=id -> notificaciones internas (pedidos, espera de humano)
+    if (ruta === "/avisos" && req.method === "GET") {
+      const id = url.searchParams.get("linea") || "";
+      const lista = leerJson(ARCHIVO_AVISOS, []).filter((a) => !id || a.linea === id).slice(-50);
+      return responder(200, { avisos: lista });
+    }
+
+    // POST /avisos/leido { id } -> descarta un aviso local (ya quedó en el panel)
+    if (ruta === "/avisos/leido" && req.method === "POST") {
+      const { id } = await leerCuerpo(req);
+      escribirJson(ARCHIVO_AVISOS, leerJson(ARCHIVO_AVISOS, []).filter((a) => a.id !== id));
+      return responder(200, { ok: true });
+    }
+
+    // GET /aprendizaje?linea=id -> respuestas del dueño pendientes de aprobar
+    if (ruta === "/aprendizaje" && req.method === "GET") {
+      const id = url.searchParams.get("linea") || "";
+      const lista = leerJson(ARCHIVO_APREND, []).filter((a) => !id || a.linea === id).slice(-50);
+      return responder(200, { pendientes: lista });
+    }
+
+    // POST /aprendizaje/quitar { id }
+    if (ruta === "/aprendizaje/quitar" && req.method === "POST") {
+      const { id } = await leerCuerpo(req);
+      escribirJson(ARCHIVO_APREND, leerJson(ARCHIVO_APREND, []).filter((a) => a.id !== id));
+      return responder(200, { ok: true });
+    }
+
+    // GET /cola -> mensajes en espera por falta de internet
+    if (ruta === "/cola" && req.method === "GET") {
+      return responder(200, { cola: leerJson(ARCHIVO_COLA, []) });
+    }
+
     // POST /lineas { nombre, clave }  -> agrega un número (negocio) nuevo o actualiza su clave del agente
     if (ruta === "/lineas" && req.method === "POST") {
       const { id, nombre, clave, agente } = await leerCuerpo(req);
@@ -346,9 +517,15 @@ const servidor = http.createServer(async (req, res) => {
     if (ruta === "/enviar" && req.method === "POST") {
       const { telefono, mensaje, linea: idLinea } = await leerCuerpo(req);
       const l = elegirLinea(idLinea);
-      if (!l || l.estado !== "listo") return responder(409, { error: `WhatsApp no está listo (${l ? l.estado : "sin líneas"})` });
       const num = numeroWa(telefono);
       if (num.length < 10 || !mensaje) return responder(400, { error: "Falta teléfono o mensaje" });
+      if (!l || l.estado !== "listo") {
+        // Sin internet o sin sesión: queda en cola local y sale solo al reconectar.
+        const cola = leerJson(ARCHIVO_COLA, []);
+        cola.push({ id: `${Date.now()}-${Math.floor(Math.random() * 1e6)}`, linea: (l && l.id) || idLinea || "", telefono: num, mensaje: String(mensaje), fecha: new Date().toISOString() });
+        escribirJson(ARCHIVO_COLA, cola.slice(-500));
+        return responder(200, { ok: true, encolado: true, pendientes: cola.length });
+      }
       const enviado = await l.cliente.sendMessage(`${num}@c.us`, String(mensaje));
       if (enviado?.id?._serialized) l.propios.add(enviado.id._serialized);
       return responder(200, { ok: true });

@@ -1,8 +1,8 @@
 {
   "name": "gosaryc-whatsapp-local",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
-  "description": "API local de WhatsApp para Gosaryc: varios números, agente de ventas y atención al cliente, envío de recordatorios.",
+  "description": "API local de WhatsApp para Gosaryc: agente comercial con IA por negocio, bandeja de chats en vivo, cola offline y aprendizaje continuo.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

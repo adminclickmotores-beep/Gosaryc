@@ -12,16 +12,23 @@ Corre en tu computador, conecta uno o varios números de WhatsApp (uno por negoc
 
 ## Cómo se comporta el agente
 - Responde solo chats individuales (no grupos) y espera un momento por si el cliente escribe varios mensajes.
-- Cuando el cliente pide una persona, o ya confirmó un pedido o cita, avisa y se **pausa 6 horas en ese chat**.
-- Si tú respondes desde el celular, el agente se pausa en ese chat.
-- Puedes desactivarlo por negocio desde el panel.
+- Cuando el cliente pide una persona, está molesto o hay un pago con problema, avisa en la pantalla de avisos y se **pausa 6 horas en ese chat**.
+- Si el cliente confirma un pedido o una cita, lo avisa para que lo registres en el programa.
+- Si tú respondes desde el celular o desde la bandeja del panel, el agente se pausa en ese chat y anota tu respuesta para aprenderla (la apruebas en el panel).
+- Puedes desactivarlo por negocio desde el panel, o cambiar de número con «Cambiar número / Vincular nuevo QR» sin perder tu configuración ni lo aprendido.
+- Sin internet, los mensajes que envías quedan en **cola local** y salen solos al reconectar.
 
 ## Endpoints (solo desde este computador, con `Authorization: Bearer <clave>`)
 - `GET  /estado` (sin clave): estado de la primera línea.
 - `GET  /lineas`: líneas, estado y QR (imagen) para vincular.
 - `POST /lineas` `{ "nombre": "Mi negocio", "clave": "<clave del agente>", "agente": true }`.
+- `POST /lineas/revincular` `{ "id": "mi-negocio" }`: QR nuevo conservando respuestas y aprendizaje.
 - `POST /lineas/quitar` `{ "id": "mi-negocio" }`.
-- `POST /enviar` `{ "telefono": "3001234567", "mensaje": "Hola", "linea": "opcional" }`.
+- `GET  /chats?linea=<id>` / `POST /chats/responder` / `POST /chats/modo-humano`: bandeja en vivo.
+- `GET  /avisos?linea=<id>` / `POST /avisos/leido`: pedidos detectados y clientes que esperan humano.
+- `GET  /aprendizaje?linea=<id>` / `POST /aprendizaje/quitar`: respuestas del dueño por aprobar.
+- `GET  /cola`: mensajes en espera por falta de internet.
+- `POST /enviar` `{ "telefono": "3001234567", "mensaje": "Hola", "linea": "opcional" }` (sin conexión: queda en cola).
 - `POST /enviar-lote` `{ "mensajes": [{ "telefono": "...", "mensaje": "..." }] }` (máx. 100, con pausa).
 
 ## Variables opcionales

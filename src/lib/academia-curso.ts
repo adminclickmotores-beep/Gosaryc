@@ -185,9 +185,10 @@ export const CURSO_GOSARYC = {
           descripcion: "Conecta tu número y configura las respuestas con las que el agente atiende a tus clientes.",
           pasos: [
             "Completa «Mi negocio» y deja activos tus productos con precio: de ahí sale lo que el agente responde.",
-            "En Mi negocio busca el Agente de WhatsApp, agrega una línea y escanea el QR con WhatsApp > Dispositivos vinculados.",
-            "En «Respuestas del agente» escribe el saludo y, para cada tema (horarios, precios, domicilios, pagos, pedidos), las palabras que activan la respuesta y el mensaje con tus datos reales.",
-            "Marca «Pasa a una persona» en lo que necesites atender tú. Si contestas desde tu celular, el agente se pausa 6 horas en ese chat.",
+            "En Mi negocio busca el Agente WhatsApp IA, agrega una línea y escanea el QR con WhatsApp > Dispositivos vinculados. Sirve con WhatsApp normal y Business.",
+            "En «Respuestas del agente» escribe el saludo y, para cada tema (horarios, precios, domicilios, pagos, pedidos), las palabras que activan la respuesta y el mensaje con tus datos reales. En «Cómo debe atender» define el tono y las reglas (qué nunca prometer).",
+            "Marca «Pasa a una persona» en lo que necesites atender tú. Si el cliente se molesta o pide un humano, la IA se pausa sola y te avisa en «Avisos del agente».",
+            "Mira los «Chats en vivo» para responder tú cuando quieras y aprueba en «Lo que el agente aprendió» las respuestas que diste con tus palabras. Para cambiar de celular usa «Cambiar número / Vincular nuevo QR»: no se borra nada.",
             "En el programa de escritorio el agente se enciende solo; mantén el computador encendido y con internet.",
           ],
           practica: { ruta: "/restaurante", etiqueta: "Ir a Mi negocio" },
