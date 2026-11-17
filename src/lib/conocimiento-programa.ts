@@ -27,6 +27,10 @@ export const MANUAL_FIJO = `
 # 3. PANEL PRINCIPAL DEL NEGOCIO (nombre según el giro: Restaurante, Tienda, etc.)
 - Arriba: nombre del panel, frase del giro, «Ventas de hoy» (negocios que usan pedidos) y un selector de «Tipo de negocio». Cambiar el tipo SOLO lo puede hacer la cuenta administradora; al cambiarlo se activan los módulos de ese giro y se redirige al panel del nuevo tipo.
 - Botones: «Menú público» (abre el catálogo que ven los clientes) e «Instalar app».
+- Enlace público universal: restaurantes muestran menú; tiendas y ferreterías muestran catálogo con pedido por WhatsApp; salones, clínicas y veterinarias reciben solicitudes de cita online.
+- Sucursales: en Configuración se crean las sedes; los reportes se filtran por sede o consolidados y los traslados de mercancía llevan acta de envío y recepción.
+- Respaldo total: en Configuración se descargan clientes, productos, ventas, cartera y contabilidad en Excel con un clic.
+- Caja discriminada: el cierre cuadra por separado efectivo (ciego), transferencias (Nequi, Daviplata, Bre-B) y tarjetas/datafono; los pagos digitales exigen referencia o comprobante.
 - «Aprende a usar tu panel en 2 minutos»: guía rápida desplegable con pasos propios del giro.
 - «Primeros pasos» (lista de 4): 1 Cuéntanos de tu negocio (nombre, teléfono, horarios), 2 Elige tu tipo de negocio, 3 Agrega tu primer producto (arma tu carta digital), 4 Instala la app en tu celular. Cada tarjeta tiene un botón (Completar datos, Elegir tipo, Ir al menú, Ver cómo).
 - Cuadrícula de módulos del giro: cada tarjeta abre su pantalla; los que dicen «Próximo» aún no están disponibles.

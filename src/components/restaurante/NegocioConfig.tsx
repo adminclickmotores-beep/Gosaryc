@@ -5,6 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 import { AgenteWhatsApp } from "@/components/restaurante/AgenteWhatsApp";
+import { MenuQR } from "@/components/restaurante/MenuQR";
+import { SucursalesTraslados } from "@/components/negocio/SucursalesTraslados";
+import { RespaldoTotal } from "@/components/negocio/RespaldoTotal";
 import { TIPOS_NEGOCIO, resolverTipoNegocio } from "@/lib/modulos-negocio";
 
 const campo =
@@ -451,6 +454,9 @@ export function NegocioConfig() {
       </button>
     </GlassPanel>
     <AgenteWhatsApp />
+    <MenuQR />
+    <SucursalesTraslados />
+    <RespaldoTotal />
     </div>
   );
 }

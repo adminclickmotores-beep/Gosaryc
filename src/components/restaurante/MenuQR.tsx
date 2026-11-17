@@ -37,9 +37,9 @@ export function MenuQR() {
 
   return (
     <GlassPanel className="mx-auto max-w-md space-y-4 p-6 text-center">
-      <h2 className="font-display text-xl text-foreground">QR de tu menú</h2>
+      <h2 className="font-display text-xl text-foreground">Enlace público de tu negocio</h2>
       <p className="text-sm text-muted-foreground">
-        Imprímelo y ponlo en tus mesas o en el mostrador. Tus clientes lo escanean y piden desde su celular.
+        Restaurantes muestran su menú; tiendas y ferreterías muestran su catálogo para pedir por WhatsApp; salones, clínicas y veterinarias reciben solicitudes de cita online. Imprímelo y ponlo en tus mesas o en el mostrador.
       </p>
       {qr ? (
         <img src={qr} alt="Código QR del menú" className="mx-auto h-auto w-full max-w-[280px] rounded-xl bg-white p-2" />

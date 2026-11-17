@@ -21,6 +21,7 @@ import type { Json, Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 import { resolverTipoNegocio, mismoTipoNegocio } from "@/lib/modulos-negocio";
+import { EnlaceUniversal } from "@/components/negocio/EnlaceUniversal";
 
 export const Route = createFileRoute("/menu")({
   head: () => ({
@@ -343,21 +344,31 @@ function MenuPage() {
     );
   }
 
-  // Sin negocio encontrado, o un negocio que no vende por pedidos (concesionario, clínica, etc.), no tiene menú digital.
-  if (!negocio || !resolverTipoNegocio(negocio.tipo_negocio).usaPedidos) {
+  // Sin negocio no hay nada que mostrar; con negocio de otro rubro se muestra
+  // el enlace universal (catálogo por WhatsApp + cita online) en vez de bloquear.
+  if (!negocio) {
     return (
       <div className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-4 px-4 text-center">
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/15">
           <Store className="h-10 w-10 text-primary" />
         </div>
-        <h1 className="font-display text-2xl text-foreground">{negocio?.nombre ?? "Catálogo"}</h1>
-        <p className="text-muted-foreground">
-          {negocio ? "Este tipo de negocio no usa catálogo de pedidos en línea." : "Este catálogo no está disponible."}
-        </p>
-        <Link to={negocio ? "/welcome" : "/"} className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90">
-          {negocio ? "Volver al panel" : "Ir al inicio"}
+        <h1 className="font-display text-2xl text-foreground">Catálogo</h1>
+        <p className="text-muted-foreground">Este catálogo no está disponible.</p>
+        <Link to="/" className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90">
+          Ir al inicio
         </Link>
       </div>
+    );
+  }
+  if (!resolverTipoNegocio(negocio.tipo_negocio).usaPedidos) {
+    const duenoUniversal = dueno ?? negocio.owner_id ?? "";
+    return (
+      <EnlaceUniversal
+        dueno={duenoUniversal}
+        nombre={negocio.nombre ?? "Nuestro negocio"}
+        telefono={negocio.telefono_pedidos ?? ""}
+        descripcion={negocio.descripcion ?? negocio.eslogan ?? ""}
+      />
     );
   }
 

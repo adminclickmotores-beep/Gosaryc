@@ -8,6 +8,7 @@ import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { ResumenCierreWhatsApp } from "@/components/restaurante/Reportes";
+import { leerSucursalActual } from "@/lib/sucursales";
 
 type Turno = Tables<"turnos_caja">;
 type Mov = Tables<"movimientos_turno">;
@@ -43,6 +44,9 @@ function resumen(turno: Turno, movs: Mov[]) {
     egrEf,
     transf: suma((m) => entra(m.tipo) && m.metodo === "transferencia"),
     tarjeta: suma((m) => entra(m.tipo) && m.metodo === "tarjeta"),
+    nEf: vivos.filter((m) => entra(m.tipo) && m.metodo === "efectivo").length,
+    nTransf: vivos.filter((m) => entra(m.tipo) && m.metodo === "transferencia").length,
+    nTarj: vivos.filter((m) => entra(m.tipo) && m.metodo === "tarjeta").length,
     ventas: suma((m) => m.tipo === "venta"),
     gastos: suma((m) => m.tipo === "gasto"),
     retiros: suma((m) => m.tipo === "retiro"),
@@ -66,6 +70,7 @@ export function CajaTurnos() {
   const [concepto, setConcepto] = useState("");
   const [categoria, setCategoria] = useState("");
   const [monto, setMonto] = useState("");
+  const [referencia, setReferencia] = useState("");
   const [contado, setContado] = useState("");
   const [notas, setNotas] = useState("");
   const [ocupado, setOcupado] = useState(false);
@@ -99,7 +104,7 @@ export function CajaTurnos() {
     const f = fondo.trim() ? Number(fondo) : 0;
     if (!Number.isFinite(f) || f < 0) return toast.error("Escribe un fondo inicial válido.");
     setOcupado(true);
-    const { error } = await supabase.from("turnos_caja").insert({ fondo_inicial: f, cajero: usuario || null });
+    const { error } = await supabase.from("turnos_caja").insert({ fondo_inicial: f, cajero: usuario || null, sucursal_id: leerSucursalActual() });
     setOcupado(false);
     if (error) return toast.error("No se pudo abrir la caja.");
     toast.success("Caja abierta. Ya puedes registrar movimientos.");
@@ -112,18 +117,23 @@ export function CajaTurnos() {
     const v = Number(monto);
     if (!concepto.trim()) return toast.error("Escribe el concepto.");
     if (!Number.isFinite(v) || v <= 0) return toast.error("Escribe un valor mayor a cero.");
+    const esDigital = metodo === "transferencia" || metodo === "tarjeta";
+    if (esDigital && tipo !== "gasto" && !referencia.trim()) return toast.error("Escribe la referencia o comprobante del pago digital.");
     if ((tipo === "gasto" || tipo === "retiro") && metodo === "efectivo" && r && v > r.esperado) {
       return toast.error(ciego ? "No hay tanto efectivo en caja para este movimiento." : `No hay tanto efectivo en caja (hay ${dinero(r.esperado)}).`);
     }
     if (tipo === "retiro" && metodo !== "efectivo") return toast.error("Un retiro siempre es en efectivo.");
     setOcupado(true);
+    const conceptoFinal = esDigital && referencia.trim() ? `${concepto.trim()} — Ref: ${referencia.trim()}` : concepto.trim();
     const { error } = await supabase.from("movimientos_turno").insert({
-      turno_id: turno.id, tipo, metodo: tipo === "retiro" ? "efectivo" : metodo, concepto: concepto.trim(),
+      turno_id: turno.id, tipo, metodo: tipo === "retiro" ? "efectivo" : metodo, concepto: conceptoFinal,
       categoria: tipo === "gasto" ? categoria || "Otros" : null, monto: v, registrado_por: usuario || null,
+      referencia_pago: esDigital ? referencia.trim() || null : null,
+      sucursal_id: leerSucursalActual(),
     });
     setOcupado(false);
     if (error) return toast.error("No se pudo registrar el movimiento.");
-    setConcepto(""); setMonto(""); setCategoria("");
+    setConcepto(""); setMonto(""); setCategoria(""); setReferencia("");
     cargar();
   };
 
@@ -217,15 +227,16 @@ ${t.notas_cierre ? `<hr><p>Notas: ${esc(t.notas_cierre)}</p>` : ""}<br><br><p cl
       {turno && r && (
         <>
           {ciego && (
-            <GlassPanel className="p-4 text-sm text-muted-foreground">
-              Arqueo ciego: el sistema no muestra cuánto efectivo debería haber. Registra los movimientos y, al cerrar, cuenta lo que hay en la caja.
+            <GlassPanel className="space-y-1 p-4 text-sm text-muted-foreground">
+              <p>Arqueo ciego: el sistema no muestra cuánto efectivo debería haber. Registra los movimientos y, al cerrar, cuenta lo que hay en la caja.</p>
+              {r && <p>Efectivo: {r.nEf} pagos · Transferencias: {r.nTransf} · Tarjetas: {r.nTarj}. Los pagos digitales siempre piden referencia.</p>}
             </GlassPanel>
           )}
           {!ciego && <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Efectivo esperado</p><p className="truncate text-lg font-medium text-foreground">{dinero(r.esperado)}</p></GlassPanel>
+            <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Efectivo esperado ({r.nEf})</p><p className="truncate text-lg font-medium text-foreground">{dinero(r.esperado)}</p></GlassPanel>
+            <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Transferencias ({r.nTransf})</p><p className="truncate text-lg font-medium text-foreground">{dinero(r.transf)}</p></GlassPanel>
+            <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Tarjetas / datafono ({r.nTarj})</p><p className="truncate text-lg font-medium text-foreground">{dinero(r.tarjeta)}</p></GlassPanel>
             <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Ventas del turno</p><p className="truncate text-lg font-medium text-foreground">{dinero(r.ventas)}</p></GlassPanel>
-            <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Transferencias + tarjeta</p><p className="truncate text-lg font-medium text-foreground">{dinero(r.transf + r.tarjeta)}</p></GlassPanel>
-            <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Gastos y retiros</p><p className="truncate text-lg font-medium text-foreground">{dinero(r.gastos + r.retiros)}</p></GlassPanel>
           </div>}
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
@@ -254,6 +265,9 @@ ${t.notas_cierre ? `<hr><p>Notas: ${esc(t.notas_cierre)}</p>` : ""}<br><br><p cl
                 <input className={campo} placeholder="Concepto *" value={concepto} onChange={(e) => setConcepto(e.target.value)} />
                 <input className={campo} placeholder="Valor (COP) *" inputMode="decimal" value={monto} onChange={(e) => setMonto(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && registrar()} />
+                {(metodo === "transferencia" || metodo === "tarjeta") && tipo !== "retiro" && (
+                  <input className={campo} placeholder="Referencia o comprobante * (Nequi, Daviplata, datafono)" value={referencia} onChange={(e) => setReferencia(e.target.value)} />
+                )}
                 <button onClick={registrar} disabled={ocupado} className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-50">
                   Registrar
                 </button>

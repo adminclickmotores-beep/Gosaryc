@@ -6,6 +6,8 @@ import { exportarExcel, imprimirReporte } from "@/lib/exportes";
 import { toast } from "sonner";
 import { useNegocio } from "@/hooks/use-negocio";
 import { enlaceResumenDueno, guardarTelefonoDueno, telefonoDuenoGuardado, type DatosCierre } from "@/lib/resumen-cierre";
+import { SelectorSucursal } from "@/components/negocio/SucursalesTraslados";
+import { leerSucursalActual } from "@/lib/sucursales";
 
 type Pedido = Tables<"restaurante_pedidos">;
 type Item = Tables<"restaurante_pedido_items">;
@@ -21,6 +23,7 @@ const RANGOS = [
 
 export function Reportes() {
   const [dias, setDias] = useState<number>(7);
+  const [sucursal, setSucursal] = useState<string | null>(() => leerSucursalActual());
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -42,7 +45,7 @@ export function Reportes() {
         .gte("created_at", desde.toISOString())
         .order("created_at", { ascending: false })
         .limit(1000);
-      const lista = (data ?? []).filter((p) => p.estado !== "cancelado");
+      const lista = (data ?? []).filter((p) => p.estado !== "cancelado" && (!sucursal || p.sucursal_id === sucursal));
       let its: Item[] = [];
       if (lista.length > 0) {
         const { data: d2 } = await supabase
@@ -85,7 +88,7 @@ export function Reportes() {
       setKardex(kd ?? []);
       setNombreInsumo(new Map((ins.data ?? []).map((i) => [i.id, `${i.nombre} (${i.unidad})`] as [string, string])));
       setCostoProducto(costos);
-      setGastosDia((gas.data ?? []).reduce((s, m) => s + m.monto, 0));
+      setGastosDia(((gas.data ?? []) as { monto: number; sucursal_id?: string | null }[]).filter((m) => !sucursal || (m.sucursal_id ?? null) === sucursal).reduce((s, m) => s + m.monto, 0));
       setPedidos(lista);
       setItems(its);
       setCargando(false);
@@ -93,7 +96,13 @@ export function Reportes() {
     return () => {
       vivo = false;
     };
-  }, [dias]);
+  }, [dias, sucursal]);
+
+  useEffect(() => {
+    const alCambiar = (): void => setSucursal(leerSucursalActual());
+    window.addEventListener("gosaryc:sucursal", alCambiar);
+    return () => window.removeEventListener("gosaryc:sucursal", alCambiar);
+  }, []);
 
   const resumen = useMemo(() => {
     const total = pedidos.reduce((s, p) => s + p.total, 0);
@@ -155,7 +164,7 @@ export function Reportes() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {RANGOS.map((r) => (
           <button
             key={r.dias}
@@ -165,6 +174,7 @@ export function Reportes() {
             {r.texto}
           </button>
         ))}
+        <SelectorSucursal alCambiar={setSucursal} />
         <button onClick={exportarVentasExcel} className="rounded-full border border-glass-border px-4 py-1.5 text-sm text-muted-foreground">
           Exportar a Excel
         </button>

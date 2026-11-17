@@ -856,6 +856,7 @@ export type Database = {
           id: string
           notas_cierre: string | null
           owner_id: string | null
+          sucursal_id: string | null
         }
         Insert: {
           abierto_en?: string
@@ -870,6 +871,7 @@ export type Database = {
           id?: string
           notas_cierre?: string | null
           owner_id?: string | null
+          sucursal_id?: string | null
         }
         Update: {
           abierto_en?: string
@@ -884,6 +886,7 @@ export type Database = {
           id?: string
           notas_cierre?: string | null
           owner_id?: string | null
+          sucursal_id?: string | null
         }
         Relationships: []
       }
@@ -898,7 +901,9 @@ export type Database = {
           monto: number
           motivo_anulacion: string | null
           owner_id: string | null
+          referencia_pago: string | null
           registrado_por: string | null
+          sucursal_id: string | null
           tipo: string
           turno_id: string
         }
@@ -912,7 +917,9 @@ export type Database = {
           monto: number
           motivo_anulacion?: string | null
           owner_id?: string | null
+          referencia_pago?: string | null
           registrado_por?: string | null
+          sucursal_id?: string | null
           tipo: string
           turno_id: string
         }
@@ -926,7 +933,9 @@ export type Database = {
           monto?: number
           motivo_anulacion?: string | null
           owner_id?: string | null
+          referencia_pago?: string | null
           registrado_por?: string | null
+          sucursal_id?: string | null
           tipo?: string
           turno_id?: string
         }
@@ -2779,6 +2788,7 @@ export type Database = {
           motivo_autorizacion: string | null
           owner_id: string | null
           registrado_por: string | null
+          sucursal_id: string | null
           telefono: string | null
           tipo_negocio: string | null
           tipo_precio: string
@@ -2797,6 +2807,7 @@ export type Database = {
           motivo_autorizacion?: string | null
           owner_id?: string | null
           registrado_por?: string | null
+          sucursal_id?: string | null
           telefono?: string | null
           tipo_negocio?: string | null
           tipo_precio?: string
@@ -2815,6 +2826,7 @@ export type Database = {
           motivo_autorizacion?: string | null
           owner_id?: string | null
           registrado_por?: string | null
+          sucursal_id?: string | null
           telefono?: string | null
           tipo_negocio?: string | null
           tipo_precio?: string
@@ -4571,6 +4583,78 @@ export type Database = {
         }
         Relationships: []
       }
+      negocio_sucursales: {
+        Row: {
+          activa: boolean
+          created_at: string
+          direccion: string | null
+          id: string
+          nombre: string
+          owner_id: string | null
+          telefono: string | null
+        }
+        Insert: {
+          activa?: boolean
+          created_at?: string
+          direccion?: string | null
+          id?: string
+          nombre: string
+          owner_id?: string | null
+          telefono?: string | null
+        }
+        Update: {
+          activa?: boolean
+          created_at?: string
+          direccion?: string | null
+          id?: string
+          nombre?: string
+          owner_id?: string | null
+          telefono?: string | null
+        }
+        Relationships: []
+      }
+      negocio_traslados: {
+        Row: {
+          acta_codigo: string
+          cantidad: number
+          created_at: string
+          desde_sede: string
+          estado: string
+          hasta_sede: string
+          id: string
+          notas: string | null
+          owner_id: string | null
+          producto_id: string | null
+          producto_nombre: string
+        }
+        Insert: {
+          acta_codigo?: string
+          cantidad: number
+          created_at?: string
+          desde_sede?: string
+          estado?: string
+          hasta_sede: string
+          id?: string
+          notas?: string | null
+          owner_id?: string | null
+          producto_id?: string | null
+          producto_nombre: string
+        }
+        Update: {
+          acta_codigo?: string
+          cantidad?: number
+          created_at?: string
+          desde_sede?: string
+          estado?: string
+          hasta_sede?: string
+          id?: string
+          notas?: string | null
+          owner_id?: string | null
+          producto_id?: string | null
+          producto_nombre?: string
+        }
+        Relationships: []
+      }
       restaurante_clientes: {
         Row: {
           created_at: string
@@ -4954,6 +5038,7 @@ export type Database = {
           historial: Json
           owner_id: string | null
           repartidor_id: string | null
+          sucursal_id: string | null
           total: number
         }
         Insert: {
@@ -4976,6 +5061,7 @@ export type Database = {
           cliente_id?: string | null
           mesa_id?: string | null
           repartidor_id?: string | null
+          sucursal_id?: string | null
           total?: number
         }
         Update: {
@@ -4998,6 +5084,7 @@ export type Database = {
           cliente_id?: string | null
           mesa_id?: string | null
           repartidor_id?: string | null
+          sucursal_id?: string | null
           total?: number
         }
         Relationships: [

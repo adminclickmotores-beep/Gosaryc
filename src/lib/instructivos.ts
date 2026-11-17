@@ -165,6 +165,17 @@ const POR_RUTA: Record<string, Instructivo> = {
       "Comparte el enlace del asistente con tus clientes.",
     ],
   },
+  "/settings": {
+    titulo: "Configuración, sedes y respaldo",
+    paraQue: "Crear sucursales, ver el enlace público de tu negocio y descargar el respaldo total.",
+    pasos: [
+      "En “Sucursales y puntos de venta” crea cada sede; en reportes y caja puedes ver el consolidado o una sola sede.",
+      "En “Traslado de mercancía” registra el envío entre sedes e imprime el acta; al recibir, marca el traslado como recibido.",
+      "En “Enlace público de tu negocio” copia el QR: restaurantes muestran menú, tiendas muestran catálogo por WhatsApp y salones o clínicas reciben citas online.",
+      "En “Respaldo total del negocio” descarga clientes, productos, ventas, cartera y contabilidad en Excel con un clic.",
+    ],
+    consejo: "Si cambian archivos de escritorio o del agente, sube la versión en escritorio/package.json y regenera el instalador.",
+  },
   "/leads": {
     titulo: "Clientes y contactos",
     paraQue: "Tener a la mano a tus clientes e interesados.",

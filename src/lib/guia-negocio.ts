@@ -42,6 +42,8 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
       { titulo: "Controla fiados y caja", texto: "Anota quién te debe y cierra tu caja diaria en sus módulos." },
       { titulo: "Vende con el POS", texto: "En “Punto de venta (POS)” escanea el código de barras, vende por peso o caja y elige precio detal, mayorista o especial." },
       { titulo: "Cuida los vencimientos", texto: "En “Lotes y vencimientos” registra el lote y la fecha al recibir mercancía: el POS vende primero lo que vence antes y avisa a 7, 15 y 30 días." },
+      { titulo: "Imprime tus etiquetas", texto: "En “Productos y precios” usa “Etiquetas de código de barras”: elige productos, escribe cuántas de cada uno e imprime en carta o rollo térmico." },
+      { titulo: "Maneja tus sedes", texto: "En “Sucursales y puntos de venta” crea cada sede, traslada mercancía con acta y filtra reportes por sede o consolidados." },
     ],
   },
   servicios: {

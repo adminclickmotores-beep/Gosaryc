@@ -79,6 +79,8 @@ export const CURSO_GOSARYC = {
             "Crea categorías y agrega cada producto con su precio.",
             "Si tienes muchos productos, usa «Importar desde Excel o CSV» en Productos: descarga la plantilla, llénala y súbela; el programa valida los errores antes de guardar.",
             "Si manejas recetas, enlaza los insumos para descontar inventario en cada venta.",
+            "Imprime «Etiquetas de código de barras» en carta o rollo térmico y crea tus sucursales con sus traslados de mercancía.",
+            "En Configuración descarga el «Respaldo total» (clientes, productos, ventas, cartera y contabilidad) y comparte tu enlace público: menú, catálogo por WhatsApp o citas online según tu negocio.",
           ],
           practica: { ruta: "/restaurante", etiqueta: "Abrir mi panel" },
         },

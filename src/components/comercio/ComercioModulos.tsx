@@ -9,6 +9,8 @@ import { usePermisos } from "@/hooks/use-permisos";
 import { CLASE_NIVEL, diasPara, nivelVence, textoVence, type NivelVence } from "@/lib/lotes-comercio";
 import { exportarExcel, imprimirReporte } from "@/lib/exportes";
 import { ImportadorMasivo } from "@/components/comercio/ImportadorMasivo";
+import { EtiquetasBarras } from "@/components/comercio/EtiquetasBarras";
+import { SucursalesTraslados } from "@/components/negocio/SucursalesTraslados";
 
 export type Producto = Tables<"com_productos">;
 
@@ -274,6 +276,8 @@ export function ProductosComercial() {
         </button>
       </div>
       <ImportadorMasivo alTerminar={recargar} />
+      <EtiquetasBarras productos={productos} />
+      <SucursalesTraslados />
       <GlassPanel className="space-y-3 p-5">
         <h2 className="font-medium text-foreground">Nuevo producto</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
