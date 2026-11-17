@@ -1117,6 +1117,56 @@ for (const [clave, nuevos] of Object.entries(MODULOS_TALLERTEC)) {
   tipoTal.modulos.splice(pos >= 0 ? pos : 0, 0, ...faltan);
 }
 
+// ---- Hotel, educación, moda, farmacia, óptica y eventos (Prompt #9) ----
+// Rack de habitaciones, matrículas y pensiones, matriz talla/color, control de
+// fórmula, fórmulas ópticas con laboratorio y eventos sin cruces de fecha.
+// Si un tipo no existe, no se toca (nunca falla el arranque).
+const MODULOS_TURISMO9: Record<string, ModuloNegocio[]> = {
+  hospedaje: [
+    m("hot_habitaciones", "Rack de habitaciones", "Disponible, ocupada, reservada, limpieza o mantenimiento: cambia el estado con un toque.", BedDouble),
+    m("hot_reservas", "Reservas y check-in", "Entradas, salidas y anticipos; check-in con documento, cargos a la habitación y liquidación a Caja al hacer check-out.", CalendarClock),
+  ],
+  educacion: [
+    m("edu_matriculas", "Estudiantes y matrículas", "Ficha del estudiante y su acudiente, grado y grupo.", GraduationCap),
+    m("edu_pensiones", "Pensiones y cartera", "Genera el mes, cobra y avisa la mora por WhatsApp.", Coins),
+    m("edu_academico", "Asistencia y boletín", "Llama a lista cada día y lleva las notas y logros por periodo.", ClipboardList),
+  ],
+  moda: [
+    m("mod_matriz", "Referencias y matriz talla/color", "Una referencia padre con sus tallas y colores, código de barras por variante y bonos de regalo.", Shirt),
+  ],
+  farmacia: [
+    m("far_control", "Droguería y control de fórmula", "INVIMA, principio activo y refrigerados; los antibióticos y controlados no se venden sin marcar la fórmula.", Pill),
+  ],
+  optica: [
+    m("opt_formulas", "Fórmula y laboratorio", "Esfera, cilindro, eje, adición y DP de cada ojo, con orden al laboratorio, abono y saldo contra entrega.", Glasses),
+  ],
+  eventos: [
+    m("eve_eventos", "Eventos y salones", "Cotiza, aparta la fecha sin cruces de salón, cobra abonos y cumple la lista logística.", PartyPopper),
+  ],
+  guarderia: [
+    m("edu_matriculas", "Niños y matrículas", "Grupo, jornada, alergias, EPS y acudientes de cada niño.", Baby),
+    m("edu_pensiones", "Pensiones y cartera", "Genera el mes, cobra y avisa la mora por WhatsApp.", Coins),
+    m("edu_academico", "Asistencia y reporte diario", "Hora de entrada y salida, estado de salud y reporte de comidas, siestas y actividades.", ClipboardList),
+  ],
+};
+const REEMPLAZA_TURISMO9: Record<string, string[]> = {
+  hospedaje: ["habitaciones", "reservas_hosp", "huespedes", "servicios_extra", "limpieza"],
+  educacion: ["estudiantes", "cursos", "mensualidades", "asistencia"],
+  moda: ["prendas_talla", "temporadas", "vitrina"],
+  farmacia: ["productos_farm", "inventario_farm", "vencimientos_farm", "formulas"],
+  optica: ["formulas_optica", "examenes_visuales", "monturas_optica", "pedidos_lab_optica"],
+  eventos: ["eventos_reg", "paquetes_evento", "entregas_evento"],
+  guarderia: ["ninos_inscritos", "asistencia_guarderia", "recogida_guarderia", "reportes_guarderia"],
+};
+for (const [clave, nuevos] of Object.entries(MODULOS_TURISMO9)) {
+  const tipoTur = TIPOS_NEGOCIO.find((x) => x.clave === clave);
+  if (!tipoTur) continue;
+  const quitar = REEMPLAZA_TURISMO9[clave] ?? [];
+  const faltan = nuevos.filter((e) => !tipoTur.modulos.some((x) => x.id === e.id));
+  if (faltan.length === 0) continue;
+  tipoTur.modulos = [...faltan, ...tipoTur.modulos.filter((x) => !quitar.includes(x.id))];
+}
+
 // Se agrega el módulo de cotizaciones a los tipos que cotizan y no tienen uno propio.
 // Salud (presupuestos de tratamiento), educación, hospedaje, gimnasio, mascotas, agro, farmacia y lavandería no cotizan así.
 const SIN_COTIZACIONES: TipoNegocioClave[] = ["tienda","restaurante", "cafeteria", "comida_rapida","salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro", "farmacia", "lavanderia", "belleza", "inmobiliaria", "tecnologia", "condominio", "prestamos", "papeleria", "supermercado", "carniceria", "licorera", "floristeria", "optica", "guarderia", "ganaderia", "fundacion", "iglesia", "seguridad_aseo", "alquiler_vehiculos"];

@@ -29,6 +29,7 @@ import { AgendaBelleza, ComisionesBelleza, FichasBelleza, ServiciosBelleza } fro
 import { CheckinGimnasio, PlanesGimnasio, SociosGimnasio, ValoracionGimnasio } from "@/components/gimnasio/GimnasioModulos";
 import { ComisionesTaller, OrdenesTaller, ProyectosMedida, RepuestosTaller } from "@/components/taller/TallerModulos";
 import { AgroLotes, ObrasConstructora, PropiedadesInmobiliaria, TransporteManifiestos } from "@/components/medida/MedidaModulos";
+import { AcademicoEducacion, ControlFarmacia, EventosSalon, FormulasOptica, HabitacionesHotel, MatriculasEducacion, MatrizModa, PensionesEducacion, ReservasHotel } from "@/components/turismo/TurismoModulos";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
@@ -103,6 +104,15 @@ function ModuloPage() {
   if (id === "inm_propiedades") return <PropiedadesInmobiliaria />;
   if (id === "agr_lotes") return <AgroLotes />;
   if (id === "tra_manifiestos") return <TransporteManifiestos />;
+  if (id === "hot_habitaciones") return <HabitacionesHotel />;
+  if (id === "hot_reservas") return <ReservasHotel />;
+  if (id === "edu_matriculas") return <MatriculasEducacion />;
+  if (id === "edu_pensiones") return <PensionesEducacion />;
+  if (id === "edu_academico") return <AcademicoEducacion />;
+  if (id === "mod_matriz") return <MatrizModa />;
+  if (id === "far_control") return <ControlFarmacia />;
+  if (id === "opt_formulas") return <FormulasOptica />;
+  if (id === "eve_eventos") return <EventosSalon />;
   if (id === "gim_checkin") return <CheckinGimnasio />;
   if (id === "gim_socios") return <SociosGimnasio />;
   if (id === "gim_planes") return <PlanesGimnasio />;

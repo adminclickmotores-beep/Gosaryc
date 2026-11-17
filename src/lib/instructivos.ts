@@ -360,6 +360,79 @@ const POR_MODULO: Record<string, Instructivo> = {
       "Cobra el flete y liquida al conductor (solo el dueño): la utilidad neta queda registrada.",
     ],
   },
+  hot_habitaciones: {
+    titulo: "Rack de habitaciones",
+    paraQue: "Ver de un vistazo qué está libre, ocupado o en limpieza.",
+    pasos: [
+      "Crea cada habitación con su tipo y tarifa por noche.",
+      "Toca el estado para cambiarlo: disponible, ocupada, reservada, limpieza o mantenimiento.",
+      "Las reservas y el check-in mueven el estado solas; el check-out la deja en limpieza.",
+    ],
+  },
+  hot_reservas: {
+    titulo: "Reservas y check-in",
+    paraQue: "Reservar, recibir al huésped y cobrarle todo al salir.",
+    pasos: [
+      "Guarda la reserva con huésped, documento, fechas y anticipo.",
+      "Haz check-in al llegar: la habitación pasa a ocupada.",
+      "Suma cargos de minibar, lavandería o restaurante a la cuenta.",
+      "Al hacer check-out se cobran las noches más los cargos menos el anticipo: entra a Caja y Contabilidad.",
+    ],
+  },
+  edu_matriculas: {
+    titulo: "Estudiantes y matrículas",
+    paraQue: "La ficha de cada estudiante con su acudiente.",
+    pasos: ["Matricula con nombre, grado, grupo y acudiente con su celular.", "Busca por nombre o grado para ubicarlo rápido."],
+  },
+  edu_pensiones: {
+    titulo: "Pensiones y cartera",
+    paraQue: "Cobrar el mes a tiempo sin perseguir a nadie.",
+    pasos: [
+      "Genera el periodo una sola vez: se crea la pensión de cada estudiante activo, sin duplicar.",
+      "Cobra: entra a Caja y Contabilidad. Lo pendiente se avisa al acudiente por WhatsApp.",
+    ],
+  },
+  edu_academico: {
+    titulo: "Asistencia y boletín",
+    paraQue: "Llevar la asistencia diaria y las notas por periodo.",
+    pasos: ["Marca presente o ausente cada día por estudiante.", "Guarda área, valoración y logro de cada periodo para el boletín."],
+  },
+  mod_matriz: {
+    titulo: "Referencias y matriz talla/color",
+    paraQue: "Vender cada variante sin confundir tallas ni colores.",
+    pasos: [
+      "Crea la referencia padre con marca, temporada y precio.",
+      "Agrega cada variante con su talla, color, stock y código de barras.",
+      "Los cambios se resuelven con bono de regalo: no se borra el movimiento.",
+    ],
+  },
+  far_control: {
+    titulo: "Droguería y control de fórmula",
+    paraQue: "Vender medicamentos cumpliendo la norma.",
+    pasos: [
+      "Registra cada producto con principio activo, INVIMA, lote y vencimiento; marca fórmula, controlado y refrigerado.",
+      "Antibióticos y controlados no se venden sin marcar que el cliente trae la fórmula.",
+      "Cada venta descuenta stock y entra a Caja y Contabilidad.",
+    ],
+  },
+  opt_formulas: {
+    titulo: "Fórmula y laboratorio",
+    paraQue: "Del examen a la entrega de las gafas.",
+    pasos: [
+      "Guarda la fórmula con esfera, cilindro, eje, adición y DP de cada ojo.",
+      "Crea la orden con montura, lentes, laboratorio y fecha prometida; el abono entra a Caja.",
+      "Entrega solo cuando el saldo quede en cero.",
+    ],
+  },
+  eve_eventos: {
+    titulo: "Eventos y salones",
+    paraQue: "Cotizar, apartar la fecha y cumplir la logística.",
+    pasos: [
+      "Crea tus salones con capacidad y tarifa.",
+      "Cotiza con cliente, fecha e invitados: si el salón ya está apartado ese día, el programa lo bloquea.",
+      "Cada abono baja el saldo y entra a Caja y Contabilidad; la lista logística se chulea tarea por tarea.",
+    ],
+  },
 };
 
 const GENERICO ="Para guardar cambios toca el botón de guardar; todo queda registrado en tu cuenta.";

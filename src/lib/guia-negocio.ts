@@ -66,17 +66,17 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
   educacion: {
     frase: "Cada estudiante cuenta, cada avance se celebra.",
     pasos: [
-      { titulo: "Crea tus cursos", texto: "En “Cursos y grupos” registra horarios, cupos y docentes." },
-      { titulo: "Matricula estudiantes", texto: "Agrega a cada estudiante en “Estudiantes y matrículas”." },
-      { titulo: "Cobra a tiempo", texto: "Usa “Pensiones y mensualidades” para ver quién tiene pagos pendientes." },
+      { titulo: "Matricula estudiantes", texto: "En “Estudiantes y matrículas” guarda la ficha con acudiente, grado y grupo." },
+      { titulo: "Genera las pensiones", texto: "En “Pensiones y cartera” genera el mes para todos los activos y cobra: entra a Caja y Contabilidad. La mora se avisa por WhatsApp." },
+      { titulo: "Llama a lista y califica", texto: "En “Asistencia y boletín” marca presente o ausente cada día y guarda las notas y logros por periodo." },
     ],
   },
   hospedaje: {
     frase: "Que cada huésped quiera volver.",
     pasos: [
-      { titulo: "Registra tus habitaciones", texto: "En “Habitaciones y disponibilidad” agrega cada espacio con su tarifa." },
-      { titulo: "Toma reservas", texto: "Anota entradas, salidas y anticipos en “Reservas”." },
-      { titulo: "Cuida la limpieza", texto: "Organiza las tareas por habitación en “Limpieza y mantenimiento”." },
+      { titulo: "Arma tu rack", texto: "En “Rack de habitaciones” agrega cada espacio con su tarifa: verde disponible, rojo ocupada, amarillo reservada, azul en limpieza." },
+      { titulo: "Reserva y haz check-in", texto: "En “Reservas y check-in” anota huésped, documento y anticipo; el check-in cambia la habitación a ocupada." },
+      { titulo: "Carga todo a la cuenta", texto: "Suma minibar, lavandería y restaurante a la habitación y liquida al hacer check-out: noches más cargos menos anticipo, directo a Caja y Contabilidad." },
     ],
   },
   gimnasio: {
@@ -206,21 +206,21 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
     ],
   },
   farmacia: {
-    frase: "Inventario al día, vencimientos bajo control.",
+    frase: "Dispensar bien también es cuidar.",
     pasos: [
-      { titulo: "Carga tus productos", texto: "En “Productos y medicamentos” registra presentación y precio." },
-      { titulo: "Controla vencimientos", texto: "En “Lotes y vencimientos” revisa qué vence pronto para rotarlo." },
-      { titulo: "Atiende domicilios", texto: "Anota pedidos y fórmulas en “Fórmulas y domicilios”." },
-      { titulo: "Repón a tiempo", texto: "Mira el bajo stock y pide a tus proveedores." },
+      { titulo: "Carga tus productos", texto: "En “Droguería y control de fórmula” registra principio activo, INVIMA, lote y vencimiento." },
+      { titulo: "Marca qué exige fórmula", texto: "Antibióticos y controlados no se venden sin marcar que el cliente trae la fórmula: el programa lo bloquea." },
+      { titulo: "Cuida el frío", texto: "Los refrigerados llevan etiqueta de cadena de frío para no romperla." },
+      { titulo: "Vende y cobra", texto: "Cada venta descuenta stock y entra a Caja y Contabilidad." },
     ],
   },
   eventos: {
     frase: "Cada fecha reservada, cada detalle cumplido.",
     pasos: [
-      { titulo: "Crea tus paquetes", texto: "En “Paquetes y servicios” define qué incluye cada uno y su precio." },
-      { titulo: "Reserva fechas", texto: "En “Eventos y reservas” anota cliente, lugar y anticipo." },
-      { titulo: "Cumple las entregas", texto: "Lleva los pendientes en “Entregas y pendientes”." },
-      { titulo: "Cobra saldos", texto: "Controla lo que falta por pagar de cada evento." },
+      { titulo: "Crea tus salones", texto: "En “Eventos y salones” registra cada salón con su capacidad y tarifa." },
+      { titulo: "Cotiza sin cruces", texto: "Al apartar la fecha el programa avisa si ese salón ya está reservado ese día." },
+      { titulo: "Cobra por abonos", texto: "Cada abono baja el saldo y entra a Caja y Contabilidad." },
+      { titulo: "Cumple la logística", texto: "Marca la lista (sonido, sillas, torta…) para no olvidar nada el día del evento." },
     ],
   },
   profesional: {
@@ -301,9 +301,9 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
   moda: {
     frase: "Tu colección ordenada y vendiendo todos los días.",
     pasos: [
-      { titulo: "Carga tu colección", texto: "Agrega prendas con tallas, colores y precios." },
-      { titulo: "Registra ventas", texto: "Vende en tienda o por pedido, controla los cobros y factura cada compra con su talla y color." },
-      { titulo: "Controla el inventario", texto: "Revisa existencias por talla y color." },
+      { titulo: "Crea la referencia", texto: "En “Referencias y matriz talla/color” abre la referencia padre con marca, temporada y precio." },
+      { titulo: "Agrega tallas y colores", texto: "Cada combinación lleva su stock y su código de barras para venderla sin confundirte." },
+      { titulo: "Vende sin perder trazabilidad", texto: "Los cambios generan bono de regalo en vez de borrarse: siempre sabes qué salió y qué entró." },
       { titulo: "Fideliza clientes", texto: "Guarda sus datos y ofrece puntos o promociones." },
     ],
   },
@@ -361,19 +361,18 @@ GUIAS_NEGOCIO.floristeria = {
 GUIAS_NEGOCIO.optica = {
   frase: "Cada fórmula exacta, cada cliente viendo bien.",
   pasos: [
-    { titulo: "Guarda la fórmula", texto: "En “Fórmulas de clientes” anota esfera, cilindro, eje, adición y distancia pupilar de cada ojo." },
-    { titulo: "Agenda los exámenes", texto: "En “Exámenes visuales” programa optometría y controles." },
-    { titulo: "Controla tus monturas", texto: "En “Monturas y vitrina” registra marca, material y existencias." },
-    { titulo: "Sigue el laboratorio", texto: "En “Pedidos al laboratorio” controla la fecha prometida y el saldo de cada pedido." },
+    { titulo: "Guarda la fórmula", texto: "En “Fórmula y laboratorio” anota esfera, cilindro, eje, adición y distancia pupilar de cada ojo." },
+    { titulo: "Crea la orden", texto: "Elige montura, lentes y laboratorio con fecha prometida y cobra el abono: entra a Caja y Contabilidad." },
+    { titulo: "Entrega contra saldo", texto: "El programa no deja entregar hasta cobrar el saldo completo." },
   ],
 };
 GUIAS_NEGOCIO.guarderia = {
   frase: "Cada niño seguro, cada acudiente tranquilo.",
   pasos: [
-    { titulo: "Inscribe a los niños", texto: "En “Niños inscritos” registra grupo, jornada, alergias, EPS y acudientes." },
-    { titulo: "Autoriza quién recoge", texto: "En “Personas autorizadas a recoger” guarda documento y foto de cada persona." },
-    { titulo: "Registra la asistencia", texto: "En “Asistencia y recogida diaria” anota hora de entrada, salida y estado de salud." },
-    { titulo: "Informa a los acudientes", texto: "En “Reporte diario” cuenta comidas, siestas y actividades, y cobra en “Pensiones”." },
+    { titulo: "Inscribe a los niños", texto: "En “Niños y matrículas” registra grupo, jornada, alergias, EPS y acudientes." },
+    { titulo: "Autoriza quién recoge", texto: "Guarda documento y foto de cada persona autorizada en la ficha del niño." },
+    { titulo: "Registra la asistencia", texto: "En “Asistencia y reporte diario” anota hora de entrada, salida y estado de salud." },
+    { titulo: "Informa a los acudientes", texto: "Cuenta comidas, siestas y actividades del día, y cobra la pensión en “Pensiones y cartera”." },
   ],
 };
 GUIAS_NEGOCIO.alquiler_vehiculos = {
