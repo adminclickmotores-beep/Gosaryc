@@ -34,8 +34,7 @@ Los botones están en la carpeta principal, uno por instalador:
 - 5-CREAR-Tienda-Win11.bat → .appx en escritorio/instaladores (opcional)
 - 6-CREAR-Linux.bat → AppImage y .deb en escritorio/instaladores (opcional)
 
-Cada .bat tiene su gemelo .cmd con el mismo nombre (mismo botón, por si el
-antivirus oculta los .bat). Todos llaman al motor único crear-instaladores.cjs,
+Todos llaman al motor único crear-instaladores.cjs,
 sin pasos manuales. Detalle en INSTALAR-PASO-A-PASO.txt.
 
 CÓMO SE ACTUALIZAN SOLOS

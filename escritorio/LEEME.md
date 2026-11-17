@@ -15,7 +15,7 @@ Crea un instalador de Windows (`Gosaryc Setup x.x.x.exe`). La app instalada:
 ## Armar el instalador (la forma fácil)
 1. Descomprime la carpeta completa del proyecto (deben quedar juntas `escritorio` y `whatsapp-local`).
 2. Lee `INSTALAR-PASO-A-PASO.txt` en la carpeta principal (guía para no programadores, un instalador por vez).
-3. En la carpeta principal haz doble clic en `1-CREAR-Windows-clientes.bat` (respaldo: `1-CREAR-Windows-clientes.cmd`).
+3. En la carpeta principal haz doble clic en `1-CREAR-Windows-clientes.bat`.
    Atajo: dentro de `escritorio`, `crear-instalador-windows.bat` es el mismo botón.
 4. Ese `.exe` es el que le entregas a tus clientes: doble clic, "Instalar" y listo.
 

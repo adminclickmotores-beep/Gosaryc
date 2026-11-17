@@ -36,8 +36,6 @@ PASO 1 - WINDOWS CLIENTES (EL MÁS IMPORTANTE)
 --------------------------------------------
 1. En esta carpeta principal haz doble clic en:
    1-CREAR-Windows-clientes.bat
-   (Si tu antivirus oculta los .bat, haz doble clic en
-   1-CREAR-Windows-clientes.cmd. Es lo mismo.)
 2. Se abre una ventana negra. Déjala trabajar (tarda varios
    minutos la primera vez, es normal).
 3. Cuando diga "Listo", se abre sola la carpeta con tus
@@ -51,7 +49,6 @@ PASO 1 - WINDOWS CLIENTES (EL MÁS IMPORTANTE)
 PASO 2 - APK CLIENTES (ANDROID)
 -------------------------------
 1. Haz doble clic en: 2-CREAR-APK-clientes.bat
-   (respaldo: 2-CREAR-APK-clientes.cmd)
 2. Espera a que diga "Listo".
 3. En esta misma carpeta principal aparece: Gosaryc.apk
 4. Pásalo al celular por WhatsApp o cable USB, tócalo
@@ -62,7 +59,6 @@ PASO 2 - APK CLIENTES (ANDROID)
 PASO 3 - WINDOWS LICENCIAS ADMIN (SOLO TÚ)
 ------------------------------------------
 1. Haz doble clic en: 3-CREAR-Licencias-Admin-Windows.bat
-   (respaldo: 3-CREAR-Licencias-Admin-Windows.cmd)
 2. Espera a que diga "Listo".
 3. Quedan en: generador-licencias\instaladores\
    Gosaryc-Licencias-Admin-x64.exe
@@ -73,7 +69,6 @@ PASO 3 - WINDOWS LICENCIAS ADMIN (SOLO TÚ)
 PASO 4 - APK LICENCIAS ADMIN (SOLO TÚ)
 --------------------------------------
 1. Haz doble clic en: 4-CREAR-APK-Licencias-Admin.bat
-   (respaldo: 4-CREAR-APK-Licencias-Admin.cmd)
 2. Espera a que diga "Listo".
 3. En esta carpeta principal aparece:
    Gosaryc-Licencias-Admin.apk (logo rojo con cinta ADMIN).
@@ -105,8 +100,9 @@ SI ALGO FALLA (NO TE ASUSTES)
   node_modules dentro de escritorio y repite.
 - "No encuentro el Android SDK": abre Android Studio
   una vez y repite el paso del APK.
-- "No veo los .bat": usa los .cmd con el mismo nombre,
-  son el mismo botón con otro traje.
+- "No veo los .bat": en el Explorador pulsa Ver > Mostrar >
+  Extensiones de nombre de archivo. Los botones buenos son los
+  6 que empiezan con número (1-CREAR, 2-CREAR, etc).
 - Ventana negra cerrada a la mitad: vuelve a hacer
   doble clic, sigue donde iba.
 - Sin instalar nada: entra a tu repositorio en GitHub,
