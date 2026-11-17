@@ -7,6 +7,7 @@ import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { CLASE_NIVEL, diasPara, nivelVence, textoVence, type NivelVence } from "@/lib/lotes-comercio";
+import { exportarExcel, imprimirReporte } from "@/lib/exportes";
 
 export type Producto = Tables<"com_productos">;
 
@@ -252,6 +253,25 @@ export function ProductosComercial() {
         titulo="Productos y precios"
         texto="Código de barras o SKU, unidad de venta (kilo, libra, metro, litro, caja), precios detal, mayorista y especial, e impuesto por producto."
       />
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={() => exportarExcel("inventario-valorizado",
+            ["Producto", "Código", "SKU", "Unidad", "Stock", "Costo unitario", "Costo total", "Precio detal"],
+            visibles.map((p) => [p.nombre, p.codigo_barras ?? "", p.sku ?? "", p.unidad_base, p.stock, p.costo, Math.round(p.stock * p.costo * 100) / 100, p.precio_detal]))}
+          className="rounded-full border border-glass-border px-4 py-1.5 text-sm text-muted-foreground"
+        >
+          Inventario a Excel
+        </button>
+        <button
+          onClick={() => imprimirReporte("Inventario valorizado", `${visibles.length} referencias`,
+            ["Producto", "Stock", "Costo unit.", "Costo total", "Precio detal"],
+            visibles.map((p) => [p.nombre, String(p.stock), dinero(p.costo), dinero(p.stock * p.costo), dinero(p.precio_detal)]),
+            [`Valor total del inventario: ${dinero(visibles.reduce((s, p) => s + p.stock * p.costo, 0))}`])}
+          className="rounded-full border border-glass-border px-4 py-1.5 text-sm text-muted-foreground"
+        >
+          Inventario a PDF
+        </button>
+      </div>
       <GlassPanel className="space-y-3 p-5">
         <h2 className="font-medium text-foreground">Nuevo producto</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

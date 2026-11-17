@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { exportarExcel, imprimirReporte } from "@/lib/exportes";
 
 type Cuenta = Tables<"cuentas_contables">;
 type Asiento = Tables<"asientos_contables">;
@@ -248,6 +249,42 @@ export function Contabilidad() {
     return cuentas.filter((c) => grupos.has(c.id)).map((c) => ({ cuenta: c, movs: grupos.get(c.id) ?? [] }));
   }, [filtradas, cuentas]);
 
+  const tituloVista = vistas.find((v) => v.clave === vista)?.texto ?? "Reporte";
+  const rangoTxt = `Del ${desde || "inicio"} al ${hasta || "hoy"}`;
+
+  const exportarVistaExcel = () => {
+    if (vista === "diario")
+      exportarExcel("libro-diario", ["Fecha", "Cuenta", "Concepto", "Debe", "Haber", "Saldo"],
+        filtradas.map(({ fila, cuenta, saldo }) => [fila.fecha, nombreCuenta(cuenta), fila.concepto ?? "", fila.debe, fila.haber, Math.round(saldo * 100) / 100]));
+    else if (vista === "mayor")
+      exportarExcel("libro-mayor", ["Cuenta", "Fecha", "Concepto", "Debe", "Haber"],
+        mayor.flatMap(({ cuenta, movs }) => movs.map(({ fila }) => [`${cuenta.codigo} ${cuenta.nombre}`, fila.fecha, fila.concepto ?? "", fila.debe, fila.haber])));
+    else if (vista === "balance")
+      exportarExcel("balance", ["Código", "Cuenta", "Tipo", "Debe", "Haber"],
+        [...balance.lista.map(({ cuenta, debe, haber }) => [cuenta.codigo, cuenta.nombre, cuenta.tipo, debe, haber] as (string | number)[]),
+          ["TOTAL", "", "", balance.td, balance.th]]);
+    else
+      exportarExcel("plan-cuentas", ["Código", "Nombre", "Tipo"], cuentas.map((c) => [c.codigo, c.nombre, c.tipo]));
+  };
+
+  const exportarVistaPdf = () => {
+    if (vista === "diario")
+      imprimirReporte("Libro diario", rangoTxt, ["Fecha", "Cuenta", "Concepto", "Debe", "Haber"],
+        filtradas.map(({ fila, cuenta }) => [fila.fecha, nombreCuenta(cuenta), fila.concepto ?? "", dinero(fila.debe), dinero(fila.haber)]),
+        [`Resultado del periodo: ${dinero(totales.resultado)} (ingresos ${dinero(totales.ingresos)} - gastos ${dinero(totales.gastos)})`]);
+    else if (vista === "mayor")
+      imprimirReporte("Libro mayor", rangoTxt, ["Cuenta", "Fecha", "Concepto", "Debe", "Haber"],
+        mayor.flatMap(({ cuenta, movs }) => movs.map(({ fila }) => [`${cuenta.codigo} ${cuenta.nombre}`, fila.fecha, fila.concepto ?? "", dinero(fila.debe), dinero(fila.haber)])));
+    else if (vista === "balance")
+      imprimirReporte("Balance de sumas y saldos", rangoTxt, ["Código", "Cuenta", "Tipo", "Debe", "Haber"],
+        balance.lista.map(({ cuenta, debe, haber }) => [cuenta.codigo, cuenta.nombre, cuenta.tipo, dinero(debe), dinero(haber)]),
+        [`Total debe: ${dinero(balance.td)} · Total haber: ${dinero(balance.th)}`]);
+    else
+      imprimirReporte("Plan de cuentas", "Catálogo contable del negocio", ["Código", "Nombre", "Tipo"],
+        cuentas.map((c) => [c.codigo, c.nombre, c.tipo]));
+    void tituloVista;
+  };
+
   return (
     <section className="space-y-4">
       <h2 className="flex items-center gap-2 font-display text-2xl text-foreground">
@@ -316,6 +353,16 @@ export function Contabilidad() {
             {v.texto}
           </button>
         ))}
+      </div>
+
+      {/* Exportar la vista actual */}
+      <div className="flex flex-wrap gap-2 text-sm">
+        <button onClick={exportarVistaExcel} className="rounded-full border border-glass-border px-4 py-1.5 text-muted-foreground">
+          Exportar a Excel
+        </button>
+        <button onClick={exportarVistaPdf} className="rounded-full border border-glass-border px-4 py-1.5 text-muted-foreground">
+          Exportar a PDF
+        </button>
       </div>
 
       {cargando && <p className="text-sm text-muted-foreground">Cargando…</p>}

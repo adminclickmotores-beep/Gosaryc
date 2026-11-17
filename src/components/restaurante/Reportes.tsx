@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { exportarExcel, imprimirReporte } from "@/lib/exportes";
 
 type Pedido = Tables<"restaurante_pedidos">;
 type Item = Tables<"restaurante_pedido_items">;
@@ -137,6 +138,18 @@ export function Reportes() {
   const maxDia = Math.max(1, ...resumen.dias.map(([, v]) => v));
   const maxPlato = Math.max(1, ...resumen.top.map(([, v]) => v.cantidad));
 
+  const exportarVentasExcel = () => {
+    exportarExcel("reporte-ventas", ["Pedido", "Fecha", "Modalidad", "Estado", "Total"],
+      pedidos.map((p) => [p.numero ?? p.id.slice(0, 8), new Date(p.created_at).toLocaleString("es-CO"), p.modalidad, p.estado, p.total]));
+  };
+
+  const exportarVentasPdf = () => {
+    imprimirReporte("Reporte de ventas", `Últimos ${dias} días`, ["Plato o producto", "Cantidad", "Ingreso"],
+      resumen.top.map(([nombre, v]) => [nombre, String(v.cantidad), dinero(v.ingreso)]),
+      [`Ventas: ${dinero(resumen.total)} en ${resumen.cantidad} pedidos (ticket ${dinero(resumen.ticket)})`,
+        `Utilidad neta: ${dinero(utilidad.neta)} (ventas ${dinero(utilidad.ventas)} - costos ${dinero(utilidad.costo)} - gastos ${dinero(utilidad.gastos)})`]);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
@@ -149,6 +162,12 @@ export function Reportes() {
             {r.texto}
           </button>
         ))}
+        <button onClick={exportarVentasExcel} className="rounded-full border border-glass-border px-4 py-1.5 text-sm text-muted-foreground">
+          Exportar a Excel
+        </button>
+        <button onClick={exportarVentasPdf} className="rounded-full border border-glass-border px-4 py-1.5 text-sm text-muted-foreground">
+          Exportar a PDF
+        </button>
       </div>
 
       {cargando ? (

@@ -25,6 +25,18 @@ type Form = {
   logo_url: string;
   portada_url: string;
   color_principal: string;
+  razon_social: string;
+  tipo_documento: string;
+  nit: string;
+  digito_verificacion: string;
+  direccion_fiscal: string;
+  regimen_tributario: string;
+  responsabilidad_fiscal: string;
+  resolucion_facturacion: string;
+  rango_desde: string;
+  rango_hasta: string;
+  resolucion_vence: string;
+  iva_defecto: string;
 };
 
 const VACIO: Form = {
@@ -42,6 +54,18 @@ const VACIO: Form = {
   sitio_web: "",
   horarios: "",
   aviso_entrega: "",
+  razon_social: "",
+  tipo_documento: "NIT",
+  nit: "",
+  digito_verificacion: "",
+  direccion_fiscal: "",
+  regimen_tributario: "No responsable de IVA",
+  responsabilidad_fiscal: "R-99-PN",
+  resolucion_facturacion: "",
+  rango_desde: "1",
+  rango_hasta: "1000",
+  resolucion_vence: "",
+  iva_defecto: "0",
 };
 
 const CAMPOS: { clave: keyof Form; etiqueta: string; ejemplo: string; largo?: boolean }[] = [
@@ -124,6 +148,18 @@ export function NegocioConfig() {
       logo_url: negocio.logo_url ?? "",
       portada_url: negocio.portada_url ?? "",
       color_principal: negocio.color_principal ?? "",
+      razon_social: negocio.razon_social ?? "",
+      tipo_documento: negocio.tipo_documento ?? "NIT",
+      nit: negocio.nit ?? "",
+      digito_verificacion: negocio.digito_verificacion ?? "",
+      direccion_fiscal: negocio.direccion_fiscal ?? "",
+      regimen_tributario: negocio.regimen_tributario ?? "No responsable de IVA",
+      responsabilidad_fiscal: negocio.responsabilidad_fiscal ?? "R-99-PN",
+      resolucion_facturacion: negocio.resolucion_facturacion ?? "",
+      rango_desde: String(negocio.rango_desde ?? 1),
+      rango_hasta: String(negocio.rango_hasta ?? 1000),
+      resolucion_vence: negocio.resolucion_vence ?? "",
+      iva_defecto: String(negocio.iva_defecto ?? 0),
     });
   }, [negocio]);
 
@@ -160,6 +196,18 @@ export function NegocioConfig() {
       logo_url: form.logo_url || null,
       portada_url: form.portada_url || null,
       color_principal: /^#[0-9a-f]{6}$/i.test(form.color_principal) ? form.color_principal : null,
+      razon_social: form.razon_social.trim() || null,
+      tipo_documento: ["NIT", "CC", "CE", "PASAPORTE"].includes(form.tipo_documento) ? form.tipo_documento : "NIT",
+      nit: form.nit.replace(/\D/g, "") || null,
+      digito_verificacion: form.digito_verificacion.replace(/\D/g, "").slice(0, 1) || null,
+      direccion_fiscal: form.direccion_fiscal.trim() || null,
+      regimen_tributario: form.regimen_tributario || "No responsable de IVA",
+      responsabilidad_fiscal: form.responsabilidad_fiscal.trim() || "R-99-PN",
+      resolucion_facturacion: form.resolucion_facturacion.trim() || null,
+      rango_desde: Math.max(Math.floor(Number(form.rango_desde)) || 1, 1),
+      rango_hasta: Math.max(Math.floor(Number(form.rango_hasta)) || 1000, 1),
+      resolucion_vence: form.resolucion_vence || null,
+      iva_defecto: Math.min(Math.max(Number(form.iva_defecto) || 0, 0), 100),
       updated_at: new Date().toISOString(),
     };
     const { data: guardado, error } = negocio
@@ -330,6 +378,69 @@ export function NegocioConfig() {
           </label>
           );
         })}
+      </div>
+      <div className="rounded-xl border border-glass-border p-4">
+        <h3 className="font-medium text-foreground">Datos fiscales (DIAN - Colombia)</h3>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Salen en tus facturas de venta. Confirma cada dato con tu contador; el NIT lleva punto de verificación y la resolución trae rango y vencimiento.
+        </p>
+        <div className="mt-3 grid gap-4 md:grid-cols-2">
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">Razón social (si es diferente al nombre)</span>
+            <input className={campo} placeholder="Ej: Café La Esquina S.A.S." value={form.razon_social} onChange={(e) => setForm({ ...form, razon_social: e.target.value })} />
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block space-y-1">
+              <span className="text-xs text-muted-foreground">Tipo de documento</span>
+              <select className={campo} value={form.tipo_documento} onChange={(e) => setForm({ ...form, tipo_documento: e.target.value })}>
+                {["NIT", "CC", "CE", "PASAPORTE"].map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </label>
+            <label className="block space-y-1">
+              <span className="text-xs text-muted-foreground">NIT o documento + DV</span>
+              <div className="flex gap-2">
+                <input className={campo} inputMode="numeric" placeholder="900123456" value={form.nit} onChange={(e) => setForm({ ...form, nit: e.target.value })} />
+                <input className={campo} inputMode="numeric" placeholder="DV" aria-label="Dígito de verificación" style={{ maxWidth: 64 }} value={form.digito_verificacion} onChange={(e) => setForm({ ...form, digito_verificacion: e.target.value })} />
+              </div>
+            </label>
+          </div>
+          <label className="block space-y-1 md:col-span-2">
+            <span className="text-xs text-muted-foreground">Dirección fiscal</span>
+            <input className={campo} placeholder="Ej: Calle 5 # 10-20, Cali" value={form.direccion_fiscal} onChange={(e) => setForm({ ...form, direccion_fiscal: e.target.value })} />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">Régimen tributario</span>
+            <select className={campo} value={form.regimen_tributario} onChange={(e) => setForm({ ...form, regimen_tributario: e.target.value })}>
+              {["No responsable de IVA", "Responsable de IVA", "Régimen simple de tributación", "Gran contribuyente", "Autorretenedor"].map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">Responsabilidad fiscal</span>
+            <input className={campo} placeholder="Ej: R-99-PN, O-13, O-15, O-23…" value={form.responsabilidad_fiscal} onChange={(e) => setForm({ ...form, responsabilidad_fiscal: e.target.value })} />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">Resolución de facturación DIAN</span>
+            <input className={campo} placeholder="Ej: 18760000001 del 2025-01-15" value={form.resolucion_facturacion} onChange={(e) => setForm({ ...form, resolucion_facturacion: e.target.value })} />
+          </label>
+          <div className="grid grid-cols-3 gap-3">
+            <label className="block space-y-1">
+              <span className="text-xs text-muted-foreground">Rango desde</span>
+              <input className={campo} inputMode="numeric" value={form.rango_desde} onChange={(e) => setForm({ ...form, rango_desde: e.target.value })} />
+            </label>
+            <label className="block space-y-1">
+              <span className="text-xs text-muted-foreground">Rango hasta</span>
+              <input className={campo} inputMode="numeric" value={form.rango_hasta} onChange={(e) => setForm({ ...form, rango_hasta: e.target.value })} />
+            </label>
+            <label className="block space-y-1">
+              <span className="text-xs text-muted-foreground">IVA % por defecto</span>
+              <input className={campo} inputMode="decimal" value={form.iva_defecto} onChange={(e) => setForm({ ...form, iva_defecto: e.target.value })} />
+            </label>
+          </div>
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">La resolución vence el</span>
+            <input type="date" className={campo} value={form.resolucion_vence} onChange={(e) => setForm({ ...form, resolucion_vence: e.target.value })} />
+          </label>
+        </div>
       </div>
       <button
         disabled={guardando}

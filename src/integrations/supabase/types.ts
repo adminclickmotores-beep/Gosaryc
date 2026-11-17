@@ -2483,6 +2483,12 @@ export type Database = {
         Update: { created_at?: string; evento_id?: string; id?: string; listo?: boolean; owner_id?: string | null; tarea?: string; tipo_negocio?: string | null }
         Relationships: []
       }
+      fac_emitidas: {
+        Row: { cliente: string; cliente_doc: string | null; created_at: string; formato: string; id: string; items: Json; iva: number; numero: number; owner_id: string | null; subtotal: number; tipo_negocio: string | null; total: number }
+        Insert: { cliente: string; cliente_doc?: string | null; created_at?: string; formato?: string; id?: string; items?: Json; iva?: number; numero: number; owner_id?: string | null; subtotal?: number; tipo_negocio?: string | null; total: number }
+        Update: { cliente?: string; cliente_doc?: string | null; created_at?: string; formato?: string; id?: string; items?: Json; iva?: number; numero?: number; owner_id?: string | null; subtotal?: number; tipo_negocio?: string | null; total?: number }
+        Relationships: []
+      }
       tal_ordenes: {
         Row: {
           abono: number
@@ -4369,6 +4375,18 @@ export type Database = {
           updated_at: string
           iva_porcentaje: number
           whatsapp_cocina: string | null
+          razon_social: string | null
+          tipo_documento: string
+          nit: string | null
+          digito_verificacion: string | null
+          direccion_fiscal: string | null
+          regimen_tributario: string
+          responsabilidad_fiscal: string
+          resolucion_facturacion: string | null
+          rango_desde: number
+          rango_hasta: number
+          resolucion_vence: string | null
+          iva_defecto: number
         }
         Insert: {
           aviso_entrega?: string | null
@@ -4392,6 +4410,18 @@ export type Database = {
           updated_at?: string
           iva_porcentaje?: number
           whatsapp_cocina?: string | null
+          razon_social?: string | null
+          tipo_documento?: string
+          nit?: string | null
+          digito_verificacion?: string | null
+          direccion_fiscal?: string | null
+          regimen_tributario?: string
+          responsabilidad_fiscal?: string
+          resolucion_facturacion?: string | null
+          rango_desde?: number
+          rango_hasta?: number
+          resolucion_vence?: string | null
+          iva_defecto?: number
         }
         Update: {
           aviso_entrega?: string | null
@@ -4415,6 +4445,18 @@ export type Database = {
           updated_at?: string
           iva_porcentaje?: number
           whatsapp_cocina?: string | null
+          razon_social?: string | null
+          tipo_documento?: string
+          nit?: string | null
+          digito_verificacion?: string | null
+          direccion_fiscal?: string | null
+          regimen_tributario?: string
+          responsabilidad_fiscal?: string
+          resolucion_facturacion?: string | null
+          rango_desde?: number
+          rango_hasta?: number
+          resolucion_vence?: string | null
+          iva_defecto?: number
         }
         Relationships: []
       }

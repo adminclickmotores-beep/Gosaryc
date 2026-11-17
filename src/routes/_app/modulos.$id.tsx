@@ -30,6 +30,7 @@ import { CheckinGimnasio, PlanesGimnasio, SociosGimnasio, ValoracionGimnasio } f
 import { ComisionesTaller, OrdenesTaller, ProyectosMedida, RepuestosTaller } from "@/components/taller/TallerModulos";
 import { AgroLotes, ObrasConstructora, PropiedadesInmobiliaria, TransporteManifiestos } from "@/components/medida/MedidaModulos";
 import { AcademicoEducacion, ControlFarmacia, EventosSalon, FormulasOptica, HabitacionesHotel, MatriculasEducacion, MatrizModa, PensionesEducacion, ReservasHotel } from "@/components/turismo/TurismoModulos";
+import { FacturaFiscal } from "@/components/fiscal/FacturaFiscal";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
@@ -136,5 +137,6 @@ function ModuloPage() {
   if (id === "vencimientos_veh") return <VencimientosVehiculos />;
   if (id === "documentos_veh") return <DocumentosVehiculos />;
   if (id === "cotizaciones_veh") return <CotizacionesVehiculos />;
+  if (id === "facturas" || id.startsWith("facturas_")) return <FacturaFiscal />;
   return <ModuloOperativo id={id} />;
 }

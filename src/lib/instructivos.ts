@@ -424,6 +424,15 @@ const POR_MODULO: Record<string, Instructivo> = {
       "Entrega solo cuando el saldo quede en cero.",
     ],
   },
+  facturas: {
+    titulo: "Facturación",
+    paraQue: "Emitir facturas de venta con consecutivo y resolución DIAN.",
+    pasos: [
+      "Completa tus datos fiscales en Mi negocio: NIT con dígito de verificación, régimen, responsabilidad fiscal y resolución con rango y vencimiento.",
+      "Crea la factura con cliente, ítems, IVA y formato tirilla o carta; el número sale solo dentro de tu rango autorizado.",
+      "Imprime o guarda en PDF y reimprime cuando el cliente la pida. El historial se exporta a Excel.",
+    ],
+  },
   eve_eventos: {
     titulo: "Eventos y salones",
     paraQue: "Cotizar, apartar la fecha y cumplir la logística.",

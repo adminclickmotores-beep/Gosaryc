@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import type { Tables } from "@/integrations/supabase/types";
 import { usePermisos } from "@/hooks/use-permisos";
+import { exportarExcel, imprimirReporte } from "@/lib/exportes";
 
 type Cupo = Tables<"com_cupos">;
 const claveCliente = (nombre: string | null, tel: string | null): string => {
@@ -187,6 +188,23 @@ function CarteraFiadosPage() {
         <h1 className="flex items-center gap-2 font-display text-3xl text-foreground">
           <Coins className="h-7 w-7 text-primary" /> Cartera y fiados
         </h1>
+        <div className="flex flex-wrap gap-2 pt-2">
+          <button
+            onClick={() => exportarExcel("cartera-fiados", ["Cliente", "Teléfono", "Debe", "Abonado", "Vencido"],
+              deudores.map((d) => [d.nombre, d.telefono ?? "", d.debe, d.abonado, d.vencido ?? ""]))}
+            className="rounded-full border border-glass-border px-4 py-1.5 text-sm text-muted-foreground"
+          >
+            Exportar a Excel
+          </button>
+          <button
+            onClick={() => imprimirReporte("Cartera y fiados", "Saldos por cobrar", ["Cliente", "Teléfono", "Debe", "Vencido"],
+              deudores.map((d) => [d.nombre, d.telefono ?? "", dinero(d.debe), d.vencido ?? "al día"]),
+              [`Total por cobrar: ${dinero(totalPorCobrar)} · Ya cobrado: ${dinero(totalCobrado)}`])}
+            className="rounded-full border border-glass-border px-4 py-1.5 text-sm text-muted-foreground"
+          >
+            Exportar a PDF
+          </button>
+        </div>
         <p className="text-sm text-muted-foreground">
           Quién te debe y cuánto. Para agregar un fiado o registrar un abono, usa{" "}
           <Link to="/modulos/$id" params={{ id: "fiados" }} className="text-primary">

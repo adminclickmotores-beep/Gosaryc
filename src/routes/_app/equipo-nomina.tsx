@@ -4,6 +4,7 @@ import { ArrowLeft, Briefcase, Calculator, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { exportarExcel, imprimirReporte } from "@/lib/exportes";
 
 export const Route = createFileRoute("/_app/equipo-nomina")({
   head: () => ({ meta: [{ title: "Equipo, turnos y nómina" }] }),
@@ -64,6 +65,23 @@ function EquipoNominaPage() {
           </Link>{" "}
           y márcalo como "Pagado" cuando lo entregues.
         </p>
+        <div className="flex flex-wrap gap-2 pt-2">
+          <button
+            onClick={() => exportarExcel("liquidacion-nomina", ["Persona", "Por pagar", "Pagado"],
+              porPersona.map((p) => [p.nombre, p.porPagar, p.pagado]))}
+            className="rounded-full border border-glass-border px-4 py-1.5 text-sm text-muted-foreground"
+          >
+            Exportar a Excel
+          </button>
+          <button
+            onClick={() => imprimirReporte("Liquidación de nómina", "Por persona", ["Persona", "Por pagar", "Pagado"],
+              porPersona.map((p) => [p.nombre, dinero(p.porPagar), dinero(p.pagado)]),
+              [`Total por pagar: ${dinero(totalPorPagar)} · Total pagado: ${dinero(totalPagado)}`])}
+            className="rounded-full border border-glass-border px-4 py-1.5 text-sm text-muted-foreground"
+          >
+            Exportar a PDF
+          </button>
+        </div>
       </div>
 
       {cargando && <p className="text-sm text-muted-foreground">Cargando equipo…</p>}
