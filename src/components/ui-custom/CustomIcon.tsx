@@ -103,23 +103,16 @@ export function IconCopy({ size = 24, ...p }: IconProps) {
 }
 
 export function IconLogo({ size = 32, ...p }: IconProps) {
-  // Marca Gosaryc: monograma G con degradado oficial índigo → esmeralda.
+  // Marca Gosaryc: logo oficial índigo → esmeralda (/icono-app.svg).
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...p}>
-      <defs>
-        <linearGradient id="iconlogo-g" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#818CF8" />
-          <stop offset="100%" stopColor="#34D399" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M17.2 7.6A6.6 6.6 0 1 0 18.6 13H12.4"
-        stroke="url(#iconlogo-g)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <img
+      src="/icono-app.svg"
+      alt="Logo de Gosaryc"
+      width={size}
+      height={size}
+      style={{ width: size, height: size, borderRadius: size / 4 }}
+      {...(p as unknown as Record<string, unknown>)}
+    />
   );
 }
 

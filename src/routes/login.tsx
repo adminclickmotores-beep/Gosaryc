@@ -7,6 +7,7 @@ import { GradientMesh } from "@/components/ui-custom/GradientMesh";
 import { Button } from "@/components/ui/button";
 
 import { BRAND } from "@/lib/brand";
+import { BrandHexLogo } from "@/components/app/BrandHexLogo";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -22,8 +23,6 @@ export const Route = createFileRoute("/login")({
   }),
   component: LoginPage,
 });
-
-const HEX_CLIP = "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)";
 
 function LoginPage() {
   const search = Route.useSearch();
@@ -189,65 +188,7 @@ function LoginPage() {
                 to="/"
                 className="group mb-7 flex items-center justify-center gap-3 text-foreground"
               >
-                <span className="relative grid h-[52px] w-11 place-items-center">
-                  <span
-                    aria-hidden
-                    className="absolute inset-0 opacity-70 blur-md transition-opacity duration-500 group-hover:opacity-100"
-                    style={{
-                      clipPath: HEX_CLIP,
-                      background:
-                        "conic-gradient(from 140deg, oklch(0.65 0.22 270), oklch(0.78 0.16 165), oklch(0.75 0.16 200), oklch(0.65 0.22 270))",
-                    }}
-                  />
-                  <span
-                    aria-hidden
-                    className="absolute inset-0"
-                    style={{
-                      clipPath: HEX_CLIP,
-                      background:
-                        "linear-gradient(140deg, oklch(0.65 0.22 270), oklch(0.78 0.16 165) 50%, oklch(0.75 0.16 200))",
-                    }}
-                  />
-                  <span
-                    aria-hidden
-                    className="absolute inset-[1.5px]"
-                    style={{
-                      clipPath: HEX_CLIP,
-                      background:
-                        "linear-gradient(155deg, oklch(0.18 0.02 270) 0%, oklch(0.1 0.015 270) 100%)",
-                      boxShadow: "inset 0 1px 0 oklch(1 0 0 / 0.12)",
-                    }}
-                  />
-                  <span
-                    aria-hidden
-                    className="absolute inset-[1.5px] opacity-60"
-                    style={{
-                      clipPath: HEX_CLIP,
-                      background:
-                        "linear-gradient(160deg, oklch(1 0 0 / 0.18) 0%, transparent 45%)",
-                    }}
-                  />
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="relative h-[18px] w-[18px]"
-                    aria-hidden
-                  >
-                    <defs>
-                      <linearGradient id="m-grad" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stopColor="#818CF8" />
-                        <stop offset="100%" stopColor="#34D399" />
-                      </linearGradient>
-                    </defs>
-                    <path
-                      d="M17.2 7.6A6.6 6.6 0 1 0 18.6 13H12.4"
-                      fill="none"
-                      stroke="url(#m-grad)"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
+                <BrandHexLogo size={52} intro />
                 <span className="flex flex-col leading-none">
                   <span className="font-display text-2xl tracking-tight">{BRAND.name}</span>
                 </span>
@@ -581,6 +522,7 @@ function FloatingOrbs() {
 }
 
 function HexConstellation() {
+  const HEX = "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)";
   const hexes = [
     { size: 28, top: "15%", left: "12%", delay: 0 },
     { size: 18, top: "22%", left: "78%", delay: 1.2 },
@@ -600,7 +542,7 @@ function HexConstellation() {
             left: h.left,
             width: h.size,
             height: h.size * 1.1547,
-            clipPath: HEX_CLIP,
+            clipPath: HEX,
             background: "linear-gradient(140deg, oklch(1 0 0 / 0.08), oklch(1 0 0 / 0.02))",
             border: "1px solid oklch(1 0 0 / 0.06)",
             animation: `hex-float 8s ease-in-out ${h.delay}s infinite`,
