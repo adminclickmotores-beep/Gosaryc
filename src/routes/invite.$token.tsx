@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
-import { IconArrowRight, IconLogo } from "@/components/ui-custom/CustomIcon";
+import { IconArrowRight } from "@/components/ui-custom/CustomIcon";
+import { BrandHexLogo } from "@/components/app/BrandHexLogo";
 import { toast } from "sonner";
 import { BRAND } from "@/lib/brand";
 
@@ -59,7 +60,7 @@ function AcceptInvite() {
       await supabase.from("profiles").update({ default_org_id: data as string }).eq("id", user.id);
     }
     toast.success(`Welcome to ${invite?.org_name}`);
-    nav({ to: "/dashboard", replace: true });
+    nav({ to: "/restaurante", replace: true });
   };
 
   const needsAuth = !authLoading && (!user || user.is_anonymous);
@@ -69,7 +70,7 @@ function AcceptInvite() {
       <GradientMesh />
       <div className="relative z-10 mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
         <div className="flex items-center gap-2.5">
-          <IconLogo size={26} className="text-primary" />
+          <BrandHexLogo size={26} />
           <span className="font-display text-lg">{BRAND.name}</span>
         </div>
 

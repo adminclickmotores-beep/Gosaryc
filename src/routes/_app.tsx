@@ -7,7 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
 import {
-  IconLogo,
   IconSettings,
   IconCommand,
   IconChevronLeft,
@@ -162,12 +161,16 @@ function AppShell() {
   }, []);
 
   // First-run gate: send to /welcome until onboarded.
+  // El personal (no administrador) entra directo a su panel: nunca pasa por /welcome.
   useEffect(() => {
     if (!user) return;
     // La cuenta maestra nunca pasa por la configuración inicial.
     if (esCuentaMaestra(user.email)) return;
     // En ventana completa (nueva pestaña) nunca redirigir a /welcome.
     if (new URLSearchParams(window.location.search).get("ventana") === "completa") return;
+    // Se espera a que carguen los permisos para no mandar al personal a /welcome por error.
+    if (cargandoPermisos) return;
+    if (!esAdmin) return;
     let cancelled = false;
     (async () => {
       const onboardedAt = await getCachedOnboardedAt(user.id);
@@ -179,7 +182,7 @@ function AppShell() {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  }, [user?.id, cargandoPermisos, esAdmin]);
 
   useEffect(() => {
     if (!loading && !session) {
@@ -227,7 +230,7 @@ function AppShell() {
             transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
             className="flex h-14 w-14 items-center justify-center rounded-2xl bg-glass/60 backdrop-blur-xl ring-1 ring-glass-border"
           >
-            <IconLogo size={28} className="text-primary" />
+            <BrandHexLogo size={28} />
           </motion.div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span className="relative flex h-1.5 w-1.5">

@@ -103,20 +103,22 @@ export function IconCopy({ size = 24, ...p }: IconProps) {
 }
 
 export function IconLogo({ size = 32, ...p }: IconProps) {
-  // Marca Gosaryc: una G con tres puntos (los tres integrantes de la familia).
+  // Marca Gosaryc: monograma G con degradado oficial índigo → esmeralda.
   return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" {...p}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" {...p}>
+      <defs>
+        <linearGradient id="iconlogo-g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#818CF8" />
+          <stop offset="100%" stopColor="#34D399" />
+        </linearGradient>
+      </defs>
       <path
-        d="M44.3 23.4A15 15 0 1 0 47 37H34.5"
-        transform="translate(0 3)"
-        stroke="currentColor"
-        strokeWidth="5"
+        d="M17.2 7.6A6.6 6.6 0 1 0 18.6 13H12.4"
+        stroke="url(#iconlogo-g)"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <circle cx="25.5" cy="9" r="2.4" fill="currentColor" opacity="0.7" />
-      <circle cx="32" cy="9" r="2.4" fill="currentColor" />
-      <circle cx="38.5" cy="9" r="2.4" fill="currentColor" opacity="0.7" />
     </svg>
   );
 }

@@ -39,7 +39,7 @@ function LoginPage() {
 
   useEffect(() => {
     if (!loading && session) {
-      nav({ to: (search.redirect && search.redirect !== "/" ? search.redirect : "/dashboard") as "/dashboard", replace: true });
+      nav({ to: (search.redirect && search.redirect !== "/" ? search.redirect : "/restaurante") as "/dashboard", replace: true });
     }
   }, [session, loading, nav, search.redirect]);
 
@@ -124,7 +124,7 @@ function LoginPage() {
     setBusy(true);
     guardarPreferenciaSesion();
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}${search.redirect ?? "/dashboard"}`,
+      redirect_uri: `${window.location.origin}${search.redirect ?? "/restaurante"}`,
     });
     if (result.error) {
       toast.error(result.error.message);
@@ -152,7 +152,7 @@ function LoginPage() {
             className="pointer-events-none absolute -inset-px rounded-[28px] opacity-70 blur-xl"
             style={{
               background:
-                "conic-gradient(from 140deg, oklch(0.72 0.2 275 / 0.35), oklch(0.78 0.18 340 / 0.25), oklch(0.86 0.14 88 / 0.3), oklch(0.72 0.2 275 / 0.35))",
+                "conic-gradient(from 140deg, oklch(0.65 0.22 270 / 0.35), oklch(0.78 0.16 165 / 0.25), oklch(0.75 0.16 200 / 0.3), oklch(0.65 0.22 270 / 0.35))",
             }}
           />
           {/* Card */}
@@ -165,7 +165,7 @@ function LoginPage() {
               WebkitBackdropFilter: "blur(40px) saturate(180%)",
               border: "1px solid oklch(1 0 0 / 0.12)",
               boxShadow:
-                "inset 0 1px 0 oklch(1 0 0 / 0.14), inset 0 -1px 0 oklch(0 0 0 / 0.3), 0 40px 80px -20px oklch(0 0 0 / 0.6), 0 0 60px -10px oklch(0.72 0.2 275 / 0.25)",
+                "inset 0 1px 0 oklch(1 0 0 / 0.14), inset 0 -1px 0 oklch(0 0 0 / 0.3), 0 40px 80px -20px oklch(0 0 0 / 0.6), 0 0 60px -10px oklch(0.65 0.22 270 / 0.25)",
             }}
           >
             {/* Specular sheen */}
@@ -196,7 +196,7 @@ function LoginPage() {
                     style={{
                       clipPath: HEX_CLIP,
                       background:
-                        "conic-gradient(from 140deg, oklch(0.72 0.2 275), oklch(0.78 0.18 340), oklch(0.86 0.14 88), oklch(0.72 0.2 275))",
+                        "conic-gradient(from 140deg, oklch(0.65 0.22 270), oklch(0.78 0.16 165), oklch(0.75 0.16 200), oklch(0.65 0.22 270))",
                     }}
                   />
                   <span
@@ -205,7 +205,7 @@ function LoginPage() {
                     style={{
                       clipPath: HEX_CLIP,
                       background:
-                        "linear-gradient(140deg, oklch(0.78 0.2 275), oklch(0.82 0.18 340) 50%, oklch(0.88 0.14 88))",
+                        "linear-gradient(140deg, oklch(0.65 0.22 270), oklch(0.78 0.16 165) 50%, oklch(0.75 0.16 200))",
                     }}
                   />
                   <span
@@ -234,12 +234,12 @@ function LoginPage() {
                   >
                     <defs>
                       <linearGradient id="m-grad" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stopColor="oklch(0.92 0.05 275)" />
-                        <stop offset="100%" stopColor="oklch(0.88 0.12 340)" />
+                        <stop offset="0%" stopColor="#818CF8" />
+                        <stop offset="100%" stopColor="#34D399" />
                       </linearGradient>
                     </defs>
                     <path
-                      d="M19 8a8 8 0 1 0 1 4h-8"
+                      d="M17.2 7.6A6.6 6.6 0 1 0 18.6 13H12.4"
                       fill="none"
                       stroke="url(#m-grad)"
                       strokeWidth="2"
@@ -369,14 +369,14 @@ function LoginPage() {
                   </label>
                 )}
 
-                <div className="group relative isolate rounded-full p-px shadow-[0_8px_24px_-6px_oklch(0.72_0.2_275/0.4)] transition-transform duration-300 ease-out hover:scale-105">
+                <div className="group relative isolate rounded-full p-px shadow-[0_8px_24px_-6px_oklch(0.65_0.22_270/0.4)] transition-transform duration-300 ease-out hover:scale-105">
                   <span
                     aria-hidden
                     className="pointer-events-none absolute inset-0 rounded-full opacity-80 transition-opacity duration-300 group-hover:opacity-100"
                     style={{
                       background: `
-                        linear-gradient(160deg, oklch(0.72 0.2 275 / 0.55), oklch(0.86 0.14 88 / 0.35)) border-box,
-                        conic-gradient(from var(--beam-angle, 0deg), transparent 0deg, transparent 40deg, oklch(0.72 0.2 275) 78deg, oklch(0.78 0.18 340) 116deg, oklch(0.86 0.14 88) 152deg, transparent 196deg, transparent 360deg) border-box
+                        linear-gradient(160deg, oklch(0.65 0.22 270 / 0.55), oklch(0.75 0.16 200 / 0.35)) border-box,
+                        conic-gradient(from var(--beam-angle, 0deg), transparent 0deg, transparent 40deg, oklch(0.65 0.22 270) 78deg, oklch(0.78 0.16 165) 116deg, oklch(0.75 0.16 200) 152deg, transparent 196deg, transparent 360deg) border-box
                       `,
                       animation: "beam-spin 4s linear infinite",
                       border: "2px solid transparent",
@@ -537,7 +537,7 @@ function FloatingOrbs() {
         style={{
           top: "-10%",
           left: "-8%",
-          background: "radial-gradient(circle, oklch(0.72 0.2 275 / 0.55), transparent 65%)",
+          background: "radial-gradient(circle, oklch(0.65 0.22 270 / 0.55), transparent 65%)",
           filter: "blur(60px)",
           animation: "orb-drift-a 22s ease-in-out infinite",
         }}
@@ -547,7 +547,7 @@ function FloatingOrbs() {
         style={{
           bottom: "-12%",
           right: "-6%",
-          background: "radial-gradient(circle, oklch(0.78 0.18 340 / 0.5), transparent 65%)",
+          background: "radial-gradient(circle, oklch(0.78 0.16 165 / 0.5), transparent 65%)",
           filter: "blur(70px)",
           animation: "orb-drift-b 26s ease-in-out infinite",
         }}
@@ -557,7 +557,7 @@ function FloatingOrbs() {
         style={{
           top: "30%",
           right: "20%",
-          background: "radial-gradient(circle, oklch(0.86 0.14 88 / 0.35), transparent 65%)",
+          background: "radial-gradient(circle, oklch(0.75 0.16 200 / 0.35), transparent 65%)",
           filter: "blur(80px)",
           animation: "orb-drift-c 30s ease-in-out infinite",
         }}

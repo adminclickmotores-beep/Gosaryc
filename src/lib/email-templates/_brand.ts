@@ -3,12 +3,12 @@
 // only touches one file. Sender domain remains here because email
 // infrastructure ties to a verified domain, not the marketing brand.
 // Email clients have inconsistent CSS support, so we use hex + inline styles.
-// Body background MUST stay white — the app is dark indigo/pink, but
+// Body background MUST stay white — the app is dark indigo/emerald, but
 // email inboxes render legibly only against white. Accents are hex
 // approximations of the app's oklch tokens in src/styles.css:
-//   - indigo primary   ← oklch(0.72 0.2 275)
+//   - indigo primary   ← oklch(0.65 0.22 270)
 //   - deep indigo ink  ← oklch(0.14 0.03 275) (--primary-foreground)
-//   - pink accent      ← oklch(0.78 0.18 340) (gradient stop)
+//   - emerald accent   ← oklch(0.78 0.16 165) (gradient stop)
 // Headline font is Instrument Serif (the app's serif accent), with
 // broadly-supported serif fallbacks for email clients that lack webfonts.
 
@@ -28,7 +28,7 @@ export const BRAND = {
   ink: '#14132b',         // deep indigo headline ink
   indigo: '#7a6bf5',      // primary CTA / accent (electric indigo)
   indigoDark: '#5b48d9',  // pressed / hover
-  pink: '#f27ac2',        // secondary accent (gradient stop)
+  emerald: '#10B981',   // secondary accent (gradient stop)
   textBody: '#3c3a55',
   textMuted: '#7a7893',
   hairline: '#e8e6f2',

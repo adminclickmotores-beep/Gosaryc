@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ComponentType } from "react";
 import {
   UtensilsCrossed, ChefHat, Bike, Boxes, Wallet, Download, ArrowRight, Smartphone,
   Palette, ShieldCheck, Sparkles, Check, Users, Receipt, BarChart3, Layers, Clock, TrendingUp,
-  FileText, Gift, CalendarDays, Bot, MessageCircle, Brain, Headphones, BellRing, RefreshCw, PlayCircle,
+  FileText, Gift, CalendarDays, Bot, MessageCircle, Brain, Headphones, BellRing, RefreshCw, PlayCircle, X,
 } from "lucide-react";
 import { SECTORES, buscarSector } from "@/lib/sectores";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
@@ -28,19 +28,20 @@ export const Route = createFileRoute("/")({
 type Icono = ComponentType<{ className?: string }>;
 
 // Tarjetas de módulos con color propio por familia: cada tarjeta tiene su acento.
-const MODULOS: { Icon: Icono; label: string; desc: string; to: "/menu" | "/restaurante" | "/domicilios" | "/agente" | "/login"; color: string; grande?: boolean }[] = [
-  { Icon: UtensilsCrossed, label: "Ventas y catálogo digital", desc: "Presenta tus productos o servicios con tu marca, recibe pedidos desde el celular y cobra sin errores. Incluye código QR para mesas y vitrina.", to: "/menu", color: "#fb923c", grande: true },
-  { Icon: ChefHat, label: "Operación y producción en vivo", desc: "Tablero en tiempo real: cada pedido avanza de principio a fin, con comanda automática a cocina y control de tiempos.", to: "/restaurante", color: "#f472b6" },
-  { Icon: Bike, label: "Domicilios y clientes", desc: "Rutas, tarifas por barrio, repartidores y base de clientes con historial de compras y direcciones.", to: "/domicilios", color: "#22d3ee" },
-  { Icon: Boxes, label: "Inventario, recetas y costos", desc: "Existencias, costo real por plato o producto, alertas de faltantes, lotes y vencimientos. Sin hojas de cálculo.", to: "/restaurante", color: "#a3e635" },
-  { Icon: Wallet, label: "Finanzas y rentabilidad", desc: "Caja por turnos con arqueo discriminado, cuentas por cobrar con recordatorios por WhatsApp y utilidad real del periodo.", to: "/restaurante", color: "#60a5fa", grande: true },
-  { Icon: Users, label: "Equipo y nómina conforme a la ley colombiana", desc: "Empleados, turnos y liquidación de nómina con SMMLV, auxilio, salud, pensión, primas, cesantías y PILA según la normatividad vigente.", to: "/login", color: "#c084fc" },
-  { Icon: ShieldCheck, label: "Diseñado para tu tipo de negocio", desc: "Restaurante con Rappi y sanidad, salud con RIPS y habilitación, concesionario con traspasos, tienda con código de barras, taller con órdenes: cada negocio con sus propios formularios.", to: "/login", color: "#34d399" },
-  { Icon: Receipt, label: "Caja, cuentas por cobrar y facturación electrónica DIAN", desc: "Registra ingresos y egresos, gestiona saldos pendientes por cliente y emite facturas electrónicas con CUFE y código QR.", to: "/login", color: "#fbbf24" },
-  { Icon: BarChart3, label: "Reportes, metas e indicadores", desc: "Ventas por producto, por medio de pago, por sede y por periodo. Define metas semanales y mide el avance de cada equipo.", to: "/login", color: "#38bdf8" },
-  { Icon: FileText, label: "Cotizaciones y documentos", desc: "Cotizaciones profesionales enviadas por WhatsApp, control de vencimientos y archivo digital de tus documentos.", to: "/login", color: "#fb7185" },
-  { Icon: Gift, label: "Combos, puntos y fidelización", desc: "Promociones por horario, combos, puntos por compra y recompensas para que tus clientes regresen.", to: "/login", color: "#e879f9" },
-  { Icon: CalendarDays, label: "Agenda, reservas y pedidos recurrentes", desc: "Citas por profesional y recurso, reservas de mesas o espacios, y pedidos que se repiten cada semana sin olvidar ninguno.", to: "/login", color: "#2dd4bf" },
+// Tocar una tarjeta abre su ficha detallada aquí mismo, sin ir al inicio de sesión.
+const MODULOS: { Icon: Icono; label: string; desc: string; detalle: string; beneficios: string[]; como: string; color: string; grande?: boolean }[] = [
+  { Icon: UtensilsCrossed, label: "Ventas y catálogo digital", desc: "Presenta tus productos o servicios con tu marca, recibe pedidos desde el celular y cobra sin errores. Incluye código QR para mesas y vitrina.", detalle: "Publicas tus productos o servicios con tu marca y recibes pedidos desde el celular, el computador o un código QR, y cobras sin errores.", beneficios: ["Catálogo con fotos, precios y tu logo", "Pedidos de mesa, para llevar y a domicilio", "Cobro con todos los medios de pago y comprobante"], como: "Armas tu menú una vez y compartes el enlace: cada pedido llega solo a tu panel.", color: "#fb923c", grande: true },
+  { Icon: ChefHat, label: "Operación y producción en vivo", desc: "Tablero en tiempo real: cada pedido avanza de principio a fin, con comanda automática a cocina y control de tiempos.", detalle: "Un tablero en tiempo real donde cada pedido avanza de principio a fin, con comanda automática a cocina y control de tiempos.", beneficios: ["Tablero: nuevos, en cocina, listos y entregados", "Comanda impresa automática al registrar el pedido", "Control de mesas y tiempos de preparación"], como: "El pedido entra y aparece en cocina al instante; marcas cada avance con un toque.", color: "#f472b6" },
+  { Icon: Bike, label: "Domicilios y clientes", desc: "Rutas, tarifas por barrio, repartidores y base de clientes con historial de compras y direcciones.", detalle: "Organizas entregas con rutas, tarifas por barrio y repartidores, y guardas a cada cliente con su historial y direcciones.", beneficios: ["Tarifas de domicilio por barrio o zona", "Repartidores con liquidación de cada entrega", "Historial de cada cliente: qué pide y dónde vive"], como: "Registras el pedido con su dirección y se lo asignas al repartidor de turno.", color: "#22d3ee" },
+  { Icon: Boxes, label: "Inventario, recetas y costos", desc: "Existencias, costo real por plato o producto, alertas de faltantes, lotes y vencimientos. Sin hojas de cálculo.", detalle: "Controlas existencias, costo real por plato o producto, alertas de faltantes, lotes y vencimientos, sin hojas de cálculo.", beneficios: ["Costo real de cada plato con su receta", "Descuento automático al vender", "Alertas de stock bajo y productos por vencer"], como: "Cargas tus insumos una vez con su receta; cada venta descuenta sola.", color: "#a3e635" },
+  { Icon: Wallet, label: "Finanzas y rentabilidad", desc: "Caja por turnos con arqueo discriminado, cuentas por cobrar con recordatorios por WhatsApp y utilidad real del periodo.", detalle: "Llevas la caja por turnos con arqueo discriminado, las cuentas por cobrar con recordatorios por WhatsApp y la utilidad real del periodo.", beneficios: ["Cierre de caja por turno: efectivo, transferencia y tarjeta", "Cuentas por cobrar con recordatorio por WhatsApp", "Utilidad real: ventas menos costos y gastos"], como: "Abres turno, registras movimientos y cierras con el arqueo; el reporte sale solo.", color: "#60a5fa", grande: true },
+  { Icon: Users, label: "Equipo y nómina conforme a la ley colombiana", desc: "Empleados, turnos y liquidación de nómina con SMMLV, auxilio, salud, pensión, primas, cesantías y PILA según la normatividad vigente.", detalle: "Registras empleados y turnos, y liquidas la nómina con SMMLV, auxilios, salud, pensión, primas, cesantías y PILA según la norma vigente.", beneficios: ["Empleados con salario y auxilios de ley", "Liquidación automática: salud, pensión, primas y cesantías", "Desprendible por WhatsApp e histórico por periodo"], como: "Registras a cada empleado una vez; cada periodo liquidas con un clic.", color: "#c084fc" },
+  { Icon: ShieldCheck, label: "Diseñado para tu tipo de negocio", desc: "Restaurante con Rappi y sanidad, salud con RIPS y habilitación, concesionario con traspasos, tienda con código de barras, taller con órdenes: cada negocio con sus propios formularios.", detalle: "Cada negocio recibe sus propios módulos, textos y color: restaurante, salud, concesionario, tienda, taller y más de 50 tipos.", beneficios: ["Módulos exactos según tu tipo de negocio", "Textos y vocabulario de tu actividad, sin tecnicismos", "Tu color y tu logo en todo el programa"], como: "Eliges tu tipo al crear la cuenta y el programa se adapta solo.", color: "#34d399" },
+  { Icon: Receipt, label: "Caja, cuentas por cobrar y facturación electrónica DIAN", desc: "Registra ingresos y egresos, gestiona saldos pendientes por cliente y emite facturas electrónicas con CUFE y código QR.", detalle: "Registras ingresos y egresos, gestionas los saldos pendientes por cliente y emites facturas electrónicas con CUFE y código QR.", beneficios: ["Factura electrónica DIAN con CUFE y QR", "Cuentas por cobrar con abonos y saldos", "Resolución, prefijo y rangos configurables"], como: "Vendes, eliges facturar y el documento sale con todos los requisitos.", color: "#fbbf24" },
+  { Icon: BarChart3, label: "Reportes, metas e indicadores", desc: "Ventas por producto, por medio de pago, por sede y por periodo. Define metas semanales y mide el avance de cada equipo.", detalle: "Ves tus ventas por producto, medio de pago, sede y periodo, defines metas semanales y mides el avance de cada equipo.", beneficios: ["Ventas por producto, pago, sede y periodo", "Metas semanales con avance por equipo", "Exporta a Excel o imprime en PDF"], como: "Cada venta alimenta los reportes; consultas el periodo que quieras.", color: "#38bdf8" },
+  { Icon: FileText, label: "Cotizaciones y documentos", desc: "Cotizaciones profesionales enviadas por WhatsApp, control de vencimientos y archivo digital de tus documentos.", detalle: "Envías cotizaciones profesionales por WhatsApp, controlas sus vencimientos y archivas tus documentos por cliente.", beneficios: ["Cotización clara con tu logo, enviada por WhatsApp", "Control de vencimientos y seguimiento", "Documentos archivados por cliente"], como: "Armas la cotización con tus productos y la envías con un toque.", color: "#fb7185" },
+  { Icon: Gift, label: "Combos, puntos y fidelización", desc: "Promociones por horario, combos, puntos por compra y recompensas para que tus clientes regresen.", detalle: "Creas promociones por horario, combos, puntos por compra y recompensas para que tus clientes regresen.", beneficios: ["Combos y 2x1 por horario o día", "Puntos por cada compra", "Recompensas para clientes frecuentes"], como: "Defines el combo o los puntos una vez y se aplican solos al vender.", color: "#e879f9" },
+  { Icon: CalendarDays, label: "Agenda, reservas y pedidos recurrentes", desc: "Citas por profesional y recurso, reservas de mesas o espacios, y pedidos que se repiten cada semana sin olvidar ninguno.", detalle: "Atiendes citas por profesional, reservas de mesas o espacios, y pedidos que se repiten cada semana sin olvidar ninguno.", beneficios: ["Agenda por profesional, sin cruces", "Reservas de mesas o espacios con anticipo", "Pedidos semanales automáticos"], como: "Agendas la cita o el pedido recurrente y el programa te avisa.", color: "#2dd4bf" },
 ];
 
 const POR_QUE: { Icon: Icono; titulo: string; desc: string; color: string }[] = [
@@ -151,6 +152,16 @@ function ExploradorSectores() {
 
 function LandingPage() {
   const { loading } = useAuth();
+  const [fichaModulo, setFichaModulo] = useState<(typeof MODULOS)[number] | null>(null);
+
+  useEffect(() => {
+    if (!fichaModulo) return;
+    const cerrar = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFichaModulo(null);
+    };
+    window.addEventListener("keydown", cerrar);
+    return () => window.removeEventListener("keydown", cerrar);
+  }, [fichaModulo]);
 
   if (loading) {
     return (
@@ -244,19 +255,57 @@ function LandingPage() {
           </p>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {MODULOS.map((m) => (
-              <Link key={m.label} to={m.to} className={`group block ${m.grande ? "lg:col-span-2" : ""}`}>
+              <button key={m.label} type="button" onClick={() => setFichaModulo(m)} className={`group block h-full text-left ${m.grande ? "lg:col-span-2" : ""}`}>
                 <GlassPanel className="relative h-full overflow-hidden p-6 transition-transform duration-300 group-hover:-translate-y-1" style={{ borderTop: `3px solid ${m.color}` }}>
                   <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full opacity-20 blur-2xl" style={{ background: m.color }} />
                   <span className="icon-chip h-12 w-12 rounded-2xl" style={{ background: `${m.color}1f`, color: m.color }}><m.Icon className="h-5 w-5" /></span>
                   <h3 className="mt-5 font-display text-lg">{m.label}</h3>
                   <p className="mt-1.5 text-sm text-muted-foreground">{m.desc}</p>
                   <span className="mt-4 inline-flex items-center gap-1 text-xs font-medium opacity-0 transition group-hover:opacity-100" style={{ color: m.color }}>
-                    Explorar <ArrowRight className="h-3 w-3" />
+                    Ver detalle <ArrowRight className="h-3 w-3" />
                   </span>
                 </GlassPanel>
-              </Link>
+              </button>
             ))}
           </div>
+          <p className="mt-4 text-center text-xs text-muted-foreground">
+            Toca cualquier tarjeta para ver el detalle sin iniciar sesión.
+          </p>
+
+          {fichaModulo && (
+            <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center" role="dialog" aria-modal="true" aria-label={fichaModulo.label}>
+              <button type="button" aria-label="Cerrar detalle" onClick={() => setFichaModulo(null)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+              <GlassPanel tier="strong" className="relative max-h-[90dvh] w-full max-w-lg overflow-y-auto p-6 text-left sm:p-8">
+                <div className="flex items-start justify-between gap-4">
+                  <span className="icon-chip h-12 w-12 shrink-0 rounded-2xl" style={{ background: `${fichaModulo.color}1f`, color: fichaModulo.color }}><fichaModulo.Icon className="h-6 w-6" /></span>
+                  <button type="button" onClick={() => setFichaModulo(null)} aria-label="Cerrar" className="rounded-full border border-glass-border bg-glass/40 p-2 text-muted-foreground transition hover:text-foreground">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <h3 className="mt-4 font-display text-2xl">{fichaModulo.label}</h3>
+                <p className="mt-2 text-sm text-muted-foreground sm:text-base">{fichaModulo.detalle}</p>
+                <p className="mt-5 font-medium text-foreground">Beneficios reales</p>
+                <ul className="mt-2 space-y-2">
+                  {fichaModulo.beneficios.map((b) => (
+                    <li key={b} className="flex items-start gap-2 text-sm">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      <span className="text-muted-foreground">{b}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-5 font-medium text-foreground">Cómo funciona</p>
+                <p className="mt-1 text-sm text-muted-foreground">{fichaModulo.como}</p>
+                <div className="mt-6 flex flex-col gap-3">
+                  <Link to="/login" search={{ mode: "signup" }} className="btn-pro inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold">
+                    Crear cuenta y probar gratis <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <Link to="/login" search={{ mode: "signin" }} className="btn-ghost-pro inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm text-foreground">
+                    Ya tengo cuenta, iniciar sesión
+                  </Link>
+                </div>
+              </GlassPanel>
+            </div>
+          )}
         </section>
 
         {/* 3. AGENTE WHATSAPP */}

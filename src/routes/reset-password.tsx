@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { Button } from "@/components/ui/button";
-import { IconLogo } from "@/components/ui-custom/CustomIcon";
+import { BrandHexLogo } from "@/components/app/BrandHexLogo";
 import { toast } from "sonner";
 import { BRAND } from "@/lib/brand";
 
@@ -63,7 +63,7 @@ function ResetPasswordPage() {
     }
     toast.success("Contraseña actualizada. Ya iniciaste sesión.");
     // Va al inicio del panel (no a la carta de restaurante): cada negocio entra a su propio panel.
-    nav({ to: "/dashboard", replace: true });
+    nav({ to: "/restaurante", replace: true });
   };
 
   const tipo = mostrar ? "text" : "password";
@@ -75,7 +75,7 @@ function ResetPasswordPage() {
       <GradientMesh />
       <div className="relative z-10 w-full max-w-md">
         <Link to="/" className="mb-8 flex items-center justify-center gap-2.5 text-foreground">
-          <IconLogo size={28} className="text-primary" />
+          <BrandHexLogo size={28} />
           <span className="font-display text-2xl">{BRAND.name}</span>
         </Link>
 

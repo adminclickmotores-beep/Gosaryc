@@ -8,7 +8,7 @@ import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
-import { IconLogo } from "@/components/ui-custom/CustomIcon";
+import { BrandHexLogo } from "@/components/app/BrandHexLogo";
 import { TIPOS_NEGOCIO, type TipoNegocioClave } from "@/lib/modulos-negocio";
 import { BRAND } from "@/lib/brand";
 import { SECTOR_A_TIPO } from "@/lib/sectores";
@@ -127,7 +127,7 @@ function Welcome() {
       <div className="relative z-10 mx-auto flex min-h-screen max-w-2xl flex-col px-5 py-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <IconLogo size={26} className="text-primary" />
+            <BrandHexLogo size={26} />
             <span className="font-display text-lg">{BRAND.name}</span>
           </div>
           <button onClick={omitir} className="text-xs text-muted-foreground hover:text-foreground">

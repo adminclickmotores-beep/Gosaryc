@@ -113,6 +113,7 @@ export function facturaHTML(d: DatosFactura, formato: "tirilla" | "carta"): stri
   return `<html><head><title>Factura ${d.numero}</title>${estilosImpresion}
     <style>body { max-width: ${ancho}; margin: ${formato === "tirilla" ? "0 auto" : "24px"}; } .c { text-align: center; }</style>
     </head><body>
+    <div style="height:6px;border-radius:99px;background:linear-gradient(90deg,#4F46E5,#10B981);margin-bottom:12px;"></div>
     ${logo}
     <h1 class="c">${d.negocio}</h1>
     <p class="c sub">NIT ${d.nit}${d.regimen ? ` · ${d.regimen}` : ""}${d.direccion ? ` · ${d.direccion}` : ""}${d.telefono ? ` · Tel. ${d.telefono}` : ""}${d.resolucion ? `<br>Res. DIAN ${d.resolucion}` : ""}</p>

@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
-import { IconLogo, IconCheck, IconClock } from "@/components/ui-custom/CustomIcon";
+import { IconCheck, IconClock } from "@/components/ui-custom/CustomIcon";
+import { BrandHexLogo } from "@/components/app/BrandHexLogo";
 import { BRAND } from "@/lib/brand";
 
 export const Route = createFileRoute("/request/status/$token")({
@@ -49,7 +50,7 @@ function StatusPage() {
       <GradientMesh />
       <div className="relative z-10 mx-auto max-w-lg pt-12">
         <Link to="/" className="inline-flex items-center gap-2 text-foreground">
-          <IconLogo size={26} className="text-primary" />
+          <BrandHexLogo size={26} />
           <span className="font-display text-lg">{BRAND.name}</span>
         </Link>
 

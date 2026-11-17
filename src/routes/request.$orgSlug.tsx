@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
-import { IconLogo, IconArrowRight, IconCheck } from "@/components/ui-custom/CustomIcon";
+import { IconArrowRight, IconCheck } from "@/components/ui-custom/CustomIcon";
+import { BrandHexLogo } from "@/components/app/BrandHexLogo";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
 import { BRAND } from "@/lib/brand";
 import { RequestForm } from "@/components/requests/RequestForm";
@@ -81,7 +82,7 @@ function RequestPage() {
       <GradientMesh />
       <div className="relative z-10 mx-auto max-w-xl pt-12">
         <Link to="/" className="inline-flex items-center gap-2 text-foreground">
-          <IconLogo size={26} className="text-primary" />
+          <BrandHexLogo size={26} />
           <span className="font-display text-lg">{BRAND.name}</span>
         </Link>
         <h1 className="mt-8 font-display text-4xl">Hacer una solicitud</h1>
