@@ -12,7 +12,13 @@
     "format": "prettier --write .",
     "escritorio:instalar": "npm --prefix escritorio install",
     "instalador:windows": "npm --prefix escritorio run instalador:windows",
-    "instalador:licencias": "npm --prefix generador-licencias run instalador:windows"
+    "instalador:licencias": "npm --prefix generador-licencias run instalador:windows",
+    "instaladores:windows": "node crear-instaladores.cjs windows",
+    "instaladores:tienda": "node crear-instaladores.cjs tienda",
+    "instaladores:linux": "node crear-instaladores.cjs linux",
+    "instaladores:licencias": "node crear-instaladores.cjs licencias",
+    "instaladores:apk": "node crear-instaladores.cjs apk",
+    "instaladores:apk-licencias": "node crear-instaladores.cjs apk-licencias"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",

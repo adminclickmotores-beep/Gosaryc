@@ -31,6 +31,22 @@ Solo necesitas instalar una vez: Node.js LTS desde https://nodejs.org
   Pásalo por WhatsApp o USB al celular, tócalo y acepta "orígenes desconocidos".
 - APK licencias (solo tú): doble clic en crear-apk-licencias-admin.bat
 
+SI NO VES LOS ARCHIVOS .bat EN TU DESCARGA
+-------------------------------------------
+Algunas descargas o antivirus ocultan los .bat. No pasa nada, usa uno de estos:
+- Doble clic en INSTALADOR-WINDOWS.cmd (carpeta principal) o en escritorio/crear-instalador-windows.cmd
+- Licencias Admin: doble clic en INSTALADOR-LICENCIAS-ADMIN.cmd
+- O abre una terminal en la carpeta principal y escribe UNA de estas líneas:
+    node crear-instaladores.cjs windows        (clientes, 64 y 32 bits)
+    node crear-instaladores.cjs tienda         (paquete .appx Windows 11)
+    node crear-instaladores.cjs licencias      (Licencias Admin)
+    node crear-instaladores.cjs linux          (AppImage y .deb)
+    node crear-instaladores.cjs apk            (Gosaryc.apk)
+    node crear-instaladores.cjs apk-licencias  (Gosaryc-Licencias-Admin.apk)
+- Importante: descarga la carpeta COMPLETA del proyecto (deben quedar juntas
+  escritorio, whatsapp-local, generador-licencias, android-app y android-licencias).
+- Sin instalar nada: usa el Camino 1 (GitHub Actions).
+
 CÓMO SE ACTUALIZAN SOLOS
 ------------------------
 - Computador: cuando publiques una versión nueva, la app muestra arriba el aviso
