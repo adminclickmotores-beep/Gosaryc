@@ -73,6 +73,12 @@ export type DatosFactura = {
   direccion?: string;
   telefono?: string;
   resolucion?: string;
+  /** Logo del negocio (URL o data URL): sale impreso arriba de la factura. */
+  logoUrl?: string;
+  /** Régimen y responsabilidad fiscal: sale debajo del NIT. */
+  regimen?: string;
+  /** Texto libre al pie de la factura (garantía, devoluciones, gracias por su compra). */
+  piePagina?: string;
   numero: string;
   cliente: string;
   clienteNit?: string;
@@ -101,16 +107,20 @@ export function facturaHTML(d: DatosFactura, formato: "tirilla" | "carta"): stri
     ? `<div class="dian"><strong>Factura electrónica DIAN${d.dianEstado ? ` · ${d.dianEstado}` : ""}</strong><br>CUFE: ${d.dianCufe ?? "en trámite"}${d.dianQr && !esImgQr ? `<br>QR oficial: ${d.dianQr.startsWith("http") ? `<a href="${d.dianQr}">${d.dianQr}</a>` : d.dianQr}` : ""}${esImgQr ? `<br><img src="${d.dianQr}" alt="QR DIAN" style="width:140px;height:140px;margin-top:6px;" />` : ""}</div>`
     : "";
   const ancho = formato === "tirilla" ? "300px" : "100%";
+  const logo = d.logoUrl
+    ? `<div class="c"><img src="${d.logoUrl}" alt="Logo" style="max-width:${formato === "tirilla" ? "120px" : "180px"};max-height:90px;object-fit:contain;" /></div>`
+    : "";
   return `<html><head><title>Factura ${d.numero}</title>${estilosImpresion}
     <style>body { max-width: ${ancho}; margin: ${formato === "tirilla" ? "0 auto" : "24px"}; } .c { text-align: center; }</style>
     </head><body>
+    ${logo}
     <h1 class="c">${d.negocio}</h1>
-    <p class="c sub">NIT ${d.nit}${d.direccion ? ` · ${d.direccion}` : ""}${d.telefono ? ` · Tel. ${d.telefono}` : ""}${d.resolucion ? `<br>Res. DIAN ${d.resolucion}` : ""}</p>
+    <p class="c sub">NIT ${d.nit}${d.regimen ? ` · ${d.regimen}` : ""}${d.direccion ? ` · ${d.direccion}` : ""}${d.telefono ? ` · Tel. ${d.telefono}` : ""}${d.resolucion ? `<br>Res. DIAN ${d.resolucion}` : ""}</p>
     <p><strong>Factura de venta ${d.numero}</strong><br>Fecha: ${fechaHoy()}<br>Cliente: ${d.cliente}${d.clienteNit ? ` · ${d.clienteNit}` : ""}</p>
     <table><thead><tr><th>Descripción</th><th class="num">Cant.</th><th class="num">Precio</th><th class="num">Total</th></tr></thead><tbody>${filas}</tbody></table>
     <div class="totales">Subtotal: ${cop(subtotal)}<br>IVA${d.ivaPct ? ` (${d.ivaPct}%)` : ""}: ${cop(iva)}<br><strong>Total: ${cop(total)}</strong></div>
     ${bloqueDian}
-    <p class="sub c">Documento generado por Gosaryc · listo para facturación electrónica DIAN vía proveedor tecnológico.</p>
+    <p class="sub c">${d.piePagina || "Documento generado por Gosaryc · listo para facturación electrónica DIAN vía proveedor tecnológico."}</p>
   </body></html>`;
 }
 

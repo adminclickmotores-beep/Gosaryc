@@ -177,7 +177,7 @@ function responderLocal(linea, chat) {
   const esSaludo = regla && /hola|buenas/.test(normalizar(regla.palabras.join(" "))) && regla.palabras.some((p) => /hola|buenas/.test(normalizar(p)));
   if (primera && cfg.saludo && (!regla || esSaludo)) {
     const base = cfg.saludo === RESPUESTAS_BASE.saludo && perfil
-      ? `¡Hola! Soy el asistente de ${linea.nombre}. ${perfil.guia} ¿En qué te puedo ayudar?`
+      ? `¡Hola! Soy el asistente de ${linea.nombre}. ${perfil.guia} Aquí también llevan nómina con las reglas de Colombia, facturación con logo y datos DIAN, y reservas o pedidos por este chat. ¿En qué te puedo ayudar?`
       : poner(cfg.saludo);
     return { texto: base, escalar: false };
   }

@@ -51,9 +51,12 @@ El instalador no está firmado con un certificado de pago: Windows puede mostrar
 ## Instaladores, APK y app de licencias (todo con el logo oficial)
 
 - **Windows clientes (64 y 32 bits):** `escritorio/crear-instalador-windows.bat` genera `Gosaryc-Setup-x64.exe` y `Gosaryc-Setup-ia32.exe` en `escritorio/instaladores` (Windows no permite un único .exe universal, por eso salen los dos; casi todos los computadores de hoy son de 64 bits).
+- **Linux clientes (AppImage y .deb):** `escritorio/crear-instalador-linux.sh` genera los dos formatos en `escritorio/instaladores` con el logo oficial.
 - **Android clientes (sin Play Store):** `crear-apk-clientes.bat` (en la raíz) genera `Gosaryc.apk` (ID `com.gosaryc.erp`) con cámara, notificaciones y descarga de PDF/Excel. Se pasa al celular por WhatsApp o USB.
 - **Licencias Admin Windows (solo tú):** `crear-instalador-licencias-win.bat` genera `Gosaryc-Licencias-Admin-x64.exe` e `-ia32.exe`. Abre solo el panel de licencias con tu cuenta superadmin (crear, renovar, suspender y enviar la clave por WhatsApp). No la compartas con clientes.
+- **Licencias Admin Linux (solo tú):** en `generador-licencias`, `npm run instalador:linux` genera AppImage y .deb.
 - **Licencias Admin Android (solo tú):** `crear-apk-licencias-admin.bat` genera `Gosaryc-Licencias-Admin.apk` (ID `com.gosaryc.licencias`, logo rojo con cinta ADMIN).
+- **Novedades de esta versión:** pruebas y extensiones con días exactos a elegir (3, 7, 15, 30, 60, 90 o los que escribas); la licencia de 1 año solo la activa el Superadmin (la base de datos lo verifica); facturas con tu logo, régimen y pie de página; identidad de color por rubro en cada módulo.
 - Guía paso a paso de los 4: `COMO-GENERAR-INSTALADORES.txt` en la raíz.
 
 ## Más adelante

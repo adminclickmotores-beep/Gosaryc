@@ -5,6 +5,17 @@
  * sidebar/topbar lockups, login screen, head meta, email templates,
  * onboarding copy, AI placeholders, etc. all read from BRAND.
  */
+/** Lee VITE_APP_URL (sin protocolo) o devuelve el dominio publicado de respaldo. */
+function dominioPublicado(): string {
+  try {
+    const u = (import.meta as unknown as { env?: Record<string, string | undefined> }).env?.VITE_APP_URL;
+    if (u && u.trim()) return u.trim().replace(/^https?:\/\//i, "").replace(/\/+$/, "");
+  } catch {
+    /* sin entorno disponible */
+  }
+  return "gosaryc.lovable.app";
+}
+
 export const BRAND = {
   /** Full product name shown in lockups, titles, and email "from" lines. */
   name: "Gosaryc",
@@ -16,10 +27,11 @@ export const BRAND = {
   description:
     "Gosaryc es el software para administrar tu negocio en Colombia, con módulos propios para cada giro: restaurantes, concesionarios, tiendas, consultorios y clínicas, salones, talleres, hoteles, colegios y más de 50 sectores. Vende, controla inventario, caja, fiados, nómina con reglas colombianas, facturación DIAN y finanzas, con un asistente que te enseña a usarlo. Funciona en la web, en tu celular y en tu computador.",
   /**
-   * Placeholder domain used in example URLs (Commander AI input hints, etc.).
-   * Keep this neutral — it should NOT match the email-sending domain.
+   * Dominio publicado usado en ejemplos y como respaldo cuando no hay
+   * VITE_APP_URL ni origen del navegador. Para migrar de hosting o cambiar
+   * de dominio, fija VITE_APP_URL al compilar (ej. https://tu-dominio.com).
    */
-  domain: "gosaryc.lovable.app",
+  domain: dominioPublicado(),
   /**
    * Optional support inbox surfaced in error/empty states.
    * Remixers: replace with your real support address (or set to undefined

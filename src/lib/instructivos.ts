@@ -197,6 +197,27 @@ const POR_RUTA: Record<string, Instructivo> = {
       "Ciérrala cuando esté resuelta.",
     ],
   },
+  "/restaurante": {
+    titulo: "Mi negocio",
+    paraQue: "Tus datos, logo, facturación, agente de WhatsApp y enlace público en un solo lugar.",
+    pasos: [
+      "Completa nombre, logo, colores y horarios: eso ven tus clientes en el menú y las facturas.",
+      "En “Datos fiscales” escribe razón social, NIT con DV, régimen, resolución con rango y vencimiento, y el pie de página: todo sale impreso en cada factura.",
+      "Conecta el Agente WhatsApp IA, define sus respuestas y mira los chats en vivo.",
+      "Copia tu enlace público o QR y pégalo en el local o en redes.",
+    ],
+    consejo: "Las facturas siempre llevan tu logo, régimen y pie de página: revísalos aquí antes de facturar.",
+  },
+  "/licencias": {
+    titulo: "Licencias (Superadmin)",
+    paraQue: "Dar pruebas con días exactos y vender licencias de 1 año.",
+    pasos: [
+      "Crea la prueba con los días exactos que quieras (3, 7, 15, 30, 60, 90 o los que escribas).",
+      "Extiende cualquier licencia por botones rápidos o por días exactos.",
+      "La licencia de 1 año (365 días) solo la activa el Superadmin y la base de datos lo verifica.",
+      "Envía el código al cliente por WhatsApp con un clic.",
+    ],
+  },
 };
 
 /** Instructivos de los módulos comerciales con pantalla propia, por id de módulo. */

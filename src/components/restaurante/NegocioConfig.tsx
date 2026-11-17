@@ -41,6 +41,7 @@ type Form = {
   rango_desde: string;
   rango_hasta: string;
   resolucion_vence: string;
+  pie_factura: string;
   iva_defecto: string;
 };
 
@@ -70,6 +71,7 @@ const VACIO: Form = {
   rango_desde: "1",
   rango_hasta: "1000",
   resolucion_vence: "",
+  pie_factura: "",
   iva_defecto: "0",
 };
 
@@ -164,6 +166,7 @@ export function NegocioConfig() {
       rango_desde: String(negocio.rango_desde ?? 1),
       rango_hasta: String(negocio.rango_hasta ?? 1000),
       resolucion_vence: negocio.resolucion_vence ?? "",
+      pie_factura: negocio.pie_factura ?? "",
       iva_defecto: String(negocio.iva_defecto ?? 0),
     });
   }, [negocio]);
@@ -212,6 +215,7 @@ export function NegocioConfig() {
       rango_desde: Math.max(Math.floor(Number(form.rango_desde)) || 1, 1),
       rango_hasta: Math.max(Math.floor(Number(form.rango_hasta)) || 1000, 1),
       resolucion_vence: form.resolucion_vence || null,
+      pie_factura: form.pie_factura.trim() || null,
       iva_defecto: Math.min(Math.max(Number(form.iva_defecto) || 0, 0), 100),
       updated_at: new Date().toISOString(),
     };
@@ -444,6 +448,10 @@ export function NegocioConfig() {
           <label className="block space-y-1">
             <span className="text-xs text-muted-foreground">La resolución vence el</span>
             <input type="date" className={campo} value={form.resolucion_vence} onChange={(e) => setForm({ ...form, resolucion_vence: e.target.value })} />
+          </label>
+          <label className="block space-y-1 md:col-span-2">
+            <span className="text-xs text-muted-foreground">Pie de página de la factura (garantía, devoluciones, agradecimiento)</span>
+            <input className={campo} placeholder="Ej: Gracias por su compra. Garantía de 30 días presentando esta factura." value={form.pie_factura} onChange={(e) => setForm({ ...form, pie_factura: e.target.value })} />
           </label>
         </div>
       </div>

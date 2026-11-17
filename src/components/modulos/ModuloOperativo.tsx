@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json, Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
-import { buscarModulo, resolverTipoNegocio } from "@/lib/modulos-negocio";
+import { buscarModulo, identidadRubro, resolverTipoNegocio } from "@/lib/modulos-negocio";
 import { useNegocio } from "@/hooks/use-negocio";
 import { configModulo } from "@/lib/modulos-config";
 import { TABLAS_SIN_BORRADO, tablaDeModulo } from "@/lib/tablas-modulo";
@@ -523,6 +523,15 @@ export function ModuloOperativo({ id }: { id: string }) {
           <modulo.Icon className="h-7 w-7 text-primary" /> {modulo.titulo}
         </h1>
         <p className="text-sm text-muted-foreground">{modulo.descripcion}</p>
+        <p>
+          <span
+            className="inline-flex items-center rounded-full border border-glass-border px-2.5 py-0.5 text-xs"
+            style={{ color: identidadRubro(resolverTipoNegocio(negocio?.tipo_negocio).clave).acento }}
+          >
+            Rubro {identidadRubro(resolverTipoNegocio(negocio?.tipo_negocio).clave).familia}
+          </span>
+        </p>
+        <div className="h-1 w-24 rounded-full" style={{ background: identidadRubro(resolverTipoNegocio(negocio?.tipo_negocio).clave).acento }} />
       </div>
 
       <div className={`grid gap-3 ${tarjetas.length === 4 ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-3"}`}>

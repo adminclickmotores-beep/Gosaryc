@@ -5,7 +5,8 @@ const config: CapacitorConfig = {
   appName: "Gosaryc",
   webDir: "www",
   server: {
-    url: "https://gosaryc.lovable.app",
+    // Para apuntar a otro hosting o dominio: GOSARYC_URL=https://tu-dominio.com
+    url: process.env.GOSARYC_URL || "https://gosaryc.lovable.app",
     cleartext: false,
   },
   android: {

@@ -4792,6 +4792,7 @@ export type Database = {
           contador_correo: string | null
           ica_municipio: string | null
           ica_ciuu: string | null
+          pie_factura: string | null
         }
         Insert: {
           aviso_entrega?: string | null
@@ -4833,6 +4834,7 @@ export type Database = {
           contador_correo?: string | null
           ica_municipio?: string | null
           ica_ciuu?: string | null
+          pie_factura?: string | null
         }
         Update: {
           aviso_entrega?: string | null
@@ -4874,6 +4876,7 @@ export type Database = {
           contador_correo?: string | null
           ica_municipio?: string | null
           ica_ciuu?: string | null
+          pie_factura?: string | null
         }
         Relationships: []
       }

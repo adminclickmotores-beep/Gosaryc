@@ -139,6 +139,63 @@ export type TipoNegocio = {
   modulos: ModuloNegocio[];
 };
 
+/**
+ * Identidad visual por familia de negocio: cada rubro tiene su acento de
+ * color sutil y su nombre de familia. Se usa en cabeceras de módulos para
+ * que cada giro se sienta propio sin romper el diseño general.
+ */
+const FAMILIA_POR_CLAVE: Record<TipoNegocioClave, { familia: string; acento: string }> = {
+  restaurante: { familia: "Comida", acento: "#fb923c" },
+  panaderia: { familia: "Comida", acento: "#fb923c" },
+  cafeteria: { familia: "Comida", acento: "#fb923c" },
+  comida_rapida: { familia: "Comida", acento: "#fb923c" },
+  catering: { familia: "Comida", acento: "#fb923c" },
+  tienda: { familia: "Comercio", acento: "#60a5fa" },
+  ferreteria: { familia: "Comercio", acento: "#60a5fa" },
+  supermercado: { familia: "Comercio", acento: "#60a5fa" },
+  carniceria: { familia: "Comercio", acento: "#60a5fa" },
+  mascotas: { familia: "Comercio", acento: "#60a5fa" },
+  tecnologia: { familia: "Comercio", acento: "#60a5fa" },
+  celulares: { familia: "Comercio", acento: "#60a5fa" },
+  papeleria: { familia: "Comercio", acento: "#60a5fa" },
+  moda: { familia: "Comercio", acento: "#60a5fa" },
+  textil: { familia: "Comercio", acento: "#60a5fa" },
+  joyeria: { familia: "Comercio", acento: "#60a5fa" },
+  floristeria: { familia: "Comercio", acento: "#60a5fa" },
+  licorera: { familia: "Comercio", acento: "#60a5fa" },
+  salud: { familia: "Salud", acento: "#34d399" },
+  farmacia: { familia: "Salud", acento: "#34d399" },
+  optica: { familia: "Salud", acento: "#34d399" },
+  belleza: { familia: "Belleza", acento: "#f472b6" },
+  gimnasio: { familia: "Belleza y deporte", acento: "#f472b6" },
+  concesionario: { familia: "Automotriz", acento: "#fbbf24" },
+  taller: { familia: "Automotriz y taller", acento: "#fbbf24" },
+  alquiler_vehiculos: { familia: "Automotriz", acento: "#fbbf24" },
+  transporte: { familia: "Automotriz y transporte", acento: "#fbbf24" },
+  parqueadero: { familia: "Automotriz y transporte", acento: "#fbbf24" },
+  construccion: { familia: "Construcción y agro", acento: "#a3e635" },
+  agro: { familia: "Construcción y agro", acento: "#a3e635" },
+  inmobiliaria: { familia: "Construcción y agro", acento: "#a3e635" },
+  ganaderia: { familia: "Construcción y agro", acento: "#a3e635" },
+  hospedaje: { familia: "Hotel y educación", acento: "#22d3ee" },
+  educacion: { familia: "Hotel y educación", acento: "#22d3ee" },
+  guarderia: { familia: "Hotel y educación", acento: "#22d3ee" },
+  eventos: { familia: "Hotel y educación", acento: "#22d3ee" },
+  servicios: { familia: "Servicios", acento: "#c084fc" },
+  profesional: { familia: "Servicios", acento: "#c084fc" },
+  lavanderia: { familia: "Servicios", acento: "#c084fc" },
+  condominio: { familia: "Servicios", acento: "#c084fc" },
+  prestamos: { familia: "Servicios", acento: "#c084fc" },
+  seguridad_aseo: { familia: "Servicios", acento: "#c084fc" },
+  fundacion: { familia: "Servicios", acento: "#c084fc" },
+  iglesia: { familia: "Servicios", acento: "#c084fc" },
+};
+
+/** Acento de color y familia del rubro para cabeceras e iconos. */
+export function identidadRubro(clave: TipoNegocioClave): { familia: string; acento: string } {
+  return FAMILIA_POR_CLAVE[clave] ?? { familia: "Servicios", acento: "#c084fc" };
+}
+
 /** Módulo funcional con registros propios (pantalla /modulos/<id>). */
 const m = (id: string, titulo: string, descripcion: string, Icon: LucideIcon): ModuloNegocio => ({
   id,

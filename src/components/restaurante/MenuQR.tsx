@@ -4,16 +4,14 @@ import { Copy, Download, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
-
-const BASE_PUBLICA = "https://gosaryc.lovable.app";
+import { appUrlBase } from "@/lib/app-url";
 
 export function MenuQR() {
-  const [origen, setOrigen] = useState(BASE_PUBLICA);
+  const [origen, setOrigen] = useState(appUrlBase);
   const [qr, setQr] = useState("");
 
   useEffect(() => {
-    const host = window.location.origin;
-    if (!/localhost|lovableproject|id-preview/.test(host)) setOrigen(host);
+    setOrigen(appUrlBase());
   }, []);
 
   const { negocio } = useNegocio();

@@ -4,6 +4,7 @@ import { GradientMesh } from "@/components/ui-custom/GradientMesh";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { BRAND } from "@/lib/brand";
 import { buscarSector } from "@/lib/sectores";
+import { appUrl } from "@/lib/app-url";
 
 export const Route = createFileRoute("/sectores/$slug")({
   component: PaginaSector,
@@ -13,7 +14,7 @@ export const Route = createFileRoute("/sectores/$slug")({
     const descripcion = sector
       ? `${sector.resumen} Módulos propios para ${sector.label.toLowerCase()}: ${sector.acciones.slice(0, 3).map((a) => a.titulo.toLowerCase()).join(", ")}.`
       : BRAND.description;
-    const url = `https://gosaryc.lovable.app/sectores/${params.slug}`;
+    const url = appUrl(`/sectores/${params.slug}`);
     return {
       meta: [
         { title: titulo },

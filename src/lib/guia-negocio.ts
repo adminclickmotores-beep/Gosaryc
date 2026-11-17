@@ -445,4 +445,5 @@ export const PASOS_GENERALES: { titulo: string; texto: string }[] = [
   { titulo: "Manda el cierre al dueño", texto: "Con “Enviar cierre por WhatsApp” (en Caja, Reportes, Configuración o el Agente) le llega al dueño ventas, efectivo, créditos y stock crítico." },
   { titulo: "No se te pase ningún impuesto", texto: "En Finanzas abre “Contador Pro Colombia” y genera tu cronograma anual: te avisa cada vencimiento con semáforo y por WhatsApp." },
   { titulo: "Tu nómina siempre actualizada", texto: "En Equipo y nómina crea a cada empleado (ancla al SMMLV al que gane el mínimo), liquida por periodo y contabiliza con un clic. Si cambian los decretos, el botón de IA carga la vigencia nueva." },
+  { titulo: "Facturas con tu logo", texto: "En Mi negocio sube tu logo y escribe tus datos fiscales y el pie de página: todas las facturas salen con esa identidad." },
 ];

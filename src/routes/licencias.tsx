@@ -46,6 +46,8 @@ function LicenciasPage() {
   const [telefono, setTelefono] = useState("");
   const [ciudad, setCiudad] = useState("");
   const [tipoNueva, setTipoNueva] = useState<"prueba" | "anual">("prueba");
+  const [diasPrueba, setDiasPrueba] = useState("30");
+  const [diasLibres, setDiasLibres] = useState<Record<string, string>>({});
   const [abierta, setAbierta] = useState<string | null>(null);
   const [instalador, setInstalador] = useState<EventoInstalar | null>(null);
 
@@ -121,7 +123,8 @@ function LicenciasPage() {
 
   const crear = async () => {
     if (!cliente.trim()) return toast.error("Escribe el nombre del cliente.");
-    const dias = tipoNueva === "prueba" ? 30 : 365;
+    const prueba = Math.min(Math.max(parseInt(diasPrueba) || 30, 1), 365);
+    const dias = tipoNueva === "prueba" ? prueba : 365;
     const { error } = await supabase.from("licencias").insert({
       cliente: cliente.trim(),
       telefono: telefono.trim() || null,
@@ -134,7 +137,7 @@ function LicenciasPage() {
     setCliente("");
     setTelefono("");
     setCiudad("");
-    toast.success(tipoNueva === "prueba" ? "Prueba de 30 días creada." : "Licencia de 1 año creada.");
+    toast.success(tipoNueva === "prueba" ? `Prueba de ${dias} días creada.` : "Licencia de 1 año creada.");
     cargar();
   };
 
@@ -319,6 +322,14 @@ function LicenciasPage() {
             Licencia de 1 año
           </button>
         </div>
+        {tipoNueva === "prueba" ? (
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">Días exactos de prueba (1 a 365)</span>
+            <input className={campo} inputMode="numeric" value={diasPrueba} onChange={(e) => setDiasPrueba(e.target.value)} placeholder="Ej. 3, 7, 15, 30, 60, 90" />
+          </label>
+        ) : (
+          <p className="text-xs text-muted-foreground">La licencia de 1 año (365 días) solo la puede crear el Superadmin y la base de datos lo verifica.</p>
+        )}
         <button onClick={crear} className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:opacity-90">
           Crear y obtener código
         </button>
@@ -387,6 +398,27 @@ function LicenciasPage() {
                       + {d} días
                     </button>
                   ))}
+                  <div className="flex w-full items-center gap-2">
+                    <input
+                      className={campo}
+                      inputMode="numeric"
+                      value={diasLibres[l.id] ?? ""}
+                      onChange={(e) => setDiasLibres((x) => ({ ...x, [l.id]: e.target.value }))}
+                      placeholder="Días exactos (ej. 3, 45, 90)"
+                      aria-label="Días exactos para extender"
+                    />
+                    <button
+                      onClick={() => {
+                        const n = Math.min(Math.max(parseInt(diasLibres[l.id] ?? "") || 0, 1), 730);
+                        if (!n) return toast.error("Escribe cuántos días quieres agregar.");
+                        setDiasLibres((x) => ({ ...x, [l.id]: "" }));
+                        extender(l, n);
+                      }}
+                      className={botonSec}
+                    >
+                      Extender días exactos
+                    </button>
+                  </div>
                 </div>
               )}
               <p className="text-xs text-muted-foreground">
