@@ -8,6 +8,57 @@ const fs = require("fs");
 const crypto = require("crypto");
 const { execFileSync, spawn } = require("child_process");
 
+// ---- Auto-actualización con 1 clic (GitHub Releases + electron-updater) ----
+let autoUpdater = null;
+try {
+  const mod = require("electron-updater");
+  autoUpdater = mod.autoUpdater || null;
+  if (autoUpdater) {
+    autoUpdater.autoDownload = true;
+    autoUpdater.autoInstallOnAppQuit = true;
+  }
+} catch {
+  autoUpdater = null; // sin actualizador en este equipo: la app sigue normal
+}
+
+function configurarAutoActualizacion(ventana) {
+  if (!autoUpdater || !app.isPackaged) return;
+  try {
+    autoUpdater.on("update-downloaded", (info) => {
+      try {
+        if (ventana && !ventana.isDestroyed()) ventana.webContents.send("gosaryc:nueva-version", { version: info && info.version ? String(info.version) : "" });
+      } catch {
+        /* la ventana cambió */
+      }
+      avisarEnBandeja("Nueva versión de Gosaryc", "Ya se descargó. Abre la app y pulsa «actualizar ahora».");
+    });
+    autoUpdater.on("error", () => {
+      /* silencioso: se reintenta en el próximo arranque */
+    });
+    // Revisa al abrir y cada 6 horas mientras la app queda en la bandeja 24/7.
+    void autoUpdater.checkForUpdatesAndNotify().catch(() => undefined);
+    setInterval(() => {
+      void autoUpdater.checkForUpdatesAndNotify().catch(() => undefined);
+    }, 6 * 60 * 60 * 1000);
+  } catch {
+    /* sin auto-actualización */
+  }
+}
+
+ipcMain.handle("gosaryc:version", () => app.getVersion());
+ipcMain.handle("gosaryc:instalar-ahora", () => {
+  try {
+    if (autoUpdater) {
+      // Instala ya y reinicia solo: no borra datos (viven en userData y en la nube).
+      autoUpdater.quitAndInstall(false, true);
+      return true;
+    }
+  } catch {
+    /* cae al retorno */
+  }
+  return false;
+});
+
 // ---- API local de WhatsApp (varios números + agente), integrada en segundo plano ----
 let procesoWa = null;
 let appSaliendo = false;
@@ -310,6 +361,12 @@ if (!app.requestSingleInstanceLock()) {
     procesoImpresion = null;
   });
   app.whenReady().then(() => {
+    // En Linux moderno el sandbox de Chrome falla sin permisos: se desactiva para que abra siempre.
+    try {
+      if (process.platform === "linux") app.commandLine.appendSwitch("no-sandbox");
+    } catch {
+      /* sigue igual */
+    }
     // Inicio automático con Windows para operación 24/7.
     try { app.setLoginItemSettings({ openAtLogin: true, name: "Gosaryc" }); } catch { /* sin permiso */ }
     crearBandeja();
@@ -317,6 +374,7 @@ if (!app.requestSingleInstanceLock()) {
     iniciarImpresion();
     crearMenu();
     crearVentana();
+    if (ventanaPrincipal) configurarAutoActualizacion(ventanaPrincipal);
     // La primera vez se muestra la guía de uso.
     try {
       const marca = path.join(app.getPath("userData"), "guia-vista.txt");

@@ -150,6 +150,14 @@ export const MANUAL_FIJO = `
 - Índices compuestos (migración 20271129000000): owner_id + fecha/estado/búsqueda en pedidos, movimientos de caja, asientos, cuentas, clientes, productos, fac_emitidas y obligaciones; el sistema sigue volando con miles de registros.
 - DIAN lista: validarDatosFiscales exige NIT, DV (módulo 11), régimen, resolución, prefijo y rango; el Superadmin activa dian_activa con URL, token, ambiente y rangos en Licencias Admin; cada factura guarda CUFE + QR oficial y la venta nunca se bloquea (queda pendiente si el proveedor no responde).
 - Sin dominios fijos: todo enlace y QR sale de VITE_APP_URL o window.location.origin (src/lib/app-url.ts, src/lib/brand.ts); guía GUIA-MIGRACION-HOSTING-DOMINIO.txt explica subir a Vercel/Netlify y conectar dominio propio en 5 minutos.
+
+# 18. EMPAQUETADO MULTIPLATAFORMA Y AUTO-ACTUALIZACIÓN CON 1 CLIC
+- Windows 8 a 11 (64 y 32 bits): Gosaryc-Setup-x64.exe e -ia32.exe con logo oficial, bandeja 24/7, agente WhatsApp IA e impresión dual; más paquete .appx de tienda para Windows 11 (electron-builder win nsis+appx).
+- Linux universal: Gosaryc-Linux AppImage + .deb (funciona en Ubuntu, Debian, Mint, Fedora, Arch; arranca con --no-sandbox para no fallar en equipos modernos).
+- Android directo sin Play Store: Gosaryc.apk (com.gosaryc.erp, cámara/QR, notificaciones, imágenes, internet) y Gosaryc-Licencias-Admin.apk (solo superadmin); scripts de un clic + compilación en la nube.
+- Auto-actualización: escritorio con electron-updater (GitHub Releases, revisa al abrir y cada 6 h) y web/PWA con service worker v48; banner «¡Nueva versión disponible! Haz clic aquí para actualizar ahora» que instala sin borrar datos.
+- Sin programa instalado todo funciona: facturas en tirilla 58/80 mm o carta PDF con el diálogo limpio del navegador (respaldo con descarga si lo bloquea) y envío por WhatsApp (wa.me) de pedidos, facturas y recordatorios.
+- Nube automática: .github/workflows/compilar-todo.yml compila Windows + Linux + Android al subir versión o pulsar Run workflow; guía súper sencilla en LEEME-INSTALADORES-FACIL.txt.
 `;
 
 const RUTAS_INSTRUCTIVO = [

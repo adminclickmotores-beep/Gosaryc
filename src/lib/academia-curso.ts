@@ -69,8 +69,9 @@ export const CURSO_GOSARYC = {
           descripcion: "Versión web, app en el celular e instalador de Windows con accesos directos y guía incluida.",
           pasos: [
             "Versión web: entra desde cualquier navegador, sin instalar nada. En el celular usa «Instalar app» (Android: menú del navegador > Instalar aplicación; iPhone: Compartir > Agregar a pantalla de inicio).",
-            "Instalador de Windows: ejecuta «Gosaryc Setup», elige la carpeta y deja marcado el acceso directo del escritorio. Si Windows muestra «Protegió su PC», pulsa «Más información» > «Ejecutar de todas formas».",
-            "El instalador trae el agente de WhatsApp integrado, la API local de impresión silenciosa (tirillas 58/80 mm sin diálogos) y la «Guía de uso de Gosaryc» (acceso directo propio, también con F1).",
+            "Instalador de Windows: ejecuta «Gosaryc Setup», elige la carpeta y deja marcado el acceso directo del escritorio. Si Windows muestra «Protegió su PC», pulsa «Más información» > «Ejecutar de todas formas». Hay versión de 64 y de 32 bits (desde Windows 8 hasta 11) y paquete de tienda (.appx) para Windows 11.",
+            "El instalador trae el agente de WhatsApp integrado, la API local de impresión silenciosa (tirillas 58/80 mm sin diálogos) y la «Guía de uso de Gosaryc» (acceso directo propio, también con F1). También hay AppImage y .deb para Linux y APK directo para Android (sin Play Store).",
+            "Actualizaciones sin perder nada: cuando salga versión nueva verás arriba «¡Nueva versión disponible! Haz clic aquí para actualizar ahora». Un clic la instala y tus datos se conservan.",
             "Al abrir el programa de escritorio ingresa tu código de licencia (30 días de prueba o licencia anual). Con la licencia vencida verás el aviso para renovar.",
           ],
           practica: { ruta: "/instalar", etiqueta: "Ver instalación" },

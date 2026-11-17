@@ -1,0 +1,52 @@
+CÓMO TENER TUS INSTALADORES DE GOSARYC (SIN SABER PROGRAMAR)
+=========================================================
+
+Tienes 2 caminos. Elige el que prefieras. En los 2 TUS DATOS SE CONSERVAN:
+actualizar solo cambia el programa, no borra tus productos, clientes ni ventas.
+
+CAMINO 1: DESCARGARLOS YA HECHOS DESDE INTERNET (lo más fácil)
+--------------------------------------------------------------
+1. Entra a https://github.com con tu cuenta.
+2. Abre tu repositorio de Gosaryc.
+3. Arriba pulsa la pestaña "Actions".
+4. A la izquierda elige "Compilar todo (Windows + Linux + Android)".
+5. Pulsa el botón "Run workflow" y luego el botón verde "Run workflow".
+6. Espera unos 15-20 minutos (puedes cerrar la página, sigue trabajando solo).
+7. Vuelve a esa misma página: abajo dice "Artifacts". Descarga:
+   - Gosaryc-Windows: tiene Gosaryc-Setup-x64.exe (casi todos los PC) y el de 32 bits.
+   - Gosaryc-Linux: AppImage y .deb para Ubuntu, Debian, Mint, Fedora.
+   - Gosaryc-Android: Gosaryc.apk para clientes y Gosaryc-Licencias-Admin.apk solo para ti.
+8. Instala cada uno con doble clic (Windows/Linux) o tocándolo en el celular (APK).
+
+CAMINO 2: CREARLOS EN TU COMPUTADOR CON WINDOWS 11 (doble clic)
+---------------------------------------------------------------
+Solo necesitas instalar una vez: Node.js LTS desde https://nodejs.org
+(y para los APK: Java 17 desde https://adoptium.net + Android Studio una vez).
+
+- Clientes Windows (64 y 32 bits): doble clic en escritorio/crear-instalador-windows.bat
+  Salen: escritorio/instaladores/Gosaryc-Setup-x64.exe y Gosaryc-Setup-ia32.exe
+- Licencias Admin Windows (solo tú): doble clic en crear-instalador-licencias-win.bat
+- Clientes Linux (AppImage y .deb): en la carpeta escritorio, ejecuta crear-instalador-linux.sh
+- APK clientes: doble clic en crear-apk-clientes.bat → sale Gosaryc.apk en la raíz.
+  Pásalo por WhatsApp o USB al celular, tócalo y acepta "orígenes desconocidos".
+- APK licencias (solo tú): doble clic en crear-apk-licencias-admin.bat
+
+CÓMO SE ACTUALIZAN SOLOS
+------------------------
+- Computador: cuando publiques una versión nueva, la app muestra arriba el aviso
+  "¡Nueva versión disponible! Haz clic aquí para actualizar ahora".
+  Un clic la descarga e instala. No se apaga el agente de WhatsApp.
+- Celular (web instalada): se actualiza sola al abrirla con internet.
+- APK: se descarga la APK nueva y se instala encima, sin desinstalar.
+
+SI WINDOWS DICE "PROTEGIÓ SU PC"
+---------------------------------
+Es normal porque el instalador no tiene certificado de pago.
+Pulsa "Más información" y luego "Ejecutar de todas formas".
+
+SI ALGO FALLA
+-------------
+- "No se pudo descargar Electron": instala Node.js 22 o 24, borra node_modules y reintenta.
+- "No encuentro el Android SDK": abre Android Studio una vez y reintenta.
+- En Linux "sandbox": la app ya trae --no-sandbox, abre sin error en Ubuntu/Debian nuevos.
+- Sin internet la app de escritorio muestra "Reintentar"; la web sigue abriendo lo último visto.

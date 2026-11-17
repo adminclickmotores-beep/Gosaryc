@@ -12,6 +12,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SmoothScroll } from "@/components/ui-custom/SmoothScroll";
 import { LicenciaEscritorio } from "@/components/app/LicenciaEscritorio";
+import { AvisoActualizacion } from "@/components/app/AvisoActualizacion";
 import { BRAND } from "@/lib/brand";
 
 import appCss from "../styles.css?url";
@@ -185,6 +186,7 @@ function RootComponent() {
       <AuthProvider>
         <SmoothScroll />
         <LicenciaEscritorio />
+        <AvisoActualizacion />
         <Outlet />
         <Toaster
           position="bottom-right"

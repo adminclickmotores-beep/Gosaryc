@@ -1,6 +1,6 @@
 {
   "name": "gosaryc-licencias-admin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Gosaryc Licencias Admin para Windows (solo superadmin): crear licencias de prueba, mensuales, anuales o vitalicias, renovar o suspender clientes y enviar la clave por WhatsApp.",
   "author": "Gosaryc",
@@ -9,7 +9,11 @@
     "iniciar": "electron .",
     "start": "electron .",
     "instalador:windows": "electron-builder --win --x64 --ia32",
-    "instalador:linux": "electron-builder --linux"
+    "instalador:tienda": "electron-builder --win appx --x64",
+    "instalador:linux": "electron-builder --linux --x64"
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.0"
   },
   "devDependencies": {
     "electron": "^33.0.0",
@@ -21,14 +25,40 @@
     "directories": { "output": "instaladores" },
     "files": ["main.cjs", "preload.cjs", "package.json", "build/icon.png"],
     "artifactName": "Gosaryc-Licencias-Admin-${arch}.${ext}",
-    "win": { "target": "nsis", "icon": "build/icon.png" },
-    "linux": { "icon": "build/icon.png", "target": ["AppImage", "deb"] },
+    "publish": [
+      { "provider": "github", "owner": "gosaryc", "repo": "gosaryc", "releaseType": "release" }
+    ],
+    "win": {
+      "target": ["nsis", "appx"],
+      "icon": "build/icon.png",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "appx": {
+      "applicationId": "GosarycLicenciasAdmin",
+      "identityName": "Gosaryc.GosarycLicenciasAdmin",
+      "publisher": "CN=Gosaryc",
+      "publisherDisplayName": "Gosaryc",
+      "displayName": "Gosaryc Licencias Admin",
+      "description": "Solo superadmin: licencias, renovaciones y suspensiones de Gosaryc."
+    },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
       "shortcutName": "Gosaryc Licencias Admin"
+    },
+    "linux": {
+      "icon": "build/icon.png",
+      "target": ["AppImage", "deb"],
+      "category": "Office",
+      "description": "Gosaryc Licencias Admin (solo superadmin)."
+    },
+    "deb": {
+      "packageCategory": "utils"
+    },
+    "appImage": {
+      "artifactName": "Gosaryc-Licencias-Linux-${arch}.${ext}"
     }
   }
 }

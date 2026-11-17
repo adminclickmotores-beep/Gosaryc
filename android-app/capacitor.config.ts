@@ -11,6 +11,7 @@ const config: CapacitorConfig = {
   },
   android: {
     allowMixedContent: false,
+    backgroundColor: "#0b0b14",
   },
   plugins: {
     LocalNotifications: {

@@ -1,0 +1,139 @@
+name: Compilar todo (Windows + Linux + Android)
+
+# Compila en la nube todos los instaladores sin instalar nada en tu computador.
+# Se ejecuta solo cuando subes una versión (tag v*) o cuando pulsas "Run workflow".
+# Al terminar, descarga los archivos desde la pestaña Actions > esta ejecución > Artifacts.
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: API local de WhatsApp
+        working-directory: whatsapp-local
+        shell: cmd
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: "true"
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+        run: npm install --omit=dev
+      - name: Dependencias de escritorio
+        working-directory: escritorio
+        run: npm install
+      - name: Instaladores Windows (.exe 64/32 + .appx tienda)
+        working-directory: escritorio
+        run: npm run instalador:windows
+      - name: Paquete tienda (.appx)
+        working-directory: escritorio
+        continue-on-error: true
+        run: npm run instalador:tienda
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Gosaryc-Windows
+          path: |
+            escritorio/instaladores/*.exe
+            escritorio/instaladores/*.appx
+            escritorio/instaladores/*.msix
+          if-no-files-found: warn
+
+  licencias-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Logo oficial
+        shell: cmd
+        run: |
+          if not exist "generador-licencias\build" mkdir "generador-licencias\build"
+          copy /Y "escritorio\build\icon.png" "generador-licencias\build\icon.png"
+      - name: Dependencias licencias
+        working-directory: generador-licencias
+        run: npm install
+      - name: Instaladores Licencias (.exe 64/32)
+        working-directory: generador-licencias
+        run: npm run instalador:windows
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Gosaryc-Licencias-Windows
+          path: generador-licencias/instaladores/*.exe
+          if-no-files-found: warn
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: API local de WhatsApp
+        working-directory: whatsapp-local
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: "true"
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+        run: npm install --omit=dev
+      - name: Dependencias de escritorio
+        working-directory: escritorio
+        run: npm install
+      - name: Instaladores Linux (AppImage + .deb)
+        working-directory: escritorio
+        run: npm run instalador:linux
+      - name: Instaladores Linux Licencias
+        working-directory: generador-licencias
+        run: |
+          npm install
+          npm run instalador:linux
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Gosaryc-Linux
+          path: |
+            escritorio/instaladores/*.AppImage
+            escritorio/instaladores/*.deb
+            generador-licencias/instaladores/*.AppImage
+            generador-licencias/instaladores/*.deb
+          if-no-files-found: warn
+
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: APK clientes (Gosaryc.apk)
+        working-directory: android-app
+        run: |
+          npm install
+          if [ ! -d android ]; then npx cap add android; fi
+          node scripts/configurar-manifest.cjs
+          npx cap sync android
+          cd android && chmod +x gradlew && ./gradlew assembleDebug
+          cp app/build/outputs/apk/debug/app-debug.apk ../Gosaryc.apk
+      - name: APK licencias (Gosaryc-Licencias-Admin.apk)
+        working-directory: android-licencias
+        run: |
+          npm install
+          if [ ! -d android ]; then npx cap add android; fi
+          node scripts/configurar-manifest.cjs
+          npx cap sync android
+          cd android && chmod +x gradlew && ./gradlew assembleDebug
+          cp app/build/outputs/apk/debug/app-debug.apk ../Gosaryc-Licencias-Admin.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Gosaryc-Android
+          path: |
+            Gosaryc.apk
+            Gosaryc-Licencias-Admin.apk
+          if-no-files-found: warn

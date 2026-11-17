@@ -1,5 +1,8 @@
-COMO GENERAR LOS 4 INSTALADORES DE GOSARYC (Windows 32/64 + Android clientes + admin)
+COMO GENERAR LOS INSTALADORES DE GOSARYC (Windows 32/64 + tienda + Linux + Android)
 ================================================================================
+Guía corta. La guía súper sencilla paso a paso está en LEEME-INSTALADORES-FACIL.txt.
+La compilación en la nube (.github/workflows/compilar-todo.yml) genera todo sola:
+Windows (.exe 64/32 + .appx de tienda), Linux (.AppImage + .deb) y Android (2 APK).
 Todo se genera en un computador con Windows. Solo necesitas instalar una vez:
 - Node.js LTS: https://nodejs.org (instálalo con "Siguiente" en todo y reinicia).
 - Para los APK: Java JDK 17 (https://adoptium.net, Temurin 17 LTS) y Android Studio

@@ -1,6 +1,6 @@
 {
   "name": "gosaryc-escritorio",
-  "version": "1.5.6",
+  "version": "1.5.7",
   "private": true,
   "description": "Gosaryc para escritorio: abre el panel y trae la API local de WhatsApp con agente multi-especialista 24/7 en bandeja del sistema (sesion permanente, inicio automatico) y la API local de impresion silenciosa integradas.",
   "author": "Gosaryc",
@@ -10,8 +10,12 @@
     "start": "electron .",
     "icono": "electron generar-icono.cjs",
     "instalador:windows": "npm run icono && electron-builder --win --x64 --ia32",
+    "instalador:tienda": "npm run icono && electron-builder --win appx --x64",
     "instalador:mac": "npm run icono && electron-builder --mac",
-    "instalador:linux": "npm run icono && electron-builder --linux"
+    "instalador:linux": "npm run icono && electron-builder --linux --x64"
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.0"
   },
   "devDependencies": {
     "electron": "^33.0.0",
@@ -31,9 +35,22 @@
         "filter": ["**/*", "!.sesion/**", "!token.txt", "!lineas.json"]
       }
     ],
-    "win": { "target": "nsis", "icon": "build/icon.png" },
-    "mac": { "icon": "build/icon.png" },
-    "linux": { "icon": "build/icon.png" },
+    "publish": [
+      { "provider": "github", "owner": "gosaryc", "repo": "gosaryc", "releaseType": "release" }
+    ],
+    "win": {
+      "target": ["nsis", "appx"],
+      "icon": "build/icon.png",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "appx": {
+      "applicationId": "GosarycERP",
+      "identityName": "Gosaryc.GosarycERP",
+      "publisher": "CN=Gosaryc",
+      "publisherDisplayName": "Gosaryc",
+      "displayName": "Gosaryc",
+      "description": "Pedidos, inventario, caja, facturas y agente WhatsApp IA en una sola app."
+    },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
@@ -41,7 +58,21 @@
       "createStartMenuShortcut": true,
       "shortcutName": "Gosaryc",
       "runAfterFinish": true,
-      "include": "build/installer.nsh"
+      "include": "build/installer.nsh",
+      "artifactName": "Gosaryc-Setup-${arch}.${ext}"
+    },
+    "mac": { "icon": "build/icon.png", "category": "public.app-category.business" },
+    "linux": {
+      "icon": "build/icon.png",
+      "target": ["AppImage", "deb"],
+      "category": "Office",
+      "description": "Gosaryc: pedidos, inventario, caja, facturas y agente WhatsApp IA."
+    },
+    "deb": {
+      "packageCategory": "utils"
+    },
+    "appImage": {
+      "artifactName": "Gosaryc-Linux-${arch}.${ext}"
     }
   }
 }

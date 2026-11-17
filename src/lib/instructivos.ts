@@ -186,8 +186,10 @@ const POR_RUTA: Record<string, Instructivo> = {
       "En “Enlace público de tu negocio” copia el QR: cada visitante solo ve lo de tu negocio (restaurantes muestran menú, tiendas catálogo por WhatsApp, salones o clínicas servicios y citas online, talleres agendamiento; lo de Salud Ocupacional solo aparece en negocios SST).",
       "En “Respaldo total del negocio” descarga clientes, productos, ventas, cartera y contabilidad en Excel con un clic.",
       "En “Impresoras de caja y cocina” elige cada impresora con su botón de prueba: la factura sale en caja y cada pedido nuevo imprime su comanda solo en cocina.",
+      "Sin el programa instalado también imprimes: la factura sale en tirilla de 58/80 mm o carta PDF con el diálogo del navegador (si lo bloquea, se descarga el archivo).",
+      "Cuando salga versión nueva verás arriba «¡Nueva versión disponible! Haz clic aquí para actualizar ahora»: tócalo y listo, tus datos se conservan.",
     ],
-    consejo: "Si cambian archivos de escritorio o del agente, sube la versión en escritorio/package.json y regenera el instalador.",
+    consejo: "Instaladores: Windows 64/32 (8 a 11) + paquete de tienda, Linux AppImage/.deb y APK directo sin Play Store. Todo se genera con doble clic o solo en la nube (Actions > Compilar todo).",
   },
   "/leads": {
     titulo: "Clientes y contactos",

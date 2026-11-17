@@ -1,6 +1,6 @@
 // Service worker: la app instalada siempre carga la última versión cuando hay internet
 // y sigue abriendo (con lo último que vio) cuando no hay conexión.
-const CACHE = "gosaryc-v47";
+const CACHE = "gosaryc-v48";
 const PRECARGA = ["/", "/icono-app.svg", "/manifest.webmanifest"];
 
 self.addEventListener("install", (e) => {
@@ -10,6 +10,7 @@ self.addEventListener("install", (e) => {
       .then((c) => Promise.all(PRECARGA.map((u) => c.add(u).catch(() => undefined)))),
   );
   self.skipWaiting();
+  void avisarVersionNueva();
 });
 
 self.addEventListener("activate", (e) => {
@@ -22,8 +23,18 @@ self.addEventListener("activate", (e) => {
 });
 
 self.addEventListener("message", (e) => {
-  if (e.data === "saltar-espera") self.skipWaiting();
+  if (e.data === "saltar-espera" || e.data === "buscar-version") self.skipWaiting();
 });
+
+// Avisa a las páginas abiertas cuando ya hay archivos nuevos descargados.
+async function avisarVersionNueva() {
+  try {
+    const clientes = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const c of clientes) c.postMessage("version-nueva");
+  } catch {
+    /* sin ventanas */
+  }
+}
 
 const esRecurso = (p) => /\.(js|css|svg|png|jpg|jpeg|webp|ico|woff2?)$/.test(p) || p.startsWith("/assets/");
 

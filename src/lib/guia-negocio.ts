@@ -448,4 +448,6 @@ export const PASOS_GENERALES: { titulo: string; texto: string }[] = [
   { titulo: "Facturas con tu logo", texto: "En Mi negocio sube tu logo y escribe tus datos fiscales y el pie de página: todas las facturas salen con esa identidad." },
   { titulo: "Recomienda por rubro", texto: "Si un colega pregunta, mándalo a la portada: toca su tipo de negocio, ve su ficha con funciones y empieza gratis con su rubro preseleccionado." },
   { titulo: "Vuélvete ultrarrápido", texto: "Los módulos pesados cargan solo al abrirlos y los listados van por páginas: si algo tarda, filtra por fecha. Para tu dominio propio sigue la guía GUIA-MIGRACION-HOSTING-DOMINIO.txt." },
+  { titulo: "Instala en Windows, Linux o Android", texto: "Hay instalador de 64 y 32 bits (Windows 8 a 11), paquete de tienda (.appx), AppImage y .deb para Linux, y APK directo sin Play Store. Todo se genera con doble clic o solo en la nube (Actions > Compilar todo). Guía fácil: LEEME-INSTALADORES-FACIL.txt." },
+  { titulo: "Actualiza con 1 clic", texto: "Cuando salga versión nueva verás «¡Nueva versión disponible! Haz clic aquí para actualizar ahora». Tócalo y listo: tus productos, clientes y ventas se conservan." },
 ];

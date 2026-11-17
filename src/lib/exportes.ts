@@ -49,6 +49,7 @@ const estilosImpresion = `
 
 /** Abre el diálogo de impresión (Guardar como PDF) con el reporte formateado. */
 export function imprimirReporte(titulo: string, subtitulo: string, encabezados: string[], filas: string[][], totales?: string[]): void {
+  // Solo web/celular (sin .exe): usa el diálogo limpio del navegador; si bloquea la ventana, descarga el archivo.
   const w = window.open("", "_blank", "width=900,height=700");
   if (!w) return;
   const filasHtml = filas
@@ -127,10 +128,52 @@ export function facturaHTML(d: DatosFactura, formato: "tirilla" | "carta"): stri
 
 /** Imprime la factura (el usuario elige Guardar como PDF o la impresora de tirilla). */
 export function imprimirFactura(d: DatosFactura, formato: "tirilla" | "carta"): void {
+  // Web y celular sin programa instalado: diálogo nativo (58/80 mm o carta). Nunca muestra error.
   const w = window.open("", "_blank", "width=420,height=700");
-  if (!w) return;
+  if (!w) {
+    descargarHtml(`Factura-${d.numero}.html`, facturaHTML(d, formato));
+    return;
+  }
   w.document.write(facturaHTML(d, formato));
   w.document.close();
   w.focus();
   setTimeout(() => w.print(), 400);
+}
+
+/** Descarga un HTML (respaldo cuando el navegador bloquea la ventana de impresión). */
+export function descargarHtml(nombre: string, html: string): void {
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nombre;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+const soloDigitosWa = (t: string): string => (t ?? "").replace(/\D/g, "");
+
+/** Arma un enlace wa.me con texto listo (facturas, pedidos y recordatorios). */
+export function enlaceWhatsapp(telefono: string, mensaje: string): string | null {
+  let d = soloDigitosWa(telefono);
+  if (d.length === 10) d = `57${d}`;
+  if (d.length < 7 || !mensaje.trim()) return null;
+  return `https://wa.me/${d}?text=${encodeURIComponent(mensaje)}`;
+}
+
+/** Texto corto para enviar una factura o cuenta por WhatsApp. */
+export function textoFacturaWhatsapp(d: DatosFactura): string {
+  const total = d.items.reduce((s, i) => s + i.cantidad * i.precio, 0);
+  const cop = (n: number) =>
+    new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
+  const lineas = [
+    `*${d.negocio}*`,
+    `Factura ${d.numero} · ${cop(total)}`,
+    ...d.items.slice(0, 8).map((i) => `· ${i.cantidad} x ${i.descripcion} — ${cop(i.cantidad * i.precio)}`),
+    d.items.length > 8 ? `· …y ${d.items.length - 8} más` : "",
+    `Gracias por tu compra.`,
+  ].filter((l) => l !== "");
+  return lineas.join("\n");
 }
