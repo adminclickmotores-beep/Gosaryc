@@ -1,0 +1,55 @@
+GUÍA DE MIGRACIÓN DE HOSTING Y DOMINIO PROPIO — GOSARYC
+=====================================================
+Tiempo estimado: 5 minutos. No se pierde información: la base de datos
+(Lovable Cloud) es independiente del hosting donde se publica la web.
+
+1) PREPARAR EL NUEVO HOSTING (Vercel o Netlify)
+------------------------------------------------
+- Sube este mismo código a un repositorio de GitHub (o usa el que ya tienes).
+- En Vercel: New Project > Import > elige el repositorio > Framework: Vite.
+  Build Command: npm run build. Output Directory: dist.
+- En Netlify: New site from Git > elige el repositorio > Build command:
+  npm run build. Publish directory: dist.
+
+2) VARIABLE DE ENTORNO (1 sola)
+--------------------------------
+- En el panel del hosting crea la variable:
+  VITE_APP_URL=https://tu-dominio.com
+- Sin esta variable la app usa automáticamente window.location.origin,
+  así que también funciona sin configurarla. Solo fíjala cuando tengas
+  tu dominio propio para que los QR, enlaces públicos y facturas salgan
+  siempre con tu dominio.
+- Redespliega después de guardarla (Redeploy / Trigger deploy).
+
+3) CONECTAR TU DOMINIO PROPIO
+------------------------------
+- En tu registrador (GoDaddy, Namecheap, Cloudflare, etc.) crea:
+  Tipo A, nombre @, valor 76.76.21.21 (Vercel) o el balanceador de Netlify;
+  y Tipo CNAME, nombre www, valor cname.vercel-dns.com (Vercel)
+  o tu-sitio.netlify.app (Netlify).
+- En Vercel: Settings > Domains > Add > escribe tu-dominio.com y www.
+- En Netlify: Site settings > Domain management > Add custom domain.
+- Espera de 5 minutos a 2 horas la propagación del DNS.
+- El certificado HTTPS (SSL) se emite solo y gratis.
+
+4) VERIFICAR QUE TODO APUNTA A TU DOMINIO
+------------------------------------------
+- Abre https://tu-dominio.com y entra a tu negocio.
+- Genera un QR del menú público: debe abrir con https://tu-dominio.com/...
+- Emite una factura de prueba: el CUFE/QR oficial usa tu dominio.
+- Comparte tu enlace público de WhatsApp: llega con tu dominio.
+- La app nunca trae dominios fijos en el código: todo sale de
+  VITE_APP_URL o de window.location.origin (ver src/lib/app-url.ts
+  y src/lib/brand.ts). Si ves un enlace viejo, regenera su QR.
+
+5) VOLVER ATRÁS SI ALGO FALLA
+------------------------------
+- Tu hosting anterior sigue publicado hasta que cambies el DNS.
+- Si el dominio no responde, revisa el DNS con https://dnschecker.org
+  y vuelve a desplegar con la variable VITE_APP_URL correcta.
+
+SOPORTE
+-------
+Escríbenos a gosarycsoftware@gmail.com o al WhatsApp 333 276 5584
+con tu nuevo dominio y te confirmamos que los enlaces, QR y DIAN
+quedaron apuntando bien.

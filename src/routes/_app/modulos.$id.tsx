@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Suspense, lazy } from "react";
 import { Loader2, Lock } from "lucide-react";
 import { ModuloOperativo } from "@/components/modulos/ModuloOperativo";
 import { InventarioVehiculos } from "@/components/vehiculos/InventarioVehiculos";
 import { SeparacionesVehiculos } from "@/components/vehiculos/SeparacionesVehiculos";
-import { CajaTurnos } from "@/components/caja/CajaTurnos";
 import { ComprasVehiculos } from "@/components/vehiculos/ComprasVehiculos";
 import { ConsignacionesVehiculos } from "@/components/vehiculos/ConsignacionesVehiculos";
 import { RetomasVehiculos } from "@/components/vehiculos/RetomasVehiculos";
@@ -30,8 +30,37 @@ import { CheckinGimnasio, PlanesGimnasio, SociosGimnasio, ValoracionGimnasio } f
 import { ComisionesTaller, OrdenesTaller, ProyectosMedida, RepuestosTaller } from "@/components/taller/TallerModulos";
 import { AgroLotes, ObrasConstructora, PropiedadesInmobiliaria, TransporteManifiestos } from "@/components/medida/MedidaModulos";
 import { AcademicoEducacion, ControlFarmacia, EventosSalon, FormulasOptica, HabitacionesHotel, MatriculasEducacion, MatrizModa, PensionesEducacion, ReservasHotel } from "@/components/turismo/TurismoModulos";
-import { FacturaFiscal } from "@/components/fiscal/FacturaFiscal";
-import { CapacitacionesBrigadas, EmpresasSST, EstandaresSST, NormativaSST, ProfesiogramaMatriz, TrabajadoresEvaluaciones, VigilanciaAusentismo } from "@/components/sst/SaludOcupacionalModulos";
+import { CargaModulo } from "@/components/carga/CargaModulo";
+
+// Módulos pesados con carga diferida: el panel abre al instante y cada uno
+// baja solo cuando se visita (cero lags en la página principal y el login).
+const FacturaFiscalLazy = lazy(() =>
+  import("@/components/fiscal/FacturaFiscal").then((m) => ({ default: m.FacturaFiscal })),
+);
+const EmpresasSSTLazy = lazy(() =>
+  import("@/components/sst/SaludOcupacionalModulos").then((m) => ({ default: m.EmpresasSST })),
+);
+const TrabajadoresEvaluacionesLazy = lazy(() =>
+  import("@/components/sst/SaludOcupacionalModulos").then((m) => ({ default: m.TrabajadoresEvaluaciones })),
+);
+const ProfesiogramaMatrizLazy = lazy(() =>
+  import("@/components/sst/SaludOcupacionalModulos").then((m) => ({ default: m.ProfesiogramaMatriz })),
+);
+const EstandaresSSTLazy = lazy(() =>
+  import("@/components/sst/SaludOcupacionalModulos").then((m) => ({ default: m.EstandaresSST })),
+);
+const VigilanciaAusentismoLazy = lazy(() =>
+  import("@/components/sst/SaludOcupacionalModulos").then((m) => ({ default: m.VigilanciaAusentismo })),
+);
+const CapacitacionesBrigadasLazy = lazy(() =>
+  import("@/components/sst/SaludOcupacionalModulos").then((m) => ({ default: m.CapacitacionesBrigadas })),
+);
+const NormativaSSTLazy = lazy(() =>
+  import("@/components/sst/SaludOcupacionalModulos").then((m) => ({ default: m.NormativaSST })),
+);
+const CajaTurnosLazy = lazy(() =>
+  import("@/components/caja/CajaTurnos").then((m) => ({ default: m.CajaTurnos })),
+);
 import { JoyeriaPiezas, LavanderiaOrdenes, LicoreraDomicilios, PapeleriaEncargos, ParqueaderoTurnos, ProfesionalCasos, TecnologiaProyectos } from "@/components/oficios/OficiosModulos";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
@@ -117,13 +146,13 @@ function ModuloPage() {
   if (id === "opt_formulas") return <FormulasOptica />;
   if (id === "eve_eventos") return <EventosSalon />;
   if (id === "lav_ordenes") return <LavanderiaOrdenes />;
-  if (id === "sst_empresas") return <EmpresasSST />;
-  if (id === "sst_evaluaciones") return <TrabajadoresEvaluaciones />;
-  if (id === "sst_profesiograma") return <ProfesiogramaMatriz />;
-  if (id === "sst_estandares") return <EstandaresSST />;
-  if (id === "sst_sve") return <VigilanciaAusentismo />;
-  if (id === "sst_capacitaciones") return <CapacitacionesBrigadas />;
-  if (id === "sst_normativa") return <NormativaSST />;
+  if (id === "sst_empresas") return (<Suspense fallback={<CargaModulo />}><EmpresasSSTLazy /></Suspense>);
+  if (id === "sst_evaluaciones") return (<Suspense fallback={<CargaModulo />}><TrabajadoresEvaluacionesLazy /></Suspense>);
+  if (id === "sst_profesiograma") return (<Suspense fallback={<CargaModulo />}><ProfesiogramaMatrizLazy /></Suspense>);
+  if (id === "sst_estandares") return (<Suspense fallback={<CargaModulo />}><EstandaresSSTLazy /></Suspense>);
+  if (id === "sst_sve") return (<Suspense fallback={<CargaModulo />}><VigilanciaAusentismoLazy /></Suspense>);
+  if (id === "sst_capacitaciones") return (<Suspense fallback={<CargaModulo />}><CapacitacionesBrigadasLazy /></Suspense>);
+  if (id === "sst_normativa") return (<Suspense fallback={<CargaModulo />}><NormativaSSTLazy /></Suspense>);
   if (id === "prof_casos") return <ProfesionalCasos />;
   if (id === "tec_proyectos") return <TecnologiaProyectos />;
   if (id === "pap_encargos") return <PapeleriaEncargos />;
@@ -144,7 +173,7 @@ function ModuloPage() {
   if (id === "cl_insumos") return <InsumosClinica />;
   if (id === "cl_comisiones") return <ComisionesClinica />;
   if (id === "vehiculos") return <InventarioVehiculos />;
-  if (id === "caja_diaria") return <CajaTurnos />;
+  if (id === "caja_diaria") return (<Suspense fallback={<CargaModulo />}><CajaTurnosLazy /></Suspense>);
   if (id === "compras_veh") return <ComprasVehiculos />;
   if (id === "consignaciones_veh") return <ConsignacionesVehiculos />;
   if (id === "vehiculos_usados") return <RetomasVehiculos />;
@@ -153,6 +182,6 @@ function ModuloPage() {
   if (id === "vencimientos_veh") return <VencimientosVehiculos />;
   if (id === "documentos_veh") return <DocumentosVehiculos />;
   if (id === "cotizaciones_veh") return <CotizacionesVehiculos />;
-  if (id === "facturas" || id.startsWith("facturas_")) return <FacturaFiscal />;
+  if (id === "facturas" || id.startsWith("facturas_")) return (<Suspense fallback={<CargaModulo texto="Cargando facturación…" />}><FacturaFiscalLazy /></Suspense>);
   return <ModuloOperativo id={id} />;
 }

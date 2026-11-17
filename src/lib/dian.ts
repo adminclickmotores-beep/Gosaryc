@@ -125,6 +125,32 @@ export async function guardarCufeQr(
     .eq("id", facturaId);
 }
 
+/** Valida los datos fiscales antes de emitir: NIT, DV, régimen, resolución, prefijo y rangos. */
+export function validarDatosFiscales(args: {
+  nit?: string | null;
+  dv?: string | null;
+  regimen?: string | null;
+  responsabilidad?: string | null;
+  resolucion?: string | null;
+  prefijo?: string | null;
+  rangoDesde?: number | null;
+  rangoHasta?: number | null;
+  numero?: number | null;
+}): string[] {
+  const errores: string[] = [];
+  if (!args.nit?.trim()) errores.push("Falta el NIT de la empresa (Mi negocio).");
+  if (args.dv && !/^[0-9]$/.test(args.dv.trim())) errores.push("El dígito de verificación debe ser un número de 0 a 9.");
+  if (!args.regimen?.trim()) errores.push("Falta el régimen (Mi negocio).");
+  if (!args.resolucion?.trim()) errores.push("Falta la resolución DIAN (la activa el Superadmin).");
+  if (args.rangoDesde == null || args.rangoHasta == null) errores.push("Falta el rango autorizado desde/hasta.");
+  else if (args.rangoDesde > args.rangoHasta) errores.push("El rango desde no puede ser mayor que el hasta.");
+  if (args.numero != null && args.rangoDesde != null && args.rangoHasta != null) {
+    if (args.numero < args.rangoDesde || args.numero > args.rangoHasta)
+      errores.push(`El consecutivo ${args.numero} está fuera del rango ${args.rangoDesde}-${args.rangoHasta}.`);
+  }
+  return errores;
+}
+
 /** Marca la factura como pendiente de envío DIAN (la venta nunca se bloquea). */
 export async function marcarDianPendiente(facturaId: string, detalle: unknown): Promise<void> {
   await supabase

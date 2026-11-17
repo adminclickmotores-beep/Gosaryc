@@ -447,4 +447,5 @@ export const PASOS_GENERALES: { titulo: string; texto: string }[] = [
   { titulo: "Tu nómina siempre actualizada", texto: "En Equipo y nómina crea a cada empleado (ancla al SMMLV al que gane el mínimo), liquida por periodo y contabiliza con un clic. Si cambian los decretos, el botón de IA carga la vigencia nueva." },
   { titulo: "Facturas con tu logo", texto: "En Mi negocio sube tu logo y escribe tus datos fiscales y el pie de página: todas las facturas salen con esa identidad." },
   { titulo: "Recomienda por rubro", texto: "Si un colega pregunta, mándalo a la portada: toca su tipo de negocio, ve su ficha con funciones y empieza gratis con su rubro preseleccionado." },
+  { titulo: "Vuélvete ultrarrápido", texto: "Los módulos pesados cargan solo al abrirlos y los listados van por páginas: si algo tarda, filtra por fecha. Para tu dominio propio sigue la guía GUIA-MIGRACION-HOSTING-DOMINIO.txt." },
 ];

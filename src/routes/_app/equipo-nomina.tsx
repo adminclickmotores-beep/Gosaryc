@@ -24,9 +24,12 @@ function EquipoNominaPage() {
   const [cargando, setCargando] = useState(true);
 
   const cargar = useCallback(async () => {
+    // Límite fijo + orden: la nómina nunca trae el historial completo de una vez.
     const { data, error } = await supabase
       .from("equipo_pagos")
-      .select("titulo, estado, monto");
+      .select("titulo, estado, monto")
+      .order("created_at", { ascending: false })
+      .limit(500);
     if (error) toast.error("No se pudo cargar la nómina.");
     setFilas(data ?? []);
     setCargando(false);
@@ -420,9 +423,9 @@ function MotorNominaDinamica() {
 
   const cargar = useCallback(async () => {
     const [pa, em, li] = await Promise.all([
-      supabase.from("parametros_nomina_colombia").select("*").order("vigencia_desde", { ascending: false }),
-      supabase.from("nomina_empleados").select("*").order("nombre"),
-      supabase.from("nomina_liquidaciones").select("*").order("periodo_fin", { ascending: false }).limit(100),
+      supabase.from("parametros_nomina_colombia").select("*").order("vigencia_desde", { ascending: false }).limit(10),
+      supabase.from("nomina_empleados").select("*").order("nombre").limit(500),
+      supabase.from("nomina_liquidaciones").select("*").order("periodo_fin", { ascending: false }).limit(50),
     ]);
     if (pa.data) setParams(pa.data);
     if (em.data) setEmpleados(em.data);

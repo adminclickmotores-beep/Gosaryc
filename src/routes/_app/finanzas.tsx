@@ -1,12 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { ArrowLeft, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
-import { Contabilidad } from "@/components/restaurante/Contabilidad";
+import { CargaModulo } from "@/components/carga/CargaModulo";
+import { LIMITE_CONSULTA } from "@/lib/rendimiento";
+
+// Contabilidad pesa (libros + Contador Pro): se carga solo cuando se ve.
+const Contabilidad = lazy(() =>
+  import("@/components/restaurante/Contabilidad").then((m) => ({ default: m.Contabilidad })),
+);
 
 export const Route = createFileRoute("/_app/finanzas")({
   head: () => ({ meta: [{ title: "Finanzas y rentabilidad" }] }),
@@ -34,9 +40,10 @@ function FinanzasPage() {
     inicio.setHours(0, 0, 0, 0);
     if (p === "mes") inicio.setDate(1);
     const desde = inicio.toISOString();
+    // Límites fijos: el resumen solo necesita los totales recientes, nunca miles de filas.
     const [pedidosRes, movimientosRes] = await Promise.all([
-      supabase.from("restaurante_pedidos").select("total").eq("estado", "entregado").gte("created_at", desde),
-      supabase.from("restaurante_movimientos_caja").select("tipo, monto").gte("created_at", desde),
+      supabase.from("restaurante_pedidos").select("total").eq("estado", "entregado").gte("created_at", desde).order("created_at", { ascending: false }).limit(LIMITE_CONSULTA),
+      supabase.from("restaurante_movimientos_caja").select("tipo, monto").gte("created_at", desde).order("created_at", { ascending: false }).limit(LIMITE_CONSULTA),
     ]);
     if (pedidosRes.error || movimientosRes.error) toast.error("No se pudieron cargar las finanzas.");
     const listaPedidos = pedidosRes.data ?? [];
@@ -109,7 +116,9 @@ function FinanzasPage() {
         </div>
       )}
 
-      <Contabilidad />
+      <Suspense fallback={<CargaModulo texto="Cargando contabilidad…" />}>
+        <Contabilidad />
+      </Suspense>
     </div>
   );
 }

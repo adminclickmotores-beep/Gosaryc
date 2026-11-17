@@ -1,6 +1,6 @@
 // Service worker: la app instalada siempre carga la última versión cuando hay internet
 // y sigue abriendo (con lo último que vio) cuando no hay conexión.
-const CACHE = "gosaryc-v46";
+const CACHE = "gosaryc-v47";
 const PRECARGA = ["/", "/icono-app.svg", "/manifest.webmanifest"];
 
 self.addEventListener("install", (e) => {

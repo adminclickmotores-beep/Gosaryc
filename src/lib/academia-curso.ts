@@ -44,7 +44,7 @@ export const CURSO_GOSARYC = {
           minutos: 4,
           descripcion: "Fichas interactivas por tipo de negocio con prueba gratis.",
           pasos: [
-            "En la portada (gosaryc.lovable.app) baja a «El programa se adapta a tu negocio, no al revés» y toca tu tipo de negocio.",
+            "En la portada baja a «El programa se adapta a tu negocio, no al revés» y toca tu tipo de negocio.",
             "Lee su ficha: qué problema resuelve y sus funciones reales incluidas.",
             "Pulsa «Probar Gosaryc gratis para [tu negocio]»: el registro deja tu rubro preseleccionado en la bienvenida.",
             "Cada ficha también tiene «Ver ficha completa» con el detalle por sector.",
@@ -261,6 +261,19 @@ export const CURSO_GOSARYC = {
             "Sin internet la factura se guarda en cola y se sincroniza sola al volver la conexión; en el celular se usa la impresión normal.",
           ],
           practica: { ruta: "/settings", etiqueta: "Abrir configuración" },
+        },
+        {
+          id: "rapidez-dian-dominio",
+          titulo: "Rapidez, DIAN y tu dominio propio",
+          minutos: 5,
+          descripcion: "Carga ultrarrápida, facturación electrónica y cambio de hosting sin perder datos.",
+          pasos: [
+            "La página principal y el inicio de sesión abren en menos de 1 segundo: los módulos pesados (Contabilidad, Salud Ocupacional, Nómina, Reportes, Agente WhatsApp) se cargan solo cuando los visitas.",
+            "Los listados grandes (productos, ventas, facturas, asientos y clientes) muestran 50 por página con límite de seguridad: si tienes miles de registros, el sistema sigue volando.",
+            "Para la DIAN: completa en Mi negocio tu NIT con dígito de verificación, régimen y responsabilidades; el Superadmin activa tu resolución, prefijo y rango en Licencias Admin. Cada factura guarda su CUFE y QR oficial en la tirilla y el PDF carta.",
+            "Tu dominio: todo enlace y QR sale de tu dominio actual automáticamente. Para migrar de hosting o conectar tu dominio propio sigue la guía GUIA-MIGRACION-HOSTING-DOMINIO.txt (subir a Vercel/Netlify, fijar VITE_APP_URL y conectar el DNS en 5 minutos).",
+          ],
+          practica: { ruta: "/finanzas", etiqueta: "Abrir finanzas" },
         },
         {
           id: "pedir-soporte",

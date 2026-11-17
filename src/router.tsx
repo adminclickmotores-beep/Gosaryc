@@ -6,7 +6,18 @@ import { routeTree } from "./routeTree.gen";
 let clientRouter: ReturnType<typeof createAppRouter> | undefined;
 
 function createAppRouter() {
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        // Caché de 30 s: navegar entre módulos no reconsulta ni congela.
+        staleTime: 30_000,
+        gcTime: 5 * 60_000,
+        retry: 1,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: true,
+      },
+    },
+  });
 
   return createRouter({
     routeTree,

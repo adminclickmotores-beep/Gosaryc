@@ -1,11 +1,17 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Plus, Trash2, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { exportarExcel, imprimirReporte } from "@/lib/exportes";
-import { ContadorPro } from "@/components/fiscal/ContadorPro";
+import { CargaModulo } from "@/components/carga/CargaModulo";
+import { LIMITE_CONSULTA } from "@/lib/rendimiento";
+
+// Contador Pro es el panel más pesado: se difiere hasta que hay plan de cuentas.
+const ContadorPro = lazy(() =>
+  import("@/components/fiscal/ContadorPro").then((m) => ({ default: m.ContadorPro })),
+);
 
 type Cuenta = Tables<"cuentas_contables">;
 type Asiento = Tables<"asientos_contables">;
@@ -77,14 +83,16 @@ export function Contabilidad() {
   const [nTipo, setNTipo] = useState<TipoCuenta>("activo");
 
   const cargar = useCallback(async () => {
+    // Paginación real: el diario muestra lo reciente; el resto se filtra por fecha.
     const [c, a] = await Promise.all([
-      supabase.from("cuentas_contables").select("*").order("codigo"),
+      supabase.from("cuentas_contables").select("*").order("codigo").limit(LIMITE_CONSULTA),
       supabase
         .from("asientos_contables")
         .select("*")
         .eq("anulado", false)
-        .order("fecha", { ascending: true })
-        .order("created_at", { ascending: true }),
+        .order("fecha", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(LIMITE_CONSULTA),
     ]);
     if (c.error || a.error) toast.error("No se pudo cargar la contabilidad.");
     setCuentas(c.data ?? []);
@@ -611,7 +619,11 @@ export function Contabilidad() {
       )}
 
       {/* Contador Pro Colombia: vencimientos, impuestos, exógena y normativa */}
-      {!cargando && cuentas.length > 0 && <ContadorPro cuentas={cuentas} filas={filas} />}
+      {!cargando && cuentas.length > 0 && (
+        <Suspense fallback={<CargaModulo texto="Cargando Contador Pro…" />}>
+          <ContadorPro cuentas={cuentas} filas={filas} />
+        </Suspense>
+      )}
     </section>
   );
 }

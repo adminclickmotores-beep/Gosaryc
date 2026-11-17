@@ -139,10 +139,17 @@ export const MANUAL_FIJO = `
 - «Perdí la sesión»: iniciar de nuevo; marcar «Recordarme» en equipos personales.
 
 # 16. PORTADA INTERACTIVA, IDENTIDAD RENOVADA Y CIERRE ALINEADO
-- Portada pública (gosaryc.lovable.app): primero muestra toda la información del programa y al final el acceso (crear cuenta o iniciar sesión).
+- Portada pública (tu dominio actual o el publicado): primero muestra toda la información del programa y al final el acceso (crear cuenta o iniciar sesión).
 - «El programa se adapta a tu negocio, no al revés»: cada tarjeta de tipo de negocio se toca y abre una ficha comercial con qué problema resuelve, sus funciones reales y el botón «Probar Gosaryc gratis para [Negocio]», que abre el registro dejando el rubro preseleccionado en la bienvenida.
 - Identidad visual: logo de barras de crecimiento con degradado índigo a esmeralda; botones principales y titulares usan ese mismo degradado en modo claro y oscuro.
 - Botón «Enviar cierre por WhatsApp» (tarjeta «Cierre del día por WhatsApp» en Caja, Reportes, Configuración y el Agente): queda alineado a la izquierda debajo del texto; ya no se monta sobre la barra flotante.
+
+# 17. RENDIMIENTO ULTRARRÁPIDO, DIAN Y PORTABILIDAD
+- Carga diferida (React.lazy + Suspense): la portada y el login abren en menos de 1 segundo; Contabilidad, Contador Pro, Salud Ocupacional, Nómina, Caja, Reportes, Facturación, Agente WhatsApp y Academia bajan solo al visitarlos.
+- Paginación real y límites: listados grandes (productos, ventas, facturas, asientos, clientes, nómina) con 50 por página y tope de 500 por consulta; caché de consultas de 30 s y QueryClient sin reconsultas al volver a la ventana.
+- Índices compuestos (migración 20271129000000): owner_id + fecha/estado/búsqueda en pedidos, movimientos de caja, asientos, cuentas, clientes, productos, fac_emitidas y obligaciones; el sistema sigue volando con miles de registros.
+- DIAN lista: validarDatosFiscales exige NIT, DV (módulo 11), régimen, resolución, prefijo y rango; el Superadmin activa dian_activa con URL, token, ambiente y rangos en Licencias Admin; cada factura guarda CUFE + QR oficial y la venta nunca se bloquea (queda pendiente si el proveedor no responde).
+- Sin dominios fijos: todo enlace y QR sale de VITE_APP_URL o window.location.origin (src/lib/app-url.ts, src/lib/brand.ts); guía GUIA-MIGRACION-HOSTING-DOMINIO.txt explica subir a Vercel/Netlify y conectar dominio propio en 5 minutos.
 `;
 
 const RUTAS_INSTRUCTIVO = [
