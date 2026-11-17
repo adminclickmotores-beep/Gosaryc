@@ -7,11 +7,22 @@ function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
 }
 
+// Lee variables solo del servidor sin tocar el global `process` del navegador
+// (en la web ese global no existe y rompe toda la app).
+function envServidor(nombre: string): string | undefined {
+  try {
+    const g = globalThis as { process?: { env?: Record<string, string | undefined> } };
+    return g.process?.env?.[nombre];
+  } catch {
+    return undefined;
+  }
+}
+
 // The public URL can be reachable only from the browser, so server requests go to the runtime URL of the same backend.
 function serverSupabaseUrl(publicUrl: string, supabaseKey: string): string | undefined {
-  if (typeof window !== 'undefined' || typeof process === 'undefined') return undefined;
-  const serverUrl = process.env['SUPABASE_URL']?.replace(/\/+$/, '');
-  if (!serverUrl || serverUrl === publicUrl || process.env['SUPABASE_PUBLISHABLE_KEY'] !== supabaseKey) return undefined;
+  if (typeof window !== 'undefined') return undefined;
+  const serverUrl = envServidor('SUPABASE_URL')?.replace(/\/+$/, '');
+  if (!serverUrl || serverUrl === publicUrl || envServidor('SUPABASE_PUBLISHABLE_KEY') !== supabaseKey) return undefined;
   return serverUrl;
 }
 
@@ -48,9 +59,9 @@ function createSupabaseFetch(supabaseUrl: string, supabaseKey: string): typeof f
 
 function createSupabaseClient() {
   // Use import.meta.env for client-side (Vite build-time replacement)
-  // Fall back to process.env for SSR (server-side rendering)
-  const SUPABASE_URL = import.meta.env['VITE_SUPABASE_URL'] || process.env['SUPABASE_URL'];
-  const SUPABASE_PUBLISHABLE_KEY = import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] || process.env['SUPABASE_PUBLISHABLE_KEY'];
+  // Fall back to server env only when running outside the browser.
+  const SUPABASE_URL = import.meta.env['VITE_SUPABASE_URL'] || envServidor('SUPABASE_URL');
+  const SUPABASE_PUBLISHABLE_KEY = import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] || envServidor('SUPABASE_PUBLISHABLE_KEY');
 
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
     const missing = [
