@@ -56,7 +56,7 @@ El instalador no está firmado con un certificado de pago: Windows puede mostrar
 - **Licencias Admin Windows (solo tú):** `crear-instalador-licencias-win.bat` genera `Gosaryc-Licencias-Admin-x64.exe` e `-ia32.exe`. Abre solo el panel de licencias con tu cuenta superadmin (crear, renovar, suspender y enviar la clave por WhatsApp). No la compartas con clientes.
 - **Licencias Admin Linux (solo tú):** en `generador-licencias`, `npm run instalador:linux` genera AppImage y .deb.
 - **Licencias Admin Android (solo tú):** `crear-apk-licencias-admin.bat` genera `Gosaryc-Licencias-Admin.apk` (ID `com.gosaryc.licencias`, logo rojo con cinta ADMIN).
-- **Novedades de esta versión:** pruebas y extensiones con días exactos a elegir (3, 7, 15, 30, 60, 90 o los que escribas); la licencia de 1 año solo la activa el Superadmin (la base de datos lo verifica); facturas con tu logo, régimen y pie de página; identidad de color por rubro en cada módulo.
+- **Novedades de esta versión:** portada con fichas interactivas por tipo de negocio y prueba gratis con rubro preseleccionado; logo índigo a esmeralda en web, instaladores y APK; agente WhatsApp con perfiles de asesor contable y de nómina; pruebas y extensiones con días exactos a elegir (3, 7, 15, 30, 60, 90 o los que escribas); la licencia de 1 año solo la activa el Superadmin (la base de datos lo verifica); facturas con tu logo, régimen y pie de página; identidad de color por rubro en cada módulo.
 - Guía paso a paso de los 4: `COMO-GENERAR-INSTALADORES.txt` en la raíz.
 
 ## Más adelante

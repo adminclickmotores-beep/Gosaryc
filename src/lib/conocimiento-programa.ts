@@ -137,10 +137,16 @@ export const MANUAL_FIJO = `
 - «El asistente dice que falta un dato»: completarlo en Mi negocio.
 - «La pantalla se ve rara o no carga»: recargar la página; si persiste, cerrar sesión y volver a entrar; si sigue, crear un ticket en Soporte indicando qué hacía y qué mensaje vio.
 - «Perdí la sesión»: iniciar de nuevo; marcar «Recordarme» en equipos personales.
+
+# 16. PORTADA INTERACTIVA, IDENTIDAD RENOVADA Y CIERRE ALINEADO
+- Portada pública (gosaryc.lovable.app): primero muestra toda la información del programa y al final el acceso (crear cuenta o iniciar sesión).
+- «El programa se adapta a tu negocio, no al revés»: cada tarjeta de tipo de negocio se toca y abre una ficha comercial con qué problema resuelve, sus funciones reales y el botón «Probar Gosaryc gratis para [Negocio]», que abre el registro dejando el rubro preseleccionado en la bienvenida.
+- Identidad visual: logo de barras de crecimiento con degradado índigo a esmeralda; botones principales y titulares usan ese mismo degradado en modo claro y oscuro.
+- Botón «Enviar cierre por WhatsApp» (tarjeta «Cierre del día por WhatsApp» en Caja, Reportes, Configuración y el Agente): queda alineado a la izquierda debajo del texto; ya no se monta sobre la barra flotante.
 `;
 
 const RUTAS_INSTRUCTIVO = [
-  "/cartera-fiados", "/combos", "/cotizaciones", "/domicilios", "/equipo-nomina", "/finanzas",
+  "/", "/cartera-fiados", "/combos", "/cotizaciones", "/domicilios", "/equipo-nomina", "/finanzas",
   "/pagos-digitales", "/pedidos-recurrentes", "/propinas", "/proveedores-compras", "/puntos-recompensas",
   "/repartidores", "/resenas-pqrs", "/metas", "/asistente-virtual", "/leads", "/calendar", "/requests",
 ];

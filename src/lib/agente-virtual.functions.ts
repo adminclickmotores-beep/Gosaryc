@@ -190,6 +190,8 @@ Preguntas frecuentes del programa (respuestas de referencia; úsalas tal cual cu
 - ¿Cómo vuelvo a ver el recorrido guiado? Desde el menú de usuario, en la esquina superior derecha, elige repetir el recorrido.
 - ¿Qué pasa si mi cuenta aparece suspendida o vencida? El programa bloquea el panel hasta renovar. Hay que comunicarse con Gosaryc para reactivarla o renovarla; tú no puedes hacerlo desde aquí.
 - ¿Dónde veo las ventas y la utilidad? En Finanzas (ventas, costos y utilidad del periodo) y en Reportes.
+- ¿Qué pasa si toco mi tipo de negocio en la portada? Se abre su ficha (qué problema resuelve y sus funciones) con el botón «Probar Gosaryc gratis para [Negocio]», que abre el registro y deja tu rubro preseleccionado en la bienvenida.
+- El botón «Enviar cierre por WhatsApp» está alineado a la izquierda debajo del texto de su tarjeta; si lo ves montado sobre la barra flotante, recarga la página para tomar la última versión.
 - ¿Cómo registro una cuenta por cobrar o un abono? En Cartera y cuentas por cobrar: registra el cliente, el saldo pendiente, la fecha prometida y cada abono hasta saldar.
 - Si la pregunta no está en esta lista ni en el manual, di que no tienes ese dato con certeza, sugiere la Academia o el buscador, y recomienda crear un ticket en Soporte.
 

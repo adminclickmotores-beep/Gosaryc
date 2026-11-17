@@ -10,6 +10,16 @@ export type Instructivo = {
 
 /** Instructivos de las pantallas propias (no genéricas), por ruta. */
 const POR_RUTA: Record<string, Instructivo> = {
+  "/": {
+    titulo: "Portada y fichas por negocio",
+    paraQue: "Conocer el programa y empezar gratis con tu rubro ya elegido.",
+    pasos: [
+      "Baja a «El programa se adapta a tu negocio, no al revés» y toca tu tipo de negocio para ver su ficha.",
+      "Lee qué problema resuelve y sus funciones reales incluidas.",
+      "Pulsa «Probar Gosaryc gratis para [tu negocio]» para crear tu cuenta con ese rubro preseleccionado.",
+    ],
+    consejo: "La portada muestra primero toda la información; el registro y el inicio de sesión están al final.",
+  },
   "/calendar": {
     titulo: "Agenda y cobro de citas",
     paraQue: "Agendar citas y cobrarlas para que la plata entre directo a la caja del día.",

@@ -120,6 +120,8 @@ const PERFILES_EXPERTO = [
   { claves: ["inmobiliar", "arriendo", "venta de casas", "finca raiz"], nombre: "asesor inmobiliario", guia: "Filtra por presupuesto, zona y tipo de inmueble, y agenda la visita.", cierra: "¿Cuál es tu presupuesto y en qué zona buscas?" },
   { claves: ["transporte", "mudanza", "acarreo", "domicilio"], nombre: "despachador", guia: "Cotiza por origen, destino y carga, y confirma fecha y hora del servicio.", cierra: "¿Cuál es el origen, el destino y qué hay que llevar?" },
   { claves: ["sst", "sg-sst", "salud ocupacional", "medicina laboral", "seguridad y salud"], nombre: "especialista SST", guia: "Atiende empresas cliente: cotiza exámenes ocupacionales, outsourcing SG-SST y capacitaciones, y agenda evaluaciones médicas por empresa y cargo. Nunca revela historia clínica.", cierra: "¿De qué empresa nos escribes y cuántos trabajadores necesitan el examen o la asesoría?" },
+  { claves: ["contador", "contable", "impuesto", "dian", "factura electronica", "retencion", "exogena", "iva"], nombre: "asesor contable", guia: "Orienta sobre vencimientos con semáforo, pre-liquidación de Retefuente, IVA e ICA y validación de exógena; la declaración final siempre la confirma el contador.", cierra: "¿Qué impuesto te preocupa? Te reviso el vencimiento y lo dejamos listo para tu contador." },
+  { claves: ["nomina", "empleado", "salario", "liquidacion", "pila", "planilla", "cesantia"], nombre: "asesor de nómina", guia: "Explica la liquidación por periodo con SMMLV, auxilio, recargos y provisiones, y el anclaje al mínimo.", cierra: "¿Cuántos empleados tienes y con qué salarios? Te explico cómo liquidarlos." },
 ];
 
 function buscarPerfil(tipo) {
@@ -177,7 +179,7 @@ function responderLocal(linea, chat) {
   const esSaludo = regla && /hola|buenas/.test(normalizar(regla.palabras.join(" "))) && regla.palabras.some((p) => /hola|buenas/.test(normalizar(p)));
   if (primera && cfg.saludo && (!regla || esSaludo)) {
     const base = cfg.saludo === RESPUESTAS_BASE.saludo && perfil
-      ? `¡Hola! Soy el asistente de ${linea.nombre}. ${perfil.guia} Aquí también llevan nómina con las reglas de Colombia, facturación con logo y datos DIAN, y reservas o pedidos por este chat. ¿En qué te puedo ayudar?`
+      ? `¡Hola! Soy el asistente de ${linea.nombre}. ${perfil.guia} Aquí también llevan contabilidad con Contador Pro, nómina con las reglas de Colombia, facturación electrónica DIAN con logo, y reservas o pedidos por este chat. ¿En qué te puedo ayudar?`
       : poner(cfg.saludo);
     return { texto: base, escalar: false };
   }

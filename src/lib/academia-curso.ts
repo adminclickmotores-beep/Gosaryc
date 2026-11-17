@@ -33,8 +33,21 @@ export const CURSO_GOSARYC = {
           descripcion: "Registro, inicio de sesión y recuperación de contraseña.",
           pasos: [
             "Abre la página de registro y crea tu cuenta con correo y contraseña (mínimo 6 caracteres).",
+            "Si vienes del botón «Probar Gosaryc gratis para [tu negocio]» de la portada, tu rubro ya llega preseleccionado en la bienvenida.",
             "Marca «Recordarme» si es tu equipo personal y usa el ojo para ver la contraseña.",
             "Si olvidas la clave, usa «Olvidé mi contraseña» y sigue el enlace que llega al correo.",
+          ],
+        },
+        {
+          id: "explorar-portada",
+          titulo: "Explorar la portada y elegir tu rubro",
+          minutos: 4,
+          descripcion: "Fichas interactivas por tipo de negocio con prueba gratis.",
+          pasos: [
+            "En la portada (gosaryc.lovable.app) baja a «El programa se adapta a tu negocio, no al revés» y toca tu tipo de negocio.",
+            "Lee su ficha: qué problema resuelve y sus funciones reales incluidas.",
+            "Pulsa «Probar Gosaryc gratis para [tu negocio]»: el registro deja tu rubro preseleccionado en la bienvenida.",
+            "Cada ficha también tiene «Ver ficha completa» con el detalle por sector.",
           ],
         },
         {
