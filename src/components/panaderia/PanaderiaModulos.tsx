@@ -254,6 +254,7 @@ export function ProduccionPan() {
   return (
     <div className="mx-auto max-w-4xl space-y-5">
       <Encabezado titulo="Horneadas / Producción diaria" texto="Anota lo que salió del horno: el sistema descuenta la harina y demás insumos según la receta y calcula el costo real por unidad." />
+      <VentasVitrinaPan />
       <GlassPanel className="space-y-3 p-4">
         <div className="grid gap-3 sm:grid-cols-2">
           <Campo etiqueta="Qué se horneó">
@@ -290,6 +291,85 @@ export function ProduccionPan() {
         ))}
       </div>
     </div>
+  );
+}
+
+// ============================================================
+// Ventas de vitrina (enlazadas por receta_id directo, sin comparar nombres)
+// ============================================================
+export function VentasVitrinaPan() {
+  const { recetas, cargando, recargar } = usarRecetas();
+  const [recetaId, setRecetaId] = useState("");
+  const [cantidad, setCantidad] = useState("1");
+  const [metodo, setMetodo] = useState("efectivo");
+  const [vendiendo, setVendiendo] = useState(false);
+
+  const receta = recetas.find((r) => r.id === recetaId);
+  const total = receta ? receta.precio_venta * Math.max(Math.floor(num(cantidad)), 0) : 0;
+
+  const vender = async () => {
+    if (!receta) return toast.error("Elige el producto de vitrina.");
+    const cant = Math.floor(num(cantidad));
+    if (cant <= 0) return toast.error("Indica cuántas unidades.");
+    if (cant > receta.stock_vitrina) return toast.error(`En vitrina solo hay ${receta.stock_vitrina} de ${receta.nombre}.`);
+    setVendiendo(true);
+    const { error: eStock } = await supabase
+      .from("pan_recetas")
+      .update({ stock_vitrina: receta.stock_vitrina - cant })
+      .eq("id", receta.id);
+    if (eStock) {
+      setVendiendo(false);
+      return toast.error("No se pudo descontar la vitrina.");
+    }
+    const { data: abiertos } = await supabase
+      .from("turnos_caja")
+      .select("id")
+      .eq("estado", "abierto")
+      .order("abierto_en", { ascending: false })
+      .limit(1);
+    if (abiertos?.[0]) {
+      await supabase.from("movimientos_turno").insert({
+        turno_id: abiertos[0].id,
+        tipo: "venta",
+        metodo,
+        concepto: `Vitrina panadería: ${receta.nombre} x ${cant}`,
+        monto: receta.precio_venta * cant,
+      });
+    }
+    setVendiendo(false);
+    toast.success(abiertos?.[0] ? "Venta registrada: descontó vitrina y entró a Caja." : "Venta descontada de vitrina (abre la caja para que entre el dinero).");
+    setCantidad("1");
+    void recargar();
+  };
+
+  if (cargando) return <Cargando />;
+  return (
+    <GlassPanel className="space-y-3 p-4">
+      <h2 className="font-medium text-foreground">Vender de vitrina</h2>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Campo etiqueta="Producto de vitrina">
+          <select className={campo} value={recetaId} onChange={(e) => setRecetaId(e.target.value)}>
+            <option value="">Elige...</option>
+            {recetas.filter((r) => r.activo).map((r) => (
+              <option key={r.id} value={r.id}>{r.nombre} (hay {r.stock_vitrina}) · {dinero(r.precio_venta)}</option>
+            ))}
+          </select>
+        </Campo>
+        <Campo etiqueta="Unidades"><input className={campo} inputMode="numeric" value={cantidad} onChange={(e) => setCantidad(e.target.value)} /></Campo>
+        <Campo etiqueta="Medio de pago">
+          <select className={campo} value={metodo} onChange={(e) => setMetodo(e.target.value)}>
+            <option value="efectivo">Efectivo</option>
+            <option value="transferencia">Transferencia / tarjeta</option>
+          </select>
+        </Campo>
+        <div className="flex items-end">
+          <p className="text-sm text-muted-foreground">Total: <span className="text-base font-medium text-foreground">{dinero(total)}</span></p>
+        </div>
+      </div>
+      <button type="button" className={boton} disabled={vendiendo} onClick={vender}>
+        {vendiendo ? "Vendiendo..." : "Cobrar y descontar vitrina"}
+      </button>
+    </GlassPanel>
   );
 }
 

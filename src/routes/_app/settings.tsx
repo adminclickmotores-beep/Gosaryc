@@ -13,6 +13,7 @@ import { IconSettings, IconLogout } from "@/components/ui-custom/CustomIcon";
 import { PageHexBadge } from "@/components/app/PageHexBadge";
 import { Users as IconUsers } from "lucide-react";
 import { EquipoPermisos } from "@/components/settings/EquipoPermisos";
+import { ResumenCierreWhatsApp } from "@/components/restaurante/Reportes";
 import { ThemeToggle } from "@/components/ui-custom/ThemeToggle";
 import { BRAND } from "@/lib/brand";
 import { estadoApiLocal, fijarImpresionDirecta, impresionDirectaActivada, imprimirTirillaLocal } from "@/lib/impresion-local";
@@ -153,6 +154,7 @@ function Settings() {
         <div className="space-y-6">
           <PublicUrlCard orgId={orgId} />
           <TarjetaImpresion />
+          <ResumenCierreWhatsApp />
         </div>
       ) : tab === "team" ? (
         <EquipoPermisos />

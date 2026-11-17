@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { Bot, Eye, EyeOff, Link2, Plus, RefreshCw, Send, Trash2, UserCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { ResumenCierreWhatsApp } from "@/components/restaurante/Reportes";
 import { useNegocio } from "@/hooks/use-negocio";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Tables } from "@/integrations/supabase/types";
@@ -484,6 +485,7 @@ export function AgenteWhatsApp() {
   if (!negocio) return null;
 
   return (
+    <>
     <GlassPanel className="space-y-4 p-5">
       <div className="flex items-start gap-3">
         <span className="icon-chip h-10 w-10 shrink-0 rounded-xl"><Bot className="h-5 w-5" /></span>
@@ -827,5 +829,9 @@ export function AgenteWhatsApp() {
         )}
       </div>
     </GlassPanel>
+    <div className="mt-4">
+      <ResumenCierreWhatsApp />
+    </div>
+    </>
   );
 }

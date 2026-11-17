@@ -7,6 +7,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
+import { ResumenCierreWhatsApp } from "@/components/restaurante/Reportes";
 
 type Turno = Tables<"turnos_caja">;
 type Mov = Tables<"movimientos_turno">;
@@ -283,6 +284,8 @@ ${t.notas_cierre ? `<hr><p>Notas: ${esc(t.notas_cierre)}</p>` : ""}<br><br><p cl
                   </button>
                 </div>
               </GlassPanel>
+
+              <ResumenCierreWhatsApp ventas={r.ventas} gastos={r.gastos + r.retiros} />
             </div>
 
             <div className="min-w-0 space-y-2">

@@ -8,6 +8,7 @@ import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { CLASE_NIVEL, diasPara, nivelVence, textoVence, type NivelVence } from "@/lib/lotes-comercio";
 import { exportarExcel, imprimirReporte } from "@/lib/exportes";
+import { ImportadorMasivo } from "@/components/comercio/ImportadorMasivo";
 
 export type Producto = Tables<"com_productos">;
 
@@ -272,6 +273,7 @@ export function ProductosComercial() {
           Inventario a PDF
         </button>
       </div>
+      <ImportadorMasivo alTerminar={recargar} />
       <GlassPanel className="space-y-3 p-5">
         <h2 className="font-medium text-foreground">Nuevo producto</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

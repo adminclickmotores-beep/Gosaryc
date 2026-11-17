@@ -10,6 +10,16 @@ export type Instructivo = {
 
 /** Instructivos de las pantallas propias (no genéricas), por ruta. */
 const POR_RUTA: Record<string, Instructivo> = {
+  "/calendar": {
+    titulo: "Agenda y cobro de citas",
+    paraQue: "Agendar citas y cobrarlas para que la plata entre directo a la caja del día.",
+    pasos: [
+      "Crea la cita con título, fecha, hora y cliente.",
+      "Cuando el cliente llegue, pulsa «Cobrar», escribe el valor y confirma: entra a Caja.",
+      "Si se cancela, queda marcada como cancelada en el historial (no se borra).",
+    ],
+    consejo: "Cobra cada cita el mismo día para que el cierre de caja cuadre.",
+  },
   "/cartera-fiados": {
     titulo: "Cartera y fiados",
     paraQue: "Llevar quién te debe, cuánto y cuándo prometió pagar.",
@@ -162,15 +172,6 @@ const POR_RUTA: Record<string, Instructivo> = {
       "Agrega cada contacto con su nombre y teléfono.",
       "Anota en qué va: interesado, en seguimiento o cliente.",
       "Búscalo cuando necesites volver a escribirle.",
-    ],
-  },
-  "/calendar": {
-    titulo: "Agenda y calendario",
-    paraQue: "Ver citas, entregas y recordatorios en un solo lugar.",
-    pasos: [
-      "Mira el mes y toca un día para ver lo que tienes.",
-      "Usa los filtros para ver solo lo que te interesa.",
-      "Revisa la agenda cada mañana para no olvidar nada.",
     ],
   },
   "/requests": {

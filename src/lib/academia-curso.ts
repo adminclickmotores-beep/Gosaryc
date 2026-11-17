@@ -77,6 +77,7 @@ export const CURSO_GOSARYC = {
           pasos: [
             "Entra al panel de tu negocio y abre la sección de productos o menú.",
             "Crea categorías y agrega cada producto con su precio.",
+            "Si tienes muchos productos, usa «Importar desde Excel o CSV» en Productos: descarga la plantilla, llénala y súbela; el programa valida los errores antes de guardar.",
             "Si manejas recetas, enlaza los insumos para descontar inventario en cada venta.",
           ],
           practica: { ruta: "/restaurante", etiqueta: "Abrir mi panel" },

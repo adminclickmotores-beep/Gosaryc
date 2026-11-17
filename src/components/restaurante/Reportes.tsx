@@ -3,6 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { exportarExcel, imprimirReporte } from "@/lib/exportes";
+import { toast } from "sonner";
+import { useNegocio } from "@/hooks/use-negocio";
+import { enlaceResumenDueno, guardarTelefonoDueno, telefonoDuenoGuardado, type DatosCierre } from "@/lib/resumen-cierre";
 
 type Pedido = Tables<"restaurante_pedidos">;
 type Item = Tables<"restaurante_pedido_items">;
@@ -218,6 +221,8 @@ export function Reportes() {
             )}
           </GlassPanel>
 
+          <ResumenCierreWhatsApp ventas={utilidad.ventas} gastos={utilidad.gastos} />
+
           <div className="grid gap-4 lg:grid-cols-2">
             <GlassPanel className="space-y-3 p-5">
               <h2 className="font-medium text-foreground">Platos más vendidos</h2>
@@ -284,5 +289,120 @@ export function Reportes() {
         </>
       )}
     </div>
+  );
+}
+
+/** Resumen ejecutivo del día para enviar al WhatsApp del dueño con un clic. */
+export function ResumenCierreWhatsApp({ ventas, gastos }: { ventas?: number; gastos?: number }) {
+  const { negocio } = useNegocio();
+  const [enviando, setEnviando] = useState(false);
+
+  const enviar = async () => {
+    let tel = telefonoDuenoGuardado();
+    if (!tel) {
+      const pedido = window.prompt("WhatsApp del dueño para enviar el cierre (10 dígitos):", "");
+      if (!pedido) return;
+      tel = pedido;
+      guardarTelefonoDueno(pedido);
+    }
+    setEnviando(true);
+    const inicio = new Date();
+    inicio.setHours(0, 0, 0, 0);
+    const iso = inicio.toISOString();
+    let v = ventas;
+    let g = gastos;
+    if (v === undefined || g === undefined) {
+      try {
+        const { data: hoyMovs } = await supabase.from("movimientos_turno").select("tipo, monto").eq("anulado", false).gte("created_at", iso);
+        const vivos = hoyMovs ?? [];
+        const esIngreso = (t: string): boolean => t === "venta" || t === "ingreso";
+        v = vivos.filter((m) => esIngreso(m.tipo)).reduce((s, m) => s + m.monto, 0);
+        g = vivos.filter((m) => !esIngreso(m.tipo)).reduce((s, m) => s + m.monto, 0);
+      } catch {
+        v = 0;
+        g = 0;
+      }
+    }
+    let efectivo = (v ?? 0) - (g ?? 0);
+    let transf = 0;
+    try {
+      const { data: abiertos } = await supabase
+        .from("turnos_caja")
+        .select("id, fondo_inicial")
+        .eq("estado", "abierto")
+        .order("abierto_en", { ascending: false })
+        .limit(1);
+      const turno = abiertos?.[0];
+      if (turno) {
+        const { data: movs } = await supabase
+          .from("movimientos_turno")
+          .select("tipo, metodo, monto")
+          .eq("turno_id", turno.id)
+          .eq("anulado", false);
+        const vivos = movs ?? [];
+        const suma = (f: (m: { tipo: string; metodo: string }) => boolean): number =>
+          vivos.filter(f).reduce((s, m) => s + m.monto, 0);
+        const ingEf = suma((m) => (m.tipo === "venta" || m.tipo === "ingreso") && m.metodo === "efectivo");
+        const egrEf = suma((m) => (m.tipo === "gasto" || m.tipo === "retiro") && m.metodo === "efectivo");
+        efectivo = turno.fondo_inicial + ingEf - egrEf;
+        transf = suma((m) => (m.tipo === "venta" || m.tipo === "ingreso") && (m.metodo === "transferencia" || m.metodo === "tarjeta"));
+      }
+    } catch {
+      /* sin turno abierto: se usa el estimado */
+    }
+    let creditos = 0;
+    try {
+      const { data: fi } = await supabase.from("fiados").select("monto, abonado").eq("anulado", false).gte("created_at", iso);
+      creditos = (fi ?? []).reduce((s, f) => s + Math.max(f.monto - f.abonado, 0), 0);
+    } catch {
+      /* sin fiados del día */
+    }
+    let criticos: string[] = [];
+    try {
+      const { data: prods } = await supabase.from("com_productos").select("nombre, stock, stock_minimo, unidad_base").eq("activo", true).limit(200);
+      criticos = (prods ?? [])
+        .filter((p) => p.stock <= p.stock_minimo)
+        .slice(0, 5)
+        .map((p) => `${p.nombre} (quedan ${p.stock} ${p.unidad_base})`);
+    } catch {
+      /* sin inventario comercial */
+    }
+    const datos: DatosCierre = {
+      negocio: negocio?.nombre ?? "Mi negocio",
+      fecha: new Date().toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" }),
+      ventas: v ?? 0,
+      gastos: g ?? 0,
+      efectivoEsperado: efectivo,
+      transferencias: transf,
+      creditosDelDia: creditos,
+      stockCritico: criticos,
+    };
+    const url = enlaceResumenDueno(tel, datos);
+    setEnviando(false);
+    if (!url) {
+      toast.error("Ese número de WhatsApp no es válido.");
+      return;
+    }
+    window.open(url, "_blank", "noopener");
+    toast.success("Cierre listo para enviar por WhatsApp.");
+  };
+
+  return (
+    <GlassPanel className="flex flex-wrap items-center justify-between gap-3 p-5">
+      <div className="min-w-0">
+        <h2 className="font-medium text-foreground">Cierre del día por WhatsApp</h2>
+        <p className="text-sm text-muted-foreground">
+          Envía ventas, efectivo, créditos y stock crítico al WhatsApp del dueño con un clic.
+        </p>
+      </div>
+      <button
+        type="button"
+        disabled={enviando}
+        onClick={enviar}
+        className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
+      >
+        {enviando ? "Armando…" : "Enviar cierre por WhatsApp"}
+      </button>
+    </GlassPanel>
   );
 }

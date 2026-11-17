@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { cobrarCitaAgenda } from "@/lib/cobros-unificados";
 
 export const Route = createFileRoute("/_app/calendar")({
   component: AgendaPage,
@@ -54,6 +56,10 @@ function AgendaPage() {
   const [telefono, setTelefono] = useState("");
   const [hora, setHora] = useState("");
   const [notas, setNotas] = useState("");
+  const [cobrando, setCobrando] = useState<string | null>(null);
+  const [valorCobro, setValorCobro] = useState("");
+  const [metodoCobro, setMetodoCobro] = useState("efectivo");
+  const [ocupado, setOcupado] = useState(false);
 
   const cargar = useCallback(async () => {
     setCargando(true);
@@ -144,9 +150,24 @@ function AgendaPage() {
   }
 
   async function borrar(c: Cita) {
-    const { error: err } = await supabase.from("agenda_citas").delete().eq("id", c.id);
+    if (!window.confirm(`¿Cancelar "${c.titulo}"? Queda en el historial como cancelada, no se borra.`)) return;
+    const { error: err } = await supabase.from("agenda_citas").update({ estado: "cancelada" }).eq("id", c.id);
     if (err) setError(err.message);
     else cargar();
+  }
+
+  async function cobrar(c: Cita) {
+    setOcupado(true);
+    const r = await cobrarCitaAgenda({ id: c.id, titulo: c.titulo, cliente: c.cliente }, valorCobro, metodoCobro);
+    setOcupado(false);
+    if (!r.ok) {
+      toast.error(r.mensaje);
+      return;
+    }
+    toast.success(r.mensaje);
+    setCobrando(null);
+    setValorCobro("");
+    cargar();
   }
 
   function enlaceWhatsApp(c: Cita): string | null {
@@ -354,7 +375,8 @@ function AgendaPage() {
                         </div>
                         <button
                           type="button"
-                          aria-label="Eliminar"
+                          aria-label="Cancelar cita (queda en el historial)"
+                          title="Cancelar (queda en el historial)"
                           onClick={() => borrar(c)}
                           className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-glass-strong hover:text-destructive"
                         >
@@ -391,6 +413,55 @@ function AgendaPage() {
                           >
                             <MessageCircle size={13} /> Recordar
                           </a>
+                        )}
+                        {(c.estado === "pendiente" || c.estado === "confirmada") && (
+                          cobrando === c.id ? (
+                            <span className="flex flex-wrap items-center gap-1.5">
+                              <input
+                                className="w-28 rounded-lg border border-glass-border bg-glass px-2 py-1.5 text-base text-foreground"
+                                inputMode="decimal"
+                                placeholder="Valor $"
+                                value={valorCobro}
+                                onChange={(e) => setValorCobro(e.target.value)}
+                              />
+                              <select
+                                className="rounded-lg border border-glass-border bg-glass px-2 py-1.5 text-base text-foreground"
+                                value={metodoCobro}
+                                onChange={(e) => setMetodoCobro(e.target.value)}
+                                aria-label="Medio de pago"
+                              >
+                                <option value="efectivo">Efectivo</option>
+                                <option value="transferencia">Transferencia</option>
+                                <option value="tarjeta">Tarjeta</option>
+                              </select>
+                              <button
+                                type="button"
+                                disabled={ocupado}
+                                onClick={() => cobrar(c)}
+                                className="rounded-lg bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50"
+                              >
+                                Confirmar
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setCobrando(null)}
+                                className="rounded-lg border border-glass-border px-2.5 py-1.5 text-xs text-muted-foreground"
+                              >
+                                <X size={13} />
+                              </button>
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCobrando(c.id);
+                                setValorCobro("");
+                              }}
+                              className="inline-flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90"
+                            >
+                              Cobrar
+                            </button>
+                          )
                         )}
                       </div>
                     </li>

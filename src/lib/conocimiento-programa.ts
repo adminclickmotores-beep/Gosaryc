@@ -98,6 +98,10 @@ export const MANUAL_FIJO = `
 - Cada giro (tiendas, servicios, moda, papelería, celulares y otros) tiene sus propios módulos de clientes, pagos digitales, personal, metas, reseñas, facturación, caja, proveedores, finanzas y cuentas por cobrar, con campos propios. Ningún negocio comparte estos registros con otro. Gosaryc cubre más de 50 sectores; cada módulo explica sus campos en su instructivo.
 - Los módulos genéricos (todos los demás giros) funcionan igual: «Nuevo registro» con título, detalle, contacto, teléfono, valor y fecha, más campos propios del módulo; «Guardar registro»; lista con selector de estado, filtros por estado y papelera para borrar.
 - Academia: curso oficial por módulos y lecciones con práctica guiada.
+- Agenda general: cada cita se cobra con «Cobrar» (valor + medio de pago): el dinero entra al turno de caja abierto y la cita queda cumplida; si el título coincide con un producto comercial, descuenta 1 unidad del inventario. Cancelar no borra: queda en el historial.
+- Importador masivo: en Productos, «Importar desde Excel o CSV» con plantilla descargable, vista previa y validación de errores antes de guardar.
+- Resumen del día por WhatsApp: en Caja, Reportes, Configuración y el Agente, «Enviar cierre por WhatsApp» manda ventas, gastos, efectivo, créditos del día y stock crítico al WhatsApp del dueño.
+- Panadería: «Vender de vitrina» descuenta por la receta elegida (por su código interno, no por el nombre) y entra a Caja. Gimnasio: cada socio muestra su carnet con código QR para el check-in.
 - Instalar app (ruta Instalar): instrucciones para instalar en celular (Android: menú del navegador > Instalar aplicación; iPhone: Compartir > Agregar a pantalla de inicio) o computador. Existe también una versión de escritorio que se activa con un código de licencia.
 
 # 14. PLANES, LICENCIAS Y SOPORTE

@@ -437,4 +437,6 @@ export const PASOS_GENERALES: { titulo: string; texto: string }[] = [
   { titulo: "Conecta tu WhatsApp", texto: "En Mi negocio vincula tu número con el QR y el agente atiende a tus clientes con las respuestas que tú configures." },
   { titulo: "Pregunta al asistente", texto: "El Asistente virtual te explica cualquier pantalla paso a paso. Usa Ctrl+K para buscar módulos." },
   { titulo: "Pide soporte si algo falla", texto: "Si el Agente virtual y la Academia no lo resuelven, entra a “Soporte” en el menú lateral y crea un ticket; el equipo te responde ahí y ves su estado." },
+  { titulo: "Carga tu inventario de una vez", texto: "En Productos usa “Importar desde Excel o CSV”: descarga la plantilla, llénala y súbela; el programa te muestra los errores antes de guardar." },
+  { titulo: "Manda el cierre al dueño", texto: "Con “Enviar cierre por WhatsApp” (en Caja, Reportes, Configuración o el Agente) le llega al dueño ventas, efectivo, créditos y stock crítico." },
 ];

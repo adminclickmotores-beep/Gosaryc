@@ -289,6 +289,14 @@ export function SociosGimnasio() {
                   <p className="break-words font-medium text-foreground">{s.nombre}</p>
                   <p className="text-xs text-muted-foreground">Cédula {s.documento} · Código {s.codigo_qr}{s.telefono ? ` · ${s.telefono}` : ""}</p>
                 </div>
+                {s.codigo_qr && (
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=96x96&data=${encodeURIComponent(s.codigo_qr)}`}
+                    alt={`Carnet digital de ${s.nombre}`}
+                    loading="lazy"
+                    className="h-24 w-24 max-w-full shrink-0 rounded-lg border border-glass-border bg-white p-1"
+                  />
+                )}
                 <span className="text-sm font-medium">{est.texto}</span>
               </div>
               {m && <p className="text-xs text-muted-foreground">{m.plan_nombre} · {m.inicio} a {m.vence}{m.sesiones_restantes !== null ? ` · ${m.sesiones_restantes} sesiones` : ""}{m.dias_congelados > 0 ? ` · ${m.dias_congelados} día(s) congelados` : ""}</p>}
