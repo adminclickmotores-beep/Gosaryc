@@ -543,7 +543,7 @@ BEGIN
 
   UPDATE public.agr_insumos SET stock = i.stock - p_cantidad WHERE id = i.id;
   INSERT INTO public.agr_aplicaciones (owner_id, tipo_negocio, lote_id, insumo_id, nombre, cantidad, costo, dosis)
-  VALUES (v_owner, l.tipo_negocio, l.id, i.id, i.nombre, p_cantidad, i.costo * p_cantidad, nullif(trim(coalesce(p_dosis, ''), '')));
+  VALUES (v_owner, l.tipo_negocio, l.id, i.id, i.nombre, p_cantidad, i.costo * p_cantidad, nullif(trim(coalesce(p_dosis, '')), ''));
   UPDATE public.agr_lotes SET costo_acumulado = l.costo_acumulado + i.costo * p_cantidad WHERE id = l.id;
   RETURN jsonb_build_object('costo', i.costo * p_cantidad);
 END;
