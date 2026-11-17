@@ -3668,6 +3668,222 @@ export type Database = {
         }
         Relationships: []
       }
+      nomina_empleados: {
+        Row: {
+          activo: boolean
+          anclado_smmlv: boolean
+          cargo: string | null
+          created_at: string
+          documento: string | null
+          eps: string | null
+          exonerado: boolean
+          fecha_ingreso: string | null
+          fondo_pension: string | null
+          id: string
+          nombre: string
+          num_smmlv: number
+          owner_id: string | null
+          salario_base: number
+          tarifa_arl: number
+          telefono: string | null
+          tipo_negocio: string | null
+        }
+        Insert: {
+          activo?: boolean
+          anclado_smmlv?: boolean
+          cargo?: string | null
+          created_at?: string
+          documento?: string | null
+          eps?: string | null
+          exonerado?: boolean
+          fecha_ingreso?: string | null
+          fondo_pension?: string | null
+          id?: string
+          nombre: string
+          num_smmlv?: number
+          owner_id?: string | null
+          salario_base?: number
+          tarifa_arl?: number
+          telefono?: string | null
+          tipo_negocio?: string | null
+        }
+        Update: {
+          activo?: boolean
+          anclado_smmlv?: boolean
+          cargo?: string | null
+          created_at?: string
+          documento?: string | null
+          eps?: string | null
+          exonerado?: boolean
+          fecha_ingreso?: string | null
+          fondo_pension?: string | null
+          id?: string
+          nombre?: string
+          num_smmlv?: number
+          owner_id?: string | null
+          salario_base?: number
+          tarifa_arl?: number
+          telefono?: string | null
+          tipo_negocio?: string | null
+        }
+        Relationships: []
+      }
+      nomina_liquidaciones: {
+        Row: {
+          aportes: number
+          auxilio: number
+          costo_total: number
+          created_at: string
+          descuentos: number
+          detalle: Json
+          devengado: number
+          dias: number
+          empleado_id: string | null
+          empleado_nombre: string
+          estado: string
+          extras: number
+          id: string
+          neto: number
+          owner_id: string | null
+          periodo_fin: string
+          periodo_inicio: string
+          provisiones: number
+          salario_base: number
+          tipo_negocio: string | null
+        }
+        Insert: {
+          aportes?: number
+          auxilio?: number
+          costo_total?: number
+          created_at?: string
+          descuentos?: number
+          detalle?: Json
+          devengado?: number
+          dias?: number
+          empleado_id?: string | null
+          empleado_nombre?: string
+          estado?: string
+          extras?: number
+          id?: string
+          neto?: number
+          owner_id?: string | null
+          periodo_fin: string
+          periodo_inicio: string
+          provisiones?: number
+          salario_base?: number
+          tipo_negocio?: string | null
+        }
+        Update: {
+          aportes?: number
+          auxilio?: number
+          costo_total?: number
+          created_at?: string
+          descuentos?: number
+          detalle?: Json
+          devengado?: number
+          dias?: number
+          empleado_id?: string | null
+          empleado_nombre?: string
+          estado?: string
+          extras?: number
+          id?: string
+          neto?: number
+          owner_id?: string | null
+          periodo_fin?: string
+          periodo_inicio?: string
+          provisiones?: number
+          salario_base?: number
+          tipo_negocio?: string | null
+        }
+        Relationships: []
+      }
+      parametros_nomina_colombia: {
+        Row: {
+          aux_transporte: number
+          caja_compensacion: number
+          created_at: string
+          exoneracion_tope_smmlv: number
+          extra_diurna: number
+          extra_nocturna: number
+          fuente_legal: string | null
+          horas_mes: number
+          icbf: number
+          id: string
+          jornada_semanal: number
+          pension_emp: number
+          pension_trab: number
+          prov_cesantias: number
+          prov_intereses: number
+          prov_prima: number
+          prov_vacaciones: number
+          rec_dominical: number
+          rec_nocturno: number
+          salud_emp: number
+          salud_trab: number
+          sena: number
+          smmlv: number
+          tope_aux_smmlv: number
+          vigencia_desde: string
+          vigencia_hasta: string | null
+        }
+        Insert: {
+          aux_transporte: number
+          caja_compensacion?: number
+          created_at?: string
+          exoneracion_tope_smmlv?: number
+          extra_diurna?: number
+          extra_nocturna?: number
+          fuente_legal?: string | null
+          horas_mes?: number
+          icbf?: number
+          id?: string
+          jornada_semanal?: number
+          pension_emp?: number
+          pension_trab?: number
+          prov_cesantias?: number
+          prov_intereses?: number
+          prov_prima?: number
+          prov_vacaciones?: number
+          rec_dominical?: number
+          rec_nocturno?: number
+          salud_emp?: number
+          salud_trab?: number
+          sena?: number
+          smmlv: number
+          tope_aux_smmlv?: number
+          vigencia_desde: string
+          vigencia_hasta?: string | null
+        }
+        Update: {
+          aux_transporte?: number
+          caja_compensacion?: number
+          created_at?: string
+          exoneracion_tope_smmlv?: number
+          extra_diurna?: number
+          extra_nocturna?: number
+          fuente_legal?: string | null
+          horas_mes?: number
+          icbf?: number
+          id?: string
+          jornada_semanal?: number
+          pension_emp?: number
+          pension_trab?: number
+          prov_cesantias?: number
+          prov_intereses?: number
+          prov_prima?: number
+          prov_vacaciones?: number
+          rec_dominical?: number
+          rec_nocturno?: number
+          salud_emp?: number
+          salud_trab?: number
+          sena?: number
+          smmlv?: number
+          tope_aux_smmlv?: number
+          vigencia_desde?: string
+          vigencia_hasta?: string | null
+        }
+        Relationships: []
+      }
       propinas_registros: {
         Row: {
           anulado: boolean

@@ -1,10 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Briefcase, Calculator, CalendarClock } from "lucide-react";
+import { ArrowLeft, Briefcase, Calculator, CalendarClock, Send, Sparkles, Users } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { exportarExcel, imprimirReporte } from "@/lib/exportes";
+import { useNegocio } from "@/hooks/use-negocio";
+import { actualizarParametrosNomina } from "@/lib/nomina-ia.functions";
 
 export const Route = createFileRoute("/_app/equipo-nomina")({
   head: () => ({ meta: [{ title: "Equipo, turnos y nómina" }] }),
@@ -115,6 +118,7 @@ function EquipoNominaPage() {
         </>
       )}
 
+      <MotorNominaDinamica />
       <LiquidadorNomina />
       <CalendarioLaboral />
     </div>
@@ -306,6 +310,467 @@ function CalendarioLaboral() {
           </div>
         ))}
       </div>
+    </GlassPanel>
+  );
+}
+
+type Parametro = Tables<"parametros_nomina_colombia">;
+type Empleado = Tables<"nomina_empleados">;
+type Liquidacion = Tables<"nomina_liquidaciones">;
+
+const hoyISO = (): string => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+const inicioMes = (): string => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+};
+
+/** Vigencia que cubre una fecha; si no hay exacta, la anterior más cercana. */
+function paramPara(params: Parametro[], fecha: string): Parametro | null {
+  if (params.length === 0) return null;
+  const f = fecha || hoyISO();
+  const cubren = params.filter((p) => p.vigencia_desde <= f && (p.vigencia_hasta === null || f <= p.vigencia_hasta));
+  const orden = (a: Parametro, b: Parametro): number => (a.vigencia_desde < b.vigencia_desde ? 1 : -1);
+  if (cubren.length > 0) return cubren.sort(orden)[0];
+  const anteriores = params.filter((p) => p.vigencia_desde <= f).sort(orden);
+  if (anteriores.length > 0) return anteriores[0];
+  return params.slice().sort(orden)[0];
+}
+
+type HorasNom = { heD: number; heN: number; recN: number; recD: number; otrosDev: number; otrosDesc: number };
+
+/** Liquidación con los porcentajes de la vigencia (nunca valores fijos en el código). */
+function calcularNomina(p: Parametro, base: number, dias: number, arlPct: number, exonerado: boolean, h: HorasNom) {
+  const d = Math.min(Math.max(dias, 0), 30);
+  const horasMes = p.horas_mes > 0 ? p.horas_mes : 210;
+  const valorHora = horasMes > 0 ? base / horasMes : 0;
+  const sueldo = (base / 30) * d;
+  const extras =
+    valorHora * (1 + p.extra_diurna) * h.heD +
+    valorHora * (1 + p.extra_nocturna) * h.heN +
+    valorHora * p.rec_nocturno * h.recN +
+    valorHora * p.rec_dominical * h.recD;
+  const ibc = Math.max(sueldo + extras + h.otrosDev, 0);
+  const auxPaga = base > 0 && base <= p.tope_aux_smmlv * p.smmlv ? (p.aux_transporte / 30) * d : 0;
+  const saludEmp = ibc * p.salud_trab;
+  const pensionEmp = ibc * p.pension_trab;
+  const fsp = base >= 4 * p.smmlv ? ibc * 0.01 : 0;
+  const descuentos = saludEmp + pensionEmp + fsp + h.otrosDesc;
+  const totalDev = sueldo + extras + h.otrosDev + auxPaga;
+  const neto = totalDev - descuentos;
+  const exento = exonerado && base < p.exoneracion_tope_smmlv * p.smmlv;
+  const saludPat = exento ? 0 : ibc * p.salud_emp;
+  const pensionPat = ibc * p.pension_emp;
+  const arlPat = ibc * (arlPct / 100);
+  const caja = ibc * p.caja_compensacion;
+  const sena = exento ? 0 : ibc * p.sena;
+  const icbf = exento ? 0 : ibc * p.icbf;
+  const aportes = saludPat + pensionPat + arlPat + caja + sena + icbf;
+  const basePrest = sueldo + extras + h.otrosDev + auxPaga;
+  const cesantias = basePrest * p.prov_cesantias;
+  const intereses = cesantias * p.prov_intereses;
+  const prima = basePrest * p.prov_prima;
+  const vacaciones = (sueldo + extras + h.otrosDev) * p.prov_vacaciones;
+  const provisiones = cesantias + intereses + prima + vacaciones;
+  return {
+    valorHora, sueldo, extras, auxPaga, totalDev, saludEmp, pensionEmp, fsp, descuentos, neto,
+    saludPat, pensionPat, arlPat, caja, sena, icbf, aportes, cesantias, intereses, prima, vacaciones,
+    provisiones, costoTotal: totalDev + aportes + provisiones,
+  };
+}
+
+const textoDesprendible = (nombre: string, ini: string, fin: string, r: ReturnType<typeof calcularNomina>): string =>
+  `Desprendible de nómina ${nombre} (${ini} al ${fin}): devengado ${dinero(Math.round(r.totalDev))}, neto a pagar ${dinero(Math.round(r.neto))}.`;
+
+/** Motor de Nómina Dinámica: empleados con anclaje al SMMLV, liquidación por vigencia e IA. */
+function MotorNominaDinamica() {
+  const { negocio } = useNegocio();
+  const [params, setParams] = useState<Parametro[]>([]);
+  const [empleados, setEmpleados] = useState<Empleado[]>([]);
+  const [liqs, setLiqs] = useState<Liquidacion[]>([]);
+  const [cargando, setCargando] = useState(true);
+  const [iaMsg, setIaMsg] = useState("");
+  const [actualizando, setActualizando] = useState(false);
+
+  const [fNombre, setFNombre] = useState("");
+  const [fDoc, setFDoc] = useState("");
+  const [fTel, setFTel] = useState("");
+  const [fCargo, setFCargo] = useState("");
+  const [fSalario, setFSalario] = useState("");
+  const [fAnclado, setFAnclado] = useState(false);
+  const [fNumSmmlv, setFNumSmmlv] = useState("1");
+  const [fArl, setFArl] = useState("0.522");
+  const [fExonerado, setFExonerado] = useState(true);
+  const [fEps, setFEps] = useState("");
+  const [fFondo, setFFondo] = useState("");
+  const [fIngreso, setFIngreso] = useState("");
+
+  const [selEmp, setSelEmp] = useState("");
+  const [pIni, setPIni] = useState(inicioMes);
+  const [pFin, setPFin] = useState(hoyISO);
+  const [dias, setDias] = useState("30");
+  const [heD, setHeD] = useState("");
+  const [heN, setHeN] = useState("");
+  const [recN, setRecN] = useState("");
+  const [recD, setRecD] = useState("");
+  const [otrosDev, setOtrosDev] = useState("");
+  const [otrosDesc, setOtrosDesc] = useState("");
+
+  const cargar = useCallback(async () => {
+    const [pa, em, li] = await Promise.all([
+      supabase.from("parametros_nomina_colombia").select("*").order("vigencia_desde", { ascending: false }),
+      supabase.from("nomina_empleados").select("*").order("nombre"),
+      supabase.from("nomina_liquidaciones").select("*").order("periodo_fin", { ascending: false }).limit(100),
+    ]);
+    if (pa.data) setParams(pa.data);
+    if (em.data) setEmpleados(em.data);
+    if (li.data) setLiqs(li.data);
+    setCargando(false);
+  }, []);
+
+  useEffect(() => {
+    void cargar();
+  }, [cargar]);
+
+  const vigencia = useMemo(() => paramPara(params, pFin || hoyISO()), [params, pFin]);
+  const empleado = useMemo(() => empleados.find((e) => e.id === selEmp) ?? null, [empleados, selEmp]);
+  const telDigitos = (empleado?.telefono ?? "").replace(/\D/g, "");
+  const telWa = telDigitos.length === 10 ? `57${telDigitos}` : telDigitos;
+
+  const baseVigente = useMemo(() => {
+    if (!empleado || !vigencia) return 0;
+    return empleado.anclado_smmlv ? Math.round(empleado.num_smmlv * vigencia.smmlv) : empleado.salario_base;
+  }, [empleado, vigencia]);
+
+  const r = useMemo(
+    () =>
+      vigencia
+        ? calcularNomina(vigencia, baseVigente, num(dias), empleado ? empleado.tarifa_arl : 0.522, empleado ? empleado.exonerado : true, {
+            heD: num(heD), heN: num(heN), recN: num(recN), recD: num(recD), otrosDev: num(otrosDev), otrosDesc: num(otrosDesc),
+          })
+        : null,
+    [vigencia, baseVigente, dias, empleado, heD, heN, recN, recD, otrosDev, otrosDesc],
+  );
+
+  const guardarEmpleado = async () => {
+    if (fNombre.trim().length < 2) return toast.error("Escribe el nombre del empleado.");
+    const ref = params[0]?.smmlv ?? 1750905;
+    const nSmmlv = Number((fNumSmmlv || "1").replace(",", ".")) || 1;
+    const base = fAnclado ? Math.round(nSmmlv * ref) : num(fSalario);
+    if (!(base > 0)) return toast.error("Indica el salario base o los SMMLV.");
+    const { error } = await supabase.from("nomina_empleados").insert({
+      tipo_negocio: negocio?.tipo_negocio ?? null,
+      nombre: fNombre.trim(),
+      documento: fDoc.trim() || null,
+      telefono: fTel.trim() || null,
+      cargo: fCargo.trim() || null,
+      salario_base: base,
+      anclado_smmlv: fAnclado,
+      num_smmlv: fAnclado ? nSmmlv : 1,
+      tarifa_arl: num(fArl) || 0.522,
+      exonerado: fExonerado,
+      eps: fEps.trim() || null,
+      fondo_pension: fFondo.trim() || null,
+      fecha_ingreso: fIngreso || null,
+    });
+    if (error) return toast.error("No se pudo guardar el empleado.");
+    setFNombre(""); setFDoc(""); setFTel(""); setFCargo(""); setFSalario(""); setFAnclado(false); setFNumSmmlv("1");
+    toast.success(fAnclado ? "Empleado creado con salario anclado al SMMLV." : "Empleado creado.");
+    void cargar();
+  };
+
+  const cambiarActivo = async (e: Empleado, activo: boolean) => {
+    const { error } = await supabase.from("nomina_empleados").update({ activo }).eq("id", e.id);
+    if (error) return toast.error("No se pudo actualizar.");
+    void cargar();
+  };
+
+  const guardarLiquidacion = async (): Promise<Liquidacion | null> => {
+    if (!empleado || !vigencia || !r) {
+      toast.error("Elige el empleado y la vigencia.");
+      return null;
+    }
+    if (!pIni || !pFin || pIni > pFin) {
+      toast.error("Revisa las fechas del periodo.");
+      return null;
+    }
+    if (!(baseVigente > 0)) {
+      toast.error("El empleado no tiene salario base.");
+      return null;
+    }
+    const { data, error } = await supabase
+      .from("nomina_liquidaciones")
+      .insert({
+        tipo_negocio: negocio?.tipo_negocio ?? null,
+        empleado_id: empleado.id,
+        empleado_nombre: empleado.nombre,
+        periodo_inicio: pIni,
+        periodo_fin: pFin,
+        dias: Math.min(Math.max(num(dias), 0), 30),
+        salario_base: Math.round(baseVigente),
+        auxilio: Math.round(r.auxPaga),
+        extras: Math.round(r.extras),
+        devengado: Math.round(r.totalDev),
+        descuentos: Math.round(r.descuentos),
+        neto: Math.round(r.neto),
+        aportes: Math.round(r.aportes),
+        provisiones: Math.round(r.provisiones),
+        costo_total: Math.round(r.costoTotal),
+        detalle: {
+          vigencia_desde: vigencia.vigencia_desde, smmlv: vigencia.smmlv, auxilio_vigente: vigencia.aux_transporte,
+          anclado: empleado.anclado_smmlv, num_smmlv: empleado.num_smmlv,
+          heD: num(heD), heN: num(heN), recN: num(recN), recD: num(recD),
+        },
+      })
+      .select("*")
+      .maybeSingle();
+    if (error || !data) {
+      toast.error("No se pudo guardar la liquidación.");
+      return null;
+    }
+    toast.success("Liquidación guardada en el histórico.");
+    void cargar();
+    return data;
+  };
+
+  const asegurarCuenta = async (codigo: string, nombre: string, tipo: string): Promise<string | null> => {
+    const { data } = await supabase.from("cuentas_contables").select("id").eq("codigo", codigo).limit(1).maybeSingle();
+    if (data) return data.id;
+    const { data: creada } = await supabase.from("cuentas_contables").insert({ codigo, nombre, tipo }).select("id").maybeSingle();
+    return creada?.id ?? null;
+  };
+
+  const contabilizar = async (liq: Liquidacion) => {
+    const gastoId = await asegurarCuenta("5105", "Nómina", "gasto");
+    const pasivoId = await asegurarCuenta("2505", "Nómina por pagar", "pasivo");
+    if (!gastoId || !pasivoId) return toast.error("No se pudieron abrir las cuentas de nómina.");
+    const asientoId = crypto.randomUUID();
+    const concepto = `Nómina ${liq.empleado_nombre} ${liq.periodo_inicio} al ${liq.periodo_fin} (neto ${dinero(liq.neto)}, aportes ${dinero(liq.aportes)}, provisiones ${dinero(liq.provisiones)})`;
+    const { error } = await supabase.from("asientos_contables").insert([
+      { asiento_id: asientoId, fecha: liq.periodo_fin, cuenta_id: gastoId, concepto, debe: liq.costo_total, haber: 0, origen_tipo: "nomina", origen_id: liq.id },
+      { asiento_id: asientoId, fecha: liq.periodo_fin, cuenta_id: pasivoId, concepto, debe: 0, haber: liq.costo_total, origen_tipo: "nomina", origen_id: liq.id },
+    ]);
+    if (error) return toast.error("No se pudo contabilizar.");
+    await supabase.from("nomina_liquidaciones").update({ estado: "contabilizada" }).eq("id", liq.id);
+    toast.success("Contabilizado: gasto y pasivo de nómina en Contabilidad.");
+    void cargar();
+  };
+
+  const actualizarConIA = async () => {
+    setActualizando(true);
+    setIaMsg("");
+    try {
+      const res = await actualizarParametrosNomina({ data: {} });
+      setIaMsg(res.mensaje);
+      toast.success("Valores de ley actualizados.");
+      await cargar();
+    } catch (e) {
+      setIaMsg(e instanceof Error ? e.message : "No se pudo consultar la IA.");
+    } finally {
+      setActualizando(false);
+    }
+  };
+
+  const linea = (t: string, v: number, fuerte = false) => (
+    <div className={`flex items-center justify-between gap-3 text-sm ${fuerte ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
+      <span className="min-w-0">{t}</span>
+      <span className="shrink-0 text-foreground">{dinero(Math.round(v))}</span>
+    </div>
+  );
+
+  const entrada = (t: string, v: string, set: (x: string) => void, ph = "") => (
+    <label className="block space-y-1">
+      <span className="text-xs text-muted-foreground">{t}</span>
+      <input className={campoNomina} inputMode="decimal" value={v} placeholder={ph} onChange={(e) => set(e.target.value)} />
+    </label>
+  );
+
+  if (cargando) return <p className="text-sm text-muted-foreground">Cargando motor de nómina…</p>;
+
+  return (
+    <GlassPanel className="space-y-5 p-5">
+      <div>
+        <h2 className="flex items-center gap-2 font-display text-xl text-foreground">
+          <Users className="h-5 w-5 text-primary" /> Motor de nómina dinámica (Colombia)
+        </h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Los porcentajes salen de la vigencia oficial, no están fijos en el código. Los empleados anclados al SMMLV se ajustan solos cuando entra un decreto nuevo.
+        </p>
+      </div>
+
+      <div className="rounded-xl border border-glass-border p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm font-semibold text-foreground">
+            {vigencia
+              ? `Vigencia ${vigencia.vigencia_desde} al ${vigencia.vigencia_hasta ?? "actualidad"} · SMMLV ${dinero(vigencia.smmlv)} · Auxilio ${dinero(vigencia.aux_transporte)}`
+              : "Sin vigencia paramétrica cargada."}
+          </p>
+          <button
+            type="button"
+            onClick={() => void actualizarConIA()}
+            disabled={actualizando}
+            className="inline-flex items-center gap-1 rounded-full border border-glass-border px-4 py-1.5 text-sm text-foreground disabled:opacity-60"
+          >
+            <Sparkles className="h-4 w-4" /> {actualizando ? "Consultando…" : "Consultar y actualizar valores de ley (IA)"}
+          </button>
+        </div>
+        {vigencia && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            Jornada {vigencia.jornada_semanal} h/semana ({vigencia.horas_mes} h/mes) · Nocturno +{Math.round(vigencia.rec_nocturno * 100)} % (7 p. m.–6 a. m.) · Dominical +{Math.round(vigencia.rec_dominical * 100)} % · Extra diurna +{Math.round(vigencia.extra_diurna * 100)} % · Extra nocturna +{Math.round(vigencia.extra_nocturna * 100)} % · Auxilio hasta {vigencia.tope_aux_smmlv} SMMLV · Respaldo: {vigencia.fuente_legal ?? "—"}
+          </p>
+        )}
+        {iaMsg && <p className="mt-2 text-xs text-muted-foreground">{iaMsg}</p>}
+      </div>
+
+      <div className="space-y-3">
+        <h3 className="text-sm font-semibold text-foreground">Empleados</h3>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {entrada("Nombre *", fNombre, setFNombre, "Ej. María Pérez")}
+          {entrada("Documento", fDoc, setFDoc)}
+          {entrada("Teléfono (WhatsApp)", fTel, setFTel)}
+          {entrada("Cargo", fCargo, setFCargo)}
+          {fAnclado
+            ? entrada("Salarios mínimos", fNumSmmlv, setFNumSmmlv, "Ej. 1 o 1.5")
+            : entrada("Salario base mensual", fSalario, setFSalario, "Ej. 1750905")}
+          {entrada("Tarifa ARL (%)", fArl, setFArl)}
+          {entrada("EPS", fEps, setFEps)}
+          {entrada("Fondo de pensión", fFondo, setFFondo)}
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">Fecha de ingreso</span>
+            <input type="date" className={campoNomina} value={fIngreso} onChange={(e) => setFIngreso(e.target.value)} />
+          </label>
+        </div>
+        <div className="flex flex-wrap items-center gap-4">
+          <label className="flex items-center gap-2 text-sm text-foreground">
+            <input type="checkbox" checked={fAnclado} onChange={(e) => setFAnclado(e.target.checked)} className="h-5 w-5" />
+            Salario anclado al SMMLV vigente
+          </label>
+          <label className="flex items-center gap-2 text-sm text-foreground">
+            <input type="checkbox" checked={fExonerado} onChange={(e) => setFExonerado(e.target.checked)} className="h-5 w-5" />
+            Exonerado salud, SENA e ICBF
+          </label>
+          <button type="button" onClick={() => void guardarEmpleado()} className="rounded-full border border-glass-border px-4 py-1.5 text-sm text-foreground">
+            Guardar empleado
+          </button>
+        </div>
+        <div className="space-y-2">
+          {empleados.filter((e) => e.activo).map((e) => (
+            <div key={e.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-glass-border p-3">
+              <p className="min-w-0 break-words text-sm text-foreground">
+                <span className="font-medium">{e.nombre}</span>
+                <span className="text-muted-foreground"> · {e.cargo || "sin cargo"} · {dinero(e.salario_base)}{e.anclado_smmlv ? ` (anclado: ${e.num_smmlv} SMMLV)` : ""}</span>
+              </p>
+              <button type="button" onClick={() => void cambiarActivo(e, false)} className="rounded-full border border-glass-border px-3 py-1 text-xs text-muted-foreground">
+                Retirar
+              </button>
+            </div>
+          ))}
+          {empleados.filter((e) => e.activo).length === 0 && <p className="text-xs text-muted-foreground">Aún no hay empleados. Crea el primero arriba.</p>}
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <h3 className="text-sm font-semibold text-foreground">Liquidar periodo</h3>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">Empleado</span>
+            <select className={campoNomina} value={selEmp} onChange={(e) => setSelEmp(e.target.value)}>
+              <option value="">Elige…</option>
+              {empleados.filter((e) => e.activo).map((e) => (
+                <option key={e.id} value={e.id}>{e.nombre}</option>
+              ))}
+            </select>
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">Desde</span>
+            <input type="date" className={campoNomina} value={pIni} onChange={(e) => setPIni(e.target.value)} />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">Hasta</span>
+            <input type="date" className={campoNomina} value={pFin} onChange={(e) => setPFin(e.target.value)} />
+          </label>
+          {entrada("Días trabajados (máx. 30)", dias, setDias)}
+          {entrada("Horas extra diurnas", heD, setHeD)}
+          {entrada("Horas extra nocturnas", heN, setHeN)}
+          {entrada("Horas recargo nocturno", recN, setRecN)}
+          {entrada("Horas dominical/festivo", recD, setRecD)}
+          {entrada("Otros devengos (COP)", otrosDev, setOtrosDev, "Comisiones, bonos")}
+          {entrada("Otros descuentos (COP)", otrosDesc, setOtrosDesc, "Préstamos, embargos")}
+        </div>
+        {empleado && vigencia && r && (
+          <div className="grid gap-3 lg:grid-cols-3">
+            <div className="space-y-2 rounded-xl border border-glass-border p-4">
+              <p className="text-xs text-muted-foreground">Base liquidada: {dinero(Math.round(baseVigente))}{empleado.anclado_smmlv ? " (anclada al SMMLV)" : ""} · Hora: {dinero(Math.round(r.valorHora))}</p>
+              {linea("Sueldo por días", r.sueldo)}
+              {linea("Extras y recargos", r.extras)}
+              {linea("Auxilio de transporte", r.auxPaga)}
+              {linea("Neto a pagar", r.neto, true)}
+            </div>
+            <div className="space-y-2 rounded-xl border border-glass-border p-4">
+              {linea("Aportes empleador (PILA)", r.aportes)}
+              {linea("Provisiones del mes", r.provisiones)}
+              {linea("Costo total", r.costoTotal, true)}
+            </div>
+            <div className="flex flex-col justify-center gap-2">
+              <button type="button" onClick={() => void guardarLiquidacion().then((l) => { if (l) void contabilizar(l); })} className="rounded-full border border-glass-border px-4 py-2 text-sm text-foreground">
+                Guardar y contabilizar
+              </button>
+              <button type="button" onClick={() => void guardarLiquidacion()} className="rounded-full border border-glass-border px-4 py-2 text-sm text-muted-foreground">
+                Solo guardar
+              </button>
+              {telWa.length >= 7 && (
+                <a
+                  className="inline-flex items-center justify-center gap-1 rounded-full border border-glass-border px-4 py-2 text-sm text-muted-foreground"
+                  href={`https://wa.me/${telWa}?text=${encodeURIComponent(textoDesprendible(empleado.nombre, pIni, pFin, r))}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <Send className="h-4 w-4" /> Desprendible por WhatsApp
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {liqs.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold text-foreground">Histórico de liquidaciones</h3>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => exportarExcel("nomina-liquidaciones", ["Empleado", "Periodo", "Neto", "Costo total", "Estado"], liqs.map((l) => [l.empleado_nombre, `${l.periodo_inicio} al ${l.periodo_fin}`, l.neto, l.costo_total, l.estado]))}
+                className="rounded-full border border-glass-border px-4 py-1.5 text-sm text-muted-foreground"
+              >
+                Excel
+              </button>
+              <button
+                type="button"
+                onClick={() => imprimirReporte("Liquidaciones de nómina", "Histórico", ["Empleado", "Periodo", "Neto", "Costo total"], liqs.map((l) => [l.empleado_nombre, `${l.periodo_inicio} al ${l.periodo_fin}`, dinero(l.neto), dinero(l.costo_total)]), [])}
+                className="rounded-full border border-glass-border px-4 py-1.5 text-sm text-muted-foreground"
+              >
+                PDF
+              </button>
+            </div>
+          </div>
+          {liqs.slice(0, 20).map((l) => (
+            <div key={l.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-glass-border p-3">
+              <p className="min-w-0 break-words text-sm text-foreground">
+                <span className="font-medium">{l.empleado_nombre}</span>
+                <span className="text-muted-foreground"> · {l.periodo_inicio} al {l.periodo_fin} · neto {dinero(l.neto)} · {l.estado}</span>
+              </p>
+              {l.estado === "liquidada" && (
+                <button type="button" onClick={() => void contabilizar(l)} className="rounded-full border border-glass-border px-3 py-1 text-xs text-foreground">
+                  Contabilizar
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </GlassPanel>
   );
 }

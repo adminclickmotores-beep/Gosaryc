@@ -64,13 +64,14 @@ const POR_RUTA: Record<string, Instructivo> = {
     titulo: "Equipo, turnos y nómina",
     paraQue: "Llevar turnos, pagos y novedades de tu personal, y liquidar la nómina con las reglas de Colombia.",
     pasos: [
-      "Registra a cada persona de tu equipo con su cargo, contrato, EPS y fondo de pensión.",
+      "Crea a cada empleado con su salario: si marcas «Salario anclado al SMMLV vigente», su base se ajusta sola cuando entra un decreto nuevo.",
       "Anota turnos, horas extra, recargos, incapacidades y descuentos.",
-      "Usa el liquidador de nómina: calcula el neto del empleado, los aportes del empleador (PILA), las provisiones de cesantías, intereses, prima y vacaciones, y el costo total de cada persona.",
+      "Liquida el periodo: el motor usa la vigencia oficial de la fecha (SMMLV, auxilio, recargos Ley 2466, aportes y provisiones), verifica el tope de 2 SMMLV para el auxilio y guarda el histórico.",
+      "Pulsa «Guardar y contabilizar» para llevar el gasto y el pasivo a Contabilidad, o «Desprendible por WhatsApp» para enviárselo al empleado.",
+      "Si el Gobierno cambia los valores, pulsa «Consultar y actualizar valores de ley (IA)» y la vigencia nueva queda cargada con su respaldo legal.",
       "Revisa el calendario de obligaciones (PILA, retención, nómina electrónica, cesantías, primas y SG-SST) para no pagar multas.",
-      "Marca como pagado lo que ya cancelaste para saber lo que falta.",
     ],
-    consejo: "El salario mínimo y el auxilio de transporte son valores editables: confírmalos cada enero con tu contador. El liquidador es una guía de cálculo, no una liquidación oficial.",
+    consejo: "Los porcentajes no están fijos: salen de la tabla oficial por vigencia. El liquidador es una guía de cálculo: confirma siempre con tu contador antes de pagar o presentar la PILA.",
   },
   "/finanzas": {
     titulo: "Finanzas y rentabilidad",

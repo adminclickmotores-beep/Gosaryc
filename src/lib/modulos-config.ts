@@ -743,6 +743,8 @@ const CAMPOS_ESPECIFICOS: Record<string, CampoExtra[]> = {
     { clave: "horario", etiqueta: "Horario o turno", tipo: "text", placeholder: "Ej. Lun a Vie 8:00 a 5:00" },
     { clave: "periodo", etiqueta: "Periodo pagado", tipo: "text", placeholder: "Ej. 1 al 15 de marzo" },
     { clave: "horas_extra", etiqueta: "Horas extra", tipo: "text" },
+    { clave: "salario_base", etiqueta: "Salario base (COP)", tipo: "text", placeholder: "Ej. 1750905" },
+    { clave: "anclado_smmlv", etiqueta: "Anclado al SMMLV", tipo: "select", opciones: ["No", "Sí"] },
     { clave: "descuentos", etiqueta: "Descuentos (COP)", tipo: "text" },
     PAGO,
   ],
