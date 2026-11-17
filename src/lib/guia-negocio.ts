@@ -95,6 +95,7 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
       { titulo: "Crea tus proyectos", texto: "En “Proyectos y obras” registra presupuesto, avance y responsables." },
       { titulo: "Cotiza", texto: "Haz seguimiento a cada propuesta en “Cotizaciones” hasta el cierre." },
       { titulo: "Controla materiales y pagos", texto: "Lleva materiales por obra y las cuentas con tus contratistas." },
+      { titulo: "Cotiza proyectos a la medida", texto: "En “Proyectos a la medida” arma la cotización de carpintería con materiales, cobra el abono para producir y el saldo contra entrega." },
     ],
   },
   agro: {
@@ -190,9 +191,11 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
   taller: {
     frase: "Cada vehículo reparado a tiempo y con garantía.",
     pasos: [
-      { titulo: "Registra el vehículo", texto: "En “Vehículos de clientes” guarda placa, marca y kilometraje." },
-      { titulo: "Abre la orden", texto: "En “Órdenes de servicio” anota la falla, trabajos y repuestos." },
-      { titulo: "Presupuesta", texto: "Envía el presupuesto y espera la aprobación del cliente." },
+      { titulo: "Abre la orden con fotos", texto: "En “Órdenes de trabajo” registra cliente, placa o serial, checklist y sube las fotos de recepción: sin fotos no deja pasar a diagnóstico." },
+      { titulo: "Diagnostica y pide aprobación", texto: "Mueve la orden por el tablero hasta “En diagnóstico” y envía el total por WhatsApp para que el cliente apruebe." },
+      { titulo: "Suma repuestos y mano de obra", texto: "En “Repuestos e inventario” lleva el stock; al agregarlos a la orden descuentan solos y suman a la cuenta." },
+      { titulo: "Cobra y entrega con garantía", texto: "Al cobrar, la orden entra a Caja y Contabilidad y queda con sus días de garantía. Busca por placa o serial para validar reclamos futuros." },
+      { titulo: "Liquida comisiones", texto: "En “Comisiones y liquidación” solo el dueño paga lo pendiente de cada técnico: sale de Caja y queda en Contabilidad." },
       { titulo: "Recuerda el próximo servicio", texto: "Usa “Mantenimientos próximos” para que el cliente vuelva." },
     ],
   },
@@ -226,10 +229,11 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
   lavanderia: {
     frase: "Cada orden entregada limpia y a tiempo.",
     pasos: [
+      { titulo: "Abre la orden con fotos", texto: "En “Órdenes de lavado” registra cliente, placa, checklist y fotos de recepción: sin fotos no deja pasar a diagnóstico." },
+      { titulo: "Mueve el tablero", texto: "Pasa cada orden de Recibido a Entregado; la aprobación del cliente se pide por WhatsApp y al cobrar entra a Caja y Contabilidad con garantía." },
       { titulo: "Define tus tarifas", texto: "En “Tarifas por servicio” pon precio por prenda, kilo o tipo de lavado." },
-      { titulo: "Recibe órdenes", texto: "Registra cada orden y muévela de recibido a entregado." },
       { titulo: "Programa entregas", texto: "Organiza la recogida y entrega a domicilio." },
-      { titulo: "Controla insumos", texto: "Lleva el consumo de jabones y químicos." },
+      { titulo: "Liquida comisiones", texto: "En “Comisiones y liquidación” solo el dueño paga a cada operario." },
     ],
   },
   condominio: {
@@ -271,10 +275,11 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
   celulares: {
     frase: "Ventas y reparaciones sin perder ningún equipo.",
     pasos: [
+      { titulo: "Abre la orden técnica", texto: "En “Órdenes de servicio técnico” registra cliente, IMEI o serial, patrón de desbloqueo y fotos de recepción." },
+      { titulo: "Pide la aprobación", texto: "Envía el diagnóstico con el total por WhatsApp y avanza el tablero hasta la entrega con garantía." },
+      { titulo: "Usa tus repuestos", texto: "En “Repuestos e inventario” cada pantalla o batería descuenta sola al agregarla a la orden." },
       { titulo: "Carga tu inventario", texto: "Agrega equipos, accesorios y repuestos con su precio." },
-      { titulo: "Registra ventas", texto: "Vende, cobra y factura cada equipo desde la caja y la facturación propia de la tienda." },
-      { titulo: "Recibe reparaciones", texto: "Anota el equipo, la falla y el estado hasta entregarlo." },
-      { titulo: "Avisa a tus clientes", texto: "Comunica cuando su equipo esté listo." },
+      { titulo: "Liquida comisiones", texto: "En “Comisiones y liquidación” solo el dueño paga a cada técnico." },
     ],
   },
   papeleria: {
@@ -283,6 +288,7 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
       { titulo: "Carga tus productos", texto: "Agrega artículos con precio y existencias." },
       { titulo: "Vende rápido", texto: "Registra cada venta desde el punto de venta y cuadra la caja del día." },
       { titulo: "Surte a tiempo", texto: "Revisa qué se está agotando y haz tus compras." },
+      { titulo: "Cotiza impresos y publicidad", texto: "En “Proyectos de impresión” arma la cotización con materiales, cobra el abono para producir y el saldo contra entrega." },
       { titulo: "Revisa tus ventas", texto: "Consulta los reportes del día y del mes." },
     ],
   },

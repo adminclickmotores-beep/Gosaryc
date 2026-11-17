@@ -292,6 +292,36 @@ const POR_MODULO: Record<string, Instructivo> = {
     ],
     consejo: "Las valoraciones no se editan ni se borran: cada control es un registro nuevo.",
   },
+  tal_ordenes: {
+    titulo: "Órdenes de trabajo y recepción",
+    paraQue: "Recibir el vehículo o equipo con checklist y fotos, y llevarlo hasta la entrega con garantía.",
+    pasos: [
+      "Abre la orden con cliente, placa o serial, marca, kilometraje o patrón de desbloqueo, técnico y mano de obra.",
+      "Marca el checklist de estado y sube las fotos de recepción: sin fotos no deja pasar a diagnóstico.",
+      "Mueve la orden por el tablero: Recibido, Diagnóstico, Aprobado (pídelo por WhatsApp), Reparación, Listo y Entregado.",
+      "Agrega repuestos del inventario: descuentan stock solos y suman a la cuenta.",
+      "Al cobrar, la orden entra a Caja y Contabilidad y queda con sus días de garantía para validar reclamos por placa o serial.",
+    ],
+  },
+  tal_repuestos: {
+    titulo: "Repuestos e inventario",
+    paraQue: "Llevar el stock de repuestos que se usan en las órdenes.",
+    pasos: ["Crea cada repuesto con su stock, costo y precio.", "Cuando entra mercancía usa “Sumar”.", "Al agregarlo a una orden descuenta solo."],
+  },
+  tal_comisiones: {
+    titulo: "Comisiones y liquidación",
+    paraQue: "Pagar a cada técnico u operario su comisión sobre la mano de obra.",
+    pasos: ["Cada orden entregada calcula la comisión del técnico.", "El dueño toca “Liquidar”: sale de Caja y queda en Contabilidad."],
+  },
+  tal_proyectos: {
+    titulo: "Proyectos a la medida",
+    paraQue: "Cotizar trabajos de carpintería o imprenta con abono y saldo.",
+    pasos: [
+      "Crea el proyecto con cliente, valor total, materiales y fecha de entrega.",
+      "Cobra el abono (sugerido 50%): entra a Caja y Contabilidad y pasa a producción.",
+      "Cobra el saldo contra entrega y avisa por WhatsApp en cada etapa.",
+    ],
+  },
 };
 
 const GENERICO ="Para guardar cambios toca el botón de guardar; todo queda registrado en tu cuenta.";

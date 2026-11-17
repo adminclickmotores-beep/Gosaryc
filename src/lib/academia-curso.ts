@@ -235,6 +235,7 @@ export const CURSO_GOSARYC = {
             "Concesionario: inventario de vehículos, compras, consignaciones, retomas, créditos, separaciones, vencimientos de SOAT y tecnomecánica, y taller.",
             "Tiendas, servicios y demás giros: cada uno tiene sus clientes, pagos digitales, personal, metas y reseñas con campos propios (por ejemplo tallas y colores en moda, o profesionales y anticipos en citas).",
             "Si cambias de tipo de negocio (solo la cuenta administradora puede), el menú cambia y tus datos se conservan.",
+            "Taller y servicio técnico: abre la orden con fotos de recepción, pide la aprobación por WhatsApp, agrega repuestos del inventario, cobra con garantía y liquida las comisiones del técnico. Carpintería e imprenta: cotiza el proyecto con materiales, cobra el abono para producir y el saldo contra entrega.",
           ],
           practica: { ruta: "/welcome", etiqueta: "Ver mis módulos" },
         },

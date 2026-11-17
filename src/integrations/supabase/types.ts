@@ -2255,6 +2255,129 @@ export type Database = {
         }
         Relationships: []
       }
+      tal_ordenes: {
+        Row: {
+          abono: number
+          checklist: Json
+          clave_patron: string | null
+          cliente: string
+          combustible: string | null
+          comision: number
+          comision_pct: number
+          created_at: string
+          dias_garantia: number
+          estado: string
+          fecha_entrega: string | null
+          id: string
+          identificador: string
+          kilometraje: string | null
+          liquidacion_id: string | null
+          liquidada: boolean
+          mano_obra: number
+          marca: string | null
+          modelo: string | null
+          notas: string | null
+          owner_id: string | null
+          registrado_por: string | null
+          repuestos_total: number
+          rubro: string
+          tecnico: string | null
+          telefono: string | null
+          tipo_negocio: string | null
+          total: number
+        }
+        Insert: {
+          abono?: number
+          checklist?: Json
+          clave_patron?: string | null
+          cliente: string
+          combustible?: string | null
+          comision?: number
+          comision_pct?: number
+          created_at?: string
+          dias_garantia?: number
+          estado?: string
+          fecha_entrega?: string | null
+          id?: string
+          identificador: string
+          kilometraje?: string | null
+          liquidacion_id?: string | null
+          liquidada?: boolean
+          mano_obra?: number
+          marca?: string | null
+          modelo?: string | null
+          notas?: string | null
+          owner_id?: string | null
+          registrado_por?: string | null
+          repuestos_total?: number
+          rubro?: string
+          tecnico?: string | null
+          telefono?: string | null
+          tipo_negocio?: string | null
+          total?: number
+        }
+        Update: {
+          abono?: number
+          checklist?: Json
+          clave_patron?: string | null
+          cliente?: string
+          combustible?: string | null
+          comision?: number
+          comision_pct?: number
+          created_at?: string
+          dias_garantia?: number
+          estado?: string
+          fecha_entrega?: string | null
+          id?: string
+          identificador?: string
+          kilometraje?: string | null
+          liquidacion_id?: string | null
+          liquidada?: boolean
+          mano_obra?: number
+          marca?: string | null
+          modelo?: string | null
+          notas?: string | null
+          owner_id?: string | null
+          registrado_por?: string | null
+          repuestos_total?: number
+          rubro?: string
+          tecnico?: string | null
+          telefono?: string | null
+          tipo_negocio?: string | null
+          total?: number
+        }
+        Relationships: []
+      }
+      tal_fotos: {
+        Row: { created_at: string; id: string; nota: string | null; orden_id: string; owner_id: string | null; ruta: string; tipo_negocio: string | null }
+        Insert: { created_at?: string; id?: string; nota?: string | null; orden_id: string; owner_id?: string | null; ruta: string; tipo_negocio?: string | null }
+        Update: { created_at?: string; id?: string; nota?: string | null; orden_id?: string; owner_id?: string | null; ruta?: string | null; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      tal_repuestos: {
+        Row: { activo: boolean; codigo: string | null; costo: number; created_at: string; id: string; nombre: string; owner_id: string | null; precio: number; stock: number; tipo_negocio: string | null }
+        Insert: { activo?: boolean; codigo?: string | null; costo?: number; created_at?: string; id?: string; nombre: string; owner_id?: string | null; precio?: number; stock?: number; tipo_negocio?: string | null }
+        Update: { activo?: boolean; codigo?: string | null; costo?: number; created_at?: string; id?: string; nombre?: string | null; owner_id?: string | null; precio?: number; stock?: number; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      tal_orden_repuestos: {
+        Row: { cantidad: number; costo: number; created_at: string; id: string; nombre: string; orden_id: string; owner_id: string | null; precio: number; repuesto_id: string; tipo_negocio: string | null }
+        Insert: { cantidad: number; costo?: number; created_at?: string; id?: string; nombre: string; orden_id: string; owner_id?: string | null; precio?: number; repuesto_id: string; tipo_negocio?: string | null }
+        Update: { cantidad?: number; costo?: number; created_at?: string; id?: string; nombre?: string | null; orden_id?: string; owner_id?: string | null; precio?: number; repuesto_id?: string; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      tal_liquidaciones: {
+        Row: { created_at: string; id: string; metodo: string; ordenes: number; owner_id: string | null; profesional: string; tipo_negocio: string | null; total_comision: number; total_mano: number }
+        Insert: { created_at?: string; id?: string; metodo?: string; ordenes?: number; owner_id?: string | null; profesional: string; tipo_negocio?: string | null; total_comision?: number; total_mano?: number }
+        Update: { created_at?: string; id?: string; metodo?: string; ordenes?: number; owner_id?: string | null; profesional?: string; tipo_negocio?: string | null; total_comision?: number; total_mano?: number }
+        Relationships: []
+      }
+      tal_proyectos: {
+        Row: { abono: number; cliente: string; created_at: string; descripcion: string | null; estado: string; fecha_entrega: string | null; id: string; materiales: Json; owner_id: string | null; registrado_por: string | null; rubro: string; saldo: number; telefono: string | null; tipo_negocio: string | null; titulo: string; total: number }
+        Insert: { abono?: number; cliente: string; created_at?: string; descripcion?: string | null; estado?: string; fecha_entrega?: string | null; id?: string; materiales?: Json; owner_id?: string | null; registrado_por?: string | null; rubro?: string; saldo?: number; telefono?: string | null; tipo_negocio?: string | null; titulo: string; total?: number }
+        Update: { abono?: number; cliente?: string; created_at?: string; descripcion?: string | null; estado?: string; fecha_entrega?: string | null; id?: string; materiales?: Json; owner_id?: string | null; registrado_por?: string | null; rubro?: string; saldo?: number; telefono?: string | null; tipo_negocio?: string | null; titulo?: string; total?: number }
+        Relationships: []
+      }
       com_productos: {
         Row: {
           ubicacion_pasillo: string | null
@@ -7083,6 +7206,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      tal_agregar_repuesto: { Args: { p_orden: string; p_repuesto: string; p_cantidad: number }; Returns: Json }
+      tal_cobrar_orden: { Args: { p_orden: string; p_metodo: string }; Returns: Json }
+      tal_liquidar: { Args: { p_profesional: string; p_metodo: string }; Returns: number }
+      tal_cobrar_proyecto: {
+        Args: { p_proyecto: string; p_monto: number; p_metodo: string; p_es_abono: boolean }
+        Returns: Json
+      }
       accept_org_invite: { Args: { _token: string }; Returns: string }
       es_superadmin: { Args: never; Returns: boolean }
       verificar_licencia: { Args: { p_codigo: string }; Returns: Json }

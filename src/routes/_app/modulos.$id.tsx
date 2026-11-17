@@ -27,6 +27,7 @@ import { PosComercial, ProductosComercial } from "@/components/comercio/Comercio
 import { CotizadorFerreteria, DespostesFrescos, LotesComercial } from "@/components/comercio/ComercioEspecial";
 import { AgendaBelleza, ComisionesBelleza, FichasBelleza, ServiciosBelleza } from "@/components/belleza/BellezaModulos";
 import { CheckinGimnasio, PlanesGimnasio, SociosGimnasio, ValoracionGimnasio } from "@/components/gimnasio/GimnasioModulos";
+import { ComisionesTaller, OrdenesTaller, ProyectosMedida, RepuestosTaller } from "@/components/taller/TallerModulos";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
@@ -93,6 +94,10 @@ function ModuloPage() {
   if (id === "bel_fichas") return <FichasBelleza />;
   if (id === "bel_servicios") return <ServiciosBelleza />;
   if (id === "bel_comisiones") return <ComisionesBelleza />;
+  if (id === "tal_ordenes") return <OrdenesTaller />;
+  if (id === "tal_repuestos") return <RepuestosTaller />;
+  if (id === "tal_comisiones") return <ComisionesTaller />;
+  if (id === "tal_proyectos") return <ProyectosMedida />;
   if (id === "gim_checkin") return <CheckinGimnasio />;
   if (id === "gim_socios") return <SociosGimnasio />;
   if (id === "gim_planes") return <PlanesGimnasio />;

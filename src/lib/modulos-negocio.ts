@@ -1074,6 +1074,45 @@ for (const [clave, extras] of Object.entries(EXTRAS_COMERCIO)) {
   tipoExtra.modulos.splice(pos >= 0 ? pos + 1 : 0, 0, ...nuevos);
 }
 
+// ---- Taller, lavadero, servicio técnico, carpintería e imprenta (Prompt #7) ----
+// Órdenes de trabajo con fotos de recepción, repuestos, comisiones y proyectos a la medida.
+// Si un tipo no existe, no se toca (nunca falla el arranque).
+const MODULOS_TALLERTEC: Record<string, ModuloNegocio[]> = {
+  taller: [
+    m("tal_ordenes", "Órdenes de trabajo", "Placa o serial, checklist, fotos de recepción y tablero hasta la entrega con garantía.", Wrench),
+    m("tal_repuestos", "Repuestos e inventario", "Stock, costo y precio; al agregar a una orden descuenta solo.", Cog),
+    m("tal_comisiones", "Comisiones y liquidación", "Comisión por técnico sobre la mano de obra; solo el dueño liquida.", Percent),
+  ],
+  lavanderia: [
+    m("tal_ordenes", "Órdenes de lavado", "Placa, checklist, fotos de recepción y tablero hasta la entrega.", Wrench),
+    m("tal_repuestos", "Insumos de lavado", "Jabones y consumibles con stock y costo.", Cog),
+    m("tal_comisiones", "Comisiones y liquidación", "Comisión por operario; solo el dueño liquida.", Percent),
+  ],
+  celulares: [
+    m("tal_ordenes", "Órdenes de servicio técnico", "IMEI o serial, patrón de desbloqueo, fotos de recepción y tablero hasta la entrega con garantía.", Wrench),
+    m("tal_repuestos", "Repuestos e inventario", "Pantallas, baterías y repuestos con stock y costo.", Cog),
+    m("tal_comisiones", "Comisiones y liquidación", "Comisión por técnico; solo el dueño liquida.", Percent),
+  ],
+  construccion: [
+    m("tal_proyectos", "Proyectos a la medida", "Cotiza carpintería y muebles con materiales, cobra el abono y el saldo contra entrega.", Hammer),
+    m("tal_ordenes", "Órdenes de trabajo", "Instalaciones y servicios con fotos y garantía.", Wrench),
+    m("tal_comisiones", "Comisiones y liquidación", "Comisión por operario; solo el dueño liquida.", Percent),
+  ],
+  papeleria: [
+    m("tal_proyectos", "Proyectos de impresión", "Cotiza impresos y publicidad con materiales, cobra el abono y el saldo contra entrega.", FileText),
+    m("tal_ordenes", "Órdenes de trabajo", "Trabajos recibidos con fotos y tablero hasta la entrega.", Wrench),
+    m("tal_comisiones", "Comisiones y liquidación", "Comisión por operario; solo el dueño liquida.", Percent),
+  ],
+};
+for (const [clave, nuevos] of Object.entries(MODULOS_TALLERTEC)) {
+  const tipoTal = TIPOS_NEGOCIO.find((x) => x.clave === clave);
+  if (!tipoTal) continue;
+  const faltan = nuevos.filter((e) => !tipoTal.modulos.some((x) => x.id === e.id));
+  if (faltan.length === 0) continue;
+  const pos = tipoTal.modulos.findIndex((x) => x.id === "cotizaciones_taller" || x.id === "ordenes_servicio" || x.id === "ordenes_lavado" || x.id === "reparaciones_cel" || x.id === "proyectos_obra" || x.id === "copias_impresiones");
+  tipoTal.modulos.splice(pos >= 0 ? pos : 0, 0, ...faltan);
+}
+
 // Se agrega el módulo de cotizaciones a los tipos que cotizan y no tienen uno propio.
 // Salud (presupuestos de tratamiento), educación, hospedaje, gimnasio, mascotas, agro, farmacia y lavandería no cotizan así.
 const SIN_COTIZACIONES: TipoNegocioClave[] = ["tienda","restaurante", "cafeteria", "comida_rapida","salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro", "farmacia", "lavanderia", "belleza", "inmobiliaria", "tecnologia", "condominio", "prestamos", "papeleria", "supermercado", "carniceria", "licorera", "floristeria", "optica", "guarderia", "ganaderia", "fundacion", "iglesia", "seguridad_aseo", "alquiler_vehiculos"];
@@ -1120,6 +1159,8 @@ export function resolverTipoNegocio(valor: string | null | undefined): TipoNegoc
   if (/ganader|avicola|porcicol|lecher|pecuari/.test(t)) return por("ganaderia");
   if (/fundacion|ong\b|sin animo de lucro|beneficencia|corporacion social/.test(t)) return por("fundacion");
   if (/iglesia|parroquia|congregacion|templo|club|asociacion|cristian/.test(t)) return por("iglesia");
+  if (/carpinter|muebler|ebanist|tapiz/.test(t)) return por("construccion");
+  if (/imprenta|publicidad|tipograf|litograf|estampado|plotter/.test(t)) return por("papeleria");
   if (/condominio|conjunto residencial|administracion de edificio|propiedad horizontal/.test(t)) return por("condominio");
   if (/prestamo|cobranza|gota a gota|microcredito|financiera/.test(t)) return por("prestamos");
   if (/textil|confeccion|costura|destajo/.test(t)) return por("textil");
