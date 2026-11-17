@@ -173,6 +173,7 @@ const POR_RUTA: Record<string, Instructivo> = {
       "En “Traslado de mercancía” registra el envío entre sedes e imprime el acta; al recibir, marca el traslado como recibido.",
       "En “Enlace público de tu negocio” copia el QR: restaurantes muestran menú, tiendas muestran catálogo por WhatsApp y salones o clínicas reciben citas online.",
       "En “Respaldo total del negocio” descarga clientes, productos, ventas, cartera y contabilidad en Excel con un clic.",
+      "En “Impresoras de caja y cocina” elige cada impresora con su botón de prueba: la factura sale en caja y cada pedido nuevo imprime su comanda solo en cocina.",
     ],
     consejo: "Si cambian archivos de escritorio o del agente, sube la versión en escritorio/package.json y regenera el instalador.",
   },

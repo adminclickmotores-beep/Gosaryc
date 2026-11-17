@@ -41,14 +41,14 @@ export const MANUAL_FIJO = `
 2. Elegir modalidad: en mesa, para llevar o domicilio. En mesa se escoge la mesa (o «Sin mesa»). En domicilio son obligatorios nombre, celular y dirección; el programa reconoce el barrio y suma la tarifa de envío (si no lo reconoce hay que elegir el barrio de la lista). El correo es opcional.
 3. Notas del pedido (ej. sin cebolla). Se puede configurar el porcentaje de IVA.
 4. Elegir el método de pago (efectivo, transferencia, tarjeta, Nequi, Daviplata…). En efectivo se escribe «Recibido» y se calcula el cambio. «Dividir entre (personas)» reparte la cuenta en partes iguales.
-5. Cobrar: se genera el recibo/ticket (se puede imprimir). También se puede avisar a la cocina por WhatsApp (campo «WhatsApp de la cocina»).
+5. Cobrar: se genera el recibo/ticket (sale en la impresora de caja). La comanda se imprime sola en la impresora de cocina al crear el pedido, sin pedir confirmación. También se puede avisar a la cocina por WhatsApp (campo «WhatsApp de la cocina»).
 - Si aún no hay productos, el POS avisa que se agreguen en la pestaña «Menú».
 - Los productos pueden tener opciones/adicionales (grupos de opciones) que se eligen al vender.
 
 # 5. PEDIDOS Y COCINA
 - Tablero tipo kanban con columnas: Nuevos → En cocina → Listos → En camino → Entregados. Cada pedido muestra número, modalidad, cliente y teléfono, dirección, productos con cantidades y opciones, notas, total, método y estado del pago (pagado o pendiente).
-- Un botón de cada pedido lo avanza a la siguiente etapa; se puede imprimir la comanda (COMANDA #número) para la cocina. Los pedidos de mesa permiten asignar la mesa.
-- Los pedidos también llegan solos desde el menú público de los clientes.
+- Un botón de cada pedido lo avanza a la siguiente etapa; la comanda (COMANDA #número) se imprime sola en la impresora de cocina al entrar el pedido, sin confirmación. Los pedidos de mesa permiten asignar la mesa.
+- Los pedidos también llegan solos desde el menú público de los clientes y desde WhatsApp, y también imprimen su comanda automáticamente.
 
 # 6. MENÚ (catálogo) Y QR
 - Pestaña «Menú»: «Nueva categoría» y «Nuevo producto» (nombre, precio, categoría, descripción/foto, activo o no). Solo los productos activos se ven en el menú público y los usa el asistente.

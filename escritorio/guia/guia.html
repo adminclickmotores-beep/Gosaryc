@@ -68,12 +68,12 @@
   <li>Cobra: se genera el recibo, que puedes imprimir.</li>
 </ol>
 <p>Si no hay productos, agrégalos primero en la pestaña <b>Menú</b>.</p>
-<div class="aviso"><b>Impresión directa (solo app de Windows):</b> en el punto de venta y en Facturación hay un interruptor <b>«Impresión directa por API local»</b> con botón <b>Probar impresora</b>. Actívalo para que la tirilla (58 mm u 80 mm) salga directo en tu impresora predeterminada, sin diálogos. Si entras desde el celular o el navegador, se usa la impresión normal sin mostrar error. Sin internet, la factura queda en la <b>cola local</b> y se sincroniza al volver la conexión. La API local arranca sola con la app (http://127.0.0.1:8765); no hay que configurar nada.</div>
+<div class="aviso"><b>Impresión directa (solo app de Windows):</b> en Configuración → Negocio elige la <b>Impresora de caja (facturas)</b> y la <b>Impresora de cocina (comandas)</b>, cada una con su botón <b>Probar</b>. Activa la <b>comanda automática</b> y cada pedido nuevo (punto de venta, mesas, menú público o WhatsApp) imprime su comanda solo en cocina, sin pedir confirmación. La factura siempre sale en caja. Si entras desde el celular o el navegador, se usa la impresión normal sin mostrar error. Sin internet, la factura queda en la <b>cola local</b> y se sincroniza al volver la conexión. La API local arranca sola con la app (http://127.0.0.1:8765); no hay que configurar nada.</div>
 </section>
 
 <section id="pedidos">
 <h2>3. Pedidos y cocina</h2>
-<p>Los pedidos se ordenan en columnas: Nuevos → En cocina → Listos → En camino → Entregados. Cada pedido tiene un botón para pasarlo a la siguiente etapa y puedes imprimir la comanda para la cocina. Los pedidos que hacen tus clientes desde el menú público llegan solos.</p>
+<p>Los pedidos se ordenan en columnas: Nuevos → En cocina → Listos → En camino → Entregados. Cada pedido tiene un botón para pasarlo a la siguiente etapa. Con la comanda automática activada, cada pedido nuevo imprime su comanda solo en la impresora de cocina (también puedes reimprimirla). Los pedidos que hacen tus clientes desde el menú público o por WhatsApp llegan solos y también imprimen.</p>
 </section>
 
 <section id="menu">

@@ -1,9 +1,11 @@
-// Gosaryc · API local de impresión silenciosa y cola offline (Windows).
+// Gosaryc · API local de impresión silenciosa y cola offline (tirillas 58/80 mm).
 // Arranca en segundo plano junto a la app de escritorio: http://127.0.0.1:8765
 // Sin dependencias externas: solo módulos incluidos en Node.
 // Endpoints:
-//   GET  /api/estado         -> { activo, version, impresoras[], predeterminada, pendientes }
-//   POST /api/imprimir-tirilla -> { negocio, resolucion, cliente, items[], totales, formato } imprime en la predeterminada sin diálogo.
+//   GET  /api/estado         -> { activo, version, impresoras[], predeterminada, impresoraCaja, impresoraCocina, pendientes }
+//   POST /api/config         -> { impresoraCaja, impresoraCocina } guarda a qué impresora va cada cosa.
+//   POST /api/imprimir-tirilla -> { ..., impresora?, tipo? } imprime factura en caja sin diálogo.
+//   POST /api/imprimir-comanda -> { ... } imprime comanda en cocina sin diálogo.
 //   POST /api/cola-offline    -> guarda facturas localmente cuando no hay internet y las marca para sincronizar.
 //   GET  /api/cola-offline    -> lista pendientes.  POST /api/cola-offline/sincronizar -> intenta vaciar la cola.
 const http = require("http");
@@ -13,13 +15,14 @@ const path = require("path");
 const { execFileSync, exec } = require("child_process");
 
 const PUERTO = Number(process.env.GOSARYC_PRINT_PORT || 8765);
-const VERSION = "1.0.0";
+const VERSION = "1.1.0";
 const carpetaDatos = () => {
   const base = process.env.DATOS || path.join(os.homedir(), ".gosaryc-impresion");
   fs.mkdirSync(base, { recursive: true });
   return base;
 };
 const archivoCola = () => path.join(carpetaDatos(), "cola-offline.json");
+const archivoConfig = () => path.join(carpetaDatos(), "config-impresoras.json");
 
 function leerCola() {
   try {
@@ -34,6 +37,27 @@ function guardarCola(cola) {
   try {
     fs.writeFileSync(archivoCola(), JSON.stringify(cola, null, 2), "utf8");
   } catch { /* disco lleno: se conserva lo anterior */ }
+}
+
+function leerConfig() {
+  try {
+    const raw = fs.readFileSync(archivoConfig(), "utf8");
+    const d = JSON.parse(raw) || {};
+    return {
+      impresoraCaja: typeof d.impresoraCaja === "string" ? d.impresoraCaja : "",
+      impresoraCocina: typeof d.impresoraCocina === "string" ? d.impresoraCocina : "",
+    };
+  } catch {
+    return { impresoraCaja: "", impresoraCocina: "" };
+  }
+}
+function guardarConfig(cfg) {
+  try {
+    fs.writeFileSync(archivoConfig(), JSON.stringify({
+      impresoraCaja: String(cfg.impresoraCaja || ""),
+      impresoraCocina: String(cfg.impresoraCocina || ""),
+    }, null, 2), "utf8");
+  } catch { /* sin permiso: se conserva lo anterior */ }
 }
 
 // ---- Impresoras instaladas en Windows ----
@@ -111,7 +135,34 @@ function formatearTirilla(d) {
   return { texto: L.join("\r\n"), formato };
 }
 
-function imprimirSilencioso(texto) {
+function formatearComanda(d) {
+  const formato = d.formato === "58mm" ? "58mm" : "80mm";
+  const L = [];
+  L.push(centrar("*** COMANDA ***", formato));
+  L.push(centrar(d.negocio || "Cocina", formato));
+  L.push(linea(0, formato));
+  const donde = d.mesa ? `Mesa ${d.mesa}`
+    : d.modalidad === "domicilio" ? "DOMICILIO"
+    : d.modalidad === "recoger" ? "PARA LLEVAR" : "MOSTRADOR";
+  L.push(centrar(`${donde} · Pedido ${d.numero || ""}`, formato));
+  L.push(`Fecha: ${d.fecha || new Date().toLocaleString("es-CO")}`);
+  if (d.canal) L.push(`Origen: ${d.canal}`);
+  L.push(linea(0, formato));
+  (d.items || []).forEach((it) => {
+    const nombre = String(it.descripcion || it.nombre || "Item").slice(0, anchoPor(formato));
+    L.push(`** ${it.cantidad || 1} x ${nombre} **`);
+  });
+  L.push(linea(0, formato));
+  if (d.cliente) L.push(`Cliente: ${d.cliente}`);
+  if (d.telefono) L.push(`Tel: ${d.telefono}`);
+  if (d.direccion) L.push(`Dir: ${d.direccion}${d.barrio ? ` (${d.barrio})` : ""}`);
+  if (d.notas) L.push(`NOTAS: ${String(d.notas).slice(0, 200)}`);
+  L.push(linea(0, formato));
+  L.push("\n\n\n");
+  return { texto: L.join("\r\n"), formato };
+}
+
+function imprimirSilencioso(texto, nombreImpresora) {
   return new Promise((resolve) => {
     if (process.platform !== "win32") {
       // Fuera de Windows: se guarda el ticket para revisarlo.
@@ -126,7 +177,16 @@ function imprimirSilencioso(texto) {
     try {
       fs.writeFileSync(f, texto, "utf8");
     } catch (e) { resolve({ ok: false, error: "No se pudo escribir el ticket" }); return; }
-    // notepad /p imprime directo en la predeterminada sin abrir diálogos.
+    if (nombreImpresora) {
+      // Impresora elegida por el dueño (caja o cocina): sale directo sin diálogos.
+      const seguro = String(nombreImpresora).replace(/"/g, "");
+      exec(`powershell -NoProfile -Command "Get-Content -Raw -LiteralPath ${JSON.stringify(f)} | Out-Printer -Name ${JSON.stringify(seguro)}"`, { windowsHide: true, timeout: 30000 }, (err) => {
+        if (err) resolve({ ok: false, error: `No se pudo imprimir en "${seguro}". Revisa que siga instalada.` });
+        else resolve({ ok: true, destino: seguro });
+      });
+      return;
+    }
+    // Sin impresora elegida: va a la predeterminada de Windows, sin abrir diálogos.
     exec(`notepad /p ${JSON.stringify(f)}`, { windowsHide: true, timeout: 30000 }, (err) => {
       if (err) resolve({ ok: false, error: "No se pudo enviar a la impresora. Revisa que haya una predeterminada." });
       else resolve({ ok: true, destino: "predeterminada" });
@@ -156,8 +216,32 @@ const server = http.createServer(async (req, res) => {
   try {
     if (req.method === "GET" && url.pathname === "/api/estado") {
       const { impresoras, predeterminada } = listarImpresoras();
+      const cfg = leerConfig();
       res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ ok: true, activo: true, version: VERSION, impresoras, predeterminada, pendientes: leerCola().length }));
+      res.end(JSON.stringify({
+        ok: true, activo: true, version: VERSION,
+        impresoras, predeterminada,
+        impresoraCaja: cfg.impresoraCaja, impresoraCocina: cfg.impresoraCocina,
+        pendientes: leerCola().length,
+      }));
+      return;
+    }
+    if ((req.method === "GET" || req.method === "POST") && url.pathname === "/api/impresoras") {
+      const { impresoras, predeterminada } = listarImpresoras();
+      const cfg = leerConfig();
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ ok: true, impresoras, predeterminada, ...cfg }));
+      return;
+    }
+    if (req.method === "POST" && url.pathname === "/api/config") {
+      const d = await leerCuerpo(req);
+      const cfg = {
+        impresoraCaja: typeof d.impresoraCaja === "string" ? d.impresoraCaja.slice(0, 200) : "",
+        impresoraCocina: typeof d.impresoraCocina === "string" ? d.impresoraCocina.slice(0, 200) : "",
+      };
+      guardarConfig(cfg);
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ ok: true, ...cfg }));
       return;
     }
     if (req.method === "GET" && url.pathname === "/api/cola-offline") {
@@ -165,12 +249,17 @@ const server = http.createServer(async (req, res) => {
       res.end(JSON.stringify({ ok: true, pendientes: leerCola() }));
       return;
     }
-    if (req.method === "POST" && url.pathname === "/api/imprimir-tirilla") {
+    if (req.method === "POST" && (url.pathname === "/api/imprimir-tirilla" || url.pathname === "/api/imprimir-comanda")) {
       const d = await leerCuerpo(req);
-      const { texto, formato } = formatearTirilla(d || {});
-      const r = await imprimirSilencioso(texto);
+      const esComanda = url.pathname === "/api/imprimir-comanda" || d.tipo === "comanda";
+      const cfg = leerConfig();
+      const impresora = typeof d.impresora === "string" && d.impresora
+        ? d.impresora
+        : esComanda ? (cfg.impresoraCocina || "") : (cfg.impresoraCaja || "");
+      const f = esComanda ? formatearComanda(d || {}) : formatearTirilla(d || {});
+      const r = await imprimirSilencioso(f.texto, impresora || "");
       res.writeHead(r.ok ? 200 : 500, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ ok: r.ok, formato, ...(r.ok ? { destino: r.destino } : { error: r.error }) }));
+      res.end(JSON.stringify({ ok: r.ok, formato: f.formato, ...(r.ok ? { destino: r.destino } : { error: r.error }) }));
       return;
     }
     if (req.method === "POST" && url.pathname === "/api/cola-offline") {

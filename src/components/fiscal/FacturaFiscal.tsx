@@ -7,7 +7,7 @@ import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 import { Campo, Cargando, Encabezado, boton, botonSec, campo, dinero, num } from "@/components/comercio/ComercioModulos";
 import { exportarExcel, imprimirFactura, type DatosFactura, type ItemFactura } from "@/lib/exportes";
-import { estadoApiLocal, fijarImpresionDirecta, guardarColaLocal, impresionDirectaActivada, imprimirTirillaLocal } from "@/lib/impresion-local";
+import { estadoApiLocal, fijarImpresionDirecta, guardarColaLocal, impresionDirectaActivada, imprimirTirillaLocal, leerImpresoraCaja } from "@/lib/impresion-local";
 
 type Fac = Tables<"fac_emitidas">;
 
@@ -69,8 +69,9 @@ export function FacturaFiscal() {
       items: [{ descripcion: "Tirilla de prueba", cantidad: 1, precio: 1000 }],
       subtotal: 1000, iva: 0, ivaPct: 0, total: 1000, metodo: "Efectivo",
       formato: formato === "tirilla" ? "80mm" : "80mm",
+      impresora: leerImpresoraCaja() || undefined,
     });
-    setApiMsg(ok ? `Impreso en ${est.predeterminada || "la predeterminada"}.` : "No se pudo imprimir. Revisa la impresora predeterminada de Windows.");
+    setApiMsg(ok ? `Impreso en ${leerImpresoraCaja() || est.predeterminada || "la de caja"}.` : "No se pudo imprimir. Revisa la impresora de caja en Windows.");
   };
 
   const emitir = async () => {
@@ -101,6 +102,7 @@ export function FacturaFiscal() {
           resolucion: datos.resolucion, numero: datos.numero, cliente: datos.cliente, clienteDoc: datos.clienteNit,
           items: datos.items, subtotal: recien.subtotal, iva: recien.iva, ivaPct: datos.ivaPct, total: recien.total,
           formato: formato === "tirilla" ? "80mm" : "80mm",
+          impresora: leerImpresoraCaja() || undefined,
         });
         if (!ok) imprimirFactura(datos, formato); // Sin API local (celular): impresión normal, sin error.
       } else {
@@ -137,7 +139,7 @@ export function FacturaFiscal() {
             type="checkbox" checked={directa} onChange={(e) => cambiarDirecta(e.target.checked)}
             className="h-5 w-5 accent-primary"
           />
-          Impresión directa por API local (escritorio)
+          Impresión directa en caja (API local)
         </label>
         <button type="button" className={botonSec} onClick={() => void probarImpresora()}>
           <Printer className="h-4 w-4" /> Probar impresora

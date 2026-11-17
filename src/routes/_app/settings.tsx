@@ -16,7 +16,7 @@ import { EquipoPermisos } from "@/components/settings/EquipoPermisos";
 import { ResumenCierreWhatsApp } from "@/components/restaurante/Reportes";
 import { ThemeToggle } from "@/components/ui-custom/ThemeToggle";
 import { BRAND } from "@/lib/brand";
-import { estadoApiLocal, fijarImpresionDirecta, impresionDirectaActivada, imprimirTirillaLocal } from "@/lib/impresion-local";
+import { autoComandaActivada, estadoApiLocal, fijarAutoComanda, fijarImpresionDirecta, fijarImpresoraCaja, fijarImpresoraCocina, guardarConfigImpresoras, impresionDirectaActivada, imprimirTirillaLocal, leerImpresoraCaja, leerImpresoraCocina } from "@/lib/impresion-local";
 
 export const Route = createFileRoute("/_app/settings")({
   validateSearch: (s: Record<string, unknown>): { tab?: TabId } => {
@@ -176,32 +176,97 @@ function StatChip({ label, value, mono, muted }: { label: string; value: string;
 
 function TarjetaImpresion() {
   const [directa, setDirecta] = useState(() => impresionDirectaActivada());
+  const [auto, setAuto] = useState(() => autoComandaActivada());
+  const [caja, setCaja] = useState(() => leerImpresoraCaja());
+  const [cocina, setCocina] = useState(() => leerImpresoraCocina());
+  const [impresoras, setImpresoras] = useState<string[]>([]);
+  const [predeterminada, setPredeterminada] = useState("");
   const [msg, setMsg] = useState("");
-  const [probando, setProbando] = useState(false);
+  const [probando, setProbando] = useState<"caja" | "cocina" | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const est = await estadoApiLocal();
+      if (!est.disponible) return;
+      setImpresoras(est.impresoras);
+      setPredeterminada(est.predeterminada);
+      if (est.impresoraCaja) {
+        setCaja(est.impresoraCaja);
+        fijarImpresoraCaja(est.impresoraCaja);
+      }
+      if (est.impresoraCocina) {
+        setCocina(est.impresoraCocina);
+        fijarImpresoraCocina(est.impresoraCocina);
+      }
+    })();
+  }, []);
 
   const cambiar = (v: boolean) => {
     setDirecta(v);
     fijarImpresionDirecta(v);
   };
-  const probar = async () => {
-    setProbando(true);
+  const cambiarAuto = (v: boolean) => {
+    setAuto(v);
+    fijarAutoComanda(v);
+  };
+  const elegir = (cual: "caja" | "cocina", nombre: string) => {
+    if (cual === "caja") {
+      setCaja(nombre);
+      fijarImpresoraCaja(nombre);
+    } else {
+      setCocina(nombre);
+      fijarImpresoraCocina(nombre);
+    }
+    const nc = cual === "caja" ? nombre : caja;
+    const no = cual === "cocina" ? nombre : cocina;
+    void guardarConfigImpresoras(nc, no);
+  };
+  const probar = async (cual: "caja" | "cocina") => {
+    setProbando(cual);
     setMsg("Buscando la API local…");
     const est = await estadoApiLocal();
     if (!est.disponible) {
       setMsg("La API local no está corriendo en este equipo (por ejemplo, si entraste desde el celular). Se usa la impresión normal del navegador, sin error.");
-      setProbando(false);
+      setProbando(null);
       return;
     }
-    const ok = await imprimirTirillaLocal({
-      negocio: "Mi negocio", numero: "PRUEBA", cliente: "Prueba de impresión",
-      items: [{ descripcion: "Tirilla de prueba", cantidad: 1, precio: 1000 }],
-      subtotal: 1000, iva: 0, ivaPct: 0, total: 1000, formato: "80mm",
-    });
+    if (est.impresoras.length > 0) {
+      setImpresoras(est.impresoras);
+      setPredeterminada(est.predeterminada);
+    }
+    const nombre = cual === "caja" ? caja : cocina;
+    const esComanda = cual === "cocina";
+    const ok = esComanda
+      ? await (async () => {
+          const { imprimirComandaCocina } = await import("@/lib/impresion-local");
+          return imprimirComandaCocina({
+            negocio: "Mi negocio", numero: "PRUEBA", cliente: "Prueba de cocina",
+            modalidad: "mesa", mesa: "1", notas: "Comanda de prueba",
+            items: [{ nombre: "Plato de prueba", cantidad: 1 }],
+            formato: "80mm", impresora: nombre || undefined,
+          });
+        })()
+      : await imprimirTirillaLocal({
+          negocio: "Mi negocio", numero: "PRUEBA", cliente: "Prueba de impresión",
+          items: [{ descripcion: "Tirilla de prueba", cantidad: 1, precio: 1000 }],
+          subtotal: 1000, iva: 0, ivaPct: 0, total: 1000, formato: "80mm",
+          impresora: nombre || undefined,
+        });
     setMsg(ok
-      ? `Listo: se imprimió en ${est.predeterminada || "tu impresora predeterminada"}${est.pendientes > 0 ? ` (cola offline: ${est.pendientes} pendientes).` : "."}`
-      : "No se pudo imprimir. Revisa que Windows tenga una impresora predeterminada con papel.");
-    setProbando(false);
+      ? `Listo: se imprimió en ${nombre || est.predeterminada || "tu impresora predeterminada"}${est.pendientes > 0 ? ` (cola offline: ${est.pendientes} pendientes).` : "."}`
+      : "No se pudo imprimir. Revisa que Windows tenga esa impresora instalada y con papel.");
+    setProbando(null);
   };
+
+  const opciones = (valor: string) => (
+    <>
+      <option value="">Predeterminada de Windows{predeterminada ? ` (${predeterminada})` : ""}</option>
+      {impresoras.filter((n) => n !== predeterminada).map((n) => (
+        <option key={n} value={n}>{n}{n === valor ? " (elegida)" : ""}</option>
+      ))}
+      {valor && !impresoras.includes(valor) && <option value={valor}>{valor} (guardada)</option>}
+    </>
+  );
 
   return (
     <div className="overflow-hidden rounded-3xl border border-glass-border bg-glass/40 p-6 backdrop-blur-xl">
@@ -210,23 +275,55 @@ function TarjetaImpresion() {
           <span className="size-2 rounded-full bg-sky-400" />
           <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-sky-300">Facturación e impresión</span>
         </div>
-        <h2 className="font-display text-2xl text-foreground">Impresión directa por API local (escritorio)</h2>
+        <h2 className="font-display text-2xl text-foreground">Impresoras de caja y cocina (API local)</h2>
         <p className="max-w-xl text-sm text-muted-foreground">
-          En la app de Windows la tirilla sale directo en tu impresora térmica (58 mm u 80 mm), sin diálogos del navegador.
-          Si la API local no está corriendo —por ejemplo, si entraste desde el celular— se usa la impresión normal, sin mostrar error.
-          Sin internet, la factura se guarda en la cola local y se sincroniza al volver la conexión.
+          En la app de Windows la factura sale en la impresora de caja y cada pedido nuevo imprime su comanda
+          en la impresora de cocina, sin pedirte confirmación. Si la API local no está corriendo —por ejemplo,
+          si entraste desde el celular— se usa la impresión normal, sin mostrar error.
         </p>
+      </div>
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        <label className="block text-sm">
+          <span className="mb-1 block text-muted-foreground">Impresora de caja (facturas)</span>
+          <select
+            value={caja}
+            onChange={(e) => elegir("caja", e.target.value)}
+            className="w-full rounded-xl border border-glass-border bg-glass/40 px-3 py-2.5 text-base outline-none focus:border-primary/60"
+          >
+            {opciones(caja)}
+          </select>
+        </label>
+        <label className="block text-sm">
+          <span className="mb-1 block text-muted-foreground">Impresora de cocina (comandas)</span>
+          <select
+            value={cocina}
+            onChange={(e) => elegir("cocina", e.target.value)}
+            className="w-full rounded-xl border border-glass-border bg-glass/40 px-3 py-2.5 text-base outline-none focus:border-primary/60"
+          >
+            {opciones(cocina)}
+          </select>
+        </label>
       </div>
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-glass-border bg-glass px-4 py-2 text-sm">
           <input type="checkbox" checked={directa} onChange={(e) => cambiar(e.target.checked)} className="h-5 w-5 accent-primary" />
           {directa ? "Activada" : "Desactivada"}
         </label>
+        <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-glass-border bg-glass px-4 py-2 text-sm">
+          <input type="checkbox" checked={auto} onChange={(e) => cambiarAuto(e.target.checked)} className="h-5 w-5 accent-primary" />
+          Comanda automática en cocina
+        </label>
         <button
-          type="button" onClick={() => void probar()} disabled={probando}
+          type="button" onClick={() => void probar("caja")} disabled={probando !== null}
           className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
         >
-          {probando ? "Probando…" : "Probar impresora"}
+          {probando === "caja" ? "Probando caja…" : "Probar caja"}
+        </button>
+        <button
+          type="button" onClick={() => void probar("cocina")} disabled={probando !== null}
+          className="inline-flex items-center gap-2 rounded-full border border-glass-border bg-glass px-4 py-2 text-sm hover:bg-glass-strong disabled:opacity-50"
+        >
+          {probando === "cocina" ? "Probando cocina…" : "Probar cocina"}
         </button>
       </div>
       {msg && <p className="mt-3 text-xs text-muted-foreground">{msg}</p>}

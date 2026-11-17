@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { VigilanteCocina } from "@/components/restaurante/VigilanteCocina";
 
 export const Route = createFileRoute("/_app/domicilios")({
   head: () => ({ meta: [{ title: "Domicilios y clientes" }] }),
@@ -64,6 +65,7 @@ function DomiciliosPage() {
 
   return (
     <div className="space-y-6">
+      <VigilanteCocina />
       <div>
         <h1 className="font-display text-3xl text-foreground">Domicilios y clientes</h1>
         <p className="text-sm text-muted-foreground">

@@ -18,6 +18,7 @@ import { Reportes } from "@/components/restaurante/Reportes";
 import { MesasPanel } from "@/components/restaurante/MesasPanel";
 import { CajaPanel } from "@/components/restaurante/CajaPanel";
 import { VentaPOS } from "@/components/restaurante/VentaPOS";
+import { VigilanteCocina } from "@/components/restaurante/VigilanteCocina";
 import { OpcionesProducto } from "@/components/restaurante/OpcionesProducto";
 import { BotonVentanaCompleta } from "@/components/app/BotonVentanaCompleta";
 import { IndicadoresNegocio } from "@/components/app/IndicadoresNegocio";
@@ -292,6 +293,7 @@ export function RestaurantePage() {
 
   return (
     <div className="space-y-6">
+      <VigilanteCocina />
       {!completa && (
       <>
       <div className="hero-panel relative overflow-hidden rounded-3xl p-5 md:p-7">

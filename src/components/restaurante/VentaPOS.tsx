@@ -7,7 +7,7 @@ import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { TARIFAS_DOMICILIO, buscarTarifa } from "@/lib/tarifas-domicilio";
 import { useNegocio } from "@/hooks/use-negocio";
 import { mismoTipoNegocio } from "@/lib/modulos-negocio";
-import { estadoApiLocal, fijarImpresionDirecta, impresionDirectaActivada, imprimirTirillaLocal } from "@/lib/impresion-local";
+import { autoComandaActivada, estadoApiLocal, fijarImpresionDirecta, impresionDirectaActivada, imprimirComandaCocina, imprimirTirillaLocal, leerImpresoraCaja } from "@/lib/impresion-local";
 
 type Producto = Tables<"restaurante_productos">;
 type Categoria = Tables<"restaurante_categorias">;
@@ -156,11 +156,26 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
         negocio: nombreNegocio, numero: r.numero != null ? String(r.numero) : r.id.slice(0, 6).toUpperCase(),
         cliente: r.cliente, items: r.lineas.map((l) => ({ descripcion: l.nombre, cantidad: l.cant, precio: l.precio })),
         subtotal: r.total - r.envio, total: r.total, metodo: r.metodo, formato: "80mm",
+        impresora: leerImpresoraCaja() || undefined,
       });
       if (ok) return;
       // Sin API local (celular): impresión normal, sin error.
     }
     imprimirTicket(r, nombreNegocio);
+  };
+
+  const imprimirComandaSinConfirmar = async (r: Recibo) => {
+    // La comanda sale sola en la impresora de cocina, sin preguntar ni abrir diálogos.
+    if (!directa || !autoComandaActivada()) return;
+    await imprimirComandaCocina({
+      negocio: nombreNegocio,
+      numero: r.numero != null ? String(r.numero) : r.id.slice(0, 6).toUpperCase(),
+      cliente: r.cliente, telefono: r.telefono, modalidad: r.modalidad,
+      mesa: r.mesa, direccion: r.direccion, barrio: r.barrio, notas: r.notas,
+      canal: "Mostrador",
+      items: r.lineas.map((l) => ({ nombre: l.nombre, cantidad: l.cant })),
+      formato: "80mm",
+    });
   };
 
   const probarImpresora = async () => {
@@ -170,8 +185,8 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
       setApiMsg("La API local no está corriendo aquí (celular/navegador). Se usa la impresión normal.");
       return;
     }
-    const ok = await imprimirTirillaLocal({ negocio: nombreNegocio, numero: "PRUEBA", cliente: "Prueba", items: [{ descripcion: "Tirilla de prueba", cantidad: 1, precio: 1000 }], total: 1000, formato: "80mm" });
-    setApiMsg(ok ? `Impreso en ${est.predeterminada || "la predeterminada"}.` : "No se pudo imprimir. Revisa la impresora de Windows.");
+    const ok = await imprimirTirillaLocal({ negocio: nombreNegocio, numero: "PRUEBA", cliente: "Prueba", items: [{ descripcion: "Tirilla de prueba", cantidad: 1, precio: 1000 }], total: 1000, formato: "80mm", impresora: leerImpresoraCaja() || undefined });
+    setApiMsg(ok ? `Impreso en ${leerImpresoraCaja() || est.predeterminada || "la de caja"}.` : "No se pudo imprimir. Revisa la impresora de caja en Windows.");
   };
   const [zonaManual, setZonaManual] = useState("");
   const [correo, setCorreo] = useState("");
@@ -327,7 +342,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
       toast.success("Pedido enviado a cocina. Cóbralo cuando el cliente pague.");
     }
     setGuardando(false);
-    setRecibo({
+    const reciboNuevo: Recibo = {
       id: pedido.id,
       numero: pedido.numero_factura ?? null,
       cliente: nombre,
@@ -342,7 +357,10 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
       total,
       metodo: METODOS.find((m) => m.clave === metodo)?.texto ?? metodo,
       cobrado: cobrar,
-    });
+    };
+    // La comanda entra sola a cocina (POS, mesas y WhatsApp): sin confirmación.
+    void imprimirComandaSinConfirmar(reciboNuevo);
+    setRecibo(reciboNuevo);
     limpiar();
     onCambio?.();
   };
@@ -472,7 +490,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
         <div className="flex flex-wrap items-center gap-2 rounded-xl border border-glass-border bg-glass/40 px-3 py-2">
           <label className="flex cursor-pointer items-center gap-2 text-xs">
             <input type="checkbox" checked={directa} onChange={(e) => { setDirecta(e.target.checked); fijarImpresionDirecta(e.target.checked); }} className="h-4 w-4 accent-primary" />
-            Impresión directa por API local
+            Impresión directa (caja y cocina)
           </label>
           <button type="button" onClick={() => void probarImpresora()} className="text-xs text-primary hover:underline">Probar impresora</button>
         </div>

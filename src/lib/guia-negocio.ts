@@ -18,6 +18,7 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
       { titulo: "Arma tu menú", texto: "En la pestaña “Menú” crea categorías y agrega tus productos con su precio." },
       { titulo: "Comparte tu menú público", texto: "Usa el botón “Menú público” y envía el enlace por WhatsApp o redes." },
       { titulo: "Atiende los pedidos", texto: "En “Pedidos y cocina” mueve cada pedido: enviar a cocina, listo, en camino, entregado." },
+      { titulo: "Impresoras de caja y cocina", texto: "En Configuración elige la impresora de caja (facturas) y la de cocina (comandas): cada pedido nuevo imprime su comanda solo." },
       { titulo: "Controla tus insumos", texto: "En “Recetario e inventario” registra ingredientes y recetas para saber tu costo." },
       { titulo: "Concilia Rappi y las apps", texto: "En “Rappi, DiDi Food y apps” anota cada liquidación: venta bruta, comisión y lo que te consignaron." },
       { titulo: "Registra las mermas", texto: "En “Mermas y desperdicios” anota lo que se daña o se devuelve para ver cuánto te cuesta cada semana." },
