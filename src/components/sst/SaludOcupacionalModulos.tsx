@@ -32,6 +32,16 @@ const hoyMas = (dias: number): string => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 
+/** Abre una ventana de impresión con HTML propio (diplomas y certificados). */
+const imprimirHTML = (titulo: string, html: string): void => {
+  const w = window.open("", "_blank", "width=900,height=700");
+  if (!w) return;
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 400);
+};
+
 async function cobrar(tabla: string, id: string, valorTxt: string, metodo: string): Promise<boolean> {
   if (num(valorTxt) <= 0) return (toast.error("Escribe el valor del abono o cobro."), false);
   const { error } = await supabase.rpc("sst_cobrar", { p_tabla: tabla, p_id: id, p_valor: num(valorTxt), p_metodo: metodo });
@@ -238,16 +248,7 @@ export function TrabajadoresEvaluaciones() {
               <p className="font-semibold">{e.trabajador} <span className="text-xs text-muted-foreground">· {e.tipo} · {e.concepto} · vence {e.vence ?? "—"} · código {e.codigo_seguro}</span></p>
               <p className="text-xs text-muted-foreground">Valor {dinero(e.valor)} · abono {dinero(e.abono)} · saldo {dinero(Math.max(e.valor - e.abono, 0))}</p>
               <div className="mt-1 flex flex-wrap gap-2">
-                <button type="button" className={botonSec} onClick={() => imprimirReporte(
-                  `Certificado de aptitud laboral ${e.codigo_seguro}`,
-                  "Medicina del trabajo · Sin historia clínica (reserva legal). Verifique con el código seguro.",
-                  ["Campo", "Detalle"],
-                  [
-                    ["Trabajador", esc(e.trabajador)], ["Empresa", esc(e.empresa)], ["Tipo de evaluación", esc(e.tipo)],
-                    ["Concepto", esc(e.concepto)], ["Restricciones", esc(e.restricciones ?? "—")],
-                    ["Fecha", esc(e.fecha)], ["Vence", esc(e.vence ?? "—")], ["Código de verificación", esc(e.codigo_seguro)],
-                  ],
-                )}><Printer className="h-4 w-4" /> Certificado PDF</button>
+                <button type="button" className={botonSec} onClick={() => imprimirHTML(`Certificado-${e.codigo_seguro}`, certificadoHTML(e))}><Printer className="h-4 w-4" /> Certificado PDF</button>
                 {wa && <a className={botonSec} href={wa} target="_blank" rel="noreferrer"><MessageCircle className="h-4 w-4" /> Avisar vencimiento</a>}
               </div>
               {e.estado !== "cobrada" && <Cobro tabla="sst_evaluaciones" id={e.id} onListo={() => void cargar()} />}
@@ -484,6 +485,16 @@ export function VigilanciaAusentismo() {
 }
 
 // ============ 6. Capacitaciones, asistencia y certificados ============
+function certificadoAsistenciaHTML(c: Cap, nombre: string, documento: string): string {
+  return `<html><head><meta charset="utf-8"><title>Certificado de asistencia</title><style>body{font-family:Georgia,serif;padding:40px;color:#111;text-align:center}.marco{border:4px double #0e7490;border-radius:14px;padding:36px 24px}h1{font-size:26px;margin:0 0 4px}.nombre{font-size:22px;margin:14px 0}.muted{color:#555;font-size:12px}</style></head><body>
+<div class="marco"><h1>CERTIFICADO DE ASISTENCIA</h1><p>Programa de capacitación SG-SST</p>
+<p>Se certifica que</p><p class="nombre"><b>${esc(nombre)}</b>${documento ? ` · ${esc(documento)}` : ""}</p>
+<p>asistió a la capacitación <b>${esc(c.tema)}</b></p>
+<p>Empresa: ${esc(c.empresa)} · Fecha: ${esc(c.fecha)}</p>
+<p class="muted">Verifique este certificado con el prestador del servicio.</p></div>
+<script>window.onload=function(){window.print()}</script></body></html>`;
+}
+
 export function CapacitacionesBrigadas() {
   const [lista, setLista] = useState<Cap[]>([]);
   const [asis, setAsis] = useState<Asi[]>([]);
@@ -562,6 +573,16 @@ export function CapacitacionesBrigadas() {
                 }}><Printer className="h-4 w-4" /> Lista PDF</button>
                 <button type="button" className={botonSec} onClick={() => void supabase.from("sst_capacitaciones").update({ estado: "realizada" }).eq("id", c.id).then(() => void cargar())}>Marcar realizada</button>
               </div>
+              {n.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {n.map((a) => (
+                    <div key={a.id} className="flex items-center justify-between gap-2 rounded-lg bg-glass/40 px-3 py-1.5 text-sm">
+                      <span className="min-w-0 break-words text-foreground">{a.nombre} <span className="text-xs text-muted-foreground">· {a.documento || "sin documento"}</span></span>
+                      <button type="button" className={`${botonSec} shrink-0`} onClick={() => imprimirHTML(`Certificado-${a.nombre}`, certificadoAsistenciaHTML(c, a.nombre, a.documento))}><Printer className="h-4 w-4" /> Certificado PDF</button>
+                    </div>
+                  ))}
+                </div>
+              )}
               {c.estado !== "cobrada" && <Cobro tabla="sst_capacitaciones" id={c.id} onListo={() => void cargar()} />}
             </div>
           );
