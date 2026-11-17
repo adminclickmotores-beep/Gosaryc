@@ -173,7 +173,7 @@ const POR_RUTA: Record<string, Instructivo> = {
     pasos: [
       "En “Sucursales y puntos de venta” crea cada sede; en reportes y caja puedes ver el consolidado o una sola sede.",
       "En “Traslado de mercancía” registra el envío entre sedes e imprime el acta; al recibir, marca el traslado como recibido.",
-      "En “Enlace público de tu negocio” copia el QR: restaurantes muestran menú, tiendas muestran catálogo por WhatsApp y salones o clínicas reciben citas online.",
+      "En “Enlace público de tu negocio” copia el QR: cada visitante solo ve lo de tu negocio (restaurantes muestran menú, tiendas catálogo por WhatsApp, salones o clínicas servicios y citas online, talleres agendamiento; lo de Salud Ocupacional solo aparece en negocios SST).",
       "En “Respaldo total del negocio” descarga clientes, productos, ventas, cartera y contabilidad en Excel con un clic.",
       "En “Impresoras de caja y cocina” elige cada impresora con su botón de prueba: la factura sale en caja y cada pedido nuevo imprime su comanda solo en cocina.",
     ],

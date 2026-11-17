@@ -368,6 +368,7 @@ function MenuPage() {
         nombre={negocio.nombre ?? "Nuestro negocio"}
         telefono={negocio.telefono_pedidos ?? ""}
         descripcion={negocio.descripcion ?? negocio.eslogan ?? ""}
+        tipoNegocio={negocio.tipo_negocio ?? null}
       />
     );
   }

@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { MessageCircle, CalendarCheck, Store, ShieldCheck, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 
 const campo =
   "w-full rounded-xl border border-glass-border bg-glass/40 px-3.5 py-3 text-base text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary/60";
@@ -18,8 +19,28 @@ function enlaceWhats(diez: string, texto: string): string {
 
 type Item = { id: string; nombre: string; precio: number };
 
-/** Enlace público universal: catálogo con pedido por WhatsApp + solicitud de cita online. */
-export function EnlaceUniversal({ dueno, nombre, telefono, descripcion }: { dueno: string; nombre: string; telefono: string; descripcion: string }) {
+/** ¿Este tipo de negocio es Salud Ocupacional / SG-SST / Medicina Laboral? Solo esos ven las tarjetas SST. */
+function esNegocioSST(tipo: string | null | undefined): boolean {
+  return /sst|sg-sst|salud ocupacional|medicina laboral|seguridad y salud/i.test((tipo ?? "").trim());
+}
+
+/** Familias que trabajan por citas o visitas (muestran la tarjeta de agendamiento). El comercio puro solo muestra catálogo. */
+const CLAVES_CON_CITA = new Set([
+  "servicios", "salud", "mascotas", "belleza", "educacion", "profesional", "eventos",
+  "optica", "taller", "concesionario", "alquiler_vehiculos", "tecnologia", "inmobiliaria", "seguridad_aseo",
+]);
+
+/** Familias cuyo "catálogo" son servicios, no productos (cambia el título de la tarjeta). */
+const CLAVES_SERVICIOS = new Set([
+  "servicios", "salud", "mascotas", "belleza", "educacion", "profesional", "eventos", "optica",
+]);
+
+/**
+ * Enlace público universal: muestra ÚNICAMENTE las tarjetas del tipo de negocio
+ * de la cuenta visitada (resuelta por su owner_id). Nada se consulta sin ese
+ * owner_id y las tarjetas de Salud Ocupacional solo existen para negocios SST.
+ */
+export function EnlaceUniversal({ dueno, nombre, telefono, descripcion, tipoNegocio }: { dueno: string; nombre: string; telefono: string; descripcion: string; tipoNegocio?: string | null }) {
   const [items, setItems] = useState<Item[]>([]);
   const [citaNombre, setCitaNombre] = useState("");
   const [citaTel, setCitaTel] = useState("");
@@ -32,6 +53,12 @@ export function EnlaceUniversal({ dueno, nombre, telefono, descripcion }: { duen
   const [cotiTipo, setCotiTipo] = useState("Exámenes ocupacionales");
   const [cotiNombre, setCotiNombre] = useState("");
   const [cotiTel, setCotiTel] = useState("");
+
+  const esSST = esNegocioSST(tipoNegocio);
+  const clave = resolverTipoNegocio(tipoNegocio).clave;
+  const muestraCita = !esSST && CLAVES_CON_CITA.has(clave);
+  const esTaller = clave === "taller" || clave === "concesionario" || clave === "alquiler_vehiculos";
+  const tituloCatalogo = esSST ? "Catálogo" : CLAVES_SERVICIOS.has(clave) ? "Servicios y precios" : "Catálogo";
 
   type Validacion = { trabajador?: unknown; empresa?: unknown; tipo?: unknown; concepto?: unknown; fecha?: unknown; vence?: unknown; codigo?: unknown };
   const validar = async () => {
@@ -58,6 +85,11 @@ export function EnlaceUniversal({ dueno, nombre, telefono, descripcion }: { duen
   };
 
   useEffect(() => {
+    // Sin owner_id no se consulta nada: nunca se muestran datos de otra cuenta.
+    if (!dueno) {
+      setItems([]);
+      return;
+    }
     void (async () => {
       const [a, b] = await Promise.all([
         supabase.from("com_productos").select("id,nombre,precio_detal").eq("owner_id", dueno).eq("activo", true).order("nombre").limit(200),
@@ -71,6 +103,17 @@ export function EnlaceUniversal({ dueno, nombre, telefono, descripcion }: { duen
     })();
   }, [dueno]);
 
+  if (!dueno) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 pb-16 pt-8">
+        <GlassPanel className="p-8 text-center">
+          <h1 className="font-display text-2xl text-foreground">Enlace no disponible</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Revisa el enlace con el equipo que te lo envió.</p>
+        </GlassPanel>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-3xl px-4 pb-16 pt-8">
       <div className="flex items-center gap-3">
@@ -82,8 +125,8 @@ export function EnlaceUniversal({ dueno, nombre, telefono, descripcion }: { duen
       </div>
 
       <GlassPanel className="mt-5 space-y-2 p-5">
-        <h2 className="font-medium text-foreground">Catálogo</h2>
-        {items.length === 0 && <p className="text-sm text-muted-foreground">Escríbenos por WhatsApp y te enviamos el catálogo completo.</p>}
+        <h2 className="font-medium text-foreground">{tituloCatalogo}</h2>
+        {items.length === 0 && <p className="text-sm text-muted-foreground">Escríbenos por WhatsApp y te enviamos {CLAVES_SERVICIOS.has(clave) ? "la disponibilidad y los precios" : "el catálogo completo"}.</p>}
         {items.map((p) => (
           <div key={p.id} className="flex items-center justify-between gap-2 border-b border-glass-border pb-2 text-sm last:border-0">
             <span className="min-w-0 break-words text-foreground">{p.nombre} · {dinero(p.precio)}</span>
@@ -99,70 +142,78 @@ export function EnlaceUniversal({ dueno, nombre, telefono, descripcion }: { duen
         </a>
       </GlassPanel>
 
-      <GlassPanel className="mt-4 space-y-3 p-5">
-        <h2 className="flex items-center gap-2 font-medium text-foreground"><ShieldCheck className="h-4 w-4" /> Validar certificado de aptitud</h2>
-        <p className="text-sm text-muted-foreground">Escribe el código seguro del certificado y comprueba que sea válido.</p>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <input className={campo} placeholder="Código seguro (ej. a1b2c3d4)" value={codigo} onChange={(e) => setCodigo(e.target.value)} />
-          <button
-            type="button"
-            onClick={() => void validar()}
-            disabled={validando || codigo.trim().length < 4}
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
-          >
-            <ShieldCheck className="h-4 w-4" /> {validando ? "Verificando…" : "Verificar"}
-          </button>
-        </div>
-        {valido && (
-          <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm">
-            <p className="font-semibold text-foreground">Certificado válido · {valido.codigo}</p>
-            <p className="mt-1 break-words text-muted-foreground">Trabajador: {valido.trabajador} · Empresa: {valido.empresa}</p>
-            <p className="break-words text-muted-foreground">Evaluación: {valido.tipo} · Concepto: {valido.concepto}</p>
-            <p className="break-words text-muted-foreground">Fecha: {valido.fecha}{valido.vence ? ` · Vence: ${valido.vence}` : ""}</p>
+      {esSST && (
+        <GlassPanel className="mt-4 space-y-3 p-5">
+          <h2 className="flex items-center gap-2 font-medium text-foreground"><ShieldCheck className="h-4 w-4" /> Validar certificado de aptitud</h2>
+          <p className="text-sm text-muted-foreground">Escribe el código seguro del certificado y comprueba que sea válido.</p>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input className={campo} placeholder="Código seguro (ej. a1b2c3d4)" value={codigo} onChange={(e) => setCodigo(e.target.value)} />
+            <button
+              type="button"
+              onClick={() => void validar()}
+              disabled={validando || codigo.trim().length < 4}
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
+            >
+              <ShieldCheck className="h-4 w-4" /> {validando ? "Verificando…" : "Verificar"}
+            </button>
           </div>
-        )}
-        {noHallado && (
-          <p className="text-sm text-rose-300">No encontramos un certificado con ese código. Revisa las letras y los números.</p>
-        )}
-      </GlassPanel>
+          {valido && (
+            <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm">
+              <p className="font-semibold text-foreground">Certificado válido · {valido.codigo}</p>
+              <p className="mt-1 break-words text-muted-foreground">Trabajador: {valido.trabajador} · Empresa: {valido.empresa}</p>
+              <p className="break-words text-muted-foreground">Evaluación: {valido.tipo} · Concepto: {valido.concepto}</p>
+              <p className="break-words text-muted-foreground">Fecha: {valido.fecha}{valido.vence ? ` · Vence: ${valido.vence}` : ""}</p>
+            </div>
+          )}
+          {noHallado && (
+            <p className="text-sm text-rose-300">No encontramos un certificado con ese código. Revisa las letras y los números.</p>
+          )}
+        </GlassPanel>
+      )}
 
-      <GlassPanel className="mt-4 space-y-3 p-5">
-        <h2 className="flex items-center gap-2 font-medium text-foreground"><FileText className="h-4 w-4" /> Cotiza exámenes, outsourcing o capacitaciones</h2>
-        <div className="grid gap-2 sm:grid-cols-3">
-          <select className={campo} value={cotiTipo} onChange={(e) => setCotiTipo(e.target.value)} aria-label="Tipo de cotización">
-            {["Exámenes ocupacionales", "Outsourcing SG-SST", "Capacitación o brigada"].map((x) => (
-              <option key={x} value={x}>{x}</option>
-            ))}
-          </select>
-          <input className={campo} placeholder="Tu nombre *" value={cotiNombre} onChange={(e) => setCotiNombre(e.target.value)} />
-          <input className={campo} placeholder="Tu teléfono *" inputMode="tel" value={cotiTel} onChange={(e) => setCotiTel(e.target.value)} />
-        </div>
-        <a
-          href={enlaceWhats(telefono, `Hola ${nombre}, quiero una cotización de ${cotiTipo}. Nombre: ${cotiNombre || "-"}, teléfono: ${cotiTel || "-"}`)}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
-        >
-          <MessageCircle className="h-4 w-4" /> Solicitar cotización por WhatsApp
-        </a>
-      </GlassPanel>
+      {esSST && (
+        <GlassPanel className="mt-4 space-y-3 p-5">
+          <h2 className="flex items-center gap-2 font-medium text-foreground"><FileText className="h-4 w-4" /> Cotiza exámenes, outsourcing o capacitaciones</h2>
+          <div className="grid gap-2 sm:grid-cols-3">
+            <select className={campo} value={cotiTipo} onChange={(e) => setCotiTipo(e.target.value)} aria-label="Tipo de cotización">
+              {["Exámenes ocupacionales", "Outsourcing SG-SST", "Capacitación o brigada"].map((x) => (
+                <option key={x} value={x}>{x}</option>
+              ))}
+            </select>
+            <input className={campo} placeholder="Tu nombre *" value={cotiNombre} onChange={(e) => setCotiNombre(e.target.value)} />
+            <input className={campo} placeholder="Tu teléfono *" inputMode="tel" value={cotiTel} onChange={(e) => setCotiTel(e.target.value)} />
+          </div>
+          <a
+            href={enlaceWhats(telefono, `Hola ${nombre}, quiero una cotización de ${cotiTipo}. Nombre: ${cotiNombre || "-"}, teléfono: ${cotiTel || "-"}`)}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
+          >
+            <MessageCircle className="h-4 w-4" /> Solicitar cotización por WhatsApp
+          </a>
+        </GlassPanel>
+      )}
 
-      <GlassPanel className="mt-4 space-y-3 p-5">
-        <h2 className="flex items-center gap-2 font-medium text-foreground"><CalendarCheck className="h-4 w-4" /> Pide tu cita online</h2>
-        <div className="grid gap-2 sm:grid-cols-2">
-          <input className={campo} placeholder="Tu nombre *" value={citaNombre} onChange={(e) => setCitaNombre(e.target.value)} />
-          <input className={campo} placeholder="Tu teléfono *" inputMode="tel" value={citaTel} onChange={(e) => setCitaTel(e.target.value)} />
-          <input className={campo} type="date" value={citaFecha} onChange={(e) => setCitaFecha(e.target.value)} aria-label="Fecha de la cita" />
-          <input className={campo} type="time" value={citaHora} onChange={(e) => setCitaHora(e.target.value)} aria-label="Hora de la cita" />
-        </div>
-        <a
-          href={enlaceWhats(telefono, `Hola ${nombre}, quiero una cita. Nombre: ${citaNombre || "-"}, teléfono: ${citaTel || "-"}, fecha: ${citaFecha || "-"}, hora: ${citaHora || "-"}`)}
-          target="_blank" rel="noreferrer"
-          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
-        >
-          <CalendarCheck className="h-4 w-4" /> Solicitar cita por WhatsApp
-        </a>
-      </GlassPanel>
+      {muestraCita && (
+        <GlassPanel className="mt-4 space-y-3 p-5">
+          <h2 className="flex items-center gap-2 font-medium text-foreground"><CalendarCheck className="h-4 w-4" /> {esTaller ? "Agenda tu servicio o visita" : "Pide tu cita online"}</h2>
+          {esTaller && <p className="text-sm text-muted-foreground">Reserva mantenimiento, revisión o visita para ver un vehículo.</p>}
+          <div className="grid gap-2 sm:grid-cols-2">
+            <input className={campo} placeholder="Tu nombre *" value={citaNombre} onChange={(e) => setCitaNombre(e.target.value)} />
+            <input className={campo} placeholder="Tu teléfono *" inputMode="tel" value={citaTel} onChange={(e) => setCitaTel(e.target.value)} />
+            <input className={campo} type="date" value={citaFecha} onChange={(e) => setCitaFecha(e.target.value)} aria-label="Fecha de la cita" />
+            <input className={campo} type="time" value={citaHora} onChange={(e) => setCitaHora(e.target.value)} aria-label="Hora de la cita" />
+          </div>
+          <a
+            href={enlaceWhats(telefono, `Hola ${nombre}, quiero ${esTaller ? "agendar un servicio" : "una cita"}. Nombre: ${citaNombre || "-"}, teléfono: ${citaTel || "-"}, fecha: ${citaFecha || "-"}, hora: ${citaHora || "-"}`)}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
+          >
+            <CalendarCheck className="h-4 w-4" /> {esTaller ? "Solicitar agendamiento por WhatsApp" : "Solicitar cita por WhatsApp"}
+          </a>
+        </GlassPanel>
+      )}
 
       <p className="mt-6 text-center text-xs text-muted-foreground">
         <Link to="/welcome" className="underline">Abrir panel del negocio</Link>
