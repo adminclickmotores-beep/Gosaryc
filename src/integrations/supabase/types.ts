@@ -7620,6 +7620,19 @@ export type Database = {
         Args: { p_cliente: string; p_cliente_doc: string | null; p_items: Json; p_iva: number; p_formato: string }
         Returns: Json
       }
+      hot_checkout: { Args: { p_reserva: string; p_metodo: string }; Returns: Json }
+      edu_generar_pensiones: { Args: { p_periodo: string; p_valor: number; p_vence: string | null }; Returns: Json }
+      edu_cobrar_pension: { Args: { p_pension: string; p_metodo: string }; Returns: Json }
+      far_vender: {
+        Args: { p_producto: string; p_cantidad: number; p_cliente: string | null; p_con_formula: boolean; p_metodo: string }
+        Returns: Json
+      }
+      opt_abonar: { Args: { p_orden: string; p_valor: number; p_metodo: string }; Returns: Json }
+      eve_reservar: {
+        Args: { p_salon: string | null; p_cliente: string; p_telefono: string | null; p_fecha: string; p_valor: number; p_anticipo: number }
+        Returns: Json
+      }
+      eve_abonar: { Args: { p_evento: string; p_valor: number; p_metodo: string }; Returns: Json }
       accept_org_invite: { Args: { _token: string }; Returns: string }
       es_superadmin: { Args: never; Returns: boolean }
       verificar_licencia: { Args: { p_codigo: string }; Returns: Json }
