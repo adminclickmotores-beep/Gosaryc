@@ -1,0 +1,19 @@
+{
+  "name": "gosaryc-android",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Gosaryc para Android (clientes): envuelve la web publicada con camara, notificaciones y descarga de PDF/Excel.",
+  "scripts": {
+    "apk": "cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/app": "^7.0.0",
+    "@capacitor/camera": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/local-notifications": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.0",
+    "@capacitor/cli": "^7.0.0"
+  }
+}

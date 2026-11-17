@@ -1,6 +1,6 @@
 {
   "name": "gosaryc-escritorio",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "private": true,
   "description": "Gosaryc para escritorio: abre el panel y trae la API local de WhatsApp con agente multi-especialista 24/7 en bandeja del sistema (sesion permanente, inicio automatico) y la API local de impresion silenciosa integradas.",
   "author": "Gosaryc",
@@ -9,7 +9,7 @@
     "iniciar": "electron .",
     "start": "electron .",
     "icono": "electron generar-icono.cjs",
-    "instalador:windows": "npm run icono && electron-builder --win",
+    "instalador:windows": "npm run icono && electron-builder --win --x64 --ia32",
     "instalador:mac": "npm run icono && electron-builder --mac",
     "instalador:linux": "npm run icono && electron-builder --linux"
   },
@@ -20,6 +20,7 @@
   "build": {
     "appId": "app.gosaryc.escritorio",
     "productName": "Gosaryc",
+    "artifactName": "Gosaryc-Setup-${arch}.${ext}",
     "directories": { "output": "instaladores" },
     "files": ["main.cjs", "preload.cjs", "package.json", "build/icon.png", "api-impresion/server.js", "api-impresion/package.json"],
     "extraResources": [

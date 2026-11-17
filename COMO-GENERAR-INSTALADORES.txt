@@ -1,0 +1,51 @@
+COMO GENERAR LOS 4 INSTALADORES DE GOSARYC (Windows 32/64 + Android clientes + admin)
+================================================================================
+Todo se genera en un computador con Windows. Solo necesitas instalar una vez:
+- Node.js LTS: https://nodejs.org (instálalo con "Siguiente" en todo y reinicia).
+- Para los APK: Java JDK 17 (https://adoptium.net, Temurin 17 LTS) y Android Studio
+  (https://developer.android.com/studio, ábrelo una vez para que descargue el SDK).
+
+Los 4 archivos se compilan con doble clic, sin comandos. Hazlos en este orden:
+
+1) INSTALADOR WINDOWS PARA CLIENTES (64 y 32 bits)
+   Archivo: escritorio/crear-instalador-windows.bat
+   Resultado: escritorio/instaladores/Gosaryc-Setup-x64.exe (64 bits)
+              y escritorio/instaladores/Gosaryc-Setup-ia32.exe (32 bits).
+   Incluye: panel, agente WhatsApp IA 24/7 en bandeja, impresión silenciosa de
+   tirillas y guía de uso, todo con el logo oficial.
+   Nota: Windows no permite un único .exe universal para 32 y 64 bits, por eso se
+   generan los dos. Entrega a cada cliente el que corresponda a su computador
+   (casi todos hoy son de 64 bits).
+   Si Windows dice "Windows protegió su PC": Más información > Ejecutar de todas formas.
+
+2) APK ANDROID PARA CLIENTES (sin Play Store)
+   Archivo: crear-apk-clientes.bat (en la raíz del proyecto)
+   Resultado: Gosaryc.apk (en la raíz del proyecto).
+   Incluye: la app Gosaryc (com.gosaryc.erp) con el logo oficial, cámara
+   (código de barras/QR), notificaciones y descarga de PDF/Excel.
+   Instalación: pasa el APK al celular por WhatsApp o USB, tócalo e instala
+   (permite "orígenes desconocidos"). Cada cliente inicia sesión con su cuenta.
+
+3) INSTALADOR WINDOWS DE LICENCIAS ADMIN (solo superadmin, 64 y 32 bits)
+   Archivo: crear-instalador-licencias-win.bat (en la raíz del proyecto)
+   Resultado: generador-licencias/instaladores/Gosaryc-Licencias-Admin-x64.exe
+              y Gosaryc-Licencias-Admin-ia32.exe.
+   Es una app aparte que abre solo el panel de licencias. Inicia sesión con tu
+   cuenta superadmin: crea licencias de prueba, mensuales, anuales o vitalicias,
+   define límites, renueva o suspende clientes, y genera la clave para copiarla
+   o enviarla por WhatsApp con un clic. NO la compartas con clientes.
+   (Los permisos los aplica la base de datos: aunque alguien la instale, sin tu
+   cuenta no ve ni cambia nada.)
+
+4) APK ANDROID DE LICENCIAS ADMIN (solo superadmin, sin tienda)
+   Archivo: crear-apk-licencias-admin.bat (en la raíz del proyecto)
+   Resultado: Gosaryc-Licencias-Admin.apk (en la raíz del proyecto).
+   Se distingue por el logo rojo con cinta ADMIN. Instálalo solo en tu celular
+   e inicia sesión con tu cuenta superadmin para gestionar licencias donde estés.
+
+ERRORES COMUNES
+- "No se pudo descargar Electron": instala Node.js LTS (22 o 24), borra la
+  carpeta node_modules y reintenta; revisa internet, antivirus o firewall.
+- "No encuentro el Android SDK": instala Android Studio y ábrelo una vez.
+- Los APK dicen "orígenes desconocidos": es normal al instalar fuera de la
+  tienda; acepta e instala.

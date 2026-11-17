@@ -48,6 +48,14 @@ Por defecto abre `https://gosaryc.lovable.app`. Con otro dominio, define `GOSARY
 ## Aviso de Windows
 El instalador no está firmado con un certificado de pago: Windows puede mostrar "Windows protegió su PC". Pulsa **Más información > Ejecutar de todas formas**.
 
+## Instaladores, APK y app de licencias (todo con el logo oficial)
+
+- **Windows clientes (64 y 32 bits):** `escritorio/crear-instalador-windows.bat` genera `Gosaryc-Setup-x64.exe` y `Gosaryc-Setup-ia32.exe` en `escritorio/instaladores` (Windows no permite un único .exe universal, por eso salen los dos; casi todos los computadores de hoy son de 64 bits).
+- **Android clientes (sin Play Store):** `crear-apk-clientes.bat` (en la raíz) genera `Gosaryc.apk` (ID `com.gosaryc.erp`) con cámara, notificaciones y descarga de PDF/Excel. Se pasa al celular por WhatsApp o USB.
+- **Licencias Admin Windows (solo tú):** `crear-instalador-licencias-win.bat` genera `Gosaryc-Licencias-Admin-x64.exe` e `-ia32.exe`. Abre solo el panel de licencias con tu cuenta superadmin (crear, renovar, suspender y enviar la clave por WhatsApp). No la compartas con clientes.
+- **Licencias Admin Android (solo tú):** `crear-apk-licencias-admin.bat` genera `Gosaryc-Licencias-Admin.apk` (ID `com.gosaryc.licencias`, logo rojo con cinta ADMIN).
+- Guía paso a paso de los 4: `COMO-GENERAR-INSTALADORES.txt` en la raíz.
+
 ## Más adelante
 - Icono propio: guarda un `icono.ico` (256x256) en una carpeta `build` dentro de `escritorio`.
 - Mac: `npm run instalador:mac` (se arma desde un Mac).

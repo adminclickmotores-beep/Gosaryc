@@ -1,0 +1,32 @@
+{
+  "name": "gosaryc-licencias-admin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Gosaryc Licencias Admin para Windows (solo superadmin): crear licencias de prueba, mensuales, anuales o vitalicias, renovar o suspender clientes y enviar la clave por WhatsApp.",
+  "author": "Gosaryc",
+  "main": "main.cjs",
+  "scripts": {
+    "iniciar": "electron .",
+    "start": "electron .",
+    "instalador:windows": "electron-builder --win --x64 --ia32"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "app.gosaryc.licencias",
+    "productName": "Gosaryc Licencias Admin",
+    "directories": { "output": "instaladores" },
+    "files": ["main.cjs", "preload.cjs", "package.json", "build/icon.png"],
+    "artifactName": "Gosaryc-Licencias-Admin-${arch}.${ext}",
+    "win": { "target": "nsis", "icon": "build/icon.png" },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "Gosaryc Licencias Admin"
+    }
+  }
+}

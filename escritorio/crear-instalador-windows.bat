@@ -1,5 +1,5 @@
 @echo off
-REM Haz doble clic en este archivo para crear el instalador de Gosaryc para Windows.
+REM Haz doble clic en este archivo para crear los instaladores de Gosaryc para Windows (64 y 32 bits).
 REM Funciona sin importar desde que carpeta lo abras.
 cd /d "%~dp0"
 where node >nul 2>nul
@@ -44,12 +44,13 @@ if not exist "node_modules\electron\path.txt" (
   exit /b 1
 )
 
-echo [3/3] Creando el instalador de Windows...
+echo [3/3] Creando los instaladores de Windows (64 y 32 bits)...
 call npm run instalador:windows
 if errorlevel 1 goto error
 
 echo.
-echo Listo. El instalador esta en la carpeta "instaladores".
+echo Listo. Los instaladores estan en la carpeta "instaladores":
+echo   Gosaryc-Setup-x64.exe (64 bits) y Gosaryc-Setup-ia32.exe (32 bits).
 explorer "%~dp0instaladores"
 pause
 exit /b 0
