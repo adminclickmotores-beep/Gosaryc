@@ -31,6 +31,7 @@ import { ComisionesTaller, OrdenesTaller, ProyectosMedida, RepuestosTaller } fro
 import { AgroLotes, ObrasConstructora, PropiedadesInmobiliaria, TransporteManifiestos } from "@/components/medida/MedidaModulos";
 import { AcademicoEducacion, ControlFarmacia, EventosSalon, FormulasOptica, HabitacionesHotel, MatriculasEducacion, MatrizModa, PensionesEducacion, ReservasHotel } from "@/components/turismo/TurismoModulos";
 import { FacturaFiscal } from "@/components/fiscal/FacturaFiscal";
+import { JoyeriaPiezas, LavanderiaOrdenes, LicoreraDomicilios, PapeleriaEncargos, ParqueaderoTurnos, ProfesionalCasos, TecnologiaProyectos } from "@/components/oficios/OficiosModulos";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
@@ -114,6 +115,13 @@ function ModuloPage() {
   if (id === "far_control") return <ControlFarmacia />;
   if (id === "opt_formulas") return <FormulasOptica />;
   if (id === "eve_eventos") return <EventosSalon />;
+  if (id === "lav_ordenes") return <LavanderiaOrdenes />;
+  if (id === "prof_casos") return <ProfesionalCasos />;
+  if (id === "tec_proyectos") return <TecnologiaProyectos />;
+  if (id === "pap_encargos") return <PapeleriaEncargos />;
+  if (id === "joy_apartados") return <JoyeriaPiezas />;
+  if (id === "lic_domicilios") return <LicoreraDomicilios />;
+  if (id === "parq_turnos") return <ParqueaderoTurnos />;
   if (id === "gim_checkin") return <CheckinGimnasio />;
   if (id === "gim_socios") return <SociosGimnasio />;
   if (id === "gim_planes") return <PlanesGimnasio />;

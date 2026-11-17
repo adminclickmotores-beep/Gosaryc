@@ -129,9 +129,9 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
   tecnologia: {
     frase: "Proyectos entregados a tiempo, clientes que regresan.",
     pasos: [
-      { titulo: "Registra tus proyectos", texto: "En “Proyectos y entregables” anota estado, responsables y fechas." },
+      { titulo: "Registra tus proyectos", texto: "En “Proyectos y cobro” anota alcance, horas, valor y fecha de entrega; cada abono entra a Caja y Contabilidad." },
       { titulo: "Atiende el soporte", texto: "Lleva cada solicitud de cliente en “Soporte y tickets”." },
-      { titulo: "Factura tus horas", texto: "Anota las horas por cliente y tus cobros recurrentes." },
+      { titulo: "Cobra suscripciones", texto: "En “Planes y suscripciones” lleva los cobros recurrentes de cada cliente." },
     ],
   },
   transporte: {
@@ -226,19 +226,18 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
   profesional: {
     frase: "Cada caso al día, cada plazo cumplido.",
     pasos: [
-      { titulo: "Abre tus casos", texto: "En “Casos y expedientes” registra cliente, estado y responsable." },
+      { titulo: "Abre tus casos", texto: "En “Casos y cobro de honorarios” registra cliente, asunto y honorarios pactados." },
+      { titulo: "Cobra por abonos", texto: "Cada pago baja el saldo y entra a Caja y Contabilidad; la mora se avisa por WhatsApp." },
       { titulo: "No pierdas plazos", texto: "En “Plazos y vencimientos” anota términos y entregas." },
-      { titulo: "Cobra honorarios", texto: "Controla abonos y saldos en “Honorarios y cobros”." },
       { titulo: "Guarda documentos", texto: "Organiza contratos y archivos por cliente." },
     ],
   },
   lavanderia: {
     frase: "Cada orden entregada limpia y a tiempo.",
     pasos: [
-      { titulo: "Abre la orden con fotos", texto: "En “Órdenes de lavado” registra cliente, placa, checklist y fotos de recepción: sin fotos no deja pasar a diagnóstico." },
-      { titulo: "Mueve el tablero", texto: "Pasa cada orden de Recibido a Entregado; la aprobación del cliente se pide por WhatsApp y al cobrar entra a Caja y Contabilidad con garantía." },
+      { titulo: "Recibe con la orden", texto: "En “Órdenes de lavado y cobro” anota cliente, prendas y fecha de entrega." },
+      { titulo: "Cobra al entregar", texto: "Cada abono y el pago final entran a Caja y Contabilidad; avisa por WhatsApp cuando esté lista." },
       { titulo: "Define tus tarifas", texto: "En “Tarifas por servicio” pon precio por prenda, kilo o tipo de lavado." },
-      { titulo: "Programa entregas", texto: "Organiza la recogida y entrega a domicilio." },
       { titulo: "Liquida comisiones", texto: "En “Comisiones y liquidación” solo el dueño paga a cada operario." },
     ],
   },
@@ -272,10 +271,10 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
   joyeria: {
     frase: "Cada pieza registrada y cada venta cuidada.",
     pasos: [
-      { titulo: "Registra tus piezas", texto: "Agrega joyas con material, peso y precio." },
-      { titulo: "Vende y cotiza", texto: "Registra ventas y entrega cotizaciones a tus clientes." },
-      { titulo: "Atiende arreglos", texto: "Lleva el control de reparaciones y pedidos a medida." },
-      { titulo: "Controla tu inventario", texto: "Revisa qué tienes disponible y qué falta." },
+      { titulo: "Registra tus piezas", texto: "En “Piezas, apartados y venta” anota material, peso y precio." },
+      { titulo: "Aparta con abono", texto: "El abono queda registrado y el saldo se cobra contra entrega, todo a Caja y Contabilidad." },
+      { titulo: "Atiende arreglos", texto: "En “Taller y reparaciones” lleva arreglos y relojes por encargo." },
+      { titulo: "Entrega certificados", texto: "En “Certificados de autenticidad” guarda las garantías de cada pieza." },
     ],
   },
   celulares: {
@@ -292,7 +291,7 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
     frase: "Tu papelería surtida y las ventas al día.",
     pasos: [
       { titulo: "Carga tus productos", texto: "Agrega artículos con precio y existencias." },
-      { titulo: "Vende rápido", texto: "Registra cada venta desde el punto de venta y cuadra la caja del día." },
+      { titulo: "Recibe encargos", texto: "En “Encargos y copias con cobro” anota el pedido, cobra el abono y el saldo al entregar: entra a Caja y Contabilidad." },
       { titulo: "Surte a tiempo", texto: "Revisa qué se está agotando y haz tus compras." },
       { titulo: "Cotiza impresos y publicidad", texto: "En “Proyectos de impresión” arma la cotización con materiales, cobra el abono para producir y el saldo contra entrega." },
       { titulo: "Revisa tus ventas", texto: "Consulta los reportes del día y del mes." },
@@ -345,7 +344,7 @@ GUIAS_NEGOCIO.licorera = {
   pasos: [
     { titulo: "Carga tus referencias", texto: "En “Referencias por marca y presentación” registra grados, estampilla, costo y stock." },
     { titulo: "Cumple los permisos", texto: "En “Permisos y horarios de venta” guarda licencia, bomberos y horario permitido con su vencimiento." },
-    { titulo: "Verifica la edad en domicilios", texto: "En “Domicilios con verificación de edad” registra el documento antes de entregar y rechaza si es menor." },
+    { titulo: "Verifica la edad y cobra", texto: "En “Domicilios verificados y cobro” registra el documento y confirma la mayoría de edad (sin eso no deja cobrar); el pago entra a Caja y Contabilidad." },
     { titulo: "Arma combos", texto: "En “Combos y promociones” crea ofertas por ocasión." },
   ],
 };
@@ -418,6 +417,14 @@ GUIAS_NEGOCIO.iglesia = {
     { titulo: "Lleva los aportes", texto: "En “Diezmos, ofrendas y aportes” registra cada aporte con su recibo." },
     { titulo: "Organiza grupos y eventos", texto: "En “Grupos y células” y “Eventos y reservas” programa reuniones y actividades." },
     { titulo: "Visita y acompaña", texto: "En “Visitas pastorales” da seguimiento a quienes lo necesitan." },
+  ],
+};
+GUIAS_NEGOCIO.parqueadero = {
+  frase: "Cada placa a tiempo, cada hora cobrada.",
+  pasos: [
+    { titulo: "Registra el ingreso", texto: "En “Turnos y cobro por horas” anota la placa y la tarifa: el tiempo corre solo." },
+    { titulo: "Cobra al salir", texto: "El programa calcula las horas por la tarifa y el pago entra a Caja y Contabilidad." },
+    { titulo: "Factura si te la piden", texto: "Emite la factura con consecutivo desde el módulo de Facturación." },
   ],
 };
 

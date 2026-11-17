@@ -433,6 +433,45 @@ const POR_MODULO: Record<string, Instructivo> = {
       "Imprime o guarda en PDF y reimprime cuando el cliente la pida. El historial se exporta a Excel.",
     ],
   },
+  lav_ordenes: {
+    titulo: "Órdenes de lavado y cobro",
+    paraQue: "Recibir prendas, avisar cuando estén listas y cobrar.",
+    pasos: [
+      "Recibe con cliente, prendas, total y fecha de entrega.",
+      "Avanza de recibida a en proceso y a lista; avisa por WhatsApp.",
+      "Cobra abonos o el total: entra a Caja y Contabilidad.",
+    ],
+  },
+  prof_casos: {
+    titulo: "Casos y cobro de honorarios",
+    paraQue: "Llevar cada asunto y cobrarlo por abonos.",
+    pasos: ["Abre el caso con cliente, asunto, honorarios y vencimiento.", "Cobra abonos que entran a Caja; la mora se avisa por WhatsApp."],
+  },
+  tec_proyectos: {
+    titulo: "Proyectos y cobro",
+    paraQue: "Del alcance cotizado a la entrega cobrada.",
+    pasos: ["Registra alcance, valor, horas y entrega.", "Avanza de cotizado a entregado y cobra abonos que entran a Caja."],
+  },
+  pap_encargos: {
+    titulo: "Encargos y copias con cobro",
+    paraQue: "Recibir pedidos de impresión y cobrarlos al entregar.",
+    pasos: ["Anota cliente, detalle, valor y entrega.", "Pasa de recibido a lista y cobra: entra a Caja."],
+  },
+  joy_apartados: {
+    titulo: "Piezas, apartados y venta",
+    paraQue: "Vender joyas con apartado y saldo contra entrega.",
+    pasos: ["Registra la pieza con material, peso y precio (y para quién queda apartada).", "Cobra el abono y luego el saldo: todo entra a Caja."],
+  },
+  lic_domicilios: {
+    titulo: "Domicilios verificados y cobro",
+    paraQue: "Vender licor a domicilio cumpliendo la verificación de edad.",
+    pasos: ["Registra cliente, pedido y documento de quien recibe.", "Marca la mayoría de edad verificada: sin eso el programa no deja cobrar.", "Cobra al entregar: entra a Caja."],
+  },
+  parq_turnos: {
+    titulo: "Turnos y cobro por horas",
+    paraQue: "Cobrar el parqueadero por tiempo.",
+    pasos: ["Registra la placa y la tarifa por hora al entrar.", "Al salir, el programa calcula las horas y cobra: entra a Caja y Contabilidad."],
+  },
   eve_eventos: {
     titulo: "Eventos y salones",
     paraQue: "Cotizar, apartar la fecha y cumplir la logística.",

@@ -118,7 +118,8 @@ export type TipoNegocioClave =
   | "seguridad_aseo"
   | "ganaderia"
   | "fundacion"
-  | "iglesia";
+  | "iglesia"
+  | "parqueadero";
 
 export type ModuloNegocio = {
   id: string;
@@ -996,6 +997,18 @@ TIPOS_NEGOCIO.push(
   },
 );
 
+TIPOS_NEGOCIO.push({
+  clave: "parqueadero",
+  etiqueta: "Parqueadero / estacionamiento",
+  panel: "Parqueadero",
+  usaPedidos: false,
+  modulos: [
+    m("parq_turnos", "Turnos y cobro por horas", "Placa, hora de entrada y salida, tarifa por hora y cobro automático que entra a Caja y Contabilidad.", Car),
+    CLIENTES,
+    FACTURAS, PAGOS, ...propios("parq", "caja", "finanzas"),
+  ],
+});
+
 // ---- Módulo profesional de Veterinaria y Salud (consultorio, clínica, odontología) ----
 // Reemplaza los módulos genéricos (pacientes, historia, fórmulas, vacunas, agenda, insumos) por los propios con
 // tablas tipadas. Si un tipo o un módulo no existe, simplemente no se toca (nunca falla el arranque).
@@ -1167,9 +1180,50 @@ for (const [clave, nuevos] of Object.entries(MODULOS_TURISMO9)) {
   tipoTur.modulos = [...faltan, ...tipoTur.modulos.filter((x) => !quitar.includes(x.id))];
 }
 
+// ---- Oficios y parqueadero (Prompt #10, cierre comercial) ----
+// Órdenes, casos, proyectos, encargos, piezas, domicilios y turnos con cobro
+// directo a Caja y Contabilidad. Cero rubros en modo genérico.
+// Si un tipo no existe, no se toca (nunca falla el arranque).
+const MODULOS_OFICIOS: Record<string, ModuloNegocio[]> = {
+  lavanderia: [
+    m("lav_ordenes", "Órdenes de lavado y cobro", "Prendas recibidas, fecha de entrega y cobro que entra a Caja y Contabilidad.", Shirt),
+  ],
+  profesional: [
+    m("prof_casos", "Casos y cobro de honorarios", "Asunto, honorarios pactados y abonos; cada cobro entra a Caja y Contabilidad.", Briefcase),
+  ],
+  tecnologia: [
+    m("tec_proyectos", "Proyectos y cobro", "Alcance, horas y valor con abonos; cada cobro entra a Caja y Contabilidad.", Laptop),
+  ],
+  papeleria: [
+    m("pap_encargos", "Encargos y copias con cobro", "Detalle, fecha de entrega y cobro que entra a Caja y Contabilidad.", FileText),
+  ],
+  joyeria: [
+    m("joy_apartados", "Piezas, apartados y venta", "Material, peso y precio; aparta con abono y cobra el saldo contra entrega.", Gem),
+  ],
+  licorera: [
+    m("lic_domicilios", "Domicilios verificados y cobro", "Verifica la mayoría de edad con documento antes de entregar; el cobro entra a Caja.", Bike),
+  ],
+};
+const REEMPLAZA_OFICIOS: Record<string, string[]> = {
+  lavanderia: ["ordenes_lavado", "entregas_lav"],
+  profesional: ["casos", "honorarios"],
+  tecnologia: ["proyectos_tec", "horas"],
+  papeleria: ["copias_impresiones"],
+  joyeria: ["piezas_joyeria", "apartados"],
+  licorera: ["domicilios_licor"],
+};
+for (const [clave, nuevos] of Object.entries(MODULOS_OFICIOS)) {
+  const tipoOfi = TIPOS_NEGOCIO.find((x) => x.clave === clave);
+  if (!tipoOfi) continue;
+  const quitar = REEMPLAZA_OFICIOS[clave] ?? [];
+  const faltan = nuevos.filter((e) => !tipoOfi.modulos.some((x) => x.id === e.id));
+  if (faltan.length === 0) continue;
+  tipoOfi.modulos = [...faltan, ...tipoOfi.modulos.filter((x) => !quitar.includes(x.id))];
+}
+
 // Se agrega el módulo de cotizaciones a los tipos que cotizan y no tienen uno propio.
 // Salud (presupuestos de tratamiento), educación, hospedaje, gimnasio, mascotas, agro, farmacia y lavandería no cotizan así.
-const SIN_COTIZACIONES: TipoNegocioClave[] = ["tienda","restaurante", "cafeteria", "comida_rapida","salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro", "farmacia", "lavanderia", "belleza", "inmobiliaria", "tecnologia", "condominio", "prestamos", "papeleria", "supermercado", "carniceria", "licorera", "floristeria", "optica", "guarderia", "ganaderia", "fundacion", "iglesia", "seguridad_aseo", "alquiler_vehiculos"];
+const SIN_COTIZACIONES: TipoNegocioClave[] = ["tienda","restaurante", "cafeteria", "comida_rapida","salud", "educacion", "hospedaje", "gimnasio", "mascotas", "agro", "farmacia", "lavanderia", "belleza", "inmobiliaria", "tecnologia", "condominio", "prestamos", "papeleria", "supermercado", "carniceria", "licorera", "floristeria", "optica", "guarderia", "ganaderia", "fundacion", "iglesia", "seguridad_aseo", "alquiler_vehiculos", "parqueadero"];
 for (const t of TIPOS_NEGOCIO) {
   if (SIN_COTIZACIONES.includes(t.clave)) continue;
   if (t.modulos.some((x) => x.id === COTIZACIONES.id || x.id.startsWith("cotizaciones_"))) continue;
@@ -1209,6 +1263,7 @@ export function resolverTipoNegocio(valor: string | null | undefined): TipoNegoc
   if (/optica|optometr|lentes|gafas/.test(t)) return por("optica");
   if (/guarderi|jardin infantil|preescolar|hogar infantil|sala cuna/.test(t)) return por("guarderia");
   if (/alquiler de (vehic|carro|auto|moto)|renta de (carro|auto)|rent a car/.test(t)) return por("alquiler_vehiculos");
+  if (/parqueadero|parqueo|estacionamiento|parking/.test(t)) return por("parqueadero");
   if (/seguridad|vigilancia|vigilante|aseo|servicios generales/.test(t)) return por("seguridad_aseo");
   if (/ganader|avicola|porcicol|lecher|pecuari/.test(t)) return por("ganaderia");
   if (/fundacion|ong\b|sin animo de lucro|beneficencia|corporacion social/.test(t)) return por("fundacion");
