@@ -1017,6 +1017,30 @@ for (const clave of ["mascotas", "salud"] as const) {
   tipoClinica.modulos = [...clinica(clave === "mascotas"), ...tipoClinica.modulos.filter((x) => !quitar.includes(x.id))];
 }
 
+// ---- Peluquería/Barbería/Spa y Gimnasio: módulos propios con tablas tipadas ----
+// Reemplazan los genéricos equivalentes. Si un tipo no existe, no se toca (nunca falla el arranque).
+const MODULOS_BELLEZA: ModuloNegocio[] = [
+  m("bel_agenda", "Agenda por silla y estilista", "Citas por servicio con duración, sin cruces por profesional ni por silla o cabina, y recordatorio por WhatsApp.", CalendarClock),
+  m("bel_fichas", "Clientes y ficha técnica", "Fórmulas de tinte, alergias y fotos de antes y después de cada visita.", ClipboardList),
+  m("bel_servicios", "Servicios, insumos y tarifas", "Duración, precio y comisión de cada servicio, con los insumos que gasta y su inventario.", Scissors),
+  m("bel_comisiones", "Comisiones y liquidación", "Comisión en tiempo real por servicio o producto; la liquidación sale de Caja y llega a Contabilidad.", Percent),
+];
+const MODULOS_GIMNASIO: ModuloNegocio[] = [
+  m("gim_checkin", "Check-in de socios", "Ingreso por cédula o QR: alerta en rojo si está vencido o por vencer, con cobro por WhatsApp.", QrCode),
+  m("gim_socios", "Socios y membresías", "Venta de planes, fechas de inicio y vencimiento, congelamiento por incapacidad.", Dumbbell),
+  m("gim_planes", "Planes y tiqueteras", "Mensualidades, trimestres, anualidades y tiqueteras por sesiones.", Tag),
+  m("gim_valoracion", "Valoración física", "Peso, grasa, masa muscular, medidas y rutina asignada por entrenador.", ClipboardList),
+];
+const REEMPLAZA_BELLEZA_GIM: Record<string, { nuevos: ModuloNegocio[]; quitar: string[] }> = {
+  belleza: { nuevos: MODULOS_BELLEZA, quitar: ["historial", "comisiones"] },
+  gimnasio: { nuevos: MODULOS_GIMNASIO, quitar: ["socios", "control_acceso", "planes_entreno"] },
+};
+for (const [clave, def] of Object.entries(REEMPLAZA_BELLEZA_GIM)) {
+  const tipoBG = TIPOS_NEGOCIO.find((x) => x.clave === clave);
+  if (!tipoBG || tipoBG.modulos.some((x) => x.id === def.nuevos[0].id)) continue;
+  tipoBG.modulos = [...def.nuevos, ...tipoBG.modulos.filter((x) => !def.quitar.includes(x.id))];
+}
+
 // ---- POS comercial (Tienda, Supermercado, Ferretería, Carnicería y Fruver) ----
 // Se agregan al inicio del menú el punto de venta con código de barras y los productos con precios múltiples.
 // Si un tipo no existe, simplemente no se toca (nunca falla el arranque).

@@ -219,6 +219,79 @@ const POR_MODULO: Record<string, Instructivo> = {
     ],
     consejo: "Crea antes los cortes como productos en kilos en “Productos y precios”.",
   },
+  bel_agenda: {
+    titulo: "Agenda por silla y estilista",
+    paraQue: "Reservar citas por servicio sin que se crucen el profesional ni la silla o cabina.",
+    pasos: [
+      "Elige el cliente, el servicio (trae su duración), quién atiende, la silla o cabina y la hora.",
+      "Toca “Agendar cita”: si hay cruce, el sistema te avisa.",
+      "Mañana aparecen los recordatorios: un clic abre WhatsApp con el mensaje listo.",
+      "Al terminar, toca “Cobrar y finalizar”: se descuentan los insumos, entra a Caja y Contabilidad y se calcula la comisión.",
+    ],
+  },
+  bel_fichas: {
+    titulo: "Clientes y ficha técnica",
+    paraQue: "Guardar fórmulas de tinte, alergias y fotos de antes y después.",
+    pasos: [
+      "Crea el cliente con su teléfono y sus alergias.",
+      "En cada visita escribe la fórmula, las notas y sube las fotos.",
+      "El historial queda ordenado por fecha; las alergias salen en rojo en la agenda.",
+    ],
+    consejo: "Las fichas no se editan ni se borran: si algo cambia, crea una ficha nueva.",
+  },
+  bel_servicios: {
+    titulo: "Servicios, insumos y tarifas",
+    paraQue: "Definir precio, duración, comisión e insumos que gasta cada servicio.",
+    pasos: [
+      "Crea el servicio con su duración, precio y porcentaje de comisión.",
+      "Crea los insumos (tintes, ampolletas) con su existencia y costo.",
+      "En cada servicio agrega los insumos y la cantidad que gasta.",
+    ],
+    consejo: "Si no hay insumo suficiente, el sistema avisa antes de cobrar.",
+  },
+  bel_comisiones: {
+    titulo: "Comisiones y liquidación",
+    paraQue: "Ver lo que gana cada estilista y pagarlo desde Caja.",
+    pasos: [
+      "Cada servicio o producto cobrado calcula la comisión (descontando insumos si el servicio lo indica).",
+      "También puedes registrar una venta rápida sin cita.",
+      "El dueño toca “Liquidar”: sale de Caja y queda en Contabilidad.",
+    ],
+  },
+  gim_checkin: {
+    titulo: "Check-in de socios",
+    paraQue: "Dejar entrar solo a quien tiene la membresía al día.",
+    pasos: [
+      "Escribe la cédula o escanea el código QR y presiona Enter.",
+      "Verde: puede entrar. Rojo: está vencido, sin sesiones, congelado o le quedan 5 días o menos.",
+      "Si está en rojo, toca “Cobrar por WhatsApp” para enviarle el recordatorio.",
+    ],
+    consejo: "En una tiquetera, entrar dos veces el mismo día cuenta una sola sesión.",
+  },
+  gim_socios: {
+    titulo: "Socios y membresías",
+    paraQue: "Inscribir socios, vender planes y controlar vencimientos.",
+    pasos: [
+      "Guarda al socio con su cédula y su celular.",
+      "Toca “Vender plan”: el cobro entra a Caja y Contabilidad.",
+      "Si tiene una incapacidad, toca “Congelar”; al reactivar se suman los días congelados.",
+    ],
+  },
+  gim_planes: {
+    titulo: "Planes y tiqueteras",
+    paraQue: "Definir lo que vendes: mensualidades, trimestres, anualidades y tiqueteras.",
+    pasos: ["Elige el tipo de plan, su vigencia en días y su precio.", "En las tiqueteras escribe cuántas sesiones trae."],
+  },
+  gim_valoracion: {
+    titulo: "Valoración física",
+    paraQue: "Seguir la evolución de cada socio.",
+    pasos: [
+      "Elige al socio y registra peso, grasa, masa muscular y medidas.",
+      "Escribe la rutina y el entrenador.",
+      "Compara con la primera valoración para ver su avance.",
+    ],
+    consejo: "Las valoraciones no se editan ni se borran: cada control es un registro nuevo.",
+  },
 };
 
 const GENERICO ="Para guardar cambios toca el botón de guardar; todo queda registrado en tu cuenta.";

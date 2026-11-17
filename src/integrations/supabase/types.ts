@@ -2516,6 +2516,90 @@ export type Database = {
         }
         Relationships: []
       }
+      bel_servicios: {
+        Row: { activo: boolean; comision_pct: number; created_at: string; descontar_insumos: boolean; duracion_min: number; id: string; nombre: string; owner_id: string | null; precio: number; tipo_negocio: string | null }
+        Insert: { activo?: boolean; comision_pct?: number; created_at?: string; descontar_insumos?: boolean; duracion_min?: number; id?: string; nombre: string; owner_id?: string | null; precio?: number; tipo_negocio?: string | null }
+        Update: { activo?: boolean; comision_pct?: number; created_at?: string; descontar_insumos?: boolean; duracion_min?: number; id?: string; nombre?: string; owner_id?: string | null; precio?: number; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      bel_insumos: {
+        Row: { activo: boolean; costo_unitario: number; created_at: string; id: string; nombre: string; owner_id: string | null; stock: number; tipo_negocio: string | null; unidad: string }
+        Insert: { activo?: boolean; costo_unitario?: number; created_at?: string; id?: string; nombre: string; owner_id?: string | null; stock?: number; tipo_negocio?: string | null; unidad?: string }
+        Update: { activo?: boolean; costo_unitario?: number; created_at?: string; id?: string; nombre?: string; owner_id?: string | null; stock?: number; tipo_negocio?: string | null; unidad?: string }
+        Relationships: []
+      }
+      bel_servicio_insumos: {
+        Row: { cantidad: number; created_at: string; id: string; insumo_id: string; owner_id: string | null; servicio_id: string; tipo_negocio: string | null }
+        Insert: { cantidad: number; created_at?: string; id?: string; insumo_id: string; owner_id?: string | null; servicio_id: string; tipo_negocio?: string | null }
+        Update: { cantidad?: number; created_at?: string; id?: string; insumo_id?: string; owner_id?: string | null; servicio_id?: string; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      bel_clientes: {
+        Row: { activo: boolean; alergias: string | null; created_at: string; id: string; nombre: string; notas: string | null; owner_id: string | null; telefono: string | null; tipo_negocio: string | null }
+        Insert: { activo?: boolean; alergias?: string | null; created_at?: string; id?: string; nombre: string; notas?: string | null; owner_id?: string | null; telefono?: string | null; tipo_negocio?: string | null }
+        Update: { activo?: boolean; alergias?: string | null; created_at?: string; id?: string; nombre?: string; notas?: string | null; owner_id?: string | null; telefono?: string | null; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      bel_citas: {
+        Row: { atencion_id: string | null; cliente_id: string; created_at: string; duracion_min: number; estado: string; id: string; inicio: string; notas: string | null; owner_id: string | null; profesional: string; recordatorio_enviado: boolean; recurso: string | null; servicio_id: string | null; tipo_negocio: string | null }
+        Insert: { atencion_id?: string | null; cliente_id: string; created_at?: string; duracion_min?: number; estado?: string; id?: string; inicio: string; notas?: string | null; owner_id?: string | null; profesional: string; recordatorio_enviado?: boolean; recurso?: string | null; servicio_id?: string | null; tipo_negocio?: string | null }
+        Update: { atencion_id?: string | null; cliente_id?: string; created_at?: string; duracion_min?: number; estado?: string; id?: string; inicio?: string; notas?: string | null; owner_id?: string | null; profesional?: string; recordatorio_enviado?: boolean; recurso?: string | null; servicio_id?: string | null; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      bel_fichas: {
+        Row: { cita_id: string | null; cliente_id: string; created_at: string; fecha: string; foto_antes: string | null; foto_despues: string | null; formula: string | null; id: string; notas: string | null; owner_id: string | null; profesional: string | null; tipo_negocio: string | null }
+        Insert: { cita_id?: string | null; cliente_id: string; created_at?: string; fecha?: string; foto_antes?: string | null; foto_despues?: string | null; formula?: string | null; id?: string; notas?: string | null; owner_id?: string | null; profesional?: string | null; tipo_negocio?: string | null }
+        Update: { cita_id?: string | null; cliente_id?: string; created_at?: string; fecha?: string; foto_antes?: string | null; foto_despues?: string | null; formula?: string | null; id?: string; notas?: string | null; owner_id?: string | null; profesional?: string | null; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      bel_atenciones: {
+        Row: { base_comision: number; cita_id: string | null; cliente_id: string | null; comision: number; comision_pct: number; concepto: string; costo_insumos: number; created_at: string; estado: string; fecha: string; id: string; liquidacion_id: string | null; metodo: string; owner_id: string | null; precio: number; profesional: string; registrado_por: string | null; servicio_id: string | null; tipo: string; tipo_negocio: string | null }
+        Insert: { base_comision?: number; cita_id?: string | null; cliente_id?: string | null; comision?: number; comision_pct?: number; concepto: string; costo_insumos?: number; created_at?: string; estado?: string; fecha?: string; id?: string; liquidacion_id?: string | null; metodo?: string; owner_id?: string | null; precio: number; profesional: string; registrado_por?: string | null; servicio_id?: string | null; tipo?: string; tipo_negocio?: string | null }
+        Update: { base_comision?: number; cita_id?: string | null; cliente_id?: string | null; comision?: number; comision_pct?: number; concepto?: string; costo_insumos?: number; created_at?: string; estado?: string; fecha?: string; id?: string; liquidacion_id?: string | null; metodo?: string; owner_id?: string | null; precio?: number; profesional?: string; registrado_por?: string | null; servicio_id?: string | null; tipo?: string; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      bel_consumos: {
+        Row: { atencion_id: string; cantidad: number; costo: number; created_at: string; id: string; insumo_id: string; nombre: string; owner_id: string | null; tipo_negocio: string | null }
+        Insert: { atencion_id: string; cantidad: number; costo?: number; created_at?: string; id?: string; insumo_id: string; nombre: string; owner_id?: string | null; tipo_negocio?: string | null }
+        Update: { atencion_id?: string; cantidad?: number; costo?: number; created_at?: string; id?: string; insumo_id?: string; nombre?: string; owner_id?: string | null; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      bel_liquidaciones: {
+        Row: { atenciones: number; created_at: string; hasta: string; id: string; metodo: string; owner_id: string | null; pagada_por: string | null; profesional: string; tipo_negocio: string | null; total_comision: number; total_ventas: number }
+        Insert: { atenciones?: number; created_at?: string; hasta: string; id?: string; metodo?: string; owner_id?: string | null; pagada_por?: string | null; profesional: string; tipo_negocio?: string | null; total_comision: number; total_ventas?: number }
+        Update: { atenciones?: number; created_at?: string; hasta?: string; id?: string; metodo?: string; owner_id?: string | null; pagada_por?: string | null; profesional?: string; tipo_negocio?: string | null; total_comision?: number; total_ventas?: number }
+        Relationships: []
+      }
+      gim_planes: {
+        Row: { activo: boolean; created_at: string; duracion_dias: number; id: string; nombre: string; owner_id: string | null; precio: number; sesiones: number | null; tipo: string; tipo_negocio: string | null }
+        Insert: { activo?: boolean; created_at?: string; duracion_dias: number; id?: string; nombre: string; owner_id?: string | null; precio?: number; sesiones?: number | null; tipo?: string; tipo_negocio?: string | null }
+        Update: { activo?: boolean; created_at?: string; duracion_dias?: number; id?: string; nombre?: string; owner_id?: string | null; precio?: number; sesiones?: number | null; tipo?: string; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      gim_socios: {
+        Row: { activo: boolean; codigo_qr: string; contacto_emergencia: string | null; correo: string | null; created_at: string; documento: string; id: string; nombre: string; owner_id: string | null; telefono: string | null; tipo_negocio: string | null }
+        Insert: { activo?: boolean; codigo_qr?: string; contacto_emergencia?: string | null; correo?: string | null; created_at?: string; documento: string; id?: string; nombre: string; owner_id?: string | null; telefono?: string | null; tipo_negocio?: string | null }
+        Update: { activo?: boolean; codigo_qr?: string; contacto_emergencia?: string | null; correo?: string | null; created_at?: string; documento?: string; id?: string; nombre?: string; owner_id?: string | null; telefono?: string | null; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      gim_membresias: {
+        Row: { congelada_desde: string | null; created_at: string; dias_congelados: number; estado: string; id: string; inicio: string; metodo: string; motivo_congelamiento: string | null; owner_id: string | null; plan_id: string; plan_nombre: string; precio: number; registrado_por: string | null; sesiones_restantes: number | null; socio_id: string; tipo_negocio: string | null; vence: string }
+        Insert: { congelada_desde?: string | null; created_at?: string; dias_congelados?: number; estado?: string; id?: string; inicio: string; metodo?: string; motivo_congelamiento?: string | null; owner_id?: string | null; plan_id: string; plan_nombre: string; precio?: number; registrado_por?: string | null; sesiones_restantes?: number | null; socio_id: string; tipo_negocio?: string | null; vence: string }
+        Update: { congelada_desde?: string | null; created_at?: string; dias_congelados?: number; estado?: string; id?: string; inicio?: string; metodo?: string; motivo_congelamiento?: string | null; owner_id?: string | null; plan_id?: string; plan_nombre?: string; precio?: number; registrado_por?: string | null; sesiones_restantes?: number | null; socio_id?: string; tipo_negocio?: string | null; vence?: string }
+        Relationships: []
+      }
+      gim_accesos: {
+        Row: { codigo: string | null; created_at: string; id: string; membresia_id: string | null; owner_id: string | null; resultado: string; socio_id: string | null; tipo_negocio: string | null }
+        Insert: { codigo?: string | null; created_at?: string; id?: string; membresia_id?: string | null; owner_id?: string | null; resultado: string; socio_id?: string | null; tipo_negocio?: string | null }
+        Update: { codigo?: string | null; created_at?: string; id?: string; membresia_id?: string | null; owner_id?: string | null; resultado?: string; socio_id?: string | null; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      gim_valoraciones: {
+        Row: { brazo_cm: number | null; cadera_cm: number | null; cintura_cm: number | null; created_at: string; entrenador: string | null; estatura_cm: number | null; fecha: string; grasa_pct: number | null; id: string; masa_muscular_kg: number | null; muslo_cm: number | null; notas: string | null; owner_id: string | null; pecho_cm: number | null; peso_kg: number | null; registrado_por: string | null; rutina: string | null; socio_id: string; tipo_negocio: string | null }
+        Insert: { brazo_cm?: number | null; cadera_cm?: number | null; cintura_cm?: number | null; created_at?: string; entrenador?: string | null; estatura_cm?: number | null; fecha?: string; grasa_pct?: number | null; id?: string; masa_muscular_kg?: number | null; muslo_cm?: number | null; notas?: string | null; owner_id?: string | null; pecho_cm?: number | null; peso_kg?: number | null; registrado_por?: string | null; rutina?: string | null; socio_id: string; tipo_negocio?: string | null }
+        Update: { brazo_cm?: number | null; cadera_cm?: number | null; cintura_cm?: number | null; created_at?: string; entrenador?: string | null; estatura_cm?: number | null; fecha?: string; grasa_pct?: number | null; id?: string; masa_muscular_kg?: number | null; muslo_cm?: number | null; notas?: string | null; owner_id?: string | null; pecho_cm?: number | null; peso_kg?: number | null; registrado_por?: string | null; rutina?: string | null; socio_id?: string; tipo_negocio?: string | null }
+        Relationships: []
+      }
       com_lotes: {
         Row: {
           cantidad_actual: number
@@ -7061,6 +7145,26 @@ export type Database = {
         }
         Returns: Json
       }
+      bel_registrar_atencion: {
+        Args: {
+          p_cita: string | null
+          p_cliente: string | null
+          p_profesional: string | null
+          p_servicio: string | null
+          p_concepto: string | null
+          p_tipo: string
+          p_precio: number | null
+          p_costo: number | null
+          p_comision_pct: number | null
+          p_metodo: string
+        }
+        Returns: Json
+      }
+      bel_liquidar_comisiones: { Args: { p_profesional: string; p_hasta: string; p_metodo: string }; Returns: number }
+      gim_vender_membresia: { Args: { p_socio: string; p_plan: string; p_inicio: string | null; p_metodo: string }; Returns: Json }
+      gim_congelar_membresia: { Args: { p_membresia: string; p_motivo: string }; Returns: undefined }
+      gim_descongelar_membresia: { Args: { p_membresia: string }; Returns: number }
+      gim_checkin: { Args: { p_codigo: string }; Returns: Json }
       pan_registrar_horneada: {
         Args: { p_receta: string; p_lotes: number; p_horneado_por: string; p_notas: string }
         Returns: string

@@ -40,6 +40,8 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
       { titulo: "Crea tu catálogo", texto: "En “Catálogo de productos” agrega lo que vendes con su precio." },
       { titulo: "Vigila el inventario", texto: "En “Inventario y reposición” registra existencias y mira qué se está acabando." },
       { titulo: "Controla fiados y caja", texto: "Anota quién te debe y cierra tu caja diaria en sus módulos." },
+      { titulo: "Vende con el POS", texto: "En “Punto de venta (POS)” escanea el código de barras, vende por peso o caja y elige precio detal, mayorista o especial." },
+      { titulo: "Cuida los vencimientos", texto: "En “Lotes y vencimientos” registra el lote y la fecha al recibir mercancía: el POS vende primero lo que vence antes y avisa a 7, 15 y 30 días." },
     ],
   },
   servicios: {
@@ -80,9 +82,11 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
   gimnasio: {
     frase: "Socios activos, gimnasio lleno de energía.",
     pasos: [
-      { titulo: "Inscribe a tus socios", texto: "En “Socios y membresías” registra planes y fechas de vencimiento." },
+      { titulo: "Crea tus planes", texto: "En “Planes y tiqueteras” define mensualidades, trimestres, anualidades y tiqueteras por sesiones." },
+      { titulo: "Inscribe a tus socios", texto: "En “Socios y membresías” registra al socio con su cédula, véndele un plan y congela la membresía si tiene incapacidad." },
+      { titulo: "Controla el ingreso", texto: "En “Check-in de socios” escribe la cédula o escanea el QR: sale en rojo si está vencido o le quedan pocos días, con botón de cobro por WhatsApp." },
+      { titulo: "Mide su evolución", texto: "En “Valoración física” guarda peso, grasa, masa muscular, medidas y la rutina de cada socio." },
       { titulo: "Organiza las clases", texto: "Define horarios y cupos en “Clases y cupos”." },
-      { titulo: "Registra la asistencia", texto: "Usa “Control de ingreso” para saber quién asiste y quién dejó de venir." },
     ],
   },
   construccion: {
@@ -177,9 +181,10 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
       { titulo: "Define tus servicios", texto: "En “Catálogo de servicios” agrega duración y precio de cada uno." },
       { titulo: "Registra a tus estilistas", texto: "En “Estilistas y cabinas” anota cada profesional con su especialidad, comisión y la silla o cabina que usa." },
       { titulo: "Define sus turnos", texto: "En “Turnos y disponibilidad” marca horarios, descansos y bloqueos para que la agenda no cruce citas." },
-      { titulo: "Organiza la agenda", texto: "Registra las citas con su estilista y usa la lista de espera para llenar cupos." },
-      { titulo: "Guarda el historial", texto: "Anota fórmulas, alergias y trabajos de cada cliente." },
-      { titulo: "Paga comisiones", texto: "Liquida a tu equipo por servicio realizado y por productos vendidos." },
+      { titulo: "Organiza la agenda", texto: "En “Agenda por silla y estilista” reserva citas sin cruces, cobra y finaliza cada una, y envía el recordatorio por WhatsApp." },
+      { titulo: "Guarda la ficha técnica", texto: "En “Clientes y ficha técnica” anota fórmulas, alergias y fotos de antes y después." },
+      { titulo: "Configura insumos", texto: "En “Servicios, insumos y tarifas” indica cuánto tinte o ampolleta gasta cada servicio: se descuenta solo al cobrar." },
+      { titulo: "Paga comisiones", texto: "En “Comisiones y liquidación” el dueño paga lo pendiente de cada estilista; sale de Caja y queda en Contabilidad." },
     ],
   },
   taller: {
