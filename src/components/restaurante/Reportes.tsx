@@ -398,7 +398,7 @@ export function ResumenCierreWhatsApp({ ventas, gastos }: { ventas?: number; gas
   };
 
   return (
-    <GlassPanel className="flex flex-wrap items-center justify-between gap-3 p-5">
+    <GlassPanel className="flex flex-col items-start gap-3 p-5">
       <div className="min-w-0">
         <h2 className="font-medium text-foreground">Cierre del día por WhatsApp</h2>
         <p className="text-sm text-muted-foreground">
