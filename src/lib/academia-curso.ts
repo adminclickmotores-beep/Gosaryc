@@ -236,6 +236,7 @@ export const CURSO_GOSARYC = {
             "Tiendas, servicios y demás giros: cada uno tiene sus clientes, pagos digitales, personal, metas y reseñas con campos propios (por ejemplo tallas y colores en moda, o profesionales y anticipos en citas).",
             "Si cambias de tipo de negocio (solo la cuenta administradora puede), el menú cambia y tus datos se conservan.",
             "Taller y servicio técnico: abre la orden con fotos de recepción, pide la aprobación por WhatsApp, agrega repuestos del inventario, cobra con garantía y liquida las comisiones del técnico. Carpintería e imprenta: cotiza el proyecto con materiales, cobra el abono para producir y el saldo contra entrega.",
+            "Obras: planea por capítulos, despacha vales desde bodega y cobra cada acta con su neto. Inmobiliaria: publica la propiedad, firma el contrato, cobra el canon cada mes y liquida al propietario. Agro: aplica insumos con dosis y vende la cosecha viendo la utilidad. Transporte: crea el manifiesto, entrega anticipos, cobra el flete y liquida al conductor.",
           ],
           practica: { ruta: "/welcome", etiqueta: "Ver mis módulos" },
         },

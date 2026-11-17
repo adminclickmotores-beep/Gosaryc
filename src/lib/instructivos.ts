@@ -322,6 +322,44 @@ const POR_MODULO: Record<string, Instructivo> = {
       "Cobra el saldo contra entrega y avisa por WhatsApp en cada etapa.",
     ],
   },
+  obr_obras: {
+    titulo: "Obras y presupuestos",
+    paraQue: "Controlar planeado contra ejecutado, vales a obra y cortes por acta.",
+    pasos: [
+      "Crea la obra con su presupuesto total.",
+      "Agrega sus capítulos (materiales, mano de obra, maquinaria) con lo planeado: si lo ejecutado lo supera, sale la alerta de sobrecosto.",
+      "Despacha cada vale de salida: descuenta de bodega y suma al capítulo.",
+      "Guarda el corte con acta, avance, retención y anticipo; al cobrarlo entra a Caja y Contabilidad.",
+    ],
+  },
+  inm_propiedades: {
+    titulo: "Propiedades y contratos",
+    paraQue: "Portafolio, arriendo mensual y pago al propietario.",
+    pasos: [
+      "Registra la propiedad con matrícula, canon y estado.",
+      "Crea el contrato con tu comisión y genera el cobro de cada mes.",
+      "Cobra el canon (entra a Caja y Contabilidad) o avisa la mora por WhatsApp.",
+      "El dueño liquida: descuenta comisión y reparaciones y paga el neto.",
+    ],
+  },
+  agr_lotes: {
+    titulo: "Lotes y producción",
+    paraQue: "Costear cada lote y vender con la utilidad real.",
+    pasos: [
+      "Crea el lote con su cultivo y producción disponible.",
+      "Aplica cada insumo con su dosis: descuenta del inventario y suma al costo del lote.",
+      "Vende la producción: calcula el costo promedio, la utilidad y entra a Caja y Contabilidad.",
+    ],
+  },
+  tra_manifiestos: {
+    titulo: "Manifiestos y liquidación",
+    paraQue: "Llevar cada viaje de la guía al pago del conductor.",
+    pasos: [
+      "Registra el vehículo con su placa y crea el manifiesto con origen, destino y flete.",
+      "Entrega anticipos de viáticos, ACPM y peajes: salen de Caja.",
+      "Cobra el flete y liquida al conductor (solo el dueño): la utilidad neta queda registrada.",
+    ],
+  },
 };
 
 const GENERICO ="Para guardar cambios toca el botón de guardar; todo queda registrado en tu cuenta.";

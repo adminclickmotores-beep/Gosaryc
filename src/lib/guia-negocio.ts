@@ -94,7 +94,9 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
     pasos: [
       { titulo: "Crea tus proyectos", texto: "En “Proyectos y obras” registra presupuesto, avance y responsables." },
       { titulo: "Cotiza", texto: "Haz seguimiento a cada propuesta en “Cotizaciones” hasta el cierre." },
-      { titulo: "Controla materiales y pagos", texto: "Lleva materiales por obra y las cuentas con tus contratistas." },
+      { titulo: "Planea por capítulos", texto: "En “Obras y presupuestos” crea la obra y sus capítulos (materiales, mano de obra, maquinaria): ves planeado contra ejecutado real y te avisa el sobrecosto." },
+      { titulo: "Despacha vales a obra", texto: "Registra cada salida de bodega hacia la obra: descuenta el inventario y suma al capítulo ejecutado." },
+      { titulo: "Cobra cada corte", texto: "Guarda el acta con avance, valor, retención y anticipo aplicado; al cobrarla entra a Caja y Contabilidad." },
       { titulo: "Cotiza proyectos a la medida", texto: "En “Proyectos a la medida” arma la cotización de carpintería con materiales, cobra el abono para producir y el saldo contra entrega." },
     ],
   },
@@ -103,15 +105,17 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
     pasos: [
       { titulo: "Registra tus lotes", texto: "En “Cultivos y lotes” anota siembras y ciclos de producción." },
       { titulo: "Anota las cosechas", texto: "Registra lo recogido y a quién se lo vendiste." },
-      { titulo: "Controla insumos y animales", texto: "Lleva compras de insumos y la sanidad de tus animales." },
+      { titulo: "Aplica insumos con dosis", texto: "En “Lotes y producción” registra cada aplicación con su dosis por hectárea o animal: descuenta del inventario y suma al costo del lote." },
+      { titulo: "Vende con utilidad real", texto: "Al vender la cosecha el programa calcula el costo promedio y la utilidad, y el cobro entra a Caja y Contabilidad." },
     ],
   },
   inmobiliaria: {
     frase: "Cada propiedad en su lugar, cada contrato al día.",
     pasos: [
       { titulo: "Publica tus inmuebles", texto: "En “Inmuebles” registra cada propiedad en venta o arriendo." },
-      { titulo: "Lleva los contratos", texto: "En “Arrendatarios y contratos” guarda canon y vencimientos." },
-      { titulo: "Cobra los arriendos", texto: "Usa “Cobro de arriendos” para ver la cartera mensual." },
+      { titulo: "Arma tu portafolio", texto: "En “Propiedades y contratos” registra cada propiedad con matrícula, canon, administración y estado (disponible, arrendado, en mantenimiento)." },
+      { titulo: "Firma y cobra el arriendo", texto: "Crea el contrato con tu comisión, genera el cobro de cada mes y cobra: entra a Caja y Contabilidad. Si se atrasa, avisa la mora por WhatsApp." },
+      { titulo: "Liquida al propietario", texto: "Solo el dueño liquida: descuenta tu comisión y los gastos de reparación y paga el neto al propietario." },
     ],
   },
   mascotas: {
@@ -135,7 +139,9 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
     pasos: [
       { titulo: "Registra tu flota", texto: "En “Flota y vehículos” agrega cada vehículo con sus documentos." },
       { titulo: "Despacha viajes", texto: "Anota rutas, cargas y el estado de cada envío en “Viajes y despachos”." },
-      { titulo: "Controla gastos", texto: "Registra combustible y pagos a conductores por viaje." },
+      { titulo: "Crea el manifiesto", texto: "En “Manifiestos y liquidación” abre la guía con origen, destino, vehículo, conductor y valor del flete." },
+      { titulo: "Entrega anticipos", texto: "Registra viáticos, ACPM y peajes: salen de Caja y se descuentan del viaje." },
+      { titulo: "Cobra y liquida", texto: "Cobra el flete (entra a Caja y Contabilidad) y liquida al conductor: solo el dueño, y la utilidad neta queda registrada." },
     ],
   },
   panaderia: {

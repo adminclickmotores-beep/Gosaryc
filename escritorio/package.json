@@ -1,6 +1,6 @@
 {
   "name": "gosaryc-escritorio",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "private": true,
   "description": "Gosaryc para escritorio: abre el panel y trae la API local de WhatsApp con el agente integrada.",
   "author": "Gosaryc",

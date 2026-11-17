@@ -28,6 +28,7 @@ import { CotizadorFerreteria, DespostesFrescos, LotesComercial } from "@/compone
 import { AgendaBelleza, ComisionesBelleza, FichasBelleza, ServiciosBelleza } from "@/components/belleza/BellezaModulos";
 import { CheckinGimnasio, PlanesGimnasio, SociosGimnasio, ValoracionGimnasio } from "@/components/gimnasio/GimnasioModulos";
 import { ComisionesTaller, OrdenesTaller, ProyectosMedida, RepuestosTaller } from "@/components/taller/TallerModulos";
+import { AgroLotes, ObrasConstructora, PropiedadesInmobiliaria, TransporteManifiestos } from "@/components/medida/MedidaModulos";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
@@ -98,6 +99,10 @@ function ModuloPage() {
   if (id === "tal_repuestos") return <RepuestosTaller />;
   if (id === "tal_comisiones") return <ComisionesTaller />;
   if (id === "tal_proyectos") return <ProyectosMedida />;
+  if (id === "obr_obras") return <ObrasConstructora />;
+  if (id === "inm_propiedades") return <PropiedadesInmobiliaria />;
+  if (id === "agr_lotes") return <AgroLotes />;
+  if (id === "tra_manifiestos") return <TransporteManifiestos />;
   if (id === "gim_checkin") return <CheckinGimnasio />;
   if (id === "gim_socios") return <SociosGimnasio />;
   if (id === "gim_planes") return <PlanesGimnasio />;

@@ -506,6 +506,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
     panel: "Obras y oficios",
     usaPedidos: false,
     modulos: [
+      m("obr_obras", "Obras y presupuestos", "Capítulos planeados contra ejecutado real, vales de salida a obra y cortes con retención.", Hammer),
       m("proyectos_obra", "Proyectos y obras", "Avance, presupuesto y responsables de cada obra.", Hammer),
       m("cotizaciones_obra", "Cotizaciones", "Propuestas y seguimiento hasta el cierre.", FileText),
       m("materiales", "Materiales y herramientas", "Inventario y consumo por obra.", Package),
@@ -519,6 +520,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
     panel: "Producción",
     usaPedidos: false,
     modulos: [
+      m("agr_lotes", "Lotes y producción", "Siembras, aplicaciones con dosis que descuentan inventario y venta con utilidad real.", Sprout),
       m("cultivos", "Cultivos y lotes", "Siembras, lotes y ciclos de producción.", Sprout),
       m("cosechas", "Cosechas y ventas", "Producción recogida y a quién se vendió.", PackageCheck),
       m("insumos_agro", "Insumos y fertilizantes", "Compras y consumo por lote.", Boxes),
@@ -532,6 +534,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
     panel: "Inmobiliaria",
     usaPedidos: false,
     modulos: [
+      m("inm_propiedades", "Propiedades y contratos", "Portafolio con matrícula y estado, cobro de canon con mora por WhatsApp y liquidación al propietario.", Building2),
       m("inmuebles", "Inmuebles", "Propiedades en venta o arriendo con su estado.", Building2),
       m("arrendatarios", "Arrendatarios y contratos", "Contratos, canon y vencimientos.", FileText),
       m("cobro_canon", "Cobro de arriendos", "Cartera mensual y recordatorios.", Coins),
@@ -571,6 +574,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
     panel: "Logística",
     usaPedidos: false,
     modulos: [
+      m("tra_manifiestos", "Manifiestos y liquidación", "Guías con vehículo y conductor, anticipos de viaje y liquidación con utilidad neta.", Truck),
       m("flota", "Flota y vehículos", "Vehículos, documentos y mantenimiento.", Truck),
       m("viajes", "Viajes y despachos", "Rutas, cargas y estado de cada envío.", Package),
       m("conductores", "Conductores y pagos", "Liquidación por viaje.", Briefcase),
