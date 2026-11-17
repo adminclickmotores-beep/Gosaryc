@@ -1,6 +1,6 @@
 {
   "name": "gosaryc-escritorio",
-  "version": "1.5.8",
+  "version": "1.5.9",
   "private": true,
   "description": "Gosaryc para escritorio: abre el panel y trae la API local de WhatsApp con agente multi-especialista 24/7 en bandeja del sistema (sesion permanente, inicio automatico) y la API local de impresion silenciosa integradas.",
   "author": "Gosaryc",
@@ -48,8 +48,7 @@
       "identityName": "Gosaryc.GosarycERP",
       "publisher": "CN=Gosaryc",
       "publisherDisplayName": "Gosaryc",
-      "displayName": "Gosaryc",
-      "description": "Pedidos, inventario, caja, facturas y agente WhatsApp IA en una sola app."
+      "displayName": "Gosaryc"
     },
     "nsis": {
       "oneClick": false,

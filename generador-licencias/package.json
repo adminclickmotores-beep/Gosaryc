@@ -38,8 +38,7 @@
       "identityName": "Gosaryc.GosarycLicenciasAdmin",
       "publisher": "CN=Gosaryc",
       "publisherDisplayName": "Gosaryc",
-      "displayName": "Gosaryc Licencias Admin",
-      "description": "Solo superadmin: licencias, renovaciones y suspensiones de Gosaryc."
+      "displayName": "Gosaryc Licencias Admin"
     },
     "nsis": {
       "oneClick": false,
