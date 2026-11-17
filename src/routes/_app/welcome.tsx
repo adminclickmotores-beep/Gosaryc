@@ -11,6 +11,7 @@ import { GradientMesh } from "@/components/ui-custom/GradientMesh";
 import { IconLogo } from "@/components/ui-custom/CustomIcon";
 import { TIPOS_NEGOCIO, type TipoNegocioClave } from "@/lib/modulos-negocio";
 import { BRAND } from "@/lib/brand";
+import { SECTOR_A_TIPO } from "@/lib/sectores";
 import { getCachedOnboardedAt, markOnboarded } from "@/hooks/use-onboarding-status";
 import { esCuentaMaestra } from "@/lib/cuenta-maestra";
 
@@ -49,6 +50,19 @@ function Welcome() {
       setTipo((t) => t || ((negocio.tipo_negocio as TipoNegocioClave | null) ?? ""));
     }
   }, [negocio]);
+
+  // La ficha de la portada ("Probar gratis para …") deja el rubro preseleccionado.
+  useEffect(() => {
+    try {
+      const slug = localStorage.getItem("gosaryc:tipo_preseleccionado");
+      if (!slug) return;
+      const clave = SECTOR_A_TIPO[slug] as TipoNegocioClave | undefined;
+      if (clave) setTipo((t) => t || clave);
+      localStorage.removeItem("gosaryc:tipo_preseleccionado");
+    } catch {
+      /* almacenamiento bloqueado */
+    }
+  }, []);
 
   const terminarOnboarding = async () => {
     if (!user) return;

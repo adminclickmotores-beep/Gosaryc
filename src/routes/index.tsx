@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import type { ComponentType } from "react";
 import {
   UtensilsCrossed, ChefHat, Bike, Boxes, Wallet, Download, ArrowRight, Smartphone,
   Palette, ShieldCheck, Sparkles, Check, Users, Receipt, BarChart3, Layers, Clock, TrendingUp,
   FileText, Gift, CalendarDays, Bot, MessageCircle, Brain, Headphones, BellRing, RefreshCw, PlayCircle,
 } from "lucide-react";
-import { SECTORES } from "@/lib/sectores";
+import { SECTORES, buscarSector } from "@/lib/sectores";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useAuth } from "@/contexts/AuthContext";
@@ -63,6 +64,90 @@ const PASOS = [
 ];
 
 const COLORES_SECTOR = ["#fb923c", "#60a5fa", "#34d399", "#f472b6", "#fbbf24", "#22d3ee", "#c084fc", "#a3e635"];
+
+function ExploradorSectores() {
+  const [sel, setSel] = useState<string | null>(null);
+  const ficha = sel ? buscarSector(sel) : undefined;
+  const FichaIcon = ficha?.Icon;
+
+  const guardarPreseleccion = (slug: string) => {
+    try {
+      localStorage.setItem("gosaryc:tipo_preseleccionado", slug);
+    } catch {
+      /* almacenamiento bloqueado */
+    }
+  };
+
+  return (
+    <div>
+      <ul className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+        {SECTORES.map(({ Icon, label, slug }, i) => {
+          const color = COLORES_SECTOR[i % COLORES_SECTOR.length];
+          const activo = sel === slug;
+          return (
+            <li key={slug}>
+              <button
+                type="button"
+                onClick={() => setSel(activo ? null : slug)}
+                aria-expanded={activo}
+                className="group block h-full w-full"
+              >
+                <GlassPanel className={`flex h-full flex-col items-center gap-3 border-b-4 p-4 text-center transition-transform duration-300 group-hover:-translate-y-1 ${activo ? "ring-2 ring-primary" : ""}`} style={{ borderBottomColor: color }}>
+                  <span className="icon-chip h-11 w-11 rounded-2xl" style={{ background: `${color}1f`, color }}><Icon className="h-5 w-5" /></span>
+                  <span className="text-xs font-medium text-foreground sm:text-sm">{label}</span>
+                </GlassPanel>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+
+      {ficha && FichaIcon ? (
+        <GlassPanel tier="strong" className="mt-6 p-6 text-left sm:p-8">
+          <div className="flex flex-wrap items-center gap-4">
+            <span className="icon-chip h-12 w-12 shrink-0 rounded-2xl"><FichaIcon className="h-6 w-6" /></span>
+            <div className="min-w-0">
+              <p className="text-eyebrow">Ficha del negocio</p>
+              <h3 className="mt-1 break-words font-display text-2xl">{ficha.label}</h3>
+            </div>
+          </div>
+          <p className="mt-5 font-medium text-foreground">Qué problema resuelve</p>
+          <p className="mt-1 text-sm text-muted-foreground sm:text-base">{ficha.resumen}</p>
+          <p className="mt-5 font-medium text-foreground">Funciones reales incluidas</p>
+          <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+            {ficha.acciones.map((a) => (
+              <li key={a.titulo} className="flex items-start gap-2 text-sm">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <span className="min-w-0"><strong className="text-foreground">{a.titulo}:</strong> <span className="text-muted-foreground">{a.texto}</span></span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Link
+              to="/login"
+              search={{ mode: "signup" }}
+              onClick={() => guardarPreseleccion(ficha.slug)}
+              className="btn-pro inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold"
+            >
+              Probar Gosaryc gratis para {ficha.label} <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              to="/sectores/$slug"
+              params={{ slug: ficha.slug }}
+              className="btn-ghost-pro inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm text-foreground"
+            >
+              Ver ficha completa
+            </Link>
+          </div>
+        </GlassPanel>
+      ) : (
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          Toca tu tipo de negocio para ver qué problema resuelve, sus funciones reales y cómo empezar gratis.
+        </p>
+      )}
+    </div>
+  );
+}
 
 function LandingPage() {
   const { loading } = useAuth();
@@ -207,21 +292,7 @@ function LandingPage() {
           <p className="text-eyebrow text-center">Por tipo de negocio</p>
           <h2 id="para-quien" className="mt-3 text-center font-display text-3xl sm:text-4xl">El programa se adapta a tu negocio, no al revés</h2>
           <p className="mx-auto mt-3 max-w-xl text-center text-sm text-muted-foreground">Cada tipo de negocio recibe sus módulos, sus textos y su color. Elige el tuyo para ver el detalle.</p>
-          <ul className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-            {SECTORES.map(({ Icon, label, slug }, i) => {
-              const color = COLORES_SECTOR[i % COLORES_SECTOR.length];
-              return (
-                <li key={slug}>
-                  <Link to="/sectores/$slug" params={{ slug }} className="group block h-full">
-                    <GlassPanel className="flex h-full flex-col items-center gap-3 border-b-4 p-4 text-center transition-transform duration-300 group-hover:-translate-y-1" style={{ borderBottomColor: color }}>
-                      <span className="icon-chip h-11 w-11 rounded-2xl" style={{ background: `${color}1f`, color }}><Icon className="h-5 w-5" /></span>
-                      <span className="text-xs font-medium text-foreground sm:text-sm">{label}</span>
-                    </GlassPanel>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+          <ExploradorSectores />
         </section>
 
         {/* 5. POR QUÉ + ACTUALIZACIONES + APP */}

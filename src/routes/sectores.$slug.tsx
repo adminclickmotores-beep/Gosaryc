@@ -60,7 +60,18 @@ function PaginaSector() {
           <Link to="/" className="btn-ghost-pro inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm text-foreground">
             <ArrowLeft className="h-4 w-4" /> Volver
           </Link>
-          <Link to="/login" className="btn-pro inline-flex rounded-full px-5 py-2.5 text-sm font-semibold">
+          <Link
+            to="/login"
+            search={{ mode: "signup" }}
+            onClick={() => {
+              try {
+                localStorage.setItem("gosaryc:tipo_preseleccionado", slug);
+              } catch {
+                /* almacenamiento bloqueado */
+              }
+            }}
+            className="btn-pro inline-flex rounded-full px-5 py-2.5 text-sm font-semibold"
+          >
             Crear mi cuenta
           </Link>
         </div>
@@ -100,8 +111,19 @@ function PaginaSector() {
               Al crear tu cuenta recibes los módulos y los textos pensados para {sector.label.toLowerCase()}.
             </p>
             <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link to="/login" className="btn-pro inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold">
-                Crear mi cuenta <ArrowRight className="h-4 w-4" />
+              <Link
+                to="/login"
+                search={{ mode: "signup" }}
+                onClick={() => {
+                  try {
+                    localStorage.setItem("gosaryc:tipo_preseleccionado", slug);
+                  } catch {
+                    /* almacenamiento bloqueado */
+                  }
+                }}
+                className="btn-pro inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold"
+              >
+                Probar Gosaryc gratis para {sector.label} <ArrowRight className="h-4 w-4" />
               </Link>
               <Link to="/" className="btn-ghost-pro inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm text-foreground">
                 <ArrowLeft className="h-4 w-4" /> Volver al inicio

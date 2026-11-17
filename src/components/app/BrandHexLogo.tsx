@@ -41,7 +41,7 @@ export function BrandHexLogo({ size = 42, className, intro = false }: BrandHexLo
         style={{
           clipPath: HEX_CLIP,
           background:
-            "conic-gradient(from 140deg, oklch(0.72 0.2 275), oklch(0.78 0.18 340), oklch(0.86 0.14 88), oklch(0.72 0.2 275))",
+            "conic-gradient(from 140deg, oklch(0.65 0.22 270), oklch(0.78 0.16 165), oklch(0.75 0.16 200), oklch(0.65 0.22 270))",
         }}
       />
       {/* Gradient border hex */}
@@ -51,7 +51,7 @@ export function BrandHexLogo({ size = 42, className, intro = false }: BrandHexLo
         style={{
           clipPath: HEX_CLIP,
           background:
-            "linear-gradient(140deg, oklch(0.78 0.2 275), oklch(0.82 0.18 340) 50%, oklch(0.88 0.14 88))",
+            "linear-gradient(140deg, oklch(0.7 0.2 270), oklch(0.78 0.16 165) 60%, oklch(0.75 0.16 200))",
         }}
       />
       {/* Inner dark hex face */}
@@ -84,8 +84,8 @@ export function BrandHexLogo({ size = 42, className, intro = false }: BrandHexLo
       >
         <defs>
           <linearGradient id="brand-hex-m-grad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="oklch(0.92 0.05 275)" />
-            <stop offset="100%" stopColor="oklch(0.88 0.12 340)" />
+            <stop offset="0%" stopColor="#818CF8" />
+            <stop offset="100%" stopColor="#34D399" />
           </linearGradient>
         </defs>
         <path
