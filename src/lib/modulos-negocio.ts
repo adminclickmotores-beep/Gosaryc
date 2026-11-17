@@ -140,9 +140,9 @@ export type TipoNegocio = {
 };
 
 /**
- * Identidad visual por familia de negocio: cada rubro tiene su acento de
+ * Identidad visual por familia de negocio: cada tipo de negocio tiene su acento de
  * color sutil y su nombre de familia. Se usa en cabeceras de módulos para
- * que cada giro se sienta propio sin romper el diseño general.
+ * que cada negocio se sienta propio sin romper el diseño general.
  */
 const FAMILIA_POR_CLAVE: Record<TipoNegocioClave, { familia: string; acento: string }> = {
   restaurante: { familia: "Comida", acento: "#fb923c" },
@@ -208,7 +208,7 @@ const m = (id: string, titulo: string, descripcion: string, Icon: LucideIcon): M
 
 // ---- Módulos transversales pensados para negocios colombianos ----
 const FIADOS: ModuloNegocio = {
-  ...m("fiados", "Cartera y fiados", "Quién te debe, cuánto y cuándo prometió pagar.", Coins),
+  ...m("fiados", "Cartera y cuentas por cobrar", "Control profesional de saldos pendientes: quién te debe, cuánto, cuándo prometió pagar y el historial completo de abonos.", Coins),
   ruta: "/cartera-fiados",
 };
 const FACTURAS = m("facturas", "Facturación DIAN", "Control de facturas electrónicas y documentos soporte.", Receipt);

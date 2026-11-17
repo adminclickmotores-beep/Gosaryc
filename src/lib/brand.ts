@@ -25,7 +25,7 @@ export const BRAND = {
   tagline: "Gestión y ventas para tu negocio",
   /** Short marketing description for meta tags and onboarding. */
   description:
-    "Gosaryc es el software para administrar tu negocio en Colombia, con módulos propios para cada giro: restaurantes, concesionarios, tiendas, consultorios y clínicas, salones, talleres, hoteles, colegios y más de 50 sectores. Vende, controla inventario, caja, fiados, nómina con reglas colombianas, facturación DIAN y finanzas, con un asistente que te enseña a usarlo. Funciona en la web, en tu celular y en tu computador.",
+    "Gosaryc es la plataforma para administrar tu negocio en Colombia, con módulos especializados para cada tipo de negocio: restaurantes, concesionarios, tiendas, consultorios y clínicas, salones de belleza, talleres, hoteles, instituciones educativas y más de 50 actividades económicas. Vende con punto de venta y catálogo digital, controla inventario y costos, gestiona caja, cuentas por cobrar, nómina con la normatividad colombiana vigente, facturación electrónica DIAN y finanzas con indicadores de rentabilidad, con un asistente virtual que te acompaña paso a paso. Funciona en la web, en tu celular como app instalable y en tu computador.",
   /**
    * Dominio publicado usado en ejemplos y como respaldo cuando no hay
    * VITE_APP_URL ni origen del navegador. Para migrar de hosting o cambiar

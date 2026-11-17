@@ -1,8 +1,8 @@
 {
   "name": "gosaryc-whatsapp-local",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "private": true,
-  "description": "API local de WhatsApp para Gosaryc: agente multi-especialista por giro, sesion permanente con reconexion automatica, bandeja de chats en vivo, cola offline y aprendizaje continuo.",
+  "description": "API local de WhatsApp para Gosaryc: agente multi-especialista por tipo de negocio, sesion permanente con reconexion automatica, bandeja de chats en vivo, cola offline y aprendizaje continuo.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

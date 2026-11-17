@@ -159,7 +159,7 @@ ${t.cliente ? `<p>Cliente: ${esc(t.cliente)}</p><hr>` : ""}<table>${filas}</tabl
 ${t.iva > 0 ? `<tr><td>IVA</td><td style="text-align:right">${dinero(t.iva)}</td></tr>` : ""}
 ${t.impoconsumo > 0 ? `<tr><td>Impoconsumo</td><td style="text-align:right">${dinero(t.impoconsumo)}</td></tr>` : ""}
 <tr><td><b>TOTAL</b></td><td style="text-align:right"><b>${dinero(t.total)}</b></td></tr></table>
-<p class="c">${t.metodo === "fiado" ? "A crédito (fiado)" : `Pagado (${esc(t.metodo)})`}</p><p class="c">¡Gracias por tu compra!</p>
+<p class="c">${t.metodo === "fiado" ? "Venta a crédito (cuenta por cobrar)" : `Pagado (${esc(t.metodo)})`}</p><p class="c">¡Gracias por tu compra!</p>
 <script>window.onload=function(){window.print()}</script></body></html>`);
   w.document.close();
 }
@@ -343,7 +343,7 @@ export function ProductosComercial() {
 }
 
 // ============================================================
-// POS ultrarrápido: lector de barras, peso o fracción, precios múltiples, fiado con cupo
+// POS ultrarrápido: lector de barras, peso o fracción, precios múltiples, crédito con cupo
 // ============================================================
 type EstadoCredito = { tiene_cupo: boolean; cupo: number; plazo_dias: number; deuda: number; vencido: number; disponible: number };
 
@@ -465,7 +465,7 @@ export function PosComercial() {
   const cobrar = async (autorizar: boolean) => {
     if (lineas.length === 0) return toast.error("Escanea o agrega al menos un producto.");
     if (hayError) return toast.error("Revisa las cantidades marcadas en rojo.");
-    if (metodo === "fiado" && !cliente.trim()) return toast.error("Para fiar escribe el nombre del cliente.");
+    if (metodo === "fiado" && !cliente.trim()) return toast.error("Para vender a crédito escribe el nombre del cliente.");
     setGuardando(true);
     const items = lineas.map((l) => ({ producto_id: l.p.id, cantidad: num(l.cantidad), unidad: l.unidad }));
     const { data, error } = await supabase.rpc("com_registrar_venta", {
@@ -498,7 +498,7 @@ export function PosComercial() {
       impoconsumo: r.impoconsumo ?? impo,
       total: r.total ?? total,
     });
-    toast.success(metodo === "fiado" ? `Fiado registrado por ${dinero(r.total ?? total)}.` : `Cobrado ${dinero(r.total ?? total)}${cambio > 0 ? ` · devuelve ${dinero(cambio)}` : ""}.`);
+    toast.success(metodo === "fiado" ? `Cuenta por cobrar registrada por ${dinero(r.total ?? total)}.` : `Cobrado ${dinero(r.total ?? total)}${cambio > 0 ? ` · devuelve ${dinero(cambio)}` : ""}.`);
     setLineas([]); setCliente(""); setTelefono(""); setMotivo(""); setBloqueo(null); setRecibido(""); setMetodo("efectivo");
     void recargar();
     enfocar();
@@ -600,7 +600,7 @@ export function PosComercial() {
             <option value="efectivo">Efectivo</option>
             <option value="transferencia">Transferencia (Nequi, Daviplata, Bre-B)</option>
             <option value="tarjeta">Tarjeta</option>
-            <option value="fiado">Fiado / a crédito</option>
+            <option value="fiado">A crédito / cuenta por cobrar</option>
           </select>
           <input className={campo} placeholder={metodo === "fiado" ? "Nombre del cliente *" : "Cliente (opcional)"} value={cliente} onChange={(e) => setCliente(e.target.value)} />
           <input className={campo} placeholder="Celular del cliente" inputMode="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
@@ -613,7 +613,7 @@ export function PosComercial() {
                   <p className="text-muted-foreground">Debe: {dinero(credito.deuda)} · Disponible: {dinero(credito.disponible)}</p>
                 </>
               ) : (
-                <p className="text-muted-foreground">Este cliente no tiene cupo de crédito. Asígnalo en Cartera y fiados.</p>
+                <p className="text-muted-foreground">Este cliente no tiene cupo de crédito. Asígnalo en Cartera y cuentas por cobrar.</p>
               )}
               {credito.vencido > 0 && <p className="text-destructive">Tiene facturas vencidas por {dinero(credito.vencido)}.</p>}
             </div>
@@ -650,7 +650,7 @@ export function PosComercial() {
           )}
 
           <button className={`${boton} w-full`} disabled={guardando || lineas.length === 0} onClick={() => cobrar(false)}>
-            <Wallet className="h-4 w-4" /> {metodo === "fiado" ? "Fiar" : "Cobrar"} {dinero(total)}
+            <Wallet className="h-4 w-4" /> {metodo === "fiado" ? "Vender a crédito" : "Cobrar"} {dinero(total)}
           </button>
         </GlassPanel>
       </div>

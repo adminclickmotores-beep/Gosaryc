@@ -285,7 +285,7 @@ export function CotizadorFerreteria() {
       if (error.message.includes("CREDITO_BLOQUEADO")) {
         const razon = error.message.split("CREDITO_BLOQUEADO:")[1]?.trim() ?? "Crédito bloqueado.";
         if (esAdmin) {
-          const m = window.prompt(`${razon}\nEscribe el motivo para autorizar el fiado:`);
+          const m = window.prompt(`${razon}\nEscribe el motivo para autorizar la venta a crédito:`);
           if (m && m.trim().length >= 3) return convertirEnVenta(c, true, m.trim());
           return;
         }
@@ -360,7 +360,7 @@ export function CotizadorFerreteria() {
             <option value="efectivo">Cobrar en efectivo</option>
             <option value="transferencia">Cobrar por transferencia</option>
             <option value="tarjeta">Cobrar con tarjeta</option>
-            <option value="fiado">Fiar (con cupo)</option>
+            <option value="fiado">A crédito (con cupo)</option>
           </select>
         </div>
         {cotizaciones.length === 0 && <p className="text-sm text-muted-foreground">Aún no hay cotizaciones.</p>}

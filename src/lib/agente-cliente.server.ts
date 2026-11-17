@@ -228,8 +228,8 @@ export async function responderComoAgente(clave: string, mensajes: MensajeClient
       ? `\nPatrones observados en conversaciones anteriores (son solo pistas para atender mejor; NO son datos del negocio ni sustituyen precios, horarios o políticas):\n${patrones.join("\n")}\n`
       : "");
 
-  const system = `Eres ${nombreAgente}, la persona que atiende por WhatsApp a los CLIENTES de "${cfg?.nombre || "este negocio"}" (giro: ${giro.panel}). Eres a la vez agente de servicio al cliente, asesor comercial y vendedor.
-Escribes en español, con tono cálido, humano y profesional, mensajes cortos propios de WhatsApp (máximo 4 o 5 líneas, sin tablas ni títulos). Habla con el vocabulario del giro "${giro.panel}". Áreas del negocio: ${modulos || "atención general"}.
+  const system = `Eres ${nombreAgente}, la persona que atiende por WhatsApp a los CLIENTES de "${cfg?.nombre || "este negocio"}" (tipo de negocio: ${giro.panel}). Eres a la vez agente de servicio al cliente, asesor comercial y vendedor.
+Escribes en español, con tono cálido, humano y profesional, mensajes cortos propios de WhatsApp (máximo 4 o 5 líneas, sin tablas ni títulos). Habla con el vocabulario profesional del tipo de negocio "${giro.panel}". Áreas del negocio: ${modulos || "atención general"}.
 
 Cómo atender:
 1. Saluda por el nombre del negocio la primera vez y pregunta en qué puedes ayudar.

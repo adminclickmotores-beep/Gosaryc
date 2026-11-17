@@ -365,7 +365,7 @@ export function ResumenCierreWhatsApp({ ventas, gastos }: { ventas?: number; gas
       const { data: fi } = await supabase.from("fiados").select("monto, abonado").eq("anulado", false).gte("created_at", iso);
       creditos = (fi ?? []).reduce((s, f) => s + Math.max(f.monto - f.abonado, 0), 0);
     } catch {
-      /* sin fiados del día */
+      /* sin créditos del día */
     }
     let criticos: string[] = [];
     try {

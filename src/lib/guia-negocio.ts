@@ -40,7 +40,7 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
     pasos: [
       { titulo: "Crea tu catálogo", texto: "En “Catálogo de productos” agrega lo que vendes con su precio." },
       { titulo: "Vigila el inventario", texto: "En “Inventario y reposición” registra existencias y mira qué se está acabando." },
-      { titulo: "Controla fiados y caja", texto: "Anota quién te debe y cierra tu caja diaria en sus módulos." },
+      { titulo: "Controla cuentas por cobrar y caja", texto: "Registra los saldos pendientes de tus clientes y realiza el cierre diario de caja en sus módulos." },
       { titulo: "Vende con el POS", texto: "En “Punto de venta (POS)” escanea el código de barras, vende por peso o caja y elige precio detal, mayorista o especial." },
       { titulo: "Cuida los vencimientos", texto: "En “Lotes y vencimientos” registra el lote y la fecha al recibir mercancía: el POS vende primero lo que vence antes y avisa a 7, 15 y 30 días." },
       { titulo: "Imprime tus etiquetas", texto: "En “Productos y precios” usa “Etiquetas de código de barras”: elige productos, escribe cuántas de cada uno e imprime en carta o rollo térmico." },
@@ -321,7 +321,7 @@ GUIAS_NEGOCIO.ferreteria = {
     { titulo: "Ubica cada tornillo", texto: "En “Productos y precios” anota pasillo, estante y nivel de cada producto: el POS lo muestra para encontrarlo rápido." },
     { titulo: "Cotiza a constructores", texto: "En “Cotizador de materiales” arma la lista de la obra con precio mayorista y descuento, envíala por WhatsApp o PDF y conviértela en venta con un clic." },
     { titulo: "Despacha a la obra", texto: "En “Despachos a obra” anota la remisión, el conductor y quién recibe." },
-    { titulo: "Cobra a tiempo", texto: "Usa “Cartera y fiados” para los constructores de confianza y actualiza las listas de precios de tus proveedores." },
+    { titulo: "Cobra a tiempo", texto: "Usa “Cartera y cuentas por cobrar” para los constructores de confianza y actualiza las listas de precios de tus proveedores." },
   ],
 };
 GUIAS_NEGOCIO.supermercado = {

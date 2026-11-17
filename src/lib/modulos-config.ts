@@ -858,7 +858,7 @@ const CAMPOS_ESPECIFICOS: Record<string, CampoExtra[]> = {
     { clave: "referencia_persona", etiqueta: "Referencia personal", tipo: "text", placeholder: "Nombre y teléfono" },
     { clave: "cuotas", etiqueta: "Número de cuotas", tipo: "text" },
     { clave: "interes", etiqueta: "Interés o recargo (%)", tipo: "text" },
-    { clave: "limite_credito", etiqueta: "Cupo máximo de fiado (COP)", tipo: "text" },
+    { clave: "limite_credito", etiqueta: "Cupo máximo de crédito (COP)", tipo: "text" },
     PAGO,
   ],
   suscripciones: [
@@ -942,7 +942,7 @@ const PRESETS: Record<string, Partial<ConfigModulo>> = {
       { clave: "pagado", texto: "Pagado" },
     ],
     cerrados: ["pagado"],
-    placeholderTitulo: "Concepto (ej. fiado del mes, cuota 3)",
+    placeholderTitulo: "Concepto (ej. cuenta por cobrar del mes, cuota 3)",
     placeholderDetalle: "Acuerdo de pago / notas",
     etiquetaContacto: "Deudor",
     etiquetaMonto: "Valor adeudado (COP)",

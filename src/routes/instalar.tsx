@@ -211,7 +211,23 @@ function InstalarPage() {
           <li>Abre la app desde su acceso directo: se abre en su propia ventana, sin barra del navegador.</li>
           <li>Sigue funcionando sin internet con lo que ya cargaste; al volver la conexión se sincroniza.</li>
           <li>La app se actualiza sola cada vez que se publican mejoras.</li>
+          <li>Las actualizaciones conservan tu información: solo se instala la base nueva, tus productos, clientes, ventas y saldos quedan intactos.</li>
         </ul>
+      </GlassPanel>
+
+      <GlassPanel className="border-l-4 p-5" style={{ borderLeftColor: "#22d3ee" }}>
+        <Smartphone className="h-5 w-5 text-primary" />
+        <h2 className="mt-3 font-medium text-foreground">APK para Android y app para tus equipos</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Cuando publiques una actualización importante, avisaremos dentro del programa para que descargues e instales la APK en tus celulares Android.
+          Después de iniciar sesión también encontrarás aquí el botón de descarga e instalación para cada dispositivo móvil.
+        </p>
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <a href="/instalar" className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground">
+            <Download className="h-4 w-4" /> Descargar APK Android
+          </a>
+          <p className="text-xs text-muted-foreground sm:self-center">La APK se genera al compilar para Android. Instálala en cada celular de tu equipo y tus datos se conservan.</p>
+        </div>
       </GlassPanel>
     </div>
   );

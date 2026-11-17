@@ -3,7 +3,7 @@
  * Corre en TU computador (http://localhost:3001). Maneja VARIOS números (uno por negocio):
  *  - Envía mensajes (recordatorios, cobros) con el WhatsApp del negocio.
  *  - Atiende a los clientes con las RESPUESTAS CONFIGURADAS de cada negocio (respuestas-<id>.json)
- *    más el PERFIL EXPERTO de su giro (panadero, mecánico, vendedor de autos, veterinario...),
+ *    más el PERFIL ESPECIALISTA de su tipo de negocio (panadero, mecánico, vendedor de autos, veterinario...),
  *    sin depender de internet para decidir qué contestar. Sirve con WhatsApp normal y Business.
  *  - Sesión permanente: reconexión automática con espera progresiva y sesión guardada en disco;
  *    "Cambiar número / Nuevo QR" genera un código nuevo SIN borrar respuestas ni aprendizaje.

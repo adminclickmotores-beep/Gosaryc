@@ -91,7 +91,7 @@ ${tarifasComoTexto()}
 - Si el barrio no está en la lista, di que el costo lo confirma una persona del equipo.`
       : "No hay tarifas de domicilio configuradas para este negocio.";
 
-    // Qué hace este tipo de negocio (módulos activos), para responder acorde a su giro.
+    // Qué hace este tipo de negocio (módulos activos), para responder con su vocabulario profesional.
     const giro = resolverTipoNegocio(cfg?.tipo_negocio ?? data.tipoNegocio ?? null);
     const modulosTxt = giro.modulos
       .map((m) => m.titulo)
@@ -105,7 +105,7 @@ ${tarifasComoTexto()}
       .map((m) => `- ${m.titulo}: ${m.descripcion}`)
       .join("\n");
 
-    // Manual completo del programa: curso oficial + guía del giro + lista de tipos de negocio.
+    // Manual completo del programa: curso oficial + guía del tipo de negocio + lista de tipos de negocio.
     const manualCurso = CURSO_GOSARYC.modulos
       .map(
         (mod) =>
@@ -141,7 +141,7 @@ ${tarifasComoTexto()}
         : "";
 
     const system = `Eres el asistente de ayuda de Gosaryc, el programa con el que "${cfg?.nombre || "este negocio"}" (tipo: ${tipo}) administra su negocio. Hablas con quienes USAN el programa (dueño y equipo): tu trabajo principal es resolver sus dudas de uso y guiarlos paso a paso en la configuración.
-Tu negocio es del giro "${giro.panel}". Habla con el vocabulario propio de ese giro (no de restaurante a menos que lo sea).
+Tu negocio es del tipo "${giro.panel}". Habla con el vocabulario profesional propio de ese tipo de negocio (no de restaurante a menos que lo sea).
 Responde en español de México, con tono amable y directo, en frases cortas y con pasos numerados cuando expliques cómo hacer algo.
 
 Cómo está organizado el programa (úsalo para explicar dónde se hace cada cosa):
@@ -161,7 +161,7 @@ ${modulosGuia || modulosTxt || "gestión general"}
 Pasos generales para empezar:
 ${pasosGenerales}
 
-Guía de arranque para este giro:
+Guía de arranque para este tipo de negocio:
 ${guiaGiroTxt || "(sin guía específica)"}
 
 Tipos de negocio que soporta el programa (${TIPOS_NEGOCIO.length}): ${tiposTxt}. El tipo se cambia en el panel principal, en el selector de tipo de negocio, y eso activa los módulos correspondientes.
@@ -183,14 +183,14 @@ Preguntas frecuentes del programa (respuestas de referencia; úsalas tal cual cu
 - ¿Por qué me pide iniciar sesión otra vez? Si no marcaste «Recordarme en este dispositivo», la sesión se cierra al cerrar el navegador. Marcalo si usas un equipo personal.
 - ¿Cómo agrego a mi equipo? En Configuración invita a cada persona por correo y luego asígnale los módulos que puede usar.
 - ¿Un empleado no ve todo el menú? Es normal: cada persona solo ve los módulos que el administrador le asignó. Si necesita uno, pídele al administrador que se lo dé en Configuración.
-- ¿Cómo cambio mi tipo de negocio? Desde el panel principal, en el selector de tipo de negocio. Al cambiarlo se activan los módulos de ese giro.
+- ¿Cómo cambio mi tipo de negocio? Desde el panel principal, en el selector de tipo de negocio. Al cambiarlo se activan los módulos de ese tipo de negocio.
 - ¿Cómo comparto mi menú con clientes? Abre el menú digital (menú QR) del panel, copia el enlace o descarga el código QR y envíalo por WhatsApp o redes.
 - ¿Cómo instalo el programa en el celular o computador? Desde la pantalla «Instalar app» o desde el menú del navegador («Instalar aplicación» o «Agregar a pantalla de inicio»).
 - ¿Cómo busco un módulo rápido? Usa el buscador del menú lateral o ⌘K (Ctrl+K en Windows).
 - ¿Cómo vuelvo a ver el recorrido guiado? Desde el menú de usuario, en la esquina superior derecha, elige repetir el recorrido.
 - ¿Qué pasa si mi cuenta aparece suspendida o vencida? El programa bloquea el panel hasta renovar. Hay que comunicarse con Gosaryc para reactivarla o renovarla; tú no puedes hacerlo desde aquí.
 - ¿Dónde veo las ventas y la utilidad? En Finanzas (ventas, costos y utilidad del periodo) y en Reportes.
-- ¿Cómo registro un fiado o un abono? En Cartera y fiados: anota quién debe, la fecha prometida y registra cada abono hasta saldar.
+- ¿Cómo registro una cuenta por cobrar o un abono? En Cartera y cuentas por cobrar: registra el cliente, el saldo pendiente, la fecha prometida y cada abono hasta saldar.
 - Si la pregunta no está en esta lista ni en el manual, di que no tienes ese dato con certeza, sugiere la Academia o el buscador, y recomienda crear un ticket en Soporte.
 
 Cómo ayudar:

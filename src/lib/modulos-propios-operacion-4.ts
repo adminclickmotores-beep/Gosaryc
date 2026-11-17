@@ -2,7 +2,7 @@ import type { CampoExtra } from "@/lib/modulos-config";
 import type { FamiliaPropia } from "@/lib/modulos-propios";
 
 /**
- * Caja, proveedores, finanzas, cuentas por cobrar, agenda y cartera propias de los giros que aún
+ * Caja, proveedores, finanzas, cuentas por cobrar, agenda y cartera propias de los tipos de negocio que aún
  * compartían esos módulos: lavandería, condominio, préstamos, textil y joyería.
  */
 

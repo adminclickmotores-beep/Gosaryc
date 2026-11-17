@@ -40,7 +40,7 @@ type DatosSector = {
 const SECTORES_CAMPOS: Record<string, DatosSector> = {
   tienda: {
     c: [tipoCliente("Frecuente", "Mayorista", "Ocasional", "Empresa"), t("talla_marca", "Talla o marca preferida"), t("cupo_credito", "Cupo de crédito (COP)")],
-    p: ["Venta de mostrador", "Abono de apartado", "Pago de fiado", "Pedido por WhatsApp", "Cambio con diferencia"],
+    p: ["Venta de mostrador", "Abono de apartado", "Abono a cuenta por cobrar", "Pedido por WhatsApp", "Cambio con diferencia"],
     r: ["Vendedor", "Cajero", "Bodeguero", "Domiciliario", "Administrador"],
     pe: [t("comision_venta", "Comisión por venta (%)")],
     q: ["Producto defectuoso", "Cambio o devolución", "Precio", "Atención", "Domicilio"],
@@ -215,7 +215,7 @@ const SECTORES_CAMPOS: Record<string, DatosSector> = {
   },
   moda: {
     c: [tipoCliente("Frecuente", "Nueva", "Mayorista", "Empresa"), t("talla_ropa", "Talla de ropa"), t("talla_calzado", "Talla de calzado"), t("colores", "Colores o estilos preferidos"), t("marcas", "Marcas favoritas"), d("cumple", "Cumpleaños")],
-    p: ["Venta de prendas", "Venta de calzado", "Apartado", "Abono a apartado", "Cambio con diferencia", "Pago de fiado"],
+    p: ["Venta de prendas", "Venta de calzado", "Apartado", "Abono a apartado", "Cambio con diferencia", "Abono a cuenta por cobrar"],
     r: ["Asesor de ventas", "Cajero", "Bodeguero", "Vitrinista", "Administrador"],
     pe: [t("comision_prenda", "Comisión por venta (%)")],
     q: ["Cambio de talla", "Calidad", "Precio", "Atención", "Producto dañado", "Devolución"],

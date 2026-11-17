@@ -35,7 +35,7 @@ export function textoResumenCierre(d: DatosCierre): string {
     `Gastos y retiros: ${dinero(d.gastos)}`,
     `Efectivo en caja: ${dinero(d.efectivoEsperado)}`,
     `Transferencias + tarjeta: ${dinero(d.transferencias)}`,
-    `Créditos del día (fiado): ${dinero(d.creditosDelDia)}`,
+    `Créditos del día (ventas a crédito): ${dinero(d.creditosDelDia)}`,
   ];
   if (d.stockCritico.length > 0) {
     lineas.push(``, `⚠️ Stock crítico:`, ...d.stockCritico.slice(0, 5).map((s) => `· ${s}`));

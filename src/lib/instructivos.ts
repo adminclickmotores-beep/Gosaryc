@@ -21,8 +21,8 @@ const POR_RUTA: Record<string, Instructivo> = {
     consejo: "Cobra cada cita el mismo día para que el cierre de caja cuadre.",
   },
   "/cartera-fiados": {
-    titulo: "Cartera y fiados",
-    paraQue: "Llevar quién te debe, cuánto y cuándo prometió pagar.",
+    titulo: "Cartera y cuentas por cobrar",
+    paraQue: "Controlar los saldos pendientes de tus clientes: montos, abonos, fechas prometidas de pago y estado de cada cuenta.",
     pasos: [
       "Registra la deuda con el nombre del cliente, el valor y la fecha prometida de pago.",
       "Cuando el cliente abone, anótalo para que el saldo baje.",

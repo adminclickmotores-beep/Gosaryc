@@ -1,10 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { ComponentType } from "react";
 import {
-  UtensilsCrossed, ChefHat, Bike, Boxes, Wallet, Download, ArrowRight,
-  Smartphone, Palette, ShieldCheck, Sparkles, Check, Users, Receipt, BarChart3, Layers, Clock, TrendingUp,
-  FileText, Gift, CalendarDays,
-  Bot, MessageCircle, Brain, Headphones,
+  UtensilsCrossed, ChefHat, Bike, Boxes, Wallet, Download, ArrowRight, Smartphone,
+  Palette, ShieldCheck, Sparkles, Check, Users, Receipt, BarChart3, Layers, Clock, TrendingUp,
+  FileText, Gift, CalendarDays, Bot, MessageCircle, Brain, Headphones, BellRing, RefreshCw, PlayCircle,
 } from "lucide-react";
 import { SECTORES } from "@/lib/sectores";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
@@ -16,9 +15,9 @@ export const Route = createFileRoute("/")({
   component: LandingPage,
   head: () => ({
     meta: [
-      { title: `${BRAND.name} — Software para negocios en Colombia | Restaurantes, tiendas, salud, concesionarios y más` },
+      { title: `${BRAND.name} — Software profesional para administrar tu negocio en Colombia` },
       { name: "description", content: BRAND.description },
-      { property: "og:title", content: `${BRAND.name} — Software para negocios en Colombia, con módulos propios para cada giro` },
+      { property: "og:title", content: `${BRAND.name} — Gestión profesional para cada tipo de negocio en Colombia` },
       { property: "og:description", content: BRAND.description },
       { property: "og:type", content: "website" },
     ],
@@ -26,49 +25,44 @@ export const Route = createFileRoute("/")({
 });
 
 type Icono = ComponentType<{ className?: string }>;
-type RutaLanding = "/menu" | "/restaurante" | "/domicilios" | "/agente" | "/login";
 
-const MODULOS: { Icon: Icono; label: string; desc: string; to: RutaLanding; grande?: boolean }[] = [
-  { Icon: UtensilsCrossed, label: "Ventas y catálogo", desc: "Muestra tus productos o servicios y recibe pedidos desde el celular, con un catálogo que se ve como tu marca.", to: "/menu", grande: true },
-  { Icon: ChefHat, label: "Operación y producción", desc: "Tablero en vivo para seguir cada pedido de principio a fin.", to: "/restaurante" },
-  { Icon: Bike, label: "Entregas y clientes", desc: "Organiza entregas y conoce a tus clientes frecuentes.", to: "/domicilios" },
-  { Icon: Boxes, label: "Inventarios y recetas", desc: "Controla existencias, costos y márgenes de lo que vendes.", to: "/restaurante" },
-  { Icon: Wallet, label: "Finanzas y rentabilidad", desc: "Caja, cartera y utilidad en un vistazo, con reportes claros para decidir mejor.", to: "/restaurante", grande: true },
-  { Icon: Users, label: "Equipo y nómina en Colombia", desc: "Liquida salud, pensión, prima, cesantías y PILA con las reglas colombianas, y no olvides ninguna fecha de obligaciones.", to: "/login" },
-  { Icon: ShieldCheck, label: "Hecho para tu giro", desc: "Restaurante con Rappi, mermas y sanidad; salud con RIPS, glosas y habilitación; concesionario, tienda, taller y más, cada uno con sus propios formularios.", to: "/login" },
-  { Icon: Receipt, label: "Caja, fiados y facturación DIAN", desc: "Lo que entra, lo que sale, lo que te deben y el control de tus facturas electrónicas.", to: "/login" },
-  { Icon: BarChart3, label: "Reportes y metas", desc: "Mira cómo va tu negocio y fija metas de ventas.", to: "/login" },
-  { Icon: FileText, label: "Cotizaciones y documentos", desc: "Crea cotizaciones, controla vencimientos y guarda los documentos de tu negocio.", to: "/login" },
-  { Icon: Gift, label: "Combos, puntos y recompensas", desc: "Promociones y puntos para que tus clientes vuelvan.", to: "/login" },
-  { Icon: CalendarDays, label: "Agenda, reservas y pedidos recurrentes", desc: "Citas, reservas y pedidos que se repiten, sin olvidar ninguno.", to: "/login" },
+// Tarjetas de módulos con color propio por familia: cada tarjeta tiene su acento.
+const MODULOS: { Icon: Icono; label: string; desc: string; to: "/menu" | "/restaurante" | "/domicilios" | "/agente" | "/login"; color: string; grande?: boolean }[] = [
+  { Icon: UtensilsCrossed, label: "Ventas y catálogo digital", desc: "Presenta tus productos o servicios con tu marca, recibe pedidos desde el celular y cobra sin errores. Incluye código QR para mesas y vitrina.", to: "/menu", color: "#fb923c", grande: true },
+  { Icon: ChefHat, label: "Operación y producción en vivo", desc: "Tablero en tiempo real: cada pedido avanza de principio a fin, con comanda automática a cocina y control de tiempos.", to: "/restaurante", color: "#f472b6" },
+  { Icon: Bike, label: "Domicilios y clientes", desc: "Rutas, tarifas por barrio, repartidores y base de clientes con historial de compras y direcciones.", to: "/domicilios", color: "#22d3ee" },
+  { Icon: Boxes, label: "Inventario, recetas y costos", desc: "Existencias, costo real por plato o producto, alertas de faltantes, lotes y vencimientos. Sin hojas de cálculo.", to: "/restaurante", color: "#a3e635" },
+  { Icon: Wallet, label: "Finanzas y rentabilidad", desc: "Caja por turnos con arqueo discriminado, cuentas por cobrar con recordatorios por WhatsApp y utilidad real del periodo.", to: "/restaurante", color: "#60a5fa", grande: true },
+  { Icon: Users, label: "Equipo y nómina conforme a la ley colombiana", desc: "Empleados, turnos y liquidación de nómina con SMMLV, auxilio, salud, pensión, primas, cesantías y PILA según la normatividad vigente.", to: "/login", color: "#c084fc" },
+  { Icon: ShieldCheck, label: "Diseñado para tu tipo de negocio", desc: "Restaurante con Rappi y sanidad, salud con RIPS y habilitación, concesionario con traspasos, tienda con código de barras, taller con órdenes: cada negocio con sus propios formularios.", to: "/login", color: "#34d399" },
+  { Icon: Receipt, label: "Caja, cuentas por cobrar y facturación electrónica DIAN", desc: "Registra ingresos y egresos, gestiona saldos pendientes por cliente y emite facturas electrónicas con CUFE y código QR.", to: "/login", color: "#fbbf24" },
+  { Icon: BarChart3, label: "Reportes, metas e indicadores", desc: "Ventas por producto, por medio de pago, por sede y por periodo. Define metas semanales y mide el avance de cada equipo.", to: "/login", color: "#38bdf8" },
+  { Icon: FileText, label: "Cotizaciones y documentos", desc: "Cotizaciones profesionales enviadas por WhatsApp, control de vencimientos y archivo digital de tus documentos.", to: "/login", color: "#fb7185" },
+  { Icon: Gift, label: "Combos, puntos y fidelización", desc: "Promociones por horario, combos, puntos por compra y recompensas para que tus clientes regresen.", to: "/login", color: "#e879f9" },
+  { Icon: CalendarDays, label: "Agenda, reservas y pedidos recurrentes", desc: "Citas por profesional y recurso, reservas de mesas o espacios, y pedidos que se repiten cada semana sin olvidar ninguno.", to: "/login", color: "#2dd4bf" },
 ];
 
-const POR_QUE: { Icon: Icono; titulo: string; desc: string }[] = [
-  { Icon: Layers, titulo: "Todo en un solo lugar", desc: "Ventas, inventario, clientes y finanzas juntos, sin cuadernos ni hojas de cálculo." },
-  { Icon: Clock, titulo: "Ahorra tiempo cada día", desc: "Automatiza pedidos, cobros y reportes para dedicarte a crecer." },
-  { Icon: TrendingUp, titulo: "Decide con datos", desc: "Conoce tus costos, márgenes y utilidad reales." },
-  { Icon: ShieldCheck, titulo: "Uso exclusivo de tu empresa", desc: "Solo tu equipo autorizado entra al programa y a la información de tu negocio." },
+const POR_QUE: { Icon: Icono; titulo: string; desc: string; color: string }[] = [
+  { Icon: Layers, titulo: "Toda tu operación en un solo panel", desc: "Ventas, inventario, clientes, caja, nómina y finanzas conectados entre sí. Lo que vendes descuenta inventario, entra a caja y alimenta la contabilidad.", color: "#60a5fa" },
+  { Icon: Clock, titulo: "Ahorra horas cada semana", desc: "Pedidos que llegan solos, comandas que se imprimen sin pedirlo, cobros con recordatorio por WhatsApp y cierres de caja en minutos.", color: "#34d399" },
+  { Icon: TrendingUp, titulo: "Decide con cifras reales", desc: "Costo, margen y utilidad por producto, por sede y por periodo. Sabrás qué te deja ganancia y qué solo ocupa espacio.", color: "#fbbf24" },
+  { Icon: ShieldCheck, titulo: "Información protegida y privada", desc: "Cada negocio ve solo su información. El acceso por empleado se limita a los módulos que le asignes, con auditoría de accesos sensibles.", color: "#c084fc" },
 ];
 
-const VENTAJAS: { Icon: Icono; titulo: string; desc: string }[] = [
-  { Icon: Palette, titulo: "Se ve como tu marca", desc: "Sube tu logo, tu portada y elige tus colores." },
-  { Icon: Smartphone, titulo: "En cualquier pantalla", desc: "Celular, tablet o computador, también instalado como app." },
-  { Icon: Sparkles, titulo: "Fácil desde el primer día", desc: "Una guía paso a paso te lleva de la mano." },
-  { Icon: ShieldCheck, titulo: "Tus datos protegidos", desc: "Solo tu equipo autorizado entra a tu negocio." },
+const VENTAJAS: { Icon: Icono; titulo: string; desc: string; color: string }[] = [
+  { Icon: Palette, titulo: "Con la imagen de tu marca", desc: "Logo, portada y colores de tu negocio en el menú público, las facturas y la app instalada.", color: "#f472b6" },
+  { Icon: Smartphone, titulo: "En cualquier pantalla", desc: "Computador, tableta y celular. Se instala como app y sigue funcionando sin internet.", color: "#22d3ee" },
+  { Icon: Sparkles, titulo: "Fácil desde el primer día", desc: "Guía de primeros pasos, academia con lecciones cortas y un asistente virtual que te enseña a usar cada pantalla.", color: "#a3e635" },
+  { Icon: BellRing, titulo: "Siempre al día, sin perder nada", desc: "Las actualizaciones se instalan solas conservando tu información. Cuando hay una mejora importante, te avisamos dentro del programa.", color: "#fb923c" },
 ];
 
 const PASOS = [
-  { n: "01", titulo: "Cuéntanos de tu negocio", desc: "Nombre, logo y tipo de negocio." },
-  { n: "02", titulo: "Activamos tus módulos", desc: "Recibes las herramientas que tu tipo de negocio necesita." },
-  { n: "03", titulo: "Vende y controla", desc: "Gestiona clientes, inventario y finanzas desde donde estés." },
+  { n: "01", titulo: "Cuéntanos de tu negocio", desc: "Nombre, logo, horarios y tipo de negocio. Así activamos los módulos exactos que necesitas." },
+  { n: "02", titulo: "Carga tu catálogo y tu equipo", desc: "Productos con precio, clientes frecuentes e invita a tu personal con sus permisos." },
+  { n: "03", titulo: "Vende, cobra y controla", desc: "Factura, gestiona caja y cuentas por cobrar, revisa reportes y haz crecer tu negocio." },
 ];
 
-const CIFRAS = [
-  { valor: `${SECTORES.length}`, texto: "sectores de negocio" },
-  { valor: "100%", texto: "desde el celular" },
-  { valor: "24/7", texto: "disponible siempre" },
-  { valor: "1", texto: "solo panel para todo" },
-];
+const COLORES_SECTOR = ["#fb923c", "#60a5fa", "#34d399", "#f472b6", "#fbbf24", "#22d3ee", "#c084fc", "#a3e635"];
 
 function LandingPage() {
   const { loading } = useAuth();
@@ -93,28 +87,41 @@ function LandingPage() {
             <span className="truncate font-display text-xl">{BRAND.name}</span>
           </Link>
           <div className="flex shrink-0 items-center gap-2">
+            <Link to="/instalar" className="hidden rounded-full px-4 py-2 text-sm text-muted-foreground sm:inline-flex">Descargar app</Link>
             <Link to="/login" className="btn-pro inline-flex rounded-full px-5 py-2.5 text-sm font-semibold">Iniciar sesión</Link>
           </div>
         </div>
       </header>
 
       <main className="relative z-10 mx-auto max-w-6xl px-5 pb-24 sm:px-8">
-        {/* Hero */}
+        {/* 1. INFORMACIÓN PRIMERO: qué es, para quién, por qué */}
         <section className="grid items-center gap-10 pb-6 pt-12 sm:pt-20 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
           <div className="rise min-w-0">
             <p className="inline-flex items-center gap-2 rounded-full border border-glass-border bg-glass/60 px-4 py-1.5 text-xs text-muted-foreground backdrop-blur">
-              <Sparkles className="h-3.5 w-3.5 text-primary" /> {BRAND.tagline}
+              <Sparkles className="h-3.5 w-3.5 text-primary" /> {BRAND.tagline} · Hecho en Colombia
             </p>
             <h1 className="mt-6 break-words font-display text-4xl leading-[1.05] tracking-tight sm:text-6xl">
               Todo tu negocio, <span className="text-brand-gradient">en un solo lugar</span>
             </h1>
-            <p className="mt-6 max-w-xl text-base text-muted-foreground sm:text-lg">{BRAND.description}</p>
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link to="/login" className="btn-pro inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold">
-                Crear mi cuenta <ArrowRight className="h-4 w-4" />
-              </Link>
+            <p className="mt-6 max-w-xl text-base text-muted-foreground sm:text-lg">
+              {BRAND.description}
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2 text-xs">
+              {["Más de 50 tipos de negocio", "Facturación electrónica DIAN", "Nómina según ley colombiana", "Funciona sin internet"].map((t) => (
+                <span key={t} className="inline-flex items-center gap-1.5 rounded-full border border-glass-border bg-glass/50 px-3 py-1.5 text-muted-foreground">
+                  <Check className="h-3.5 w-3.5 text-primary" /> {t}
+                </span>
+              ))}
+            </div>
+            <p className="mt-6 text-sm text-muted-foreground">
+              Primero conoce el programa con calma. Cuando estés listo, crea tu cuenta o inicia sesión: tus datos se conservan siempre, incluso al actualizar.
+            </p>
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <a href="#conocer" className="btn-pro inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold">
+                <PlayCircle className="h-4 w-4" /> Conocer el programa
+              </a>
               <Link to="/instalar" className="btn-ghost-pro inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm text-foreground">
-                <Download className="h-4 w-4" /> Instalar app
+                <Download className="h-4 w-4" /> Descargar app Android / PC
               </Link>
             </div>
           </div>
@@ -132,39 +139,33 @@ function LandingPage() {
               </div>
               <div className="flex h-24 items-end gap-2">
                 {[38, 55, 42, 70, 52, 88, 64].map((h, i) => (
-                  <div key={i} className="flex-1 rounded-t-lg bg-gradient-to-t from-primary/20 to-primary/80" style={{ height: `${h}%` }} />
+                  <div key={i} className="flex-1 rounded-t-lg" style={{ height: `${h}%`, background: `linear-gradient(to top, ${COLORES_SECTOR[i % COLORES_SECTOR.length]}33, ${COLORES_SECTOR[i % COLORES_SECTOR.length]})` }} />
                 ))}
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <GlassPanel tier="inner" className="p-3"><p className="text-xs text-muted-foreground">Pedidos</p><p className="font-display text-xl">38</p></GlassPanel>
-                <GlassPanel tier="inner" className="p-3"><p className="text-xs text-muted-foreground">Por cobrar</p><p className="font-display text-xl">$216.000</p></GlassPanel>
+                <GlassPanel tier="inner" className="border-l-4 p-3" style={{ borderLeftColor: "#fb923c" }}><p className="text-xs text-muted-foreground">Pedidos de hoy</p><p className="font-display text-xl">38</p></GlassPanel>
+                <GlassPanel tier="inner" className="border-l-4 p-3" style={{ borderLeftColor: "#60a5fa" }}><p className="text-xs text-muted-foreground">Cuentas por cobrar</p><p className="font-display text-xl">$216.000</p></GlassPanel>
               </div>
             </GlassPanel>
           </div>
         </section>
 
-        {/* Cifras */}
-        <section className="mt-12 grid grid-cols-2 gap-3 md:grid-cols-4" aria-label="Cifras">
-          {CIFRAS.map((c) => (
-            <GlassPanel key={c.texto} className="p-5 text-center">
-              <p className="font-display text-3xl text-brand-gradient">{c.valor}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{c.texto}</p>
-            </GlassPanel>
-          ))}
-        </section>
-
-        {/* Módulos en bento */}
-        <section className="mt-24" aria-labelledby="modulos">
-          <p className="text-eyebrow text-center">Módulos</p>
-          <h2 id="modulos" className="mt-3 text-center font-display text-3xl sm:text-4xl">Todo lo que necesitas para crecer</h2>
+        {/* 2. QUÉ INCLUYE (tarjetas de colores) */}
+        <section id="conocer" className="mt-16 scroll-mt-24" aria-labelledby="modulos">
+          <p className="text-eyebrow text-center">Qué incluye</p>
+          <h2 id="modulos" className="mt-3 text-center font-display text-3xl sm:text-4xl">Un programa completo, explicado en lenguaje claro</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-muted-foreground sm:text-base">
+            Cada tarjeta es un módulo real del programa. Los colores identifican la familia: ventas, operación, finanzas, equipo y cumplimiento. Al crear tu cuenta, verás solo los módulos de tu tipo de negocio, con tus colores y tu logo.
+          </p>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {MODULOS.map((m) => (
               <Link key={m.label} to={m.to} className={`group block ${m.grande ? "lg:col-span-2" : ""}`}>
-                <GlassPanel className="h-full p-6 transition-transform duration-300 group-hover:-translate-y-1">
-                  <span className="icon-chip h-12 w-12 rounded-2xl"><m.Icon className="h-5 w-5" /></span>
+                <GlassPanel className="relative h-full overflow-hidden p-6 transition-transform duration-300 group-hover:-translate-y-1" style={{ borderTop: `3px solid ${m.color}` }}>
+                  <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full opacity-20 blur-2xl" style={{ background: m.color }} />
+                  <span className="icon-chip h-12 w-12 rounded-2xl" style={{ background: `${m.color}1f`, color: m.color }}><m.Icon className="h-5 w-5" /></span>
                   <h3 className="mt-5 font-display text-lg">{m.label}</h3>
                   <p className="mt-1.5 text-sm text-muted-foreground">{m.desc}</p>
-                  <span className="mt-4 inline-flex items-center gap-1 text-xs text-primary opacity-0 transition group-hover:opacity-100">
+                  <span className="mt-4 inline-flex items-center gap-1 text-xs font-medium opacity-0 transition group-hover:opacity-100" style={{ color: m.color }}>
                     Explorar <ArrowRight className="h-3 w-3" />
                   </span>
                 </GlassPanel>
@@ -173,66 +174,64 @@ function LandingPage() {
           </div>
         </section>
 
-        {/* Agente de WhatsApp con IA */}
+        {/* 3. AGENTE WHATSAPP */}
         <section className="mt-24" aria-labelledby="agente-ia">
           <GlassPanel tier="strong" className="relative overflow-hidden p-6 sm:p-10">
             <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-primary/20 blur-3xl" />
-            <p className="text-eyebrow text-center">Nuevo</p>
+            <p className="text-eyebrow text-center">Atención automática</p>
             <h2 id="agente-ia" className="mt-3 text-center font-display text-3xl sm:text-4xl">
-              Un agente de WhatsApp que atiende y vende por ti
+              Un agente de WhatsApp que atiende y vende por ti, las 24 horas
             </h2>
             <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-muted-foreground sm:text-base">
-              Se conecta al número de cada negocio, responde a tus clientes las 24 horas y aprende de tus propias respuestas para sonar cada vez más como tú.
+              Se conecta al número de tu negocio, responde dudas de horarios, precios y pedidos al instante, y aprende de tus propias respuestas para sonar cada vez más como tu equipo. Tú puedes intervenir cuando quieras.
             </p>
             <div className="relative mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {[
-                { Icon: Headphones, titulo: "Servicio al cliente", desc: "Resuelve dudas de horarios, precios y pedidos al instante." },
-                { Icon: Bot, titulo: "Asesor y vendedor", desc: "Recomienda, resuelve objeciones y ayuda a cerrar la venta." },
-                { Icon: Brain, titulo: "Aprende y se adapta", desc: "Se adapta a tu tipo de negocio y mejora con cada conversación." },
-                { Icon: MessageCircle, titulo: "Un número por negocio", desc: "Cada negocio conecta su propio WhatsApp. Tú puedes intervenir cuando quieras." },
-              ].map(({ Icon, titulo, desc }) => (
-                <GlassPanel key={titulo} tier="inner" className="p-4">
-                  <span className="icon-chip h-10 w-10 rounded-xl"><Icon className="h-5 w-5" /></span>
+                { Icon: Headphones, titulo: "Servicio al cliente", desc: "Resuelve dudas de horarios, precios, garantías y entregas al instante.", color: "#22d3ee" },
+                { Icon: Bot, titulo: "Asesor y vendedor", desc: "Recomienda productos, resuelve objeciones y ayuda a cerrar la venta.", color: "#f472b6" },
+                { Icon: Brain, titulo: "Aprende de tu negocio", desc: "Se adapta a tu tipo de negocio y mejora con cada conversación real.", color: "#a3e635" },
+                { Icon: MessageCircle, titulo: "Un número por negocio", desc: "Cada negocio conecta su propio WhatsApp. Tú puedes tomar el chat cuando quieras.", color: "#fb923c" },
+              ].map(({ Icon, titulo, desc, color }) => (
+                <GlassPanel key={titulo} tier="inner" className="border-t-2 p-4" style={{ borderTopColor: color }}>
+                  <span className="icon-chip h-10 w-10 rounded-xl" style={{ background: `${color}1f`, color }}><Icon className="h-5 w-5" /></span>
                   <h3 className="mt-3 font-medium text-foreground">{titulo}</h3>
                   <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
                 </GlassPanel>
               ))}
             </div>
-            <div className="relative mt-8 text-center">
-              <Link to="/login" className="btn-pro inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold">
-                Quiero mi agente <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
           </GlassPanel>
         </section>
 
-        {/* Sectores */}
+        {/* 4. ADAPTADO A CADA NEGOCIO */}
         <section className="mt-24" aria-labelledby="para-quien">
-          <p className="text-eyebrow text-center">Sectores</p>
-          <h2 id="para-quien" className="mt-3 text-center font-display text-3xl sm:text-4xl">Hecho para todo tipo de negocio</h2>
-          <p className="mx-auto mt-3 max-w-xl text-center text-sm text-muted-foreground">Cada negocio recibe los módulos y los textos que necesita.</p>
+          <p className="text-eyebrow text-center">Por tipo de negocio</p>
+          <h2 id="para-quien" className="mt-3 text-center font-display text-3xl sm:text-4xl">El programa se adapta a tu negocio, no al revés</h2>
+          <p className="mx-auto mt-3 max-w-xl text-center text-sm text-muted-foreground">Cada tipo de negocio recibe sus módulos, sus textos y su color. Elige el tuyo para ver el detalle.</p>
           <ul className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-            {SECTORES.map(({ Icon, label, slug }) => (
-              <li key={slug}>
-                <Link to="/sectores/$slug" params={{ slug }} className="group block h-full">
-                  <GlassPanel className="flex h-full flex-col items-center gap-3 p-4 text-center transition-transform duration-300 group-hover:-translate-y-1">
-                    <span className="icon-chip h-11 w-11 rounded-2xl"><Icon className="h-5 w-5" /></span>
-                    <span className="text-xs font-medium text-foreground sm:text-sm">{label}</span>
-                  </GlassPanel>
-                </Link>
-              </li>
-            ))}
+            {SECTORES.map(({ Icon, label, slug }, i) => {
+              const color = COLORES_SECTOR[i % COLORES_SECTOR.length];
+              return (
+                <li key={slug}>
+                  <Link to="/sectores/$slug" params={{ slug }} className="group block h-full">
+                    <GlassPanel className="flex h-full flex-col items-center gap-3 border-b-4 p-4 text-center transition-transform duration-300 group-hover:-translate-y-1" style={{ borderBottomColor: color }}>
+                      <span className="icon-chip h-11 w-11 rounded-2xl" style={{ background: `${color}1f`, color }}><Icon className="h-5 w-5" /></span>
+                      <span className="text-xs font-medium text-foreground sm:text-sm">{label}</span>
+                    </GlassPanel>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </section>
 
-        {/* Por qué */}
+        {/* 5. POR QUÉ + ACTUALIZACIONES + APP */}
         <section className="mt-24" aria-labelledby="por-que">
           <p className="text-eyebrow text-center">Ventajas</p>
-          <h2 id="por-que" className="mt-3 text-center font-display text-3xl sm:text-4xl">¿Por qué usar {BRAND.name}?</h2>
+          <h2 id="por-que" className="mt-3 text-center font-display text-3xl sm:text-4xl">¿Por qué elegir {BRAND.name}?</h2>
           <div className="mt-10 grid gap-4 sm:grid-cols-2">
-            {[...POR_QUE, ...VENTAJAS].map(({ Icon, titulo, desc }) => (
-              <GlassPanel key={titulo} className="flex items-start gap-4 p-5">
-                <span className="icon-chip h-11 w-11 shrink-0 rounded-xl"><Icon className="h-5 w-5" /></span>
+            {[...POR_QUE, ...VENTAJAS].map(({ Icon, titulo, desc, color }) => (
+              <GlassPanel key={titulo} className="flex items-start gap-4 border-l-4 p-5" style={{ borderLeftColor: color }}>
+                <span className="icon-chip h-11 w-11 shrink-0 rounded-xl" style={{ background: `${color}1f`, color }}><Icon className="h-5 w-5" /></span>
                 <div className="min-w-0">
                   <h3 className="font-medium text-foreground">{titulo}</h3>
                   <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
@@ -240,16 +239,24 @@ function LandingPage() {
               </GlassPanel>
             ))}
           </div>
+          <GlassPanel tier="strong" className="mt-6 flex flex-col gap-4 p-6 sm:flex-row sm:items-center">
+            <span className="icon-chip h-12 w-12 shrink-0 rounded-2xl"><RefreshCw className="h-5 w-5" /></span>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-medium text-foreground">Actualizaciones sin perder tu información</h3>
+              <p className="mt-1 text-sm text-muted-foreground">Cuando publiquemos una mejora, el programa te avisará con un mensaje dentro de la app. La actualización conserva tus productos, clientes, ventas y saldos. Solo se instala la base nueva; tu información queda intacta. Si la mejora incluye una app nueva, también te avisaremos para que descargues e instales la APK en tus celulares Android.</p>
+            </div>
+            <Link to="/instalar" className="btn-pro inline-flex shrink-0 items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold"><Download className="h-4 w-4" /> Descargar APK y app</Link>
+          </GlassPanel>
         </section>
 
-        {/* Pasos */}
+        {/* 6. PASOS + ACCESO (login/registro al final) */}
         <section className="mt-24" aria-labelledby="como">
           <p className="text-eyebrow text-center">Cómo empezar</p>
           <h2 id="como" className="mt-3 text-center font-display text-3xl sm:text-4xl">Empieza en 3 pasos</h2>
           <ol className="mt-10 grid gap-4 md:grid-cols-3">
-            {PASOS.map((p) => (
+            {PASOS.map((p, i) => (
               <li key={p.n}>
-                <GlassPanel className="h-full p-6">
+                <GlassPanel className="h-full border-t-4 p-6" style={{ borderTopColor: COLORES_SECTOR[i % COLORES_SECTOR.length] }}>
                   <span className="font-display text-4xl text-brand-gradient">{p.n}</span>
                   <h3 className="mt-3 font-medium text-foreground">{p.titulo}</h3>
                   <p className="mt-1 text-sm text-muted-foreground">{p.desc}</p>
@@ -259,19 +266,25 @@ function LandingPage() {
           </ol>
         </section>
 
-        {/* Cierre */}
-        <section className="mt-24">
+        {/* 7. CIERRE CON ACCESO */}
+        <section className="mt-24" id="acceso">
           <GlassPanel tier="strong" className="relative mx-auto max-w-4xl overflow-hidden p-8 text-center sm:p-12">
             <div className="pointer-events-none absolute -top-24 left-1/2 h-48 w-96 -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
             <h2 className="relative font-display text-3xl sm:text-4xl">Lleva tu negocio al siguiente nivel</h2>
+            <p className="relative mx-auto mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">Ya viste lo que incluye. Ahora crea tu cuenta gratis o inicia sesión para activar los módulos de tu tipo de negocio, con tus colores y tu logo.</p>
             <ul className="relative mx-auto mt-6 flex max-w-md flex-col gap-2 text-left text-sm text-muted-foreground">
-              {["Funciona en la web y como app instalable", "Tu logo, tus colores y tus datos", "Módulos según tu tipo de negocio"].map((t) => (
+              {["Funciona en la web y como app instalable en Android y PC", "Tus colores, tu logo y tus datos siempre a salvo", "Módulos y textos según tu tipo de negocio"].map((t) => (
                 <li key={t} className="flex items-center gap-2"><Check className="h-4 w-4 shrink-0 text-primary" /> {t}</li>
               ))}
             </ul>
-            <Link to="/login" className="btn-pro relative mt-8 inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-sm font-semibold">
-              Crear mi cuenta <ArrowRight className="h-4 w-4" />
-            </Link>
+            <div className="relative mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+              <Link to="/login" className="btn-pro inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-sm font-semibold">
+                Crear mi cuenta gratis <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link to="/login" className="btn-ghost-pro inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-sm text-foreground">
+                Ya tengo cuenta: iniciar sesión
+              </Link>
+            </div>
           </GlassPanel>
         </section>
 

@@ -15,7 +15,7 @@ const claveCliente = (nombre: string | null, tel: string | null): string => {
 };
 
 export const Route = createFileRoute("/_app/cartera-fiados")({
-  head: () => ({ meta: [{ title: "Cartera y fiados" }] }),
+  head: () => ({ meta: [{ title: "Cartera y cuentas por cobrar" }] }),
   component: CarteraFiadosPage,
 });
 
@@ -176,7 +176,7 @@ function CarteraFiadosPage() {
 
   const vencidos = deudores.filter((d) => d.vencido !== null);
   const totalPorCobrar = deudores.reduce((s, d) => s + d.debe, 0);
-  // Lo cobrado = abonos recibidos en fiados vigentes (los anulados no cuentan).
+  // Lo cobrado = abonos recibidos en cuentas por cobrar vigentes (los anulados no cuentan).
   const totalCobrado = filas.filter((f) => !f.anulado).reduce((s, f) => s + f.abonado, 0);
 
   return (
@@ -186,18 +186,18 @@ function CarteraFiadosPage() {
           <ArrowLeft className="h-3 w-3" /> Volver al panel
         </Link>
         <h1 className="flex items-center gap-2 font-display text-3xl text-foreground">
-          <Coins className="h-7 w-7 text-primary" /> Cartera y fiados
+          <Coins className="h-7 w-7 text-primary" /> Cartera y cuentas por cobrar
         </h1>
         <div className="flex flex-wrap gap-2 pt-2">
           <button
-            onClick={() => exportarExcel("cartera-fiados", ["Cliente", "Teléfono", "Debe", "Abonado", "Vencido"],
+            onClick={() => exportarExcel("cuentas-por-cobrar", ["Cliente", "Teléfono", "Debe", "Abonado", "Vencido"],
               deudores.map((d) => [d.nombre, d.telefono ?? "", d.debe, d.abonado, d.vencido ?? ""]))}
             className="rounded-full border border-glass-border px-4 py-1.5 text-sm text-muted-foreground"
           >
             Exportar a Excel
           </button>
           <button
-            onClick={() => imprimirReporte("Cartera y fiados", "Saldos por cobrar", ["Cliente", "Teléfono", "Debe", "Vencido"],
+            onClick={() => imprimirReporte("Cartera y cuentas por cobrar", "Saldos por cobrar", ["Cliente", "Teléfono", "Debe", "Vencido"],
               deudores.map((d) => [d.nombre, d.telefono ?? "", dinero(d.debe), d.vencido ?? "al día"]),
               [`Total por cobrar: ${dinero(totalPorCobrar)} · Ya cobrado: ${dinero(totalCobrado)}`])}
             className="rounded-full border border-glass-border px-4 py-1.5 text-sm text-muted-foreground"
@@ -206,7 +206,7 @@ function CarteraFiadosPage() {
           </button>
         </div>
         <p className="text-sm text-muted-foreground">
-          Quién te debe y cuánto. Para agregar un fiado o registrar un abono, usa{" "}
+          Control profesional de saldos pendientes: quién te debe, cuánto y cuándo prometió pagar. Para registrar una cuenta por cobrar o un abono, usa{" "}
           <Link to="/modulos/$id" params={{ id: "fiados" }} className="text-primary">
             sus registros
           </Link>

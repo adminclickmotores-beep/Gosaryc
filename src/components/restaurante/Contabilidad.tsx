@@ -22,7 +22,7 @@ const TIPOS: { clave: TipoCuenta; texto: string }[] = [
 const PLAN_BASICO: { codigo: string; nombre: string; tipo: TipoCuenta }[] = [
   { codigo: "1105", nombre: "Caja", tipo: "activo" },
   { codigo: "1110", nombre: "Bancos", tipo: "activo" },
-  { codigo: "1305", nombre: "Cuentas por cobrar (fiados)", tipo: "activo" },
+  { codigo: "1305", nombre: "Cuentas por cobrar", tipo: "activo" },
   { codigo: "1435", nombre: "Inventario de insumos", tipo: "activo" },
   { codigo: "2205", nombre: "Proveedores por pagar", tipo: "pasivo" },
   { codigo: "2505", nombre: "Nómina por pagar", tipo: "pasivo" },

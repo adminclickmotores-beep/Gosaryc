@@ -36,10 +36,10 @@ export const SECTORES: Sector[] = [
     { titulo: "Sanidad y permisos", texto: "Controla temperaturas, fumigaciones, concepto sanitario, bomberos y SAYCO-ACINPRO con alertas de vencimiento." },
     { titulo: "Propinas, nómina y caja", texto: "Reparte propinas, liquida la nómina con reglas de Colombia y cierra la caja cada día." },
   ]),
-  s("tiendas", "Tiendas", Store, "Catálogo, inventario y fiados para que tu tienda siempre esté en orden.", [
+  s("tiendas", "Tiendas", Store, "Catálogo, inventario y cuentas por cobrar para que tu tienda siempre esté en orden.", [
     { titulo: "Catálogo de productos", texto: "Agrega lo que vendes con su precio y véndelo desde el celular." },
     { titulo: "Inventario y reposición", texto: "Recibe alertas cuando un producto se esté acabando." },
-    { titulo: "Fiados y caja diaria", texto: "Anota quién te debe y cierra tu caja cada día." },
+    { titulo: "Cuentas por cobrar y caja diaria", texto: "Registra los saldos pendientes de tus clientes y cierra tu caja cada día." },
   ]),
   s("belleza-y-servicios", "Belleza y servicios", Scissors, "Organiza tu agenda, tus servicios y la fidelidad de tus clientes.", [
     { titulo: "Estilistas y cabinas", texto: "Registra a cada profesional con su especialidad, comisión y la silla o cabina que usa." },
@@ -164,10 +164,10 @@ export const SECTORES: Sector[] = [
     { titulo: "Pedidos", texto: "Recibe y entrega pedidos sin olvidar ninguno." },
     { titulo: "Cartera de clientes", texto: "Controla lo que te deben y los abonos." },
   ]),
-  s("ferreterias", "Ferreterías", Wrench, "Inventario amplio, precios y fiados a clientes de confianza.", [
+  s("ferreterias", "Ferreterías", Wrench, "Inventario amplio, precios y crédito a clientes de confianza.", [
     { titulo: "Inventario por referencia", texto: "Registra miles de productos con su costo, precio y stock mínimo." },
     { titulo: "Ventas y cotizaciones", texto: "Cotiza obras y materiales y cobra rápido en mostrador." },
-    { titulo: "Cartera de constructores", texto: "Controla fiados, abonos y fechas de pago." },
+    { titulo: "Cartera de constructores", texto: "Controla cuentas por cobrar, abonos y fechas de pago." },
   ]),
   s("supermercados", "Supermercados y minimercados", Store, "Venta rápida, inventario y proveedores en un solo lugar.", [
     { titulo: "Punto de venta", texto: "Cobra en segundos con caja diaria y cierre de turno." },

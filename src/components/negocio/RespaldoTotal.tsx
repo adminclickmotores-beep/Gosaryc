@@ -26,7 +26,7 @@ export function RespaldoTotal() {
         { nombre: "respaldo_productos", cols: ["Producto", "Barras", "SKU", "Unidad", "Stock", "Costo", "Precio"], filas: (productos.data ?? []).map((p) => [p.nombre, p.codigo_barras ?? "", p.sku ?? "", p.unidad_base, p.stock, p.costo, p.precio_detal]) },
         { nombre: "respaldo_menu", cols: ["Plato", "Precio", "Activo"], filas: (restaurante.data ?? []).map((p) => [p.nombre, p.precio, p.activo ? "Sí" : "No"]) },
         { nombre: "respaldo_ventas", cols: ["Cliente", "Teléfono", "Precio", "Medio", "Total", "Fecha"], filas: (ventas.data ?? []).map((v) => [v.cliente ?? "", v.telefono ?? "", v.tipo_precio, v.metodo, v.total, new Date(v.created_at).toLocaleString("es-CO")]) },
-        { nombre: "respaldo_cartera", cols: ["Título", "Cliente", "Teléfono", "Monto", "Abonado", "Estado", "Fecha"], filas: (fiados.data ?? []).map((f) => [f.titulo, f.contacto ?? "", f.telefono ?? "", f.monto, f.abonado, f.estado, f.fecha ?? ""]) },
+        { nombre: "respaldo_cuentas_por_cobrar", cols: ["Título", "Cliente", "Teléfono", "Monto", "Abonado", "Estado", "Fecha"], filas: (fiados.data ?? []).map((f) => [f.titulo, f.contacto ?? "", f.telefono ?? "", f.monto, f.abonado, f.estado, f.fecha ?? ""]) },
         { nombre: "respaldo_contabilidad", cols: ["Fecha", "Concepto", "Debe", "Haber"], filas: (asientos.data ?? []).map((a) => [a.fecha ?? "", a.concepto ?? "", a.debe, a.haber]) },
       ];
       const total = paquetes.reduce((s, p) => s + p.filas.length, 0);

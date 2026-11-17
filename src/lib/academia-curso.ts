@@ -140,11 +140,11 @@ export const CURSO_GOSARYC = {
         },
         {
           id: "cartera",
-          titulo: "Fiados, clientes y puntos",
+          titulo: "Cuentas por cobrar, clientes y puntos",
           minutos: 5,
           descripcion: "Cobra lo pendiente y premia a los clientes frecuentes.",
           pasos: [
-            "En Cartera y fiados anota quién debe y la fecha prometida de pago.",
+            "En Cartera y cuentas por cobrar registra el saldo pendiente, el cliente y la fecha prometida de pago.",
             "Registra los abonos hasta saldar la deuda.",
             "Activa puntos y recompensas para fidelizar a tus mejores clientes.",
           ],
@@ -185,7 +185,7 @@ export const CURSO_GOSARYC = {
           id: "agente-whatsapp",
           titulo: "Agente de WhatsApp para vender",
           minutos: 8,
-          descripcion: "Conecta tu número y deja que el agente atienda como el experto de tu giro, 24/7.",
+          descripcion: "Conecta tu número y deja que el agente atienda como el especialista de tu negocio, 24/7.",
           pasos: [
             "Completa «Mi negocio» y deja activos tus productos con precio: de ahí sale lo que el agente responde.",
             "En Mi negocio busca el Agente WhatsApp IA, agrega una línea y escanea el QR con WhatsApp > Dispositivos vinculados. Sirve con WhatsApp normal y Business.",
@@ -231,7 +231,7 @@ export const CURSO_GOSARYC = {
           pasos: [
             "Crea cada sucursal en Mi negocio y mueve mercancía entre sedes con «Traslados»: cada traslado deja su acta con firmas.",
             "Arriba, en el selector de sucursal, elige en cuál estás trabajando: las ventas y la caja quedan separadas.",
-            "Comparte tu enlace público: menú, catálogo por WhatsApp o citas online según tu giro, con su QR listo para imprimir.",
+            "Comparte tu enlace público: menú, catálogo por WhatsApp o citas en línea según tu tipo de negocio, con su QR listo para imprimir.",
             "Descarga el «Respaldo total» en Configuración para guardar clientes, productos, ventas, cartera y contabilidad.",
           ],
           practica: { ruta: "/restaurante", etiqueta: "Ir a Mi negocio" },
@@ -276,12 +276,12 @@ export const CURSO_GOSARYC = {
       ],
     },
     {
-      id: "tu-giro",
-      titulo: "Módulo 5 · Tu giro y el cumplimiento en Colombia",
+      id: "tu-negocio",
+      titulo: "Módulo 5 · Tu tipo de negocio y el cumplimiento en Colombia",
       resumen: "Cada negocio tiene sus propios módulos y formularios. Aprende los de tu sector y cumple con la ley.",
       lecciones: [
         {
-          id: "modulos-de-tu-giro",
+          id: "modulos-de-tu-negocio",
           titulo: "Los módulos propios de tu tipo de negocio",
           minutos: 7,
           descripcion: "Gosaryc tiene más de 50 sectores; cada uno trae formularios, estados y alertas diferentes.",
@@ -290,7 +290,7 @@ export const CURSO_GOSARYC = {
             "Restaurante: pedidos y cocina, mesas, combos, insumos, repartidores, propinas, «Rappi, DiDi Food y apps» (venta bruta, comisión y lo que te consignan), «Mermas y desperdicios», «Sanidad y buenas prácticas» y «Permisos y licencias» (concepto sanitario, bomberos, SAYCO-ACINPRO).",
             "Salud: pacientes, historias, consentimientos, convenios, «Facturación y RIPS», «Glosas y cartera con EPS», «Habilitación y calidad» y «Residuos hospitalarios».",
             "Concesionario: inventario de vehículos, compras, consignaciones, retomas, créditos, separaciones, vencimientos de SOAT y tecnomecánica, y taller.",
-            "Tiendas, servicios y demás giros: cada uno tiene sus clientes, pagos digitales, personal, metas y reseñas con campos propios (por ejemplo tallas y colores en moda, o profesionales y anticipos en citas).",
+            "Tiendas, servicios y demás actividades: cada negocio tiene sus clientes, pagos digitales, personal, metas y reseñas con campos propios (por ejemplo tallas y colores en moda, o profesionales y anticipos en citas).",
             "Si cambias de tipo de negocio (solo la cuenta administradora puede), el menú cambia y tus datos se conservan.",
             "Taller y servicio técnico: abre la orden con fotos de recepción, pide la aprobación por WhatsApp, agrega repuestos del inventario, cobra con garantía y liquida las comisiones del técnico. Carpintería e imprenta: cotiza el proyecto con materiales, cobra el abono para producir y el saldo contra entrega.",
             "Obras: planea por capítulos, despacha vales desde bodega y cobra cada acta con su neto. Inmobiliaria: publica la propiedad, firma el contrato, cobra el canon cada mes y liquida al propietario. Agro: aplica insumos con dosis y vende la cosecha viendo la utilidad. Transporte: crea el manifiesto, entrega anticipos, cobra el flete y liquida al conductor.",
@@ -318,7 +318,7 @@ export const CURSO_GOSARYC = {
           descripcion: "PILA, retención en la fuente, nómina electrónica, cesantías, primas, vacaciones y SG-SST.",
           pasos: [
             "En el calendario de obligaciones mira lo que vence este mes: PILA, retención, nómina electrónica, cesantías, primas y vacaciones.",
-            "En módulos de permisos o vencimientos de tu giro (sanidad, habilitación, SOAT, tecnomecánica) guarda cada fecha de renovación para recibir la alerta a tiempo.",
+            "En los módulos de permisos o vencimientos de tu negocio (sanidad, habilitación, SOAT, tecnomecánica) guarda cada fecha de renovación para recibir la alerta a tiempo.",
             "Lleva la facturación electrónica en «Facturación DIAN»: número, cliente, valor y estado de cobro. Si contratas la DIAN, cada factura guarda su CUFE y QR oficial. En Finanzas, «Contador Pro Colombia» genera tu cronograma de vencimientos con semáforo, pre-liquida Retefuente, IVA e ICA, valida tus terceros para la exógena y actualiza la normativa con IA.",
             "Consulta siempre a tu contador: Gosaryc es una guía de control, no reemplaza la asesoría contable ni la liquidación oficial.",
           ],

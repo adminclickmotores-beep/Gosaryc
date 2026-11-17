@@ -259,7 +259,7 @@ export function AgenteWhatsApp() {
       return;
     }
     setAgente(data);
-    // El servicio local habla como el experto de este giro: se le envían el tipo de negocio y las instrucciones.
+    // El servicio local habla como el especialista de este tipo de negocio: se le envían el tipo de negocio y las instrucciones.
     if (claveLocal.trim()) {
       try {
         await fetch(`${API_LOCAL}/lineas`, {
