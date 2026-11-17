@@ -77,10 +77,10 @@ export function HabitacionesHotel() {
     void cargar();
   };
 
-  if (cargando) return <Cargando texto="Cargando habitaciones…" />;
+  if (cargando) return <Cargando />; // habitaciones
   return (
     <GlassPanel>
-      <Encabezado titulo="Rack de habitaciones" descripcion="Verde disponible, rojo ocupada, amarillo reservada, azul en limpieza." />
+      <Encabezado titulo="Rack de habitaciones" texto="Verde disponible, rojo ocupada, amarillo reservada, azul en limpieza." />
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
         {habs.map((h) => (
           <div key={h.id} className={`rounded-xl border border-glass-border p-3 ${COLOR_ESTADO[h.estado] ?? ""}`}>
@@ -200,10 +200,10 @@ export function ReservasHotel() {
 
   const abiertas = useMemo(() => ress.filter((r) => r.estado !== "finalizada" && r.estado !== "cancelada"), [ress]);
 
-  if (cargando) return <Cargando texto="Cargando reservas…" />;
+  if (cargando) return <Cargando />; // reservas
   return (
     <GlassPanel>
-      <Encabezado titulo="Reservas y check-in" descripcion="Reserva, check-in con documento, cargos a la habitación y check-out con liquidación a Caja." />
+      <Encabezado titulo="Reservas y check-in" texto="Reserva, check-in con documento, cargos a la habitación y check-out con liquidación a Caja." />
       <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
         <Campo etiqueta="Habitación">
           <select className={campo} value={habId} onChange={(e) => setHabId(e.target.value)}>
@@ -317,10 +317,10 @@ export function MatriculasEducacion() {
 
   const lista = ests.filter((e) => e.nombre.toLowerCase().includes(q.toLowerCase()) || (e.grado ?? "").toLowerCase().includes(q.toLowerCase()));
 
-  if (cargando) return <Cargando texto="Cargando estudiantes…" />;
+  if (cargando) return <Cargando />; // estudiantes
   return (
     <GlassPanel>
-      <Encabezado titulo="Estudiantes y matrículas" descripcion="Ficha con acudiente, grado y grupo." />
+      <Encabezado titulo="Estudiantes y matrículas" texto="Ficha con acudiente, grado y grupo." />
       <input className={campo} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nombre o grado…" />
       <div className="mt-2 space-y-2">
         {lista.slice(0, 60).map((e) => (
@@ -395,10 +395,10 @@ export function PensionesEducacion() {
 
   const mora = pens.filter((p) => p.estado === "pendiente");
 
-  if (cargando) return <Cargando texto="Cargando pensiones…" />;
+  if (cargando) return <Cargando />; // pensiones
   return (
     <GlassPanel>
-      <Encabezado titulo="Pensiones y cartera" descripcion="Genera el mes, cobra y avisa la mora por WhatsApp." />
+      <Encabezado titulo="Pensiones y cartera" texto="Genera el mes, cobra y avisa la mora por WhatsApp." />
       <div className="grid gap-2 sm:grid-cols-4">
         <Campo etiqueta="Periodo"><input className={campo} value={periodo} onChange={(e) => setPeriodo(e.target.value)} placeholder="2026-03" /></Campo>
         <Campo etiqueta="Valor"><input className={campo} inputMode="decimal" value={valor} onChange={(e) => setValor(e.target.value)} placeholder="250000" /></Campo>
@@ -492,10 +492,10 @@ export function AcademicoEducacion() {
   const delSel = sel ? asis.filter((a) => a.estudiante_id === sel).slice(0, 10) : [];
   const notasSel = sel ? notas.filter((n) => n.estudiante_id === sel) : [];
 
-  if (cargando) return <Cargando texto="Cargando…" />;
+  if (cargando) return <Cargando />; // académico
   return (
     <GlassPanel>
-      <Encabezado titulo="Asistencia y boletín" descripcion="Llama a lista cada día y lleva las notas por periodo." />
+      <Encabezado titulo="Asistencia y boletín" texto="Llama a lista cada día y lleva las notas por periodo." />
       <Campo etiqueta="Estudiante">
         <select className={campo} value={sel} onChange={(e) => setSel(e.target.value)}>
           <option value="">Elige…</option>
@@ -615,10 +615,10 @@ export function MatrizModa() {
 
   const varsSel = vars.filter((v) => v.referencia_id === sel);
 
-  if (cargando) return <Cargando texto="Cargando colección…" />;
+  if (cargando) return <Cargando />; // colección
   return (
     <GlassPanel>
-      <Encabezado titulo="Referencias y matriz talla/color" descripcion="Una referencia padre con todas sus combinaciones de talla y color." />
+      <Encabezado titulo="Referencias y matriz talla/color" texto="Una referencia padre con todas sus combinaciones de talla y color." />
       <Campo etiqueta="Referencia">
         <select className={campo} value={sel} onChange={(e) => setSel(e.target.value)}>
           <option value="">Elige o crea una abajo…</option>
@@ -737,10 +737,10 @@ export function ControlFarmacia() {
 
   const lista = prods.filter((p) => p.nombre.toLowerCase().includes(q.toLowerCase()));
 
-  if (cargando) return <Cargando texto="Cargando droguería…" />;
+  if (cargando) return <Cargando />; // droguería
   return (
     <GlassPanel>
-      <Encabezado titulo="Droguería y control de fórmula" descripcion="Antibióticos y controlados exigen fórmula marcada. Los refrigerados llevan cadena de frío." />
+      <Encabezado titulo="Droguería y control de fórmula" texto="Antibióticos y controlados exigen fórmula marcada. Los refrigerados llevan cadena de frío." />
       <input className={campo} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar producto…" />
       <div className="mt-2 space-y-2">
         {lista.slice(0, 80).map((f) => (
@@ -877,10 +877,10 @@ export function FormulasOptica() {
     void cargar();
   };
 
-  if (cargando) return <Cargando texto="Cargando óptica…" />;
+  if (cargando) return <Cargando />; // óptica
   return (
     <GlassPanel>
-      <Encabezado titulo="Fórmula y laboratorio" descripcion="Esfera, cilindro, eje, adición y DP de cada ojo, con orden, abono y saldo contra entrega." />
+      <Encabezado titulo="Fórmula y laboratorio" texto="Esfera, cilindro, eje, adición y DP de cada ojo, con orden, abono y saldo contra entrega." />
       <div className="grid gap-2 sm:grid-cols-3">
         <Campo etiqueta="Cliente"><input className={campo} value={cliente} onChange={(e) => setCliente(e.target.value)} /></Campo>
         <Campo etiqueta="Celular"><input className={campo} inputMode="tel" value={tel} onChange={(e) => setTel(e.target.value)} /></Campo>
@@ -939,8 +939,8 @@ export function FormulasOptica() {
 
 function OrdenOptica({ orden: o, onAbonar, onEntregar }: {
   orden: OptO;
-  onAbonar: (o: OptO, monto: string) => Promise<void>;
-  onEntregar: (o: OptO) => Promise<void>;
+  onAbonar: (o: OptO, monto: string) => Promise<unknown>;
+  onEntregar: (o: OptO) => Promise<unknown>;
 }) {
   const [monto, setMonto] = useState("");
   return (
@@ -1064,10 +1064,10 @@ export function EventosSalon() {
   const tareasEv = tareas.filter((t) => t.evento_id === sel);
   const abonosEv = abonos.filter((a) => a.evento_id === sel);
 
-  if (cargando) return <Cargando texto="Cargando eventos…" />;
+  if (cargando) return <Cargando />; // eventos
   return (
     <GlassPanel>
-      <Encabezado titulo="Eventos y salones" descripcion="Cotiza, aparta la fecha sin cruces, cobra abonos y cumple la lista logística." />
+      <Encabezado titulo="Eventos y salones" texto="Cotiza, aparta la fecha sin cruces, cobra abonos y cumple la lista logística." />
       <div className="grid gap-2 sm:grid-cols-3">
         <Campo etiqueta="Salón (opcional)">
           <select className={campo} value={salonId} onChange={(e) => setSalonId(e.target.value)}>

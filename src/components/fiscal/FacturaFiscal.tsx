@@ -115,10 +115,10 @@ export function FacturaFiscal() {
   const total = items.reduce((s, i) => s + num(String(i.cantidad)) * num(String(i.precio)), 0);
   const rangoUso = facs.length > 0 ? Math.max(...facs.map((f) => f.numero)) : null;
 
-  if (cargando) return <Cargando texto="Cargando facturación…" />;
+  if (cargando) return <Cargando />;
   return (
     <GlassPanel>
-      <Encabezado titulo="Facturación" descripcion="Factura tirilla o carta con consecutivo, NIT y resolución. Lista para conectarse por API a tu proveedor DIAN." />
+      <Encabezado titulo="Facturación" texto="Factura tirilla o carta con consecutivo, NIT y resolución. Lista para conectarse por API a tu proveedor DIAN." />
       {negocio?.resolucion_vence && (
         <p className="mb-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-300">
           Tu resolución vence el {negocio.resolucion_vence}. Pide la nueva a la DIAN antes de esa fecha para no quedarte sin rango.

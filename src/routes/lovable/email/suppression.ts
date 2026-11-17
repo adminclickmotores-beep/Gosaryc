@@ -73,7 +73,8 @@ export const Route = createFileRoute("/lovable/email/suppression")({
             parser: parseSuppressionPayload,
           })
           payload = verified.payload
-        } catch (error) {
+        } catch (err) {
+          const error = err as any
           if (error instanceof WebhookError) {
             switch (error.code) {
               case 'invalid_signature':

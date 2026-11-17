@@ -9,7 +9,7 @@ export type GuiaNegocio = {
 
 type TiposNuevos =
   | "ferreteria" | "supermercado" | "carniceria" | "licorera" | "floristeria" | "optica"
-  | "guarderia" | "alquiler_vehiculos" | "seguridad_aseo" | "ganaderia" | "fundacion" | "iglesia";
+  | "guarderia" | "alquiler_vehiculos" | "seguridad_aseo" | "ganaderia" | "fundacion" | "iglesia" | "parqueadero";
 
 const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = {
   restaurante: {

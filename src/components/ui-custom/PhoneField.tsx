@@ -15,7 +15,7 @@ export function PhoneField({ value, onChange, placeholder = "Phone number", defa
       countryCallingCodeEditable={false}
       defaultCountry={defaultCountry as never}
       value={value as Value}
-      onChange={(v) => onChange((v as string) ?? "")}
+      onChange={(v: Value | undefined) => onChange((v as string) ?? "")}
       placeholder={placeholder}
     />
   );

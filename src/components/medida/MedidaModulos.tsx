@@ -733,7 +733,7 @@ export function TransporteManifiestos() {
     const { error } = await supabase.from("tra_manifiestos").insert({
       guia: guia.trim(), cliente: cliente.trim(), telefono: telefono.trim() || null,
       origen: origen.trim(), destino: destino.trim(), placa: v?.placa ?? null,
-      conductor: v?.conductor ?? conductor.trim() || null, valor_flete: num(flete),
+      conductor: (v?.conductor ?? conductor.trim()) || null, valor_flete: num(flete),
     });
     if (error) return toast.error(msg(error.message, "No se pudo crear el manifiesto."));
     toast.success("Manifiesto creado y vehículo asignado.");

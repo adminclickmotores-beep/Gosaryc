@@ -96,10 +96,10 @@ export function LavanderiaOrdenes() {
     void cargar();
   };
 
-  if (cargando) return <Cargando texto="Cargando lavandería…" />;
+  if (cargando) return <Cargando />; // lavandería
   return (
     <GlassPanel>
-      <Encabezado titulo="Órdenes de lavado y cobro" descripcion="Prendas recibidas, fecha de entrega y cobro que entra a Caja y Contabilidad." />
+      <Encabezado titulo="Órdenes de lavado y cobro" texto="Prendas recibidas, fecha de entrega y cobro que entra a Caja y Contabilidad." />
       <div className="grid gap-2 sm:grid-cols-3">
         <Campo etiqueta="Cliente"><input className={campo} value={cliente} onChange={(e) => setCliente(e.target.value)} /></Campo>
         <Campo etiqueta="Celular"><input className={campo} inputMode="tel" value={tel} onChange={(e) => setTel(e.target.value)} /></Campo>
@@ -164,10 +164,10 @@ export function ProfesionalCasos() {
     void cargar();
   };
 
-  if (cargando) return <Cargando texto="Cargando casos…" />;
+  if (cargando) return <Cargando />; // casos
   return (
     <GlassPanel>
-      <Encabezado titulo="Casos y cobro de honorarios" descripcion="Asunto, honorarios pactados y abonos; cada cobro entra a Caja y Contabilidad." />
+      <Encabezado titulo="Casos y cobro de honorarios" texto="Asunto, honorarios pactados y abonos; cada cobro entra a Caja y Contabilidad." />
       <div className="grid gap-2 sm:grid-cols-3">
         <Campo etiqueta="Cliente"><input className={campo} value={cliente} onChange={(e) => setCliente(e.target.value)} /></Campo>
         <Campo etiqueta="Celular"><input className={campo} inputMode="tel" value={tel} onChange={(e) => setTel(e.target.value)} /></Campo>
@@ -234,10 +234,10 @@ export function TecnologiaProyectos() {
     void cargar();
   };
 
-  if (cargando) return <Cargando texto="Cargando proyectos…" />;
+  if (cargando) return <Cargando />; // proyectos
   return (
     <GlassPanel>
-      <Encabezado titulo="Proyectos y cobro" descripcion="Alcance, horas y valor con abonos; cada cobro entra a Caja y Contabilidad." />
+      <Encabezado titulo="Proyectos y cobro" texto="Alcance, horas y valor con abonos; cada cobro entra a Caja y Contabilidad." />
       <div className="grid gap-2 sm:grid-cols-3">
         <Campo etiqueta="Cliente"><input className={campo} value={cliente} onChange={(e) => setCliente(e.target.value)} /></Campo>
         <Campo etiqueta="Celular"><input className={campo} inputMode="tel" value={tel} onChange={(e) => setTel(e.target.value)} /></Campo>
@@ -304,10 +304,10 @@ export function PapeleriaEncargos() {
     void cargar();
   };
 
-  if (cargando) return <Cargando texto="Cargando encargos…" />;
+  if (cargando) return <Cargando />; // encargos
   return (
     <GlassPanel>
-      <Encabezado titulo="Encargos y copias con cobro" descripcion="Detalle, fecha de entrega y cobro que entra a Caja y Contabilidad." />
+      <Encabezado titulo="Encargos y copias con cobro" texto="Detalle, fecha de entrega y cobro que entra a Caja y Contabilidad." />
       <div className="grid gap-2 sm:grid-cols-3">
         <Campo etiqueta="Cliente"><input className={campo} value={cliente} onChange={(e) => setCliente(e.target.value)} /></Campo>
         <Campo etiqueta="Celular"><input className={campo} inputMode="tel" value={tel} onChange={(e) => setTel(e.target.value)} /></Campo>
@@ -368,10 +368,10 @@ export function JoyeriaPiezas() {
     void cargar();
   };
 
-  if (cargando) return <Cargando texto="Cargando joyería…" />;
+  if (cargando) return <Cargando />; // joyería
   return (
     <GlassPanel>
-      <Encabezado titulo="Piezas, apartados y venta" descripcion="Material, peso y precio; aparta con abono y cobra el saldo contra entrega." />
+      <Encabezado titulo="Piezas, apartados y venta" texto="Material, peso y precio; aparta con abono y cobra el saldo contra entrega." />
       <div className="grid gap-2 sm:grid-cols-3">
         <Campo etiqueta="Descripción"><input className={campo} value={descripcion} onChange={(e) => setDescripcion(e.target.value)} placeholder="Anillo oro 18k…" /></Campo>
         <Campo etiqueta="Material"><input className={campo} value={material} onChange={(e) => setMaterial(e.target.value)} /></Campo>
@@ -434,10 +434,10 @@ export function LicoreraDomicilios() {
     void cargar();
   };
 
-  if (cargando) return <Cargando texto="Cargando domicilios…" />;
+  if (cargando) return <Cargando />; // domicilios
   return (
     <GlassPanel>
-      <Encabezado titulo="Domicilios verificados y cobro" descripcion="Verifica la mayoría de edad con el documento: sin eso no deja cobrar. El pago entra a Caja." />
+      <Encabezado titulo="Domicilios verificados y cobro" texto="Verifica la mayoría de edad con el documento: sin eso no deja cobrar. El pago entra a Caja." />
       <div className="grid gap-2 sm:grid-cols-3">
         <Campo etiqueta="Cliente"><input className={campo} value={cliente} onChange={(e) => setCliente(e.target.value)} /></Campo>
         <Campo etiqueta="Celular"><input className={campo} inputMode="tel" value={tel} onChange={(e) => setTel(e.target.value)} /></Campo>
@@ -501,10 +501,10 @@ export function ParqueaderoTurnos() {
   const activos = lista.filter((p) => p.estado === "activo");
   const minutos = (entrada: string) => Math.max(0, Math.round((Date.now() - new Date(entrada).getTime()) / 60000));
 
-  if (cargando) return <Cargando texto="Cargando parqueadero…" />;
+  if (cargando) return <Cargando />; // parqueadero
   return (
     <GlassPanel>
-      <Encabezado titulo="Turnos y cobro por horas" descripcion="Registra la placa al entrar; al salir cobra las horas por la tarifa. Entra a Caja y Contabilidad." />
+      <Encabezado titulo="Turnos y cobro por horas" texto="Registra la placa al entrar; al salir cobra las horas por la tarifa. Entra a Caja y Contabilidad." />
       <div className="grid gap-2 sm:grid-cols-3">
         <Campo etiqueta="Placa"><input className={campo} value={placa} onChange={(e) => setPlaca(e.target.value.toUpperCase())} placeholder="ABC123" /></Campo>
         <Campo etiqueta="Tarifa por hora"><input className={campo} inputMode="decimal" value={tarifa} onChange={(e) => setTarifa(e.target.value)} placeholder="3000" /></Campo>

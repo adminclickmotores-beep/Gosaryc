@@ -140,7 +140,7 @@ export function Reportes() {
 
   const exportarVentasExcel = () => {
     exportarExcel("reporte-ventas", ["Pedido", "Fecha", "Modalidad", "Estado", "Total"],
-      pedidos.map((p) => [p.numero ?? p.id.slice(0, 8), new Date(p.created_at).toLocaleString("es-CO"), p.modalidad, p.estado, p.total]));
+      pedidos.map((p) => [p.numero_factura ?? p.id.slice(0, 8), new Date(p.created_at).toLocaleString("es-CO"), p.modalidad, p.estado, p.total]));
   };
 
   const exportarVentasPdf = () => {
