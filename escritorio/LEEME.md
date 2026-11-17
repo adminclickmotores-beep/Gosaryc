@@ -3,6 +3,7 @@
 Crea un instalador de Windows (`Gosaryc Setup x.x.x.exe`). La app instalada:
 - Abre el panel de Gosaryc en su propia ventana, con acceso directo en el escritorio y en el menú Inicio.
 - Trae la API local de WhatsApp con el agente: arranca sola en segundo plano y le pasa la clave al panel (no hay que copiarla).
+- Trae la API local de impresión silenciosa (http://127.0.0.1:8765): imprime tirillas de 58/80 mm directo en la impresora predeterminada, sin diálogos del navegador, y guarda en cola local las facturas emitidas sin internet para sincronizarlas al volver la conexión.
 - Usa el Microsoft Edge o Google Chrome que ya tiene el computador para conectar WhatsApp.
 - Sin internet muestra una pantalla con el botón "Reintentar".
 - Mantiene el código interno del equipo para las licencias.

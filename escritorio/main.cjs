@@ -10,6 +10,10 @@ const { execFileSync, spawn } = require("child_process");
 
 // ---- API local de WhatsApp (varios números + agente), integrada en segundo plano ----
 let procesoWa = null;
+// ---- API local de impresión silenciosa + cola offline (tirillas 58/80 mm) ----
+let procesoImpresion = null;
+const carpetaImpresion = () => (app.isPackaged ? path.join(process.resourcesPath, "api-impresion") : path.join(__dirname, "api-impresion"));
+const datosImpresion = () => path.join(app.getPath("userData"), "impresion");
 const carpetaWa = () => (app.isPackaged ? path.join(process.resourcesPath, "whatsapp-local") : path.join(__dirname, "..", "whatsapp-local"));
 const datosWa = () => path.join(app.getPath("userData"), "whatsapp");
 
@@ -41,6 +45,21 @@ function iniciarWhatsApp() {
   });
   procesoWa.on("exit", () => {
     procesoWa = null;
+  });
+}
+
+function iniciarImpresion() {
+  const servidor = path.join(carpetaImpresion(), "server.js");
+  if (!fs.existsSync(servidor)) return;
+  fs.mkdirSync(datosImpresion(), { recursive: true });
+  procesoImpresion = spawn(process.execPath, [servidor], {
+    cwd: carpetaImpresion(),
+    windowsHide: true,
+    env: { ...process.env, ELECTRON_RUN_AS_NODE: "1", DATOS: datosImpresion(), GOSARYC_PRINT_PORT: "8765" },
+    stdio: "ignore",
+  });
+  procesoImpresion.on("exit", () => {
+    procesoImpresion = null;
   });
 }
 
@@ -214,16 +233,19 @@ if (!app.requestSingleInstanceLock()) {
     }
   });
   app.on("before-quit", () => {
-    if (procesoWa) {
+    for (const p of [procesoWa, procesoImpresion]) {
       try {
-        procesoWa.kill();
+        if (p) p.kill();
       } catch {
         /* ya cerrado */
       }
     }
+    procesoWa = null;
+    procesoImpresion = null;
   });
   app.whenReady().then(() => {
     iniciarWhatsApp();
+    iniciarImpresion();
     crearMenu();
     crearVentana();
     // La primera vez se muestra la guía de uso.

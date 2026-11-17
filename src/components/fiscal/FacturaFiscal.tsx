@@ -7,6 +7,7 @@ import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 import { Campo, Cargando, Encabezado, boton, botonSec, campo, dinero, num } from "@/components/comercio/ComercioModulos";
 import { exportarExcel, imprimirFactura, type DatosFactura, type ItemFactura } from "@/lib/exportes";
+import { estadoApiLocal, fijarImpresionDirecta, guardarColaLocal, impresionDirectaActivada, imprimirTirillaLocal } from "@/lib/impresion-local";
 
 type Fac = Tables<"fac_emitidas">;
 
@@ -21,6 +22,8 @@ export function FacturaFiscal() {
   const [items, setItems] = useState<ItemFactura[]>([itemVacio()]);
   const [iva, setIva] = useState("");
   const [formato, setFormato] = useState<"tirilla" | "carta">("tirilla");
+  const [directa, setDirecta] = useState(() => impresionDirectaActivada());
+  const [apiMsg, setApiMsg] = useState("");
 
   const cargar = useCallback(async () => {
     const { data } = await supabase.from("fac_emitidas").select("*").order("numero", { ascending: false }).limit(80);
@@ -47,6 +50,29 @@ export function FacturaFiscal() {
     ivaPct: f.subtotal > 0 ? Math.round((f.iva / f.subtotal) * 100) : 0,
   });
 
+  const cambiarDirecta = (v: boolean) => {
+    setDirecta(v);
+    fijarImpresionDirecta(v);
+  };
+
+  const probarImpresora = async () => {
+    setApiMsg("Buscando impresora…");
+    const est = await estadoApiLocal();
+    if (!est.disponible) {
+      setApiMsg("La API local no está corriendo (¿estás en celular o navegador?). Se usa la impresión normal.");
+      return;
+    }
+    const ok = await imprimirTirillaLocal({
+      negocio: negocio?.razon_social || negocio?.nombre || "Mi negocio",
+      numero: "PRUEBA",
+      cliente: "Prueba de impresión",
+      items: [{ descripcion: "Tirilla de prueba", cantidad: 1, precio: 1000 }],
+      subtotal: 1000, iva: 0, ivaPct: 0, total: 1000, metodo: "Efectivo",
+      formato: formato === "tirilla" ? "80mm" : "80mm",
+    });
+    setApiMsg(ok ? `Impreso en ${est.predeterminada || "la predeterminada"}.` : "No se pudo imprimir. Revisa la impresora predeterminada de Windows.");
+  };
+
   const emitir = async () => {
     const validos = items.filter((i) => i.descripcion.trim().length >= 2 && i.cantidad > 0 && i.precio >= 0);
     if (cliente.trim().length < 2) return toast.error("Escribe el cliente.");
@@ -64,7 +90,23 @@ export function FacturaFiscal() {
     setCliente(""); setDocCli(""); setItems([itemVacio()]);
     await cargar();
     const { data: recien } = await supabase.from("fac_emitidas").select("*").eq("numero", numero).limit(1).single();
-    if (recien) imprimirFactura(datosFactura(recien), formato);
+    if (recien) {
+      const datos = datosFactura(recien);
+      if (!navigator.onLine) {
+        void guardarColaLocal({ numero: recien.numero, cliente, items: validos, total: recien.total });
+      }
+      if (directa) {
+        const ok = await imprimirTirillaLocal({
+          negocio: datos.negocio, nit: datos.nit, direccion: datos.direccion, telefono: datos.telefono,
+          resolucion: datos.resolucion, numero: datos.numero, cliente: datos.cliente, clienteDoc: datos.clienteNit,
+          items: datos.items, subtotal: recien.subtotal, iva: recien.iva, ivaPct: datos.ivaPct, total: recien.total,
+          formato: formato === "tirilla" ? "80mm" : "80mm",
+        });
+        if (!ok) imprimirFactura(datos, formato); // Sin API local (celular): impresión normal, sin error.
+      } else {
+        imprimirFactura(datos, formato);
+      }
+    }
   };
 
   const cambiarItem = (i: number, parche: Partial<ItemFactura>) =>
@@ -89,6 +131,19 @@ export function FacturaFiscal() {
           {rangoUso !== null ? ` · Último número: ${rangoUso}` : ""}
         </p>
       )}
+      <div className="mb-3 flex flex-wrap items-center gap-3 rounded-xl border border-glass-border bg-glass/40 px-3 py-2.5">
+        <label className="flex cursor-pointer items-center gap-2 text-sm">
+          <input
+            type="checkbox" checked={directa} onChange={(e) => cambiarDirecta(e.target.checked)}
+            className="h-5 w-5 accent-primary"
+          />
+          Impresión directa por API local (escritorio)
+        </label>
+        <button type="button" className={botonSec} onClick={() => void probarImpresora()}>
+          <Printer className="h-4 w-4" /> Probar impresora
+        </button>
+        {apiMsg && <span className="text-xs text-muted-foreground">{apiMsg}</span>}
+      </div>
       <div className="grid gap-2 sm:grid-cols-3">
         <Campo etiqueta="Cliente"><input className={campo} value={cliente} onChange={(e) => setCliente(e.target.value)} placeholder="Nombre o razón social" /></Campo>
         <Campo etiqueta="NIT o CC del cliente"><input className={campo} value={docCli} onChange={(e) => setDocCli(e.target.value)} placeholder="Opcional" /></Campo>

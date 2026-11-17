@@ -15,6 +15,7 @@ import { Users as IconUsers } from "lucide-react";
 import { EquipoPermisos } from "@/components/settings/EquipoPermisos";
 import { ThemeToggle } from "@/components/ui-custom/ThemeToggle";
 import { BRAND } from "@/lib/brand";
+import { estadoApiLocal, fijarImpresionDirecta, impresionDirectaActivada, imprimirTirillaLocal } from "@/lib/impresion-local";
 
 export const Route = createFileRoute("/_app/settings")({
   validateSearch: (s: Record<string, unknown>): { tab?: TabId } => {
@@ -149,7 +150,10 @@ function Settings() {
       ) : loadError && tab === "organization" ? (
         <PanelError message="No se pudo cargar la configuración" onRetry={() => setReloadKey((k) => k + 1)} />
       ) : tab === "organization" ? (
-        <PublicUrlCard orgId={orgId} />
+        <div className="space-y-6">
+          <PublicUrlCard orgId={orgId} />
+          <TarjetaImpresion />
+        </div>
       ) : tab === "team" ? (
         <EquipoPermisos />
       ) : (
@@ -164,6 +168,66 @@ function StatChip({ label, value, mono, muted }: { label: string; value: string;
     <div className="inline-flex items-center gap-2 rounded-full border border-glass-border bg-glass/50 px-3 py-1.5">
       <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</span>
       <span className={`text-sm ${mono ? "font-mono text-xs" : ""} ${muted ? "text-muted-foreground" : "text-foreground"}`}>{value}</span>
+    </div>
+  );
+}
+
+function TarjetaImpresion() {
+  const [directa, setDirecta] = useState(() => impresionDirectaActivada());
+  const [msg, setMsg] = useState("");
+  const [probando, setProbando] = useState(false);
+
+  const cambiar = (v: boolean) => {
+    setDirecta(v);
+    fijarImpresionDirecta(v);
+  };
+  const probar = async () => {
+    setProbando(true);
+    setMsg("Buscando la API local…");
+    const est = await estadoApiLocal();
+    if (!est.disponible) {
+      setMsg("La API local no está corriendo en este equipo (por ejemplo, si entraste desde el celular). Se usa la impresión normal del navegador, sin error.");
+      setProbando(false);
+      return;
+    }
+    const ok = await imprimirTirillaLocal({
+      negocio: "Mi negocio", numero: "PRUEBA", cliente: "Prueba de impresión",
+      items: [{ descripcion: "Tirilla de prueba", cantidad: 1, precio: 1000 }],
+      subtotal: 1000, iva: 0, ivaPct: 0, total: 1000, formato: "80mm",
+    });
+    setMsg(ok
+      ? `Listo: se imprimió en ${est.predeterminada || "tu impresora predeterminada"}${est.pendientes > 0 ? ` (cola offline: ${est.pendientes} pendientes).` : "."}`
+      : "No se pudo imprimir. Revisa que Windows tenga una impresora predeterminada con papel.");
+    setProbando(false);
+  };
+
+  return (
+    <div className="overflow-hidden rounded-3xl border border-glass-border bg-glass/40 p-6 backdrop-blur-xl">
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <span className="size-2 rounded-full bg-sky-400" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-sky-300">Facturación e impresión</span>
+        </div>
+        <h2 className="font-display text-2xl text-foreground">Impresión directa por API local (escritorio)</h2>
+        <p className="max-w-xl text-sm text-muted-foreground">
+          En la app de Windows la tirilla sale directo en tu impresora térmica (58 mm u 80 mm), sin diálogos del navegador.
+          Si la API local no está corriendo —por ejemplo, si entraste desde el celular— se usa la impresión normal, sin mostrar error.
+          Sin internet, la factura se guarda en la cola local y se sincroniza al volver la conexión.
+        </p>
+      </div>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-glass-border bg-glass px-4 py-2 text-sm">
+          <input type="checkbox" checked={directa} onChange={(e) => cambiar(e.target.checked)} className="h-5 w-5 accent-primary" />
+          {directa ? "Activada" : "Desactivada"}
+        </label>
+        <button
+          type="button" onClick={() => void probar()} disabled={probando}
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
+        >
+          {probando ? "Probando…" : "Probar impresora"}
+        </button>
+      </div>
+      {msg && <p className="mt-3 text-xs text-muted-foreground">{msg}</p>}
     </div>
   );
 }

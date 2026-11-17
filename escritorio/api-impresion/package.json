@@ -1,0 +1,10 @@
+{
+  "name": "gosaryc-impresion-local",
+  "version": "1.0.0",
+  "private": true,
+  "description": "API local de Gosaryc: impresión silenciosa de tirillas y cola offline (http://127.0.0.1:8765). Sin dependencias.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

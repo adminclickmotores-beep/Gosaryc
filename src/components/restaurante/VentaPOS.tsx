@@ -7,6 +7,7 @@ import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { TARIFAS_DOMICILIO, buscarTarifa } from "@/lib/tarifas-domicilio";
 import { useNegocio } from "@/hooks/use-negocio";
 import { mismoTipoNegocio } from "@/lib/modulos-negocio";
+import { estadoApiLocal, fijarImpresionDirecta, impresionDirectaActivada, imprimirTirillaLocal } from "@/lib/impresion-local";
 
 type Producto = Tables<"restaurante_productos">;
 type Categoria = Tables<"restaurante_categorias">;
@@ -146,6 +147,32 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
   const [recibido, setRecibido] = useState("");
   const [personas, setPersonas] = useState("1");
   const [guardando, setGuardando] = useState(false);
+  const [directa, setDirecta] = useState(() => impresionDirectaActivada());
+  const [apiMsg, setApiMsg] = useState("");
+
+  const imprimirDirectoOSilencioso = async (r: Recibo) => {
+    if (directa) {
+      const ok = await imprimirTirillaLocal({
+        negocio: nombreNegocio, numero: r.numero != null ? String(r.numero) : r.id.slice(0, 6).toUpperCase(),
+        cliente: r.cliente, items: r.lineas.map((l) => ({ descripcion: l.nombre, cantidad: l.cant, precio: l.precio })),
+        subtotal: r.total - r.envio, total: r.total, metodo: r.metodo, formato: "80mm",
+      });
+      if (ok) return;
+      // Sin API local (celular): impresión normal, sin error.
+    }
+    imprimirTicket(r, nombreNegocio);
+  };
+
+  const probarImpresora = async () => {
+    setApiMsg("Buscando impresora…");
+    const est = await estadoApiLocal();
+    if (!est.disponible) {
+      setApiMsg("La API local no está corriendo aquí (celular/navegador). Se usa la impresión normal.");
+      return;
+    }
+    const ok = await imprimirTirillaLocal({ negocio: nombreNegocio, numero: "PRUEBA", cliente: "Prueba", items: [{ descripcion: "Tirilla de prueba", cantidad: 1, precio: 1000 }], total: 1000, formato: "80mm" });
+    setApiMsg(ok ? `Impreso en ${est.predeterminada || "la predeterminada"}.` : "No se pudo imprimir. Revisa la impresora de Windows.");
+  };
   const [zonaManual, setZonaManual] = useState("");
   const [correo, setCorreo] = useState("");
 
@@ -394,7 +421,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
                 <MessageCircle className="h-4 w-4" /> Comanda a cocina
               </button>
               <button
-                onClick={() => imprimirTicket(recibo, nombreNegocio)}
+                onClick={() => void imprimirDirectoOSilencioso(recibo)}
                 className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-glass-border px-2 py-2.5 text-foreground"
               >
                 <Printer className="h-4 w-4" /> Imprimir
@@ -442,6 +469,14 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
           </div>
         )}
         <h2 className="font-medium text-foreground">Cuenta actual</h2>
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-glass-border bg-glass/40 px-3 py-2">
+          <label className="flex cursor-pointer items-center gap-2 text-xs">
+            <input type="checkbox" checked={directa} onChange={(e) => { setDirecta(e.target.checked); fijarImpresionDirecta(e.target.checked); }} className="h-4 w-4 accent-primary" />
+            Impresión directa por API local
+          </label>
+          <button type="button" onClick={() => void probarImpresora()} className="text-xs text-primary hover:underline">Probar impresora</button>
+        </div>
+        {apiMsg && <p className="text-xs text-muted-foreground">{apiMsg}</p>}
         <div className="grid grid-cols-3 gap-2">
           {MODALIDADES.map(({ clave, texto, Icon }) => (
             <button

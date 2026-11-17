@@ -5,13 +5,14 @@ cd /d "%~dp0"
 where node >nul 2>nul
 if errorlevel 1 goto sinnode
 
-echo [1/3] Preparando la API local de WhatsApp (agente)...
+echo [1/3] Preparando la API local de WhatsApp (agente) y la API local de impresion...
 set PUPPETEER_SKIP_DOWNLOAD=true
 set PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 pushd ..\whatsapp-local
 call npm install --omit=dev
 if errorlevel 1 ( popd & goto error )
 popd
+REM La API local de impresion (escritorio\api-impresion) no necesita instalar nada: usa solo Node.
 
 echo [2/3] Instalando dependencias de escritorio (puede tardar unos minutos)...
 call npm install

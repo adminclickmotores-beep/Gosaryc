@@ -1,8 +1,8 @@
 {
   "name": "gosaryc-escritorio",
-  "version": "1.2.8",
+  "version": "1.3.0",
   "private": true,
-  "description": "Gosaryc para escritorio: abre el panel y trae la API local de WhatsApp con el agente integrada.",
+  "description": "Gosaryc para escritorio: abre el panel y trae la API local de WhatsApp con el agente y la API local de impresión silenciosa integradas.",
   "author": "Gosaryc",
   "main": "main.cjs",
   "scripts": {
@@ -21,7 +21,7 @@
     "appId": "app.gosaryc.escritorio",
     "productName": "Gosaryc",
     "directories": { "output": "instaladores" },
-    "files": ["main.cjs", "preload.cjs", "package.json", "build/icon.png"],
+    "files": ["main.cjs", "preload.cjs", "package.json", "build/icon.png", "api-impresion/server.js", "api-impresion/package.json"],
     "extraResources": [
       { "from": "guia", "to": "guia" },
       {
