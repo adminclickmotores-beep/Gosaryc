@@ -1,17 +1,13 @@
-COMO GENERAR LOS INSTALADORES DE GOSARYC (Windows 32/64 + tienda + Linux + Android)
+COMO GENERAR LOS INSTALADORES DE GOSARYC (Windows + Linux + Android)
 ================================================================================
-Guía corta. La guía súper sencilla paso a paso está en LEEME-INSTALADORES-FACIL.txt.
-La compilación en la nube (.github/workflows/compilar-todo.yml) genera todo sola:
-Windows (.exe 64/32 + .appx de tienda), Linux (.AppImage + .deb) y Android (2 APK).
-Todo se genera en un computador con Windows. Solo necesitas instalar una vez:
-- Node.js LTS: https://nodejs.org (instálalo con "Siguiente" en todo y reinicia).
-- Para los APK: Java JDK 17 (https://adoptium.net, Temurin 17 LTS) y Android Studio
-  (https://developer.android.com/studio, ábrelo una vez para que descargue el SDK).
+Guía corta. La guía súper sencilla paso a paso está en INSTALAR-PASO-A-PASO.txt
+(ese es el único archivo que necesitas leer si no eres programador).
 
-Los 4 archivos se compilan con doble clic, sin comandos. Hazlos en este orden:
+Todo se genera con doble clic, sin comandos. Hazlos en este orden:
 
-1) INSTALADOR WINDOWS PARA CLIENTES (64 y 32 bits)
-   Archivo: escritorio/crear-instalador-windows.bat
+1) WINDOWS PARA CLIENTES (64 y 32 bits)
+   Archivo: 1-CREAR-Windows-clientes.bat (respaldo: 1-CREAR-Windows-clientes.cmd)
+   Atajo dentro de escritorio: escritorio/crear-instalador-windows.bat (mismo botón)
    Resultado: escritorio/instaladores/Gosaryc-Setup-x64.exe (64 bits)
               y escritorio/instaladores/Gosaryc-Setup-ia32.exe (32 bits).
    Incluye: panel, agente WhatsApp IA 24/7 en bandeja, impresión silenciosa de
@@ -22,15 +18,15 @@ Los 4 archivos se compilan con doble clic, sin comandos. Hazlos en este orden:
    Si Windows dice "Windows protegió su PC": Más información > Ejecutar de todas formas.
 
 2) APK ANDROID PARA CLIENTES (sin Play Store)
-   Archivo: crear-apk-clientes.bat (en la raíz del proyecto)
+   Archivo: 2-CREAR-APK-clientes.bat (respaldo: 2-CREAR-APK-clientes.cmd)
    Resultado: Gosaryc.apk (en la raíz del proyecto).
    Incluye: la app Gosaryc (com.gosaryc.erp) con el logo oficial, cámara
    (código de barras/QR), notificaciones y descarga de PDF/Excel.
    Instalación: pasa el APK al celular por WhatsApp o USB, tócalo e instala
    (permite "orígenes desconocidos"). Cada cliente inicia sesión con su cuenta.
 
-3) INSTALADOR WINDOWS DE LICENCIAS ADMIN (solo superadmin, 64 y 32 bits)
-   Archivo: crear-instalador-licencias-win.bat (en la raíz del proyecto)
+3) WINDOWS DE LICENCIAS ADMIN (solo superadmin, 64 y 32 bits)
+   Archivo: 3-CREAR-Licencias-Admin-Windows.bat (respaldo .cmd con el mismo nombre)
    Resultado: generador-licencias/instaladores/Gosaryc-Licencias-Admin-x64.exe
               y Gosaryc-Licencias-Admin-ia32.exe.
    Es una app aparte que abre solo el panel de licencias. Inicia sesión con tu
@@ -41,12 +37,22 @@ Los 4 archivos se compilan con doble clic, sin comandos. Hazlos en este orden:
    cuenta no ve ni cambia nada.)
 
 4) APK ANDROID DE LICENCIAS ADMIN (solo superadmin, sin tienda)
-   Archivo: crear-apk-licencias-admin.bat (en la raíz del proyecto)
+   Archivo: 4-CREAR-APK-Licencias-Admin.bat (respaldo .cmd con el mismo nombre)
    Resultado: Gosaryc-Licencias-Admin.apk (en la raíz del proyecto).
    Se distingue por el logo rojo con cinta ADMIN. Instálalo solo en tu celular
    e inicia sesión con tu cuenta superadmin para gestionar licencias donde estés.
 
+5) TIENDA WINDOWS 11 (opcional): 5-CREAR-Tienda-Win11.bat → .appx en escritorio/instaladores.
+6) LINUX (opcional): 6-CREAR-Linux.bat → AppImage y .deb en escritorio/instaladores.
+
+Motor único: todos los botones anteriores llaman a crear-instaladores.cjs
+(windows | apk | licencias | apk-licencias | tienda | linux). No hay pasos manuales:
+el motor instala dependencias, descarga Electron, genera el icono oficial y compila.
+Los .cmd con el mismo nombre son el mismo botón con otro traje (por si el antivirus
+oculta los .bat).
+
 ERRORES COMUNES
+- "Necesitas instalar Node.js": instala el LTS de https://nodejs.org, reinicia y repite.
 - "No se pudo descargar Electron": instala Node.js LTS (22 o 24), borra la
   carpeta node_modules y reintenta; revisa internet, antivirus o firewall.
 - "No encuentro el Android SDK": instala Android Studio y ábrelo una vez.

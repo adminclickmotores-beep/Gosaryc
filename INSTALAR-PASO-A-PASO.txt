@@ -1,0 +1,127 @@
+GOSARYC - INSTALAR PASO A PASO (PARA NO PROGRAMADORES)
+======================================================
+Guárdame: este es el único archivo que necesitas leer.
+Todo lo que necesitas YA VIENE en esta carpeta. No tienes
+que descargar nada más aparte de 2 programas gratis.
+
+LO QUE VAS A CREAR (UNO POR UNO)
+--------------------------------
+1) Windows clientes: para los computadores de tus clientes.
+2) APK clientes: para los celulares de tus clientes.
+3) Windows Licencias Admin: SOLO para tu computador (cobrar y activar).
+4) APK Licencias Admin: SOLO para tu celular (cobrar donde estés).
+5) Tienda Windows 11 (opcional) y Linux (opcional).
+
+ANTES DE EMPEZAR (UNA SOLA VEZ)
+-------------------------------
+A) Descarga la carpeta COMPLETA del proyecto (tal como te llegó).
+   No saques carpetas sueltas: deben quedar juntas estas:
+   escritorio, whatsapp-local, generador-licencias,
+   android-app, android-licencias y este archivo.
+   Si falta una, la instalación NO sale completa.
+
+B) Instala Node.js LTS (gratis, 5 minutos):
+   1. Entra a https://nodejs.org
+   2. Descarga el que dice LTS.
+   3. Instálalo con Siguiente en todo.
+   4. Reinicia tu computador.
+
+C) SOLO para los APK (pasos 2 y 4), instala además una vez:
+   1. Java 17 gratis desde https://adoptium.net (Temurin 17 LTS).
+   2. Android Studio desde https://developer.android.com/studio
+   3. Abre Android Studio UNA vez (para que descargue solo el SDK)
+      y ciérralo. Ya no lo vuelves a abrir.
+
+PASO 1 - WINDOWS CLIENTES (EL MÁS IMPORTANTE)
+--------------------------------------------
+1. En esta carpeta principal haz doble clic en:
+   1-CREAR-Windows-clientes.bat
+   (Si tu antivirus oculta los .bat, haz doble clic en
+   1-CREAR-Windows-clientes.cmd. Es lo mismo.)
+2. Se abre una ventana negra. Déjala trabajar (tarda varios
+   minutos la primera vez, es normal).
+3. Cuando diga "Listo", se abre sola la carpeta con tus
+   instaladores. Ahí quedan:
+   escritorio\instaladores\Gosaryc-Setup-x64.exe (casi todos)
+   escritorio\instaladores\Gosaryc-Setup-ia32.exe (PC viejitos)
+4. Entrega a cada cliente el que le corresponda con doble clic,
+   Siguiente en todo. Si Windows dice "protegió su PC",
+   pulsa Más información y luego Ejecutar de todas formas.
+
+PASO 2 - APK CLIENTES (ANDROID)
+-------------------------------
+1. Haz doble clic en: 2-CREAR-APK-clientes.bat
+   (respaldo: 2-CREAR-APK-clientes.cmd)
+2. Espera a que diga "Listo".
+3. En esta misma carpeta principal aparece: Gosaryc.apk
+4. Pásalo al celular por WhatsApp o cable USB, tócalo
+   e instala (acepta "orígenes desconocidos", es normal
+   porque no viene de Play Store).
+5. Cada cliente entra con su cuenta y listo.
+
+PASO 3 - WINDOWS LICENCIAS ADMIN (SOLO TÚ)
+------------------------------------------
+1. Haz doble clic en: 3-CREAR-Licencias-Admin-Windows.bat
+   (respaldo: 3-CREAR-Licencias-Admin-Windows.cmd)
+2. Espera a que diga "Listo".
+3. Quedan en: generador-licencias\instaladores\
+   Gosaryc-Licencias-Admin-x64.exe
+4. Instálalo SOLO en tu computador. Entra con tu cuenta
+   de superadmin para crear, renovar o suspender licencias.
+   NO se la pases a los clientes.
+
+PASO 4 - APK LICENCIAS ADMIN (SOLO TÚ)
+--------------------------------------
+1. Haz doble clic en: 4-CREAR-APK-Licencias-Admin.bat
+   (respaldo: 4-CREAR-APK-Licencias-Admin.cmd)
+2. Espera a que diga "Listo".
+3. En esta carpeta principal aparece:
+   Gosaryc-Licencias-Admin.apk (logo rojo con cinta ADMIN).
+4. Instálalo SOLO en tu celular e inicia sesión con tu
+   cuenta superadmin.
+
+PASO 5 Y 6 - OPCIONALES
+-----------------------
+- Tienda Windows 11: doble clic en 5-CREAR-Tienda-Win11.bat
+  Sale el .appx en escritorio\instaladores.
+- Linux (Ubuntu/Debian/Mint): doble clic en
+  6-CREAR-Linux.bat. Salen AppImage y .deb en
+  escritorio\instaladores.
+
+DÓNDE QUEDA CADA INSTALADOR (RESUMEN)
+-------------------------------------
+- Windows clientes .... escritorio\instaladores\Gosaryc-Setup-x64.exe
+- APK clientes ........ Gosaryc.apk (carpeta principal)
+- Licencias Windows ... generador-licencias\instaladores\
+- APK licencias ....... Gosaryc-Licencias-Admin.apk (carpeta principal)
+- Tienda / Linux ...... escritorio\instaladores\
+
+SI ALGO FALLA (NO TE ASUSTES)
+-----------------------------
+- "Necesitas instalar Node.js": instala el LTS de
+  https://nodejs.org, reinicia y repite el doble clic.
+- "No se pudo descargar Electron": revisa tu internet,
+  desactiva un momento el antivirus, borra la carpeta
+  node_modules dentro de escritorio y repite.
+- "No encuentro el Android SDK": abre Android Studio
+  una vez y repite el paso del APK.
+- "No veo los .bat": usa los .cmd con el mismo nombre,
+  son el mismo botón con otro traje.
+- Ventana negra cerrada a la mitad: vuelve a hacer
+  doble clic, sigue donde iba.
+- Sin instalar nada: entra a tu repositorio en GitHub,
+  pestaña Actions, "Compilar todo", botón Run workflow,
+  espera 15-20 minutos y descarga los instaladores
+  ya hechos desde "Artifacts".
+
+DESPUÉS DE INSTALAR
+-------------------
+- Tus datos NO se borran al actualizar: solo cambia
+  el programa.
+- En el computador la app avisa sola "Nueva versión
+  disponible" para actualizar con 1 clic.
+- En el celular la web se actualiza sola al abrirla
+  con internet. El APK se instala encima, sin desinstalar.
+
+¿DUDAS? Escríbeme qué número de paso ibas y qué decía
+la ventana negra (una foto ayuda mucho).

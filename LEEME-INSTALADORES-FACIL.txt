@@ -1,5 +1,8 @@
 CÓMO TENER TUS INSTALADORES DE GOSARYC (SIN SABER PROGRAMAR)
 =========================================================
+Lee primero INSTALAR-PASO-A-PASO.txt: ahí está todo explicado
+con palabras sencillas, un instalador por vez. Este archivo es
+solo el resumen.
 
 Tienes 2 caminos. Elige el que prefieras. En los 2 TUS DATOS SE CONSERVAN:
 actualizar solo cambia el programa, no borra tus productos, clientes ni ventas.
@@ -23,29 +26,17 @@ CAMINO 2: CREARLOS EN TU COMPUTADOR CON WINDOWS 11 (doble clic)
 Solo necesitas instalar una vez: Node.js LTS desde https://nodejs.org
 (y para los APK: Java 17 desde https://adoptium.net + Android Studio una vez).
 
-- Clientes Windows (64 y 32 bits): doble clic en escritorio/crear-instalador-windows.bat
-  Salen: escritorio/instaladores/Gosaryc-Setup-x64.exe y Gosaryc-Setup-ia32.exe
-- Licencias Admin Windows (solo tú): doble clic en crear-instalador-licencias-win.bat
-- Clientes Linux (AppImage y .deb): en la carpeta escritorio, ejecuta crear-instalador-linux.sh
-- APK clientes: doble clic en crear-apk-clientes.bat → sale Gosaryc.apk en la raíz.
-  Pásalo por WhatsApp o USB al celular, tócalo y acepta "orígenes desconocidos".
-- APK licencias (solo tú): doble clic en crear-apk-licencias-admin.bat
+Los botones están en la carpeta principal, uno por instalador:
+- 1-CREAR-Windows-clientes.bat → escritorio/instaladores/Gosaryc-Setup-x64.exe e ia32
+- 2-CREAR-APK-clientes.bat → Gosaryc.apk en la raíz (pásalo por WhatsApp o USB)
+- 3-CREAR-Licencias-Admin-Windows.bat → generador-licencias/instaladores/ (solo tú)
+- 4-CREAR-APK-Licencias-Admin.bat → Gosaryc-Licencias-Admin.apk (solo tú)
+- 5-CREAR-Tienda-Win11.bat → .appx en escritorio/instaladores (opcional)
+- 6-CREAR-Linux.bat → AppImage y .deb en escritorio/instaladores (opcional)
 
-SI NO VES LOS ARCHIVOS .bat EN TU DESCARGA
--------------------------------------------
-Algunas descargas o antivirus ocultan los .bat. No pasa nada, usa uno de estos:
-- Doble clic en INSTALADOR-WINDOWS.cmd (carpeta principal) o en escritorio/crear-instalador-windows.cmd
-- Licencias Admin: doble clic en INSTALADOR-LICENCIAS-ADMIN.cmd
-- O abre una terminal en la carpeta principal y escribe UNA de estas líneas:
-    node crear-instaladores.cjs windows        (clientes, 64 y 32 bits)
-    node crear-instaladores.cjs tienda         (paquete .appx Windows 11)
-    node crear-instaladores.cjs licencias      (Licencias Admin)
-    node crear-instaladores.cjs linux          (AppImage y .deb)
-    node crear-instaladores.cjs apk            (Gosaryc.apk)
-    node crear-instaladores.cjs apk-licencias  (Gosaryc-Licencias-Admin.apk)
-- Importante: descarga la carpeta COMPLETA del proyecto (deben quedar juntas
-  escritorio, whatsapp-local, generador-licencias, android-app y android-licencias).
-- Sin instalar nada: usa el Camino 1 (GitHub Actions).
+Cada .bat tiene su gemelo .cmd con el mismo nombre (mismo botón, por si el
+antivirus oculta los .bat). Todos llaman al motor único crear-instaladores.cjs,
+sin pasos manuales. Detalle en INSTALAR-PASO-A-PASO.txt.
 
 CÓMO SE ACTUALIZAN SOLOS
 ------------------------
@@ -62,6 +53,7 @@ Pulsa "Más información" y luego "Ejecutar de todas formas".
 
 SI ALGO FALLA
 -------------
+- "Necesitas instalar Node.js": instala el LTS de https://nodejs.org, reinicia y repite.
 - "No se pudo descargar Electron": instala Node.js 22 o 24, borra node_modules y reintenta.
 - "No encuentro el Android SDK": abre Android Studio una vez y reintenta.
 - En Linux "sandbox": la app ya trae --no-sandbox, abre sin error en Ubuntu/Debian nuevos.

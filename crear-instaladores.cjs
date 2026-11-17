@@ -55,7 +55,20 @@ function prepararEscritorio() {
   return esc;
 }
 
+function verificarAndroid() {
+  if (esWin) {
+    const sdk = path.join(process.env.LOCALAPPDATA || "", "Android", "Sdk", "platform-tools", "adb.exe");
+    if (!fs.existsSync(sdk)) {
+      console.error("\nNo encuentro el Android SDK.");
+      console.error("Instala Android Studio desde https://developer.android.com/studio,");
+      console.error("abrelo UNA vez para que descargue el SDK y vuelve a hacer doble clic.");
+      process.exit(1);
+    }
+  }
+}
+
 function apk(carpetaNombre, salida) {
+  verificarAndroid();
   const dir = path.join(raiz, carpetaNombre);
   correr("npm install", dir);
   if (!fs.existsSync(path.join(dir, "android"))) correr("npx cap add android", dir);

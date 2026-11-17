@@ -14,8 +14,9 @@ Crea un instalador de Windows (`Gosaryc Setup x.x.x.exe`). La app instalada:
 
 ## Armar el instalador (la forma fácil)
 1. Descomprime la carpeta completa del proyecto (deben quedar juntas `escritorio` y `whatsapp-local`).
-2. Entra a la carpeta `escritorio` y haz doble clic en `crear-instalador-windows.bat`.
-3. Espera varios minutos. Al terminar se abre la carpeta `instaladores` con `Gosaryc Setup 1.2.3.exe`.
+2. Lee `INSTALAR-PASO-A-PASO.txt` en la carpeta principal (guía para no programadores, un instalador por vez).
+3. En la carpeta principal haz doble clic en `1-CREAR-Windows-clientes.bat` (respaldo: `1-CREAR-Windows-clientes.cmd`).
+   Atajo: dentro de `escritorio`, `crear-instalador-windows.bat` es el mismo botón.
 4. Ese `.exe` es el que le entregas a tus clientes: doble clic, "Instalar" y listo.
 
 ## Sin instalar nada: crear el instalador en la nube
@@ -50,16 +51,16 @@ El instalador no está firmado con un certificado de pago: Windows puede mostrar
 
 ## Instaladores, APK y app de licencias (todo con el logo oficial)
 
-- **Windows clientes (64 y 32 bits, desde Windows 8 hasta 11):** `escritorio/crear-instalador-windows.bat` genera `Gosaryc-Setup-x64.exe` y `Gosaryc-Setup-ia32.exe` en `escritorio/instaladores` (Windows no permite un único .exe universal, por eso salen los dos; casi todos los computadores de hoy son de 64 bits). Con `npm run instalador:tienda` sale además el paquete `.appx` para instalación moderna tipo Microsoft Store en Windows 11.
+- **Windows clientes (64 y 32 bits, desde Windows 8 hasta 11):** `1-CREAR-Windows-clientes.bat` genera `Gosaryc-Setup-x64.exe` y `Gosaryc-Setup-ia32.exe` en `escritorio/instaladores` (Windows no permite un único .exe universal, por eso salen los dos; casi todos los computadores de hoy son de 64 bits). Con `npm run instalador:tienda` sale además el paquete `.appx` para instalación moderna tipo Microsoft Store en Windows 11.
 - **Auto-actualización con 1 clic:** la app revisa GitHub Releases al abrir y cada 6 horas en bandeja 24/7; al haber versión nueva muestra el banner «¡Nueva versión disponible! Haz clic aquí para actualizar ahora» y la instala sin borrar datos. La web/PWA se actualiza sola (caché v48).
 - **Compilación en la nube:** `.github/workflows/compilar-todo.yml` genera Windows (.exe + .appx), Linux (.AppImage + .deb) y Android (2 APK) al subir versión o pulsar «Run workflow». Guía súper sencilla: `LEEME-INSTALADORES-FACIL.txt`.
 - **Linux clientes (AppImage y .deb):** `escritorio/crear-instalador-linux.sh` genera los dos formatos en `escritorio/instaladores` con el logo oficial. La app arranca con --no-sandbox para abrir sin errores en Ubuntu/Debian modernos.
-- **Android clientes (sin Play Store):** `crear-apk-clientes.bat` (en la raíz) genera `Gosaryc.apk` (ID `com.gosaryc.erp`) con cámara, notificaciones y descarga de PDF/Excel. Se pasa al celular por WhatsApp o USB.
-- **Licencias Admin Windows (solo tú):** `crear-instalador-licencias-win.bat` genera `Gosaryc-Licencias-Admin-x64.exe` e `-ia32.exe`. Abre solo el panel de licencias con tu cuenta superadmin (crear, renovar, suspender y enviar la clave por WhatsApp). No la compartas con clientes.
+- **Android clientes (sin Play Store):** `2-CREAR-APK-clientes.bat` (en la raíz) genera `Gosaryc.apk` (ID `com.gosaryc.erp`) con cámara, notificaciones y descarga de PDF/Excel. Se pasa al celular por WhatsApp o USB.
+- **Licencias Admin Windows (solo tú):** `3-CREAR-Licencias-Admin-Windows.bat` genera `Gosaryc-Licencias-Admin-x64.exe` e `-ia32.exe`. Abre solo el panel de licencias con tu cuenta superadmin (crear, renovar, suspender y enviar la clave por WhatsApp). No la compartas con clientes.
 - **Licencias Admin Linux (solo tú):** en `generador-licencias`, `npm run instalador:linux` genera AppImage y .deb.
-- **Licencias Admin Android (solo tú):** `crear-apk-licencias-admin.bat` genera `Gosaryc-Licencias-Admin.apk` (ID `com.gosaryc.licencias`, logo rojo con cinta ADMIN).
+- **Licencias Admin Android (solo tú):** `4-CREAR-APK-Licencias-Admin.bat` genera `Gosaryc-Licencias-Admin.apk` (ID `com.gosaryc.licencias`, logo rojo con cinta ADMIN).
 - **Novedades de esta versión:** portada con fichas interactivas por tipo de negocio y prueba gratis con rubro preseleccionado; logo índigo a esmeralda en web, instaladores y APK; agente WhatsApp con perfiles de asesor contable y de nómina; pruebas y extensiones con días exactos a elegir (3, 7, 15, 30, 60, 90 o los que escribas); la licencia de 1 año solo la activa el Superadmin (la base de datos lo verifica); facturas con tu logo, régimen y pie de página; identidad de color por rubro en cada módulo.
-- Guía paso a paso de los 4: `COMO-GENERAR-INSTALADORES.txt` en la raíz.
+- Guía paso a paso de los 4: `INSTALAR-PASO-A-PASO.txt` y `COMO-GENERAR-INSTALADORES.txt` en la raíz.
 
 ## Más adelante
 - Icono propio: guarda un `icono.ico` (256x256) en una carpeta `build` dentro de `escritorio`.
