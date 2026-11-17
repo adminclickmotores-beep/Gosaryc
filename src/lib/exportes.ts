@@ -41,6 +41,7 @@ const estilosImpresion = `
     th { background: #eee; }
     td.num, th.num { text-align: right; }
     .totales { margin-top: 12px; font-size: 13px; }
+    .dian { margin-top: 12px; font-size: 11px; word-break: break-all; border-top: 1px dashed #999; padding-top: 8px; }
     .firma { margin-top: 48px; display: flex; gap: 48px; font-size: 12px; }
     .firma div { border-top: 1px solid #111; padding-top: 4px; min-width: 180px; }
     @media print { body { margin: 0; } }
@@ -77,6 +78,9 @@ export type DatosFactura = {
   clienteNit?: string;
   items: ItemFactura[];
   ivaPct?: number;
+  dianCufe?: string | null;
+  dianQr?: string | null;
+  dianEstado?: string | null;
 };
 
 /**
@@ -92,6 +96,10 @@ export function facturaHTML(d: DatosFactura, formato: "tirilla" | "carta"): stri
   const filas = d.items
     .map((i) => `<tr><td>${i.descripcion}</td><td class="num">${i.cantidad}</td><td class="num">${cop(i.precio)}</td><td class="num">${cop(i.cantidad * i.precio)}</td></tr>`)
     .join("");
+  const esImgQr = Boolean(d.dianQr && (/^data:image/i.test(d.dianQr) || /\.(png|jpe?g|gif|webp)(\?|$)/i.test(d.dianQr)));
+  const bloqueDian = d.dianCufe || d.dianQr
+    ? `<div class="dian"><strong>Factura electrónica DIAN${d.dianEstado ? ` · ${d.dianEstado}` : ""}</strong><br>CUFE: ${d.dianCufe ?? "en trámite"}${d.dianQr && !esImgQr ? `<br>QR oficial: ${d.dianQr.startsWith("http") ? `<a href="${d.dianQr}">${d.dianQr}</a>` : d.dianQr}` : ""}${esImgQr ? `<br><img src="${d.dianQr}" alt="QR DIAN" style="width:140px;height:140px;margin-top:6px;" />` : ""}</div>`
+    : "";
   const ancho = formato === "tirilla" ? "300px" : "100%";
   return `<html><head><title>Factura ${d.numero}</title>${estilosImpresion}
     <style>body { max-width: ${ancho}; margin: ${formato === "tirilla" ? "0 auto" : "24px"}; } .c { text-align: center; }</style>
@@ -101,6 +109,7 @@ export function facturaHTML(d: DatosFactura, formato: "tirilla" | "carta"): stri
     <p><strong>Factura de venta ${d.numero}</strong><br>Fecha: ${fechaHoy()}<br>Cliente: ${d.cliente}${d.clienteNit ? ` · ${d.clienteNit}` : ""}</p>
     <table><thead><tr><th>Descripción</th><th class="num">Cant.</th><th class="num">Precio</th><th class="num">Total</th></tr></thead><tbody>${filas}</tbody></table>
     <div class="totales">Subtotal: ${cop(subtotal)}<br>IVA${d.ivaPct ? ` (${d.ivaPct}%)` : ""}: ${cop(iva)}<br><strong>Total: ${cop(total)}</strong></div>
+    ${bloqueDian}
     <p class="sub c">Documento generado por Gosaryc · listo para facturación electrónica DIAN vía proveedor tecnológico.</p>
   </body></html>`;
 }

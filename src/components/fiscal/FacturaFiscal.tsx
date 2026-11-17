@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Plus, Printer, Trash2 } from "lucide-react";
+import { MessageCircle, Plus, Printer, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -8,6 +8,7 @@ import { useNegocio } from "@/hooks/use-negocio";
 import { Campo, Cargando, Encabezado, boton, botonSec, campo, dinero, num } from "@/components/comercio/ComercioModulos";
 import { exportarExcel, imprimirFactura, type DatosFactura, type ItemFactura } from "@/lib/exportes";
 import { estadoApiLocal, fijarImpresionDirecta, guardarColaLocal, impresionDirectaActivada, imprimirTirillaLocal, leerImpresoraCaja } from "@/lib/impresion-local";
+import { construirJsonFiscal, enlaceSolicitudDian, enviarFacturaDian, guardarCufeQr, marcarDianPendiente } from "@/lib/dian";
 
 type Fac = Tables<"fac_emitidas">;
 
@@ -48,6 +49,9 @@ export function FacturaFiscal() {
     clienteNit: f.cliente_doc ?? undefined,
     items: (Array.isArray(f.items) ? f.items : []) as ItemFactura[],
     ivaPct: f.subtotal > 0 ? Math.round((f.iva / f.subtotal) * 100) : 0,
+    dianCufe: f.dian_cufe ?? undefined,
+    dianQr: f.dian_qr ?? undefined,
+    dianEstado: f.dian_estado ?? undefined,
   });
 
   const cambiarDirecta = (v: boolean) => {
@@ -92,7 +96,35 @@ export function FacturaFiscal() {
     await cargar();
     const { data: recien } = await supabase.from("fac_emitidas").select("*").eq("numero", numero).limit(1).single();
     if (recien) {
-      const datos = datosFactura(recien);
+      // Si la DIAN está activa, se envía el JSON fiscal al proveedor sin bloquear la venta.
+      let datos = datosFactura(recien);
+      if (negocio?.dian_activa) {
+        try {
+          const { data: cfg } = await supabase.rpc("mi_dian_config");
+          const c = (cfg ?? {}) as { activa?: boolean; proveedor_url?: string; token_api?: string; prefijo?: string; resolucion?: string; ambiente?: string };
+          if (c.activa && c.proveedor_url && c.token_api) {
+            const payload = construirJsonFiscal({
+              prefijo: c.prefijo ?? null, numero: recien.numero, resolucion: c.resolucion ?? null,
+              negocio: datos.negocio, nit: datos.nit, cliente: datos.cliente, clienteDoc: datos.clienteNit,
+              items: datos.items, ivaPct: datos.ivaPct ?? 0, ambiente: c.ambiente ?? "Pruebas",
+            });
+            const r = await enviarFacturaDian(c.proveedor_url, c.token_api, payload);
+            if (r.ok) {
+              await guardarCufeQr(recien.id, r);
+              datos = { ...datos, dianCufe: r.cufe, dianQr: r.qr, dianEstado: r.estado };
+              toast.success(r.cufe ? "DIAN aceptada: CUFE guardado." : "Factura enviada a la DIAN.");
+            } else {
+              await marcarDianPendiente(recien.id, { error: r.error });
+              toast.error(`Se emitió la factura, pero la DIAN no respondió: ${r.error}`);
+            }
+          } else {
+            await marcarDianPendiente(recien.id, { error: "DIAN activa sin proveedor configurado." });
+          }
+        } catch {
+          await marcarDianPendiente(recien.id, { error: "No se pudo contactar al proveedor DIAN." });
+        }
+        await cargar();
+      }
       if (!navigator.onLine) {
         void guardarColaLocal({ numero: recien.numero, cliente, items: validos, total: recien.total });
       }
@@ -101,6 +133,7 @@ export function FacturaFiscal() {
           negocio: datos.negocio, nit: datos.nit, direccion: datos.direccion, telefono: datos.telefono,
           resolucion: datos.resolucion, numero: datos.numero, cliente: datos.cliente, clienteDoc: datos.clienteNit,
           items: datos.items, subtotal: recien.subtotal, iva: recien.iva, ivaPct: datos.ivaPct, total: recien.total,
+          cufe: datos.dianCufe ?? undefined, qr: datos.dianQr ?? undefined,
           formato: formato === "tirilla" ? "80mm" : "80mm",
           impresora: leerImpresoraCaja() || undefined,
         });
@@ -121,6 +154,27 @@ export function FacturaFiscal() {
   return (
     <GlassPanel>
       <Encabezado titulo="Facturación" texto="Factura tirilla o carta con consecutivo, NIT y resolución. Lista para conectarse por API a tu proveedor DIAN." />
+      {negocio && !negocio.dian_activa && (
+        <div className="mb-2 space-y-2 rounded-lg border border-primary/30 bg-glass/40 px-3 py-3">
+          <p className="text-sm font-medium text-foreground">Tu cuenta está lista para Facturación Electrónica DIAN</p>
+          <p className="text-xs text-muted-foreground">
+            Cuando actives el servicio, cada factura se envía automáticamente a la DIAN y sale con su CUFE y su QR oficial en la tirilla y en el PDF. Este servicio adicional lo activa el administrador de Gosaryc.
+          </p>
+          <a
+            href={enlaceSolicitudDian(negocio.nombre ?? "Mi negocio", negocio.nit ?? "")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2.5 text-xs font-medium text-primary-foreground"
+          >
+            <MessageCircle className="h-4 w-4" /> Solicitar Activación DIAN por WhatsApp
+          </a>
+        </div>
+      )}
+      {negocio?.dian_activa && (
+        <p className="mb-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs text-emerald-300">
+          Facturación electrónica DIAN activa: cada factura se envía automáticamente y guarda su CUFE y QR oficial.
+        </p>
+      )}
       {negocio?.resolucion_vence && (
         <p className="mb-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-300">
           Tu resolución vence el {negocio.resolucion_vence}. Pide la nueva a la DIAN antes de esa fecha para no quedarte sin rango.
@@ -192,7 +246,7 @@ export function FacturaFiscal() {
         <div className="mt-2 space-y-1">
           {facs.slice(0, 40).map((f) => (
             <div key={f.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-glass-border px-3 py-2 text-sm">
-              <span>#{f.numero} · {f.cliente} · {dinero(f.total)}</span>
+              <span>#{f.numero} · {f.cliente} · {dinero(f.total)}{f.dian_cufe ? " · DIAN ✓" : f.dian_estado && f.dian_estado !== "pendiente" && f.dian_estado !== "no_aplica" ? ` · DIAN ${f.dian_estado}` : ""}</span>
               <button type="button" className={botonSec} onClick={() => imprimirFactura(datosFactura(f), (f.formato === "carta" ? "carta" : "tirilla"))}>
                 <Printer className="h-4 w-4" /> Reimprimir
               </button>

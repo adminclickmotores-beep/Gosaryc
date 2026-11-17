@@ -160,6 +160,9 @@ export type TirillaLocal = {
   total?: number;
   metodo?: string;
   formato?: "58mm" | "80mm";
+  /** CUFE y QR oficial DIAN: salen al final de la tirilla de caja. */
+  cufe?: string;
+  qr?: string;
   /** Si se indica, imprime en esa impresora; si no, en la de caja o la predeterminada. */
   impresora?: string;
 };

@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { enlaceSolicitudDian } from "@/lib/dian";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 import { AgenteWhatsApp } from "@/components/restaurante/AgenteWhatsApp";
@@ -444,6 +446,28 @@ export function NegocioConfig() {
             <input type="date" className={campo} value={form.resolucion_vence} onChange={(e) => setForm({ ...form, resolucion_vence: e.target.value })} />
           </label>
         </div>
+      </div>
+      <div className="rounded-xl border border-primary/30 bg-glass/40 p-4">
+        <h3 className="font-medium text-foreground">Facturación Electrónica DIAN</h3>
+        {negocio?.dian_activa ? (
+          <p className="mt-1 text-xs text-emerald-300">
+            Tu facturación electrónica DIAN está activa: cada factura se envía automáticamente y guarda su CUFE y QR oficial.
+          </p>
+        ) : (
+          <>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Tu cuenta está lista para Facturación Electrónica DIAN. Este servicio adicional lo activa el administrador de Gosaryc cuando lo contrates: tus facturas saldrán con CUFE y QR oficial.
+            </p>
+            <a
+              href={enlaceSolicitudDian(form.nombre || negocio?.nombre || "Mi negocio", form.nit || negocio?.nit || "")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2.5 text-xs font-medium text-primary-foreground"
+            >
+              <MessageCircle className="h-4 w-4" /> Solicitar Activación DIAN por WhatsApp
+            </a>
+          </>
+        )}
       </div>
       <button
         disabled={guardando}

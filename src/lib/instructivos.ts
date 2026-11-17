@@ -443,6 +443,7 @@ const POR_MODULO: Record<string, Instructivo> = {
     pasos: [
       "Completa tus datos fiscales en Mi negocio: NIT con dígito de verificación, régimen, responsabilidad fiscal y resolución con rango y vencimiento.",
       "Crea la factura con cliente, ítems, IVA y formato tirilla o carta; el número sale solo dentro de tu rango autorizado.",
+      "Si tu cuenta tiene DIAN activa, la factura se envía sola al proveedor y guarda su CUFE y QR oficial (salen en la tirilla y en el PDF). Si no la tienes, pide la activación por WhatsApp desde la tarjeta de Facturación Electrónica DIAN.",
       "Imprime o guarda en PDF y reimprime cuando el cliente la pida. El historial se exporta a Excel.",
     ],
   },

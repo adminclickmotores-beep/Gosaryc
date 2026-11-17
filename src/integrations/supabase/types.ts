@@ -2493,9 +2493,9 @@ export type Database = {
         Relationships: []
       }
       fac_emitidas: {
-        Row: { cliente: string; cliente_doc: string | null; created_at: string; formato: string; id: string; items: Json; iva: number; numero: number; owner_id: string | null; subtotal: number; tipo_negocio: string | null; total: number }
-        Insert: { cliente: string; cliente_doc?: string | null; created_at?: string; formato?: string; id?: string; items?: Json; iva?: number; numero: number; owner_id?: string | null; subtotal?: number; tipo_negocio?: string | null; total: number }
-        Update: { cliente?: string; cliente_doc?: string | null; created_at?: string; formato?: string; id?: string; items?: Json; iva?: number; numero?: number; owner_id?: string | null; subtotal?: number; tipo_negocio?: string | null; total?: number }
+        Row: { cliente: string; cliente_doc: string | null; created_at: string; formato: string; id: string; items: Json; iva: number; numero: number; owner_id: string | null; subtotal: number; tipo_negocio: string | null; total: number; dian_cufe: string | null; dian_qr: string | null; dian_estado: string; dian_respuesta: Json }
+        Insert: { cliente: string; cliente_doc?: string | null; created_at?: string; formato?: string; id?: string; items?: Json; iva?: number; numero?: number; owner_id?: string | null; subtotal?: number; tipo_negocio?: string | null; total: number; dian_cufe?: string | null; dian_qr?: string | null; dian_estado?: string; dian_respuesta?: Json }
+        Update: { cliente?: string; cliente_doc?: string | null; created_at?: string; formato?: string; id?: string; items?: Json; iva?: number; numero?: number; owner_id?: string | null; subtotal?: number; tipo_negocio?: string | null; total?: number; dian_cufe?: string | null; dian_qr?: string | null; dian_estado?: string; dian_respuesta?: Json }
         Relationships: []
       }
       lav_ordenes: {
@@ -4510,6 +4510,7 @@ export type Database = {
           rango_hasta: number
           resolucion_vence: string | null
           iva_defecto: number
+          dian_activa: boolean
         }
         Insert: {
           aviso_entrega?: string | null
@@ -4545,6 +4546,7 @@ export type Database = {
           rango_hasta?: number
           resolucion_vence?: string | null
           iva_defecto?: number
+          dian_activa?: boolean
         }
         Update: {
           aviso_entrega?: string | null
@@ -4580,6 +4582,52 @@ export type Database = {
           rango_hasta?: number
           resolucion_vence?: string | null
           iva_defecto?: number
+          dian_activa?: boolean
+        }
+        Relationships: []
+      }
+      negocio_dian_config: {
+        Row: {
+          activa: boolean
+          ambiente: string
+          created_at: string
+          id: string
+          owner_id: string | null
+          prefijo: string | null
+          proveedor_url: string | null
+          rango_desde: number | null
+          rango_hasta: number | null
+          resolucion: string | null
+          token_api: string | null
+          updated_at: string
+        }
+        Insert: {
+          activa?: boolean
+          ambiente?: string
+          created_at?: string
+          id?: string
+          owner_id?: string | null
+          prefijo?: string | null
+          proveedor_url?: string | null
+          rango_desde?: number | null
+          rango_hasta?: number | null
+          resolucion?: string | null
+          token_api?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activa?: boolean
+          ambiente?: string
+          created_at?: string
+          id?: string
+          owner_id?: string | null
+          prefijo?: string | null
+          proveedor_url?: string | null
+          rango_desde?: number | null
+          rango_hasta?: number | null
+          resolucion?: string | null
+          token_api?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -7707,6 +7755,7 @@ export type Database = {
         Args: { p_cliente: string; p_cliente_doc: string | null; p_items: Json; p_iva: number; p_formato: string }
         Returns: Json
       }
+      mi_dian_config: { Args: never; Returns: Json }
       hot_checkout: { Args: { p_reserva: string; p_metodo: string }; Returns: Json }
       edu_generar_pensiones: { Args: { p_periodo: string; p_valor: number; p_vence: string | null }; Returns: Json }
       edu_cobrar_pension: { Args: { p_pension: string; p_metodo: string }; Returns: Json }

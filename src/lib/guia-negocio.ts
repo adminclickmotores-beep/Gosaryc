@@ -427,7 +427,7 @@ GUIAS_NEGOCIO.parqueadero = {
   pasos: [
     { titulo: "Registra el ingreso", texto: "En “Turnos y cobro por horas” anota la placa y la tarifa: el tiempo corre solo." },
     { titulo: "Cobra al salir", texto: "El programa calcula las horas por la tarifa y el pago entra a Caja y Contabilidad." },
-    { titulo: "Factura si te la piden", texto: "Emite la factura con consecutivo desde el módulo de Facturación." },
+    { titulo: "Factura si te la piden", texto: "Emite la factura con consecutivo desde el módulo de Facturación. Si tienes DIAN activa, sale con CUFE y QR oficial; si no, pídela por WhatsApp." },
   ],
 };
 

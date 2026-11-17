@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { DianAdmin } from "@/components/app/DianAdmin";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 import { useUsuariosEnLinea } from "@/hooks/use-presencia";
 
@@ -297,6 +298,7 @@ function SuperAdminPage() {
       </GlassPanel>
 
       <input className={`${campo} w-full`} placeholder="Buscar empresa por nombre o ciudad" value={busca} onChange={(e) => setBusca(e.target.value)} />
+      <DianAdmin />
 
       {visibles.length === 0 && <p className="text-sm text-muted-foreground">No hay empresas para mostrar.</p>}
 

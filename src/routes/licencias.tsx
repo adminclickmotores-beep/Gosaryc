@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { DianAdmin } from "@/components/app/DianAdmin";
 
 export const Route = createFileRoute("/licencias")({
   head: () => ({ meta: [{ title: "Licencias" }] }),
@@ -285,6 +286,8 @@ function LicenciasPage() {
           ))}
         </GlassPanel>
       )}
+
+      <DianAdmin />
 
       <GlassPanel className="space-y-3 p-4">
         <h2 className="flex items-center gap-2 font-medium text-foreground"><Plus className="h-4 w-4" /> Nueva licencia</h2>
