@@ -1016,6 +1016,8 @@ html.light input, html.light textarea, html.light select { background: #fff; bor
 html.light table thead { background: oklch(0.96 0.012 264); }
 html:not(.light) aside { background: #090d16; border-right: 1px solid rgb(255 255 255 / 0.07); }
 html:not(.light) aside .nav-tarjeta.nav-activa { background: rgb(30 64 175 / 0.35); border-color: rgb(96 140 255 / 0.4); }
+.precio-esmeralda { color: #059669; font-variant-numeric: tabular-nums; }
+html:not(.light) .precio-esmeralda { color: #34d399; }
 select option, select optgroup { background-color: oklch(0.2 0.03 263); color: inherit; }
 html.light select option, html.light select optgroup { background-color: #fff; color: oklch(0.18 0.02 250); }
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Armchair, Bike, ChefHat, ImageOff, MessageCircle, Minus, Plus, Printer, Search, ShoppingBag, Trash2, Wallet, X } from "lucide-react";
+import { Armchair, Bike, ChefHat, ImageOff, LayoutGrid, List, MessageCircle, Minus, Plus, Printer, Search, ShoppingBag, Trash2, Wallet, X } from "lucide-react";
+import { VistaProducto, type SeleccionProducto } from "@/components/restaurante/VistaProducto";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -137,6 +138,9 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
   const [catActiva, setCatActiva] = useState("todas");
   const [busqueda, setBusqueda] = useState("");
   const [cuenta, setCuenta] = useState<Record<string, number>>({});
+  const [vista, setVista] = useState<"mosaico" | "lista">("mosaico");
+  const [abierto, setAbierto] = useState<Producto | null>(null);
+  const [detalle, setDetalle] = useState<Record<string, { extra: number; texto: string }>>({});
   const [modalidad, setModalidad] = useState<"mesa" | "recoger" | "domicilio">("mesa");
   const [mesaId, setMesaId] = useState("");
   const [cliente, setCliente] = useState("");
@@ -226,8 +230,18 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
     );
   }, [productos, catActiva, busqueda]);
 
-  const lineas = productos.filter((p) => (cuenta[p.id] ?? 0) > 0).map((p) => ({ p, cant: cuenta[p.id] }));
-  const subtotal = lineas.reduce((s, l) => s + l.p.precio * l.cant, 0);
+  const lineas = productos
+    .filter((p) => (cuenta[p.id] ?? 0) > 0)
+    .map((p) => ({ p, cant: cuenta[p.id], precio: p.precio + (detalle[p.id]?.extra ?? 0) }));
+  const subtotal = lineas.reduce((s, l) => s + l.precio * l.cant, 0);
+  const notasFinal = [notas.trim(), ...lineas.map((l) => detalle[l.p.id]?.texto ?? "")].filter((x) => x !== "").join(" · ");
+
+  const agregarDesdeVista = (p: Producto, sel: SeleccionProducto) => {
+    setDetalle((d) => ({ ...d, [p.id]: { extra: sel.extraUnidad, texto: sel.texto } }));
+    setCuenta((c) => ({ ...c, [p.id]: Math.min(100, (c[p.id] ?? 0) + sel.cantidad) }));
+    setAbierto(null);
+    toast.success(`${p.nombre} agregado a la cuenta.`);
+  };
   const tarifaDetectada = useMemo(() => buscarTarifa(direccion), [direccion]);
   const tarifa =
     modalidad !== "domicilio"
@@ -254,6 +268,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
 
   const limpiar = () => {
     setCuenta({});
+    setDetalle({});
     setCliente("");
     setTelefono("");
     setDireccion("");
@@ -287,7 +302,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
         direccion: modalidad === "domicilio" ? direccion.trim() : null,
         barrio: modalidad === "domicilio" && tarifa ? tarifa.nombre : null,
         cliente_email: modalidad === "domicilio" && correo.trim() ? correo.trim().slice(0, 160) : null,
-        notas: notas.trim() || null,
+        notas: notasFinal || null,
         canal: "mostrador",
         estado: "nuevo",
         metodo_pago: metodo,
@@ -308,7 +323,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
       producto_id: l.p.id as string | null,
       nombre: l.p.nombre,
       cantidad: l.cant,
-      precio_unitario: l.p.precio,
+      precio_unitario: l.precio,
     }));
     if (tarifa) {
       itemsPedido.push({
@@ -351,8 +366,8 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
       mesa: mesa ? String(mesa.numero) : "",
       direccion: direccion.trim(),
       barrio: tarifa?.nombre ?? "",
-      notas: notas.trim(),
-      lineas: lineas.map((l) => ({ nombre: l.p.nombre, cant: l.cant, precio: l.p.precio })),
+      notas: notasFinal,
+      lineas: lineas.map((l) => ({ nombre: l.p.nombre, cant: l.cant, precio: l.precio })),
       envio,
       total,
       metodo: METODOS.find((m) => m.clave === metodo)?.texto ?? metodo,
@@ -386,35 +401,119 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
         {productos.length === 0 && (
           <p className="text-sm text-muted-foreground">Aún no tienes productos. Agrégalos en la pestaña “Menú”.</p>
         )}
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 2xl:grid-cols-4">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs text-muted-foreground">{visibles.length} productos · toca uno para ver foto grande y opciones</p>
+          <div className="inline-flex rounded-xl border border-glass-border p-0.5" role="group" aria-label="Tipo de vista">
+            <button
+              type="button"
+              onClick={() => setVista("mosaico")}
+              aria-pressed={vista === "mosaico"}
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium ${vista === "mosaico" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+            >
+              <LayoutGrid className="h-4 w-4" /> Mosaico
+            </button>
+            <button
+              type="button"
+              onClick={() => setVista("lista")}
+              aria-pressed={vista === "lista"}
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium ${vista === "lista" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+            >
+              <List className="h-4 w-4" /> Lista
+            </button>
+          </div>
+        </div>
+        <div className={vista === "mosaico" ? "grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5" : "space-y-2"}>
           {visibles.map((p) => {
             const cant = cuenta[p.id] ?? 0;
+            const anillo = cant > 0 ? "ring-2 ring-primary" : "";
+            if (vista === "lista") {
+              return (
+                <div
+                  key={p.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setAbierto(p)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") setAbierto(p);
+                  }}
+                  className={`flex cursor-pointer items-center gap-3 rounded-2xl border border-glass-border bg-glass/40 p-2.5 transition hover:border-primary/40 ${anillo}`}
+                >
+                  <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-muted">
+                    {p.imagen_url ? (
+                      <img src={p.imagen_url} alt={p.nombre} loading="lazy" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center text-muted-foreground/50"><ImageOff className="h-6 w-6" /></span>
+                    )}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block break-words text-sm font-semibold text-foreground">{p.nombre}</span>
+                    <span className="precio-esmeralda block text-sm font-semibold">{dinero(p.precio)}</span>
+                  </span>
+                  {cant > 0 && <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-primary-foreground">{cant}</span>}
+                  <button
+                    type="button"
+                    aria-label={`Agregar ${p.nombre}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      cambiarCant(p.id, 1);
+                    }}
+                    className="rounded-full border border-glass-border p-2 text-foreground"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+              );
+            }
             return (
-              <button
+              <div
                 key={p.id}
-                onClick={() => cambiarCant(p.id, 1)}
-                className={`group relative aspect-[5/4] w-full overflow-hidden rounded-2xl border border-glass-border bg-glass/40 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] ${cant > 0 ? "ring-2 ring-primary" : ""}`}
+                role="button"
+                tabIndex={0}
+                onClick={() => setAbierto(p)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") setAbierto(p);
+                }}
+                className={`group relative cursor-pointer overflow-hidden rounded-2xl border border-glass-border bg-card text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] ${anillo}`}
               >
-                {p.imagen_url ? (
-                  <img src={p.imagen_url} alt={p.nombre} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                ) : (
-                  <span className="absolute inset-0 flex items-center justify-center bg-primary/5 text-primary/40">
-                    <ImageOff className="h-10 w-10" />
-                  </span>
-                )}
-                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent p-3 pt-10">
-                  <span className="block break-words text-base font-semibold leading-tight text-white">{p.nombre}</span>
-                  <span className="block text-base font-semibold text-white/90">{dinero(p.precio)}</span>
-                </span>
-                {cant > 0 && (
-                  <span className="absolute right-2.5 top-2.5 rounded-full bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground shadow">
-                    {cant}
-                  </span>
-                )}
-              </button>
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+                  {p.imagen_url ? (
+                    <img src={p.imagen_url} alt={p.nombre} loading="lazy" className="h-full w-full max-w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                  ) : (
+                    <span className="flex h-full w-full items-center justify-center text-muted-foreground/50">
+                      <ImageOff className="h-10 w-10" />
+                    </span>
+                  )}
+                  <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-medium text-white">Disponible</span>
+                  {cant > 0 && (
+                    <span className="absolute right-2 top-2 rounded-full bg-primary px-2.5 py-0.5 text-sm font-semibold text-primary-foreground shadow">{cant}</span>
+                  )}
+                  <button
+                    type="button"
+                    aria-label={`Agregar ${p.nombre} rápido`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      cambiarCant(p.id, 1);
+                    }}
+                    className="absolute bottom-2 right-2 rounded-full bg-primary p-2 text-primary-foreground shadow-lg"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="p-3">
+                  <span className="block break-words text-sm font-semibold leading-tight text-foreground">{p.nombre}</span>
+                  <span className="precio-esmeralda mt-1 block text-base font-semibold">{dinero(p.precio)}</span>
+                </div>
+              </div>
             );
           })}
         </div>
+        {abierto && (
+          <VistaProducto
+            producto={abierto}
+            onCerrar={() => setAbierto(null)}
+            onAgregar={(sel) => agregarDesdeVista(abierto, sel)}
+          />
+        )}
       </div>
 
       <GlassPanel className="h-fit space-y-3 p-5 shadow-lg lg:sticky lg:top-20">
@@ -540,7 +639,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
 
         <div className="space-y-2">
           {lineas.length === 0 && <p className="text-xs text-muted-foreground">Toca un producto para agregarlo.</p>}
-          {lineas.map(({ p, cant }) => (
+          {lineas.map(({ p, cant, precio }) => (
             <div key={p.id} className="flex items-center gap-2 text-sm">
               <span className="min-w-0 flex-1 break-words text-foreground">{p.nombre}</span>
               <button aria-label="Quitar uno" onClick={() => cambiarCant(p.id, -1)} className="rounded-full border border-glass-border p-1 text-foreground">
@@ -550,7 +649,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
               <button aria-label="Agregar uno" onClick={() => cambiarCant(p.id, 1)} className="rounded-full border border-glass-border p-1 text-foreground">
                 <Plus className="h-3.5 w-3.5" />
               </button>
-              <span className="w-20 text-right text-foreground">{dinero(p.precio * cant)}</span>
+              <span className="w-20 text-right text-foreground">{dinero(precio * cant)}</span>
               <button aria-label="Eliminar" onClick={() => cambiarCant(p.id, -cant)} className="text-muted-foreground">
                 <Trash2 className="h-4 w-4" />
               </button>
