@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { dinero } from "@/components/comercio/ComercioModulos";
+import { escaparHtml } from "@/lib/exportes";
 
 type Producto = Tables<"com_productos">;
 
@@ -55,7 +56,7 @@ export function EtiquetasBarras({ productos }: { productos: Producto[] }) {
       const codigo = p.codigo_barras || p.sku || p.id.slice(0, 8).toUpperCase();
       const b = barrasSvg(codigo, carta ? 48 : 44);
       return `<div class="et"><div class="bar">${b.__html}</div>
-        <div class="cod">${codigo}</div><div class="nom">${p.nombre.slice(0, 40)}</div>
+        <div class="cod">${escaparHtml(codigo)}</div><div class="nom">${escaparHtml(p.nombre.slice(0, 40))}</div>
         <div class="pre">${dinero(p.precio_detal)}</div></div>`;
     };
     w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Etiquetas</title><style>

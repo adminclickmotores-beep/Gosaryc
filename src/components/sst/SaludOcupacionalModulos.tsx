@@ -568,8 +568,8 @@ export function CapacitacionesBrigadas() {
               <p className="text-xs text-muted-foreground">Valor {dinero(c.valor)} · abono {dinero(c.abono)} · saldo {dinero(Math.max(c.valor - c.abono, 0))}</p>
               <div className="mt-1 flex flex-wrap gap-2">
                 <button type="button" className={botonSec} onClick={() => {
-                  const filas = n.map((a) => [esc(a.nombre), esc(a.documento)]);
-                  imprimirReporte(`Asistencia ${esc(c.tema)} ${esc(c.fecha)}`, `Empresa: ${esc(c.empresa)}`, ["Nombre", "Documento"], filas.length > 0 ? filas : [["Sin asistentes aún.", ""]]);
+                  const filas = n.map((a) => [a.nombre, a.documento ?? ""]);
+                  imprimirReporte(`Asistencia ${c.tema} ${c.fecha}`, `Empresa: ${c.empresa}`, ["Nombre", "Documento"], filas.length > 0 ? filas : [["Sin asistentes aún.", ""]]);
                 }}><Printer className="h-4 w-4" /> Lista PDF</button>
                 <button type="button" className={botonSec} onClick={() => void supabase.from("sst_capacitaciones").update({ estado: "realizada" }).eq("id", c.id).then(() => void cargar())}>Marcar realizada</button>
               </div>
