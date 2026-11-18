@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { markOnboarded } from "@/hooks/use-onboarding-status";
+import type { TablesInsert } from "@/integrations/supabase/types";
 
 /**
  * Cuentas demo reales y ligeras. No se sube nada al Storage: las fotos son
@@ -29,6 +30,39 @@ const enDias = (d: number) => {
 };
 const haceHoras = (h: number) => new Date(Date.now() - h * 3600 * 1000).toISOString();
 
+/**
+ * Guarda la configuración del negocio demo. Si la base rechaza algún dato,
+ * guarda al menos el nombre y el tipo de negocio, para que la demo de vehículos
+ * nunca se quede con el panel del restaurante.
+ */
+async function guardarConfig(uid: string, cfg: TablesInsert<"negocio_config">) {
+  const basico: TablesInsert<"negocio_config"> = {
+    owner_id: uid,
+    nombre: cfg.nombre,
+    tipo_negocio: cfg.tipo_negocio,
+    eslogan: cfg.eslogan,
+    descripcion: cfg.descripcion,
+    ciudad: cfg.ciudad,
+    color_principal: cfg.color_principal,
+    logo_url: cfg.logo_url,
+    telefono_pedidos: cfg.telefono_pedidos,
+  };
+  const { data: existe } = await supabase.from("negocio_config").select("id").eq("owner_id", uid).order("created_at").limit(1).maybeSingle();
+  if (existe) {
+    const { error } = await supabase.from("negocio_config").update(cfg).eq("id", existe.id);
+    if (error) {
+      console.warn("Demo: configuración completa rechazada, se guarda la básica", error.message);
+      await supabase.from("negocio_config").update(basico).eq("id", existe.id);
+    }
+  } else {
+    const { error } = await supabase.from("negocio_config").insert(cfg);
+    if (error) {
+      console.warn("Demo: configuración completa rechazada, se guarda la básica", error.message);
+      await supabase.from("negocio_config").insert(basico);
+    }
+  }
+}
+
 async function sembrarVehiculos(uid: string) {
   const cfg = {
     nombre: "ClickMotores Demo",
@@ -43,13 +77,13 @@ async function sembrarVehiculos(uid: string) {
     nit: "900123456",
     digito_verificacion: "7",
     direccion_fiscal: "Cra 43A # 10-25, Medellín",
-    regimen_tributario: "responsable_iva",
+    // Debe ser uno de los valores que acepta la base; con otro valor no se guardaba nada
+    // y la demo de vehículos se quedaba como restaurante y vacía.
+    regimen_tributario: "Responsable de IVA",
     telefono_pedidos: "3000000000",
     owner_id: uid,
   };
-  const { data: existe } = await supabase.from("negocio_config").select("id").eq("owner_id", uid).limit(1).maybeSingle();
-  if (existe) await supabase.from("negocio_config").update(cfg).eq("id", existe.id);
-  else await supabase.from("negocio_config").insert(cfg);
+  await guardarConfig(uid, cfg);
 
   const { count } = await supabase.from("vehiculos_inventario").select("id", { count: "exact", head: true }).eq("owner_id", uid);
   if ((count ?? 0) > 0) return;
@@ -117,9 +151,7 @@ async function sembrarRestaurante(uid: string) {
     horarios: "Todos los días 11:00 a.m. - 10:00 p.m.",
     owner_id: uid,
   };
-  const { data: existe } = await supabase.from("negocio_config").select("id").eq("owner_id", uid).limit(1).maybeSingle();
-  if (existe) await supabase.from("negocio_config").update(cfg).eq("id", existe.id);
-  else await supabase.from("negocio_config").insert(cfg);
+  await guardarConfig(uid, cfg);
 
   const { count } = await supabase.from("restaurante_productos").select("id", { count: "exact", head: true }).eq("owner_id", uid);
   if ((count ?? 0) > 0) return;
