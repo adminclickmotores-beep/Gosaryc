@@ -954,6 +954,58 @@ html.light .card-modern.glass-strong::before {
 html.light .card-modern.glass:hover,
 html.light .card-modern.glass-strong:hover { border-color: oklch(0.5 0.14 165 / 0.45); }
 
+/* =====================================================================
+   SISTEMA VISUAL UNIFICADO (igual que la portada): azul cobalto #1E40AF,
+   obsidiana #090D16 y verde esmeralda #059669 como acento.
+   Especificidad alta para que ningún bloque anterior lo pise.
+   ===================================================================== */
+html:root:not(.light) {
+  --background: oklch(0.15 0.022 262);
+  --ink: oklch(0.15 0.022 262);
+  --surface-0: oklch(0.15 0.022 262);
+  --surface-1: oklch(0.19 0.03 263);
+  --surface-2: oklch(0.23 0.04 264);
+  --card: oklch(0.19 0.03 263);
+  --popover: oklch(0.21 0.034 263);
+  --muted: oklch(0.24 0.03 263);
+  --secondary: oklch(0.26 0.04 264);
+  --primary: oklch(0.66 0.16 264);
+  --primary-foreground: oklch(0.99 0.005 264);
+  --ring: oklch(0.66 0.16 264 / 0.5);
+  --accent: oklch(0.58 0.13 165 / 0.3);
+  --accent-foreground: oklch(0.97 0.01 165);
+  --gradient-hero:
+    radial-gradient(ellipse 55% 45% at 85% -5%, oklch(0.42 0.15 264 / 0.35), transparent 60%),
+    radial-gradient(ellipse 50% 45% at -5% 105%, oklch(0.58 0.13 165 / 0.18), transparent 60%);
+}
+html.light:root {
+  --background: oklch(0.985 0.004 255);
+  --ink: oklch(0.975 0.006 255);
+  --surface-0: oklch(0.985 0.004 255);
+  --primary: oklch(0.42 0.15 264);
+  --primary-foreground: oklch(0.99 0.005 264);
+  --ring: oklch(0.42 0.15 264 / 0.45);
+  --accent: oklch(0.94 0.04 165);
+  --accent-foreground: oklch(0.32 0.09 165);
+  --secondary: oklch(0.95 0.015 264);
+  --secondary-foreground: oklch(0.25 0.06 264);
+}
+html.light .text-primary { color: oklch(0.42 0.15 264); }
+html.light .card-modern.glass:hover,
+html.light .card-modern.glass-strong:hover { border-color: oklch(0.42 0.15 264 / 0.45); }
+html.light .card-modern.glass::before,
+html.light .card-modern.glass-strong::before {
+  background: radial-gradient(120% 70% at 0% 0%, oklch(0.42 0.15 264 / 0.06), transparent 55%);
+}
+a:hover > .glass, button:hover > .glass, .glass:hover { border-color: oklch(0.55 0.15 264 / 0.4); }
+.btn-pro {
+  background: linear-gradient(135deg, #1e40af, #059669);
+  color: #fff;
+  box-shadow: 0 8px 24px -8px rgb(30 64 175 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.3);
+}
+select option, select optgroup { background-color: oklch(0.2 0.03 263); color: inherit; }
+html.light select option, html.light select optgroup { background-color: #fff; color: oklch(0.18 0.02 250); }
+
 /* Tarjetas de menú de colores: cada una toma su tono (--tono) y combina con el resto */
 .card-modern.menu-card.glass {
   background:

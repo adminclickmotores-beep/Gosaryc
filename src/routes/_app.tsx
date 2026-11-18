@@ -6,6 +6,7 @@ import { Lock, GraduationCap, LifeBuoy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
+import { ThemeToggle } from "@/components/ui-custom/ThemeToggle";
 import {
   IconSettings,
   IconCommand,
@@ -412,6 +413,9 @@ function AppShell() {
           <div className="pointer-events-none fixed right-4 top-3 z-40 flex items-center gap-2 md:right-5 md:top-4">
             <div className="pointer-events-auto hidden md:block">
               <AutosaveStatus />
+            </div>
+            <div className="pointer-events-auto">
+              <ThemeToggle />
             </div>
             <div className="pointer-events-auto">
               <OnboardingChecklist variant="pill" />

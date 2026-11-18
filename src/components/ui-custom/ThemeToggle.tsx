@@ -1,19 +1,20 @@
 import { useEffect, useState } from "react";
 
 /**
- * Sun↔moon morph toggle. App is dark-by-default; this adds a `.light` class
- * on <html> when the user opts into light mode. Persisted in localStorage.
+ * Interruptor claro/oscuro. Por defecto el panel se ve en modo claro (igual que la portada);
+ * al pasar a oscuro se guarda en localStorage. Se lee en useEffect para no romper la hidratación.
  */
 export function ThemeToggle({ className = "" }: { className?: string }) {
-  const [isDark, setIsDark] = useState<boolean>(() => {
-    if (typeof window === "undefined") return true;
-    const stored = localStorage.getItem("theme");
-    if (stored === "light") return false;
-    if (stored === "dark") return true;
-    return true; // dark-first product
-  });
+  const [isDark, setIsDark] = useState<boolean>(false);
+  const [listo, setListo] = useState<boolean>(false);
 
   useEffect(() => {
+    setIsDark(localStorage.getItem("theme") === "dark");
+    setListo(true);
+  }, []);
+
+  useEffect(() => {
+    if (!listo) return;
     const root = document.documentElement;
     if (isDark) {
       root.classList.remove("light");
@@ -22,7 +23,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       root.classList.add("light");
       localStorage.setItem("theme", "light");
     }
-  }, [isDark]);
+  }, [isDark, listo]);
 
   return (
     <>
@@ -44,7 +45,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
           border-color: rgba(15,23,42,0.1);
         }
         .tt-btn[data-mode="dark"] {
-          background: linear-gradient(135deg, #0d1244 0%, #1a0b3d 100%);
+          background: linear-gradient(135deg, #090d16 0%, #1e40af 100%);
           border-color: rgba(255,255,255,0.15);
         }
         .tt-knob {
@@ -85,7 +86,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
         type="button"
         role="switch"
         aria-checked={isDark}
-        aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+        aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
         data-mode={isDark ? "dark" : "light"}
         onClick={() => setIsDark((v) => !v)}
         className={`tt-btn ${className}`}
