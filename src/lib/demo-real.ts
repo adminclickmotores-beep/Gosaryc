@@ -93,7 +93,27 @@ async function sembrarVehiculos(uid: string) {
   };
   await guardarConfig(uid, cfg);
 
-  const { count } = await supabase.from("vehiculos_inventario").select("id", { count: "exact", head: true }).eq("owner_id", uid);
+  // La base carga todo lo que falte (inventario, costos, créditos, cotizaciones, ventas,
+  // cartera, comisiones...). Desde el navegador los permisos rechazaban parte de los datos
+  // y la demo quedaba vacía. Solo si la función no responde se usa la carga del navegador.
+  const { error: errSiembra } = await supabase.rpc("demo_sembrar_vehiculos");
+  if (errSiembra) {
+    console.warn("Demo: carga desde la base no disponible, se usa la del navegador", errSiembra.message);
+    await sembrarVehiculosNavegador(uid);
+  }
+  const { count: turnos } = await supabase.from("turnos_caja").select("id", { count: "exact", head: true }).eq("owner_id", uid);
+  if ((turnos ?? 0) === 0) {
+    await supabase.from("turnos_caja").insert({ owner_id: uid, cajero: "Demo", fondo_inicial: 300000, estado: "abierto" });
+  }
+}
+
+/** Respaldo: carga básica del inventario desde el navegador. */
+async function sembrarVehiculosNavegador(uid: string) {
+  const { count } = await supabase
+    .from("vehiculos_inventario")
+    .select("id", { count: "exact", head: true })
+    .eq("owner_id", uid)
+    .is("eliminado_en", null);
   if ((count ?? 0) > 0) return;
 
   const lista = [
@@ -128,6 +148,10 @@ async function sembrarVehiculos(uid: string) {
     )
     .select("id");
   if (creados && creados.length === lista.length) {
+    // El precio de compra vive en su propia tabla protegida.
+    await supabase.from("vehiculo_costos").insert(
+      creados.map((c, i) => ({ vehiculo_id: c.id, owner_id: uid, precio_compra: lista[i].compra })),
+    );
     await supabase.from("vehiculo_gastos").insert(
       creados.map((c, i) => ({
         owner_id: uid,
@@ -138,10 +162,6 @@ async function sembrarVehiculos(uid: string) {
         fecha: enDias(-8 - i * 3),
       })),
     );
-  }
-  const { count: turnos } = await supabase.from("turnos_caja").select("id", { count: "exact", head: true }).eq("owner_id", uid);
-  if ((turnos ?? 0) === 0) {
-    await supabase.from("turnos_caja").insert({ owner_id: uid, cajero: "Demo", fondo_inicial: 300000, estado: "abierto" });
   }
 }
 
@@ -283,8 +303,7 @@ export async function restaurarDemo(tipo: TipoDemo): Promise<void> {
   const uid = data.user?.id;
   if (!uid || !esCuentaDemo(data.user?.email)) return;
   if (tipo === "vehiculos") {
-    await supabase.from("vehiculo_gastos").delete().eq("owner_id", uid);
-    await supabase.from("vehiculos_inventario").delete().eq("owner_id", uid);
+    // Los vehículos nunca se borran (solo se retiran); la carga de la base repone lo que falte.
   } else {
     const { data: peds } = await supabase.from("restaurante_pedidos").select("id").eq("owner_id", uid);
     const ids = (peds ?? []).map((p) => p.id);
