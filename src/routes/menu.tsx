@@ -318,12 +318,9 @@ function MenuPage() {
               className="h-full w-full max-w-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
-            <img
-              src="/subida-77bd6405.png"
-              alt="Gosaryc"
-              loading="lazy"
-              className="h-full w-full max-w-full object-cover"
-            />
+            <span className="flex h-full w-full items-center justify-center text-muted-foreground/50">
+              <ImageOff className="h-10 w-10" />
+            </span>
           )}
           {p.destacado && (
             <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-primary-foreground">
@@ -715,11 +712,9 @@ function MenuPage() {
                   className="absolute inset-0 h-full w-full max-w-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
               ) : (
-                <img
-                  src="/subida-77bd6405.png"
-                  alt="Gosaryc"
-                  className="absolute inset-0 h-full w-full max-w-full object-cover"
-                />
+                <span className="absolute inset-0 flex items-center justify-center text-muted-foreground/50">
+                  <ImageOff className="h-16 w-16" />
+                </span>
               )}
             </div>
             <div className="min-w-0 space-y-4 p-5 md:col-span-5">
