@@ -7,6 +7,8 @@ import { ResumenCierreWhatsApp } from "@/components/restaurante/Reportes";
 import { useNegocio } from "@/hooks/use-negocio";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Tables } from "@/integrations/supabase/types";
+import { esCuentaDemo } from "@/lib/demo-real";
+import { DemoAgenteWhatsApp } from "@/components/restaurante/DemoAgenteWhatsApp";
 
 type AgenteFila = Tables<"agente_whatsapp">;
 type Conocimiento = Tables<"whatsapp_conocimiento_negocio">;
@@ -35,8 +37,18 @@ const ETIQUETA_AVISO: Record<string, string> = {
   otro: "Aviso",
 };
 
-/** Panel de control del Agente WhatsApp IA: conexión y QR, bandeja de chats en vivo, IA por negocio y entrenamiento. */
+/** En las cuentas demo muestra la demostración interactiva; el administrador puede pasar al puente local real. */
 export function AgenteWhatsApp() {
+  const { user } = useAuth();
+  const [realDemo, setRealDemo] = useState(false);
+  if (esCuentaDemo(user?.email) && !realDemo) {
+    return <DemoAgenteWhatsApp onConectarReal={() => setRealDemo(true)} />;
+  }
+  return <AgenteWhatsAppReal />;
+}
+
+/** Panel de control del Agente WhatsApp IA: conexión y QR, bandeja de chats en vivo, IA por negocio y entrenamiento. */
+function AgenteWhatsAppReal() {
   const { negocio } = useNegocio();
   const { user } = useAuth();
   const [agente, setAgente] = useState<AgenteFila | null>(null);
