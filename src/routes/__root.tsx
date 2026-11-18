@@ -69,6 +69,10 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
+// Texto corto para la tarjeta al compartir el enlace (WhatsApp corta los textos largos)
+const DESCRIPCION_CORTA =
+  "Punto de venta, inventario, caja, nómina y facturación DIAN para tu negocio en Colombia. En web, celular y computador.";
+
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
@@ -84,21 +88,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "software para negocios Colombia, punto de venta, pos, inventario, facturación DIAN, nómina Colombia, software para restaurantes, software para concesionarios, software para consultorios, software para tiendas, software para salones de belleza, software para talleres, software para hoteles, pedidos en línea, menú digital, domicilios, control de costos, Gosaryc",
       },
       { property: "og:url", content: `https://${BRAND.domain}/` },
-      { property: "og:image", content: `https://${BRAND.domain}/subida-77bd6405.png` },
+      { property: "og:image", content: `https://${BRAND.domain}/imagen-compartir` },
+      { property: "og:image:secure_url", content: `https://${BRAND.domain}/imagen-compartir` },
       { property: "og:image:type", content: "image/png" },
-      { property: "og:image:width", content: "1776" },
-      { property: "og:image:height", content: "896" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: `${BRAND.name} — ${BRAND.tagline}` },
       { property: "og:locale", content: "es_CO" },
-      { name: "twitter:image", content: `https://${BRAND.domain}/subida-77bd6405.png` },
+      { name: "twitter:image", content: `https://${BRAND.domain}/imagen-compartir` },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "mobile-web-app-capable", content: "yes" },
       { property: "og:title", content: `${BRAND.tagline} — ${BRAND.name}` },
-      { property: "og:description", content: BRAND.description },
+      { property: "og:description", content: DESCRIPCION_CORTA },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: BRAND.name },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: `${BRAND.tagline} — ${BRAND.name}` },
-      { name: "twitter:description", content: BRAND.description },
+      { name: "twitter:description", content: DESCRIPCION_CORTA },
 
     ],
     links: [
