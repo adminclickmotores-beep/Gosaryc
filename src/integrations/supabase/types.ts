@@ -8176,6 +8176,7 @@ export type Database = {
       ofi_cobrar: { Args: { p_tabla: string; p_id: string; p_valor: number; p_metodo: string }; Returns: Json }
       demo_preparar_negocio: { Args: { p_tipo: string; p_nombre: string }; Returns: string }
       demo_sembrar_vehiculos: { Args: never; Returns: number }
+      demo_sembrar_restaurante: { Args: never; Returns: number }
       sst_cobrar: { Args: { p_tabla: string; p_id: string; p_valor: number; p_metodo: string }; Returns: Json }
       sst_validar_certificado: { Args: { p_codigo: string }; Returns: Json }
       obr_registrar_vale: {

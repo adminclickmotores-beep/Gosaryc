@@ -181,6 +181,23 @@ async function sembrarRestaurante(uid: string) {
   };
   await guardarConfig(uid, cfg);
 
+  // La base carga todo lo que falte (carta, opciones, inventario, recetas, mesas,
+  // repartidores, clientes, pedidos de hoy y de la semana, gastos, propinas, metas,
+  // reseñas, combos, puntos, proveedores y cuentas por cobrar). Desde el navegador
+  // los pedidos se rechazaban y la demo quedaba casi vacía.
+  const { error: errSiembra } = await supabase.rpc("demo_sembrar_restaurante");
+  if (errSiembra) {
+    console.warn("Demo: carga desde la base no disponible, se usa la del navegador", errSiembra.message);
+    await sembrarRestauranteNavegador(uid);
+  }
+  const { count: turnos } = await supabase.from("turnos_caja").select("id", { count: "exact", head: true }).eq("owner_id", uid);
+  if ((turnos ?? 0) === 0) {
+    await supabase.from("turnos_caja").insert({ owner_id: uid, cajero: "Demo", fondo_inicial: 200000, estado: "abierto" });
+  }
+}
+
+/** Respaldo: carga básica de la carta y unos pedidos desde el navegador. */
+async function sembrarRestauranteNavegador(uid: string) {
   const { count } = await supabase.from("restaurante_productos").select("id", { count: "exact", head: true }).eq("owner_id", uid);
   if ((count ?? 0) > 0) return;
 
@@ -222,7 +239,7 @@ async function sembrarRestaurante(uid: string) {
   const pedidos = [
     { cliente_nombre: "Laura Gómez", cliente_telefono: "3001112233", estado: "entregado", metodo_pago: "efectivo", items: [[0, 1], [3, 2]], horas: 5 },
     { cliente_nombre: "Andrés Ruiz", cliente_telefono: "3004445566", estado: "entregado", metodo_pago: "nequi", items: [[2, 2]], horas: 3 },
-    { cliente_nombre: "Camila Torres", cliente_telefono: "3007778899", estado: "pendiente", metodo_pago: "nequi", items: [[1, 1], [3, 1]], horas: 1 },
+    { cliente_nombre: "Camila Torres", cliente_telefono: "3007778899", estado: "nuevo", metodo_pago: "nequi", items: [[1, 1], [3, 1]], horas: 1 },
   ];
   for (const ped of pedidos) {
     const total = ped.items.reduce((s, [i, c]) => s + prods[i].precio * c, 0);
@@ -234,7 +251,7 @@ async function sembrarRestaurante(uid: string) {
         cliente_telefono: ped.cliente_telefono,
         estado: ped.estado,
         metodo_pago: ped.metodo_pago,
-        modalidad: "mostrador",
+        modalidad: "recoger",
         total,
         created_at: haceHoras(ped.horas),
       })
@@ -251,10 +268,6 @@ async function sembrarRestaurante(uid: string) {
         })),
       );
     }
-  }
-  const { count: turnos } = await supabase.from("turnos_caja").select("id", { count: "exact", head: true }).eq("owner_id", uid);
-  if ((turnos ?? 0) === 0) {
-    await supabase.from("turnos_caja").insert({ owner_id: uid, cajero: "Demo", fondo_inicial: 200000, estado: "abierto" });
   }
 }
 
@@ -302,15 +315,7 @@ export async function restaurarDemo(tipo: TipoDemo): Promise<void> {
   const { data } = await supabase.auth.getUser();
   const uid = data.user?.id;
   if (!uid || !esCuentaDemo(data.user?.email)) return;
-  if (tipo === "vehiculos") {
-    // Los vehículos nunca se borran (solo se retiran); la carga de la base repone lo que falte.
-  } else {
-    const { data: peds } = await supabase.from("restaurante_pedidos").select("id").eq("owner_id", uid);
-    const ids = (peds ?? []).map((p) => p.id);
-    if (ids.length > 0) await supabase.from("restaurante_pedido_items").delete().in("pedido_id", ids);
-    await supabase.from("restaurante_pedidos").delete().eq("owner_id", uid);
-    await supabase.from("restaurante_producto_opciones").delete().eq("owner_id", uid);
-    await supabase.from("restaurante_productos").delete().eq("owner_id", uid);
-  }
+  // No se borra nada: la carga de la base repone lo que falte (y los pedidos del día
+  // cuando aún no hay ninguno hoy), así la demo nunca queda vacía.
   await sembrar(tipo, uid);
 }
