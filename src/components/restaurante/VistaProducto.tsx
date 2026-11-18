@@ -111,9 +111,11 @@ export function VistaProducto({
               className="absolute inset-0 h-full w-full max-w-full object-cover transition-transform duration-500 group-hover:scale-110"
             />
           ) : (
-            <span className="absolute inset-0 flex items-center justify-center text-muted-foreground/50">
-              <ImageOff className="h-16 w-16" />
-            </span>
+            <img
+              src="/subida-77bd6405.png"
+              alt="Gosaryc"
+              className="absolute inset-0 h-full w-full max-w-full object-cover"
+            />
           )}
         </div>
 
