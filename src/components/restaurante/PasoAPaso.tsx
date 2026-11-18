@@ -6,6 +6,8 @@ import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import type { Negocio } from "@/hooks/use-negocio";
 import type { TipoNegocio } from "@/lib/modulos-negocio";
 import { agruparPorTabla } from "@/lib/tablas-modulo";
+import { useAuth } from "@/contexts/AuthContext";
+import { esCuentaDemo } from "@/lib/demo-real";
 
 type Props = {
   negocio: Negocio | null;
@@ -16,6 +18,7 @@ type Props = {
 
 /** Guía de primeros pasos: lleva al dueño del negocio de la mano. */
 export function PasoAPaso({ negocio, tipo, onAbrirNegocio, onAbrirMenu }: Props) {
+  const { user } = useAuth();
   const [primerRegistro, setPrimerRegistro] = useState(false);
 
   useEffect(() => {
@@ -96,6 +99,9 @@ export function PasoAPaso({ negocio, tipo, onAbrirNegocio, onAbrirMenu }: Props)
   if (hechos >= 3 && actual === 3 && negocio) {
     // Casi todo listo: mostrar solo el último paso de forma discreta.
   }
+
+  // Las cuentas demo lucen como negocios ya operando: sin la tarjeta de primeros pasos.
+  if (esCuentaDemo(user?.email)) return null;
 
   return (
     <GlassPanel className="space-y-4 p-5">

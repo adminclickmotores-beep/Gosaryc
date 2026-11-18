@@ -422,9 +422,12 @@ function AppShell() {
             <div className="pointer-events-auto">
               <ThemeToggle />
             </div>
-            <div className="pointer-events-auto">
-              <OnboardingChecklist variant="pill" />
-            </div>
+            {/* En las cuentas demo no se muestran los primeros pasos: el negocio luce 100 % operativo. */}
+            {!esCuentaDemo(user?.email) && (
+              <div className="pointer-events-auto">
+                <OnboardingChecklist variant="pill" />
+              </div>
+            )}
             <div className="pointer-events-auto">
               <UserMenu />
             </div>
