@@ -4,6 +4,10 @@ import type { Tables } from "@/integrations/supabase/types";
 
 export type Negocio = Tables<"negocio_config">;
 
+// Únicas columnas que un visitante sin sesión puede leer (igual que el permiso en la base).
+const COLUMNAS_PUBLICAS =
+  "id,owner_id,nombre,tipo_negocio,eslogan,descripcion,horarios,ciudad,cobertura,aviso_entrega,telefono_pedidos,instagram,sitio_web,moneda,logo_url,portada_url,color_principal,iva_porcentaje,created_at,updated_at";
+
 /** Datos del negocio (nombre, horarios, contacto). Sirve para cualquier tipo de negocio. */
 export function useNegocio(duenoId?: string | null) {
   const [negocio, setNegocio] = useState<Negocio | null>(null);
@@ -14,13 +18,30 @@ export function useNegocio(duenoId?: string | null) {
     // Sin sesión (menú público) se puede indicar de qué negocio se trata.
     // Sin sesión y sin negocio indicado, nunca se muestra el negocio de otra persona
     // (antes se tomaba el primero de la lista, que era Crokante).
-    if (!duenoId) {
-      const { data: sesion } = await supabase.auth.getSession();
-      if (!sesion.session) {
-        setNegocio(null);
+    const { data: sesion } = await supabase.auth.getSession();
+    const conSesion = !!sesion.session;
+    if (!duenoId && !conSesion) {
+      setNegocio(null);
+      setCargando(false);
+      return;
+    }
+    // Sin sesión (menú QR público) la base solo entrega los datos públicos del negocio.
+    if (!conSesion) {
+      try {
+        const { data } = await supabase
+          .from("negocio_config")
+          .select(COLUMNAS_PUBLICAS)
+          .eq("owner_id", duenoId ?? "")
+          .order("created_at")
+          .limit(1)
+          .maybeSingle();
+        setNegocio(data as unknown as Negocio | null);
+      } catch {
+        /* si la consulta falla se deja el negocio como estaba */
+      } finally {
         setCargando(false);
-        return;
       }
+      return;
     }
     try {
       let consulta = supabase.from("negocio_config").select("*");
