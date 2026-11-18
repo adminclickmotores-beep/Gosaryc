@@ -138,8 +138,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className="dark">
+    <html lang="es" className="light" suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var t=localStorage.getItem('gosaryc:tema_app');var d=document.documentElement;if(t==='oscuro'){d.classList.remove('light');d.classList.add('dark')}else{d.classList.remove('dark');d.classList.add('light')}}catch(e){}",
+          }}
+        />
         <HeadContent />
       </head>
       <body>

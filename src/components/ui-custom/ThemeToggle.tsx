@@ -9,7 +9,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
   const [listo, setListo] = useState<boolean>(false);
 
   useEffect(() => {
-    setIsDark(localStorage.getItem("theme") === "dark");
+    setIsDark(localStorage.getItem("gosaryc:tema_app") === "oscuro");
     setListo(true);
   }, []);
 
@@ -18,10 +18,12 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
     const root = document.documentElement;
     if (isDark) {
       root.classList.remove("light");
-      localStorage.setItem("theme", "dark");
+      root.classList.add("dark");
+      localStorage.setItem("gosaryc:tema_app", "oscuro");
     } else {
+      root.classList.remove("dark");
       root.classList.add("light");
-      localStorage.setItem("theme", "light");
+      localStorage.setItem("gosaryc:tema_app", "claro");
     }
   }, [isDark, listo]);
 

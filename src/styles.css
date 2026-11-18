@@ -1003,6 +1003,19 @@ a:hover > .glass, button:hover > .glass, .glass:hover { border-color: oklch(0.55
   color: #fff;
   box-shadow: 0 8px 24px -8px rgb(30 64 175 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.3);
 }
+/* Panel interno: lienzo limpio, menú lateral sobrio y tarjetas con relieve fino */
+html.light body { background: oklch(0.975 0.006 255); font-family: Inter, system-ui, sans-serif; }
+html.light aside { background: #fff; border-right: 1px solid oklch(0.2 0.03 255 / 0.1); backdrop-filter: none; }
+html.light aside .nav-tarjeta { background: transparent; border: 1px solid transparent; box-shadow: none; }
+html.light aside .nav-tarjeta:hover { background: oklch(0.96 0.015 264); }
+html.light aside .nav-tarjeta.nav-activa { background: oklch(0.94 0.04 264); border-color: oklch(0.42 0.15 264 / 0.3); color: #1e40af; }
+html.light aside .menu-card-icon { background: oklch(0.95 0.03 264); color: #1e40af; }
+html.light main header { background: rgb(255 255 255 / 0.9); }
+html.light .glass, html.light .glass-strong { background: #fff; border: 1px solid oklch(0.2 0.03 255 / 0.1); border-radius: 18px; box-shadow: 0 1px 2px oklch(0.2 0.03 255 / 0.06), 0 14px 34px -20px oklch(0.3 0.1 264 / 0.25); backdrop-filter: none; }
+html.light input, html.light textarea, html.light select { background: #fff; border-color: oklch(0.2 0.03 255 / 0.18); color: oklch(0.18 0.02 250); }
+html.light table thead { background: oklch(0.96 0.012 264); }
+html:not(.light) aside { background: #090d16; border-right: 1px solid rgb(255 255 255 / 0.07); }
+html:not(.light) aside .nav-tarjeta.nav-activa { background: rgb(30 64 175 / 0.35); border-color: rgb(96 140 255 / 0.4); }
 select option, select optgroup { background-color: oklch(0.2 0.03 263); color: inherit; }
 html.light select option, html.light select optgroup { background-color: #fff; color: oklch(0.18 0.02 250); }
 
