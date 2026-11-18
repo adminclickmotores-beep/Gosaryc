@@ -18,6 +18,14 @@ import {
   ImageOff,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  LIMITES,
+  correoValido,
+  limpiarCorreo,
+  limpiarTelefono,
+  limpiarTexto,
+  telefonoValido,
+} from "@/lib/validacion-publica";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json, Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
@@ -256,21 +264,30 @@ function MenuPage() {
   };
 
   const enviar = async () => {
-    if (!nombre.trim() || !telefono.trim()) return toast.error("Escribe tu nombre y teléfono.");
-    if (modalidad === "domicilio" && !direccion.trim()) return toast.error("Escribe la dirección de entrega.");
+    const nombreLimpio = limpiarTexto(nombre, LIMITES.nombre);
+    const telefonoLimpio = limpiarTelefono(telefono);
+    const direccionLimpia = limpiarTexto(direccion, LIMITES.direccion);
+    const barrioLimpio = limpiarTexto(barrio, LIMITES.barrio);
+    const correoLimpio = limpiarCorreo(correo);
+    const notasLimpias = limpiarTexto(notas, LIMITES.notas, true);
+    if (!nombreLimpio || !telefonoLimpio) return toast.error("Escribe tu nombre y teléfono.");
+    if (!telefonoValido(telefonoLimpio)) return toast.error("Escribe un teléfono válido, de 7 a 15 números.");
+    if (correoLimpio && !correoValido(correoLimpio)) return toast.error("Revisa el correo, parece incompleto.");
+    if (modalidad === "domicilio" && direccionLimpia.length < 5) return toast.error("Escribe la dirección de entrega.");
+    if (lineas.length === 0 || lineas.length > 60) return toast.error("Revisa los productos de tu pedido.");
     setEnviando(true);
     const id = crypto.randomUUID();
     const { error } = await supabase.from("restaurante_pedidos").insert({
       id,
       owner_id: dueno,
-      cliente_nombre: nombre.trim(),
-      cliente_telefono: telefono.trim(),
+      cliente_nombre: nombreLimpio,
+      cliente_telefono: telefonoLimpio,
       modalidad,
-      direccion: modalidad === "domicilio" ? direccion.trim() : null,
-      barrio: modalidad === "domicilio" && barrio.trim() ? barrio.trim() : null,
-      cliente_email: correo.trim() || null,
+      direccion: modalidad === "domicilio" ? direccionLimpia : null,
+      barrio: modalidad === "domicilio" && barrioLimpio ? barrioLimpio : null,
+      cliente_email: correoLimpio || null,
       metodo_pago: metodoPago,
-      notas: notas.trim() || null,
+      notas: notasLimpias || null,
       total,
     });
     if (error) {
@@ -510,6 +527,7 @@ function MenuPage() {
               <input
                 className={`${campo} pl-10`}
                 placeholder="Buscar en el menú…"
+                maxLength={80}
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
               />
@@ -584,11 +602,14 @@ function MenuPage() {
           </button>
           <GlassPanel className="space-y-4 p-5">
             <h2 className="font-display text-xl text-foreground">Tus datos</h2>
-            <input className={campo} placeholder="Nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} />
+            <input className={campo} placeholder="Nombre" maxLength={LIMITES.nombre} autoComplete="name" value={nombre} onChange={(e) => setNombre(e.target.value)} />
             <input
               className={campo}
               placeholder="Teléfono"
               inputMode="tel"
+              type="tel"
+              autoComplete="tel"
+              maxLength={LIMITES.telefono}
               value={telefono}
               onChange={(e) => setTelefono(e.target.value)}
             />
@@ -615,12 +636,14 @@ function MenuPage() {
                 <input
                   className={campo}
                   placeholder="Dirección de entrega"
+                  maxLength={LIMITES.direccion}
                   value={direccion}
                   onChange={(e) => setDireccion(e.target.value)}
                 />
                 <input
                   className={campo}
                   placeholder="Barrio"
+                  maxLength={LIMITES.barrio}
                   value={barrio}
                   onChange={(e) => setBarrio(e.target.value)}
                 />
@@ -630,6 +653,8 @@ function MenuPage() {
               className={campo}
               type="email"
               placeholder="Correo (opcional)"
+              autoComplete="email"
+              maxLength={LIMITES.correo}
               value={correo}
               onChange={(e) => setCorreo(e.target.value)}
             />
@@ -652,6 +677,7 @@ function MenuPage() {
               className={campo}
               rows={2}
               placeholder="Notas (sin cebolla, sin hielo…)"
+              maxLength={LIMITES.notas}
               value={notas}
               onChange={(e) => setNotas(e.target.value)}
             />
@@ -752,6 +778,7 @@ function MenuPage() {
               className={campo}
               rows={2}
               placeholder="Notas: sin cebolla, sin hielo…"
+              maxLength={LIMITES.nota_linea}
               value={notaElegir}
               onChange={(e) => setNotaElegir(e.target.value)}
             />

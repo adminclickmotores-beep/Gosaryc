@@ -12,6 +12,7 @@ import { BotonesDemo } from "@/components/app/BotonesDemo";
 import { esCuentaDemo } from "@/lib/demo-real";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
+import { correoValido, limpiarCorreo } from "@/lib/validacion-publica";
 
 export const Route = createFileRoute("/login")({
   validateSearch: (
@@ -68,28 +69,37 @@ function LoginPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const correo = limpiarCorreo(email);
+    if (!correoValido(correo)) {
+      toast.error("Revisa el correo, parece incompleto.");
+      return;
+    }
+    if (mode !== "forgot" && (password.length < 6 || password.length > 72)) {
+      toast.error("La contraseña debe tener entre 6 y 72 caracteres.");
+      return;
+    }
     setBusy(true);
     try {
       if (mode === "signup") {
         guardarPreferenciaSesion();
         const { data, error } = await supabase.auth.signUp({
-          email,
+          email: correo,
           password,
           options: { emailRedirectTo: `${window.location.origin}/welcome` },
         });
         if (error) throw error;
         if (!data.session) {
           // Si el proyecto exige confirmar el correo, se muestra el aviso de revisar la bandeja.
-          setPendingConfirm(email);
+          setPendingConfirm(correo);
         } else {
           toast.success("Cuenta creada. ¡Bienvenido!");
         }
       } else if (mode === "forgot") {
-        if (esCuentaDemo(email.trim())) {
+        if (esCuentaDemo(correo)) {
           toast.error("Las cuentas demo no permiten cambiar la contraseña.");
           return;
         }
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        const { error } = await supabase.auth.resetPasswordForEmail(correo, {
           redirectTo: `${window.location.origin}/reset-password`,
         });
         if (error) throw error;
@@ -97,7 +107,7 @@ function LoginPage() {
         setMode("signin");
       } else {
         guardarPreferenciaSesion();
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email: correo, password });
         if (error) throw error;
       }
     } catch (err) {
@@ -458,6 +468,7 @@ function GlassField({
           type={esClave && mostrar ? "text" : type}
           required={required}
           minLength={minLength}
+          maxLength={type === "email" ? 254 : esClave ? 72 : 120}
           autoComplete={autoComplete}
           value={value}
           onChange={(e) => onChange(e.target.value)}

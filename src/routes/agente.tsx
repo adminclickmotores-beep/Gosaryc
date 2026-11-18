@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
+import { LIMITES, limpiarTelefono, limpiarTexto, telefonoValido } from "@/lib/validacion-publica";
 
 export const Route = createFileRoute("/agente")({
   head: () => ({
@@ -109,7 +110,7 @@ function AgentePage() {
 
   const cantidadDe = (t: string): number => {
     const m = t.match(/\b(\d+)\b/);
-    if (m) return Math.max(1, parseInt(m[1], 10));
+    if (m) return Math.min(100, Math.max(1, parseInt(m[1], 10)));
     for (const [w, n] of Object.entries(PALABRAS_NUM)) {
       if (new RegExp(`\\b${w}\\b`).test(t)) return n;
     }
@@ -125,15 +126,23 @@ function AgentePage() {
 
   const enviar = async (): Promise<string> => {
     const total = lineas.reduce((s, l) => s + l.producto.precio * l.cantidad, 0);
+    const nombreLimpio = limpiarTexto(nombre, LIMITES.nombre);
+    const telefonoLimpio = limpiarTelefono(telefono);
+    if (!nombreLimpio || !telefonoValido(telefonoLimpio)) {
+      return "Revisa tu nombre y tu teléfono (de 7 a 15 números) antes de confirmar.";
+    }
+    if (lineas.length === 0 || lineas.some((l) => l.cantidad < 1 || l.cantidad > 100)) {
+      return "Revisa las cantidades: cada producto admite de 1 a 100 unidades.";
+    }
     setEnviando(true);
     const id = crypto.randomUUID();
     const { error } = await supabase.from("restaurante_pedidos").insert({
       id,
       owner_id: dueno,
-      cliente_nombre: nombre,
-      cliente_telefono: telefono,
+      cliente_nombre: nombreLimpio,
+      cliente_telefono: telefonoLimpio,
       modalidad,
-      direccion: modalidad === "domicilio" ? direccion : null,
+      direccion: modalidad === "domicilio" ? limpiarTexto(direccion, LIMITES.direccion) : null,
       total,
       canal: "agente",
     });
@@ -265,10 +274,10 @@ function AgentePage() {
     }
 
     if (paso === "direccion") {
-      if (entrada.length < 5) {
+      if (limpiarTexto(entrada, LIMITES.direccion).length < 5) {
         say("Escribe la dirección completa, por favor.");
       } else {
-        setDireccion(entrada);
+        setDireccion(limpiarTexto(entrada, LIMITES.direccion));
         setPaso("nombre");
         say("¿A nombre de quién lo pongo?");
       }
@@ -276,10 +285,10 @@ function AgentePage() {
     }
 
     if (paso === "nombre") {
-      if (entrada.length < 2) {
+      if (limpiarTexto(entrada, LIMITES.nombre).length < 2) {
         say("¿Me dices tu nombre?");
       } else {
-        setNombre(entrada);
+        setNombre(limpiarTexto(entrada, LIMITES.nombre));
         setPaso("telefono");
         say("¿Cuál es tu teléfono para avisarte?");
       }
@@ -288,8 +297,8 @@ function AgentePage() {
 
     if (paso === "telefono") {
       const digitos = entrada.replace(/\D/g, "");
-      if (digitos.length < 7) {
-        say("Escribe un teléfono válido, con al menos 7 números.");
+      if (digitos.length < 7 || digitos.length > 15) {
+        say("Escribe un teléfono válido, de 7 a 15 números.");
       } else {
         setTelefono(digitos);
         setPaso("confirmar");
@@ -380,6 +389,7 @@ function AgentePage() {
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
             placeholder="Escribe tu pedido o tu duda"
+            maxLength={LIMITES.direccion}
             disabled={enviando || cargando}
             className={campo}
           />

@@ -4,6 +4,7 @@ import { MessageCircle, CalendarCheck, Store, ShieldCheck, FileText, ImageOff, M
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
+import { LIMITES, limpiarCodigo, limpiarTelefono, limpiarTexto } from "@/lib/validacion-publica";
 
 const campo =
   "w-full rounded-xl border border-glass-border bg-glass/40 px-3.5 py-3 text-base text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary/60";
@@ -68,7 +69,7 @@ export function EnlaceUniversal({ dueno, nombre, telefono, descripcion, tipoNego
     setValidando(true);
     setNoHallado(false);
     setValido(null);
-    const { data } = await supabase.rpc("sst_validar_certificado", { p_codigo: codigo.trim() });
+    const { data } = await supabase.rpc("sst_validar_certificado", { p_codigo: limpiarCodigo(codigo) });
     setValidando(false);
     const r = (data ?? null) as Validacion | null;
     if (r && typeof r.trabajador === "string") {
@@ -164,7 +165,7 @@ export function EnlaceUniversal({ dueno, nombre, telefono, descripcion, tipoNego
           <h2 className="flex items-center gap-2 font-medium text-foreground"><ShieldCheck className="h-4 w-4" /> Validar certificado de aptitud</h2>
           <p className="text-sm text-muted-foreground">Escribe el código seguro del certificado y comprueba que sea válido.</p>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <input className={campo} placeholder="Código seguro (ej. a1b2c3d4)" value={codigo} onChange={(e) => setCodigo(e.target.value)} />
+            <input className={campo} placeholder="Código seguro (ej. a1b2c3d4)" value={codigo} maxLength={LIMITES.codigo} onChange={(e) => setCodigo(limpiarCodigo(e.target.value))} />
             <button
               type="button"
               onClick={() => void validar()}
@@ -197,11 +198,11 @@ export function EnlaceUniversal({ dueno, nombre, telefono, descripcion, tipoNego
                 <option key={x} value={x}>{x}</option>
               ))}
             </select>
-            <input className={campo} placeholder="Tu nombre *" value={cotiNombre} onChange={(e) => setCotiNombre(e.target.value)} />
-            <input className={campo} placeholder="Tu teléfono *" inputMode="tel" value={cotiTel} onChange={(e) => setCotiTel(e.target.value)} />
+            <input className={campo} placeholder="Tu nombre *" maxLength={LIMITES.nombre} value={cotiNombre} onChange={(e) => setCotiNombre(e.target.value)} />
+            <input className={campo} placeholder="Tu teléfono *" inputMode="tel" type="tel" maxLength={LIMITES.telefono} value={cotiTel} onChange={(e) => setCotiTel(limpiarTelefono(e.target.value))} />
           </div>
           <a
-            href={enlaceWhats(telefono, `Hola ${nombre}, quiero una cotización de ${cotiTipo}. Nombre: ${cotiNombre || "-"}, teléfono: ${cotiTel || "-"}`)}
+            href={enlaceWhats(telefono, `Hola ${nombre}, quiero una cotización de ${cotiTipo}. Nombre: ${limpiarTexto(cotiNombre, LIMITES.nombre) || "-"}, teléfono: ${limpiarTelefono(cotiTel) || "-"}`)}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
@@ -216,13 +217,13 @@ export function EnlaceUniversal({ dueno, nombre, telefono, descripcion, tipoNego
           <h2 className="flex items-center gap-2 font-medium text-foreground"><CalendarCheck className="h-4 w-4" /> {esTaller ? "Agenda tu servicio o visita" : "Pide tu cita online"}</h2>
           {esTaller && <p className="text-sm text-muted-foreground">Reserva mantenimiento, revisión o visita para ver un vehículo.</p>}
           <div className="grid gap-2 sm:grid-cols-2">
-            <input className={campo} placeholder="Tu nombre *" value={citaNombre} onChange={(e) => setCitaNombre(e.target.value)} />
-            <input className={campo} placeholder="Tu teléfono *" inputMode="tel" value={citaTel} onChange={(e) => setCitaTel(e.target.value)} />
+            <input className={campo} placeholder="Tu nombre *" maxLength={LIMITES.nombre} value={citaNombre} onChange={(e) => setCitaNombre(e.target.value)} />
+            <input className={campo} placeholder="Tu teléfono *" inputMode="tel" type="tel" maxLength={LIMITES.telefono} value={citaTel} onChange={(e) => setCitaTel(limpiarTelefono(e.target.value))} />
             <input className={campo} type="date" value={citaFecha} onChange={(e) => setCitaFecha(e.target.value)} aria-label="Fecha de la cita" />
             <input className={campo} type="time" value={citaHora} onChange={(e) => setCitaHora(e.target.value)} aria-label="Hora de la cita" />
           </div>
           <a
-            href={enlaceWhats(telefono, `Hola ${nombre}, quiero ${esTaller ? "agendar un servicio" : "una cita"}. Nombre: ${citaNombre || "-"}, teléfono: ${citaTel || "-"}, fecha: ${citaFecha || "-"}, hora: ${citaHora || "-"}`)}
+            href={enlaceWhats(telefono, `Hola ${nombre}, quiero ${esTaller ? "agendar un servicio" : "una cita"}. Nombre: ${limpiarTexto(citaNombre, LIMITES.nombre) || "-"}, teléfono: ${limpiarTelefono(citaTel) || "-"}, fecha: ${citaFecha || "-"}, hora: ${citaHora || "-"}`)}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"

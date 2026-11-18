@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { newRequestStatusToken } from "@/lib/request-token";
 import { IconArrowRight } from "@/components/ui-custom/CustomIcon";
 import { toast } from "sonner";
+import { LIMITES, correoValido, limpiarCorreo, limpiarTexto } from "@/lib/validacion-publica";
 
 export type RequestFormProps = {
   orgId: string;
@@ -46,8 +47,12 @@ export function RequestForm({
   }, [initialEmail]);
 
   const submit = async () => {
-    if (!email.includes("@")) return toast.error("Revisa tu correo");
-    if (brief.trim().length < 10) return toast.error("Cuéntanos un poco más");
+    const correoLimpio = limpiarCorreo(email);
+    const nombreLimpio = limpiarTexto(name, LIMITES.nombre);
+    const detalle = limpiarTexto(brief, LIMITES.solicitud, true);
+    if (!correoValido(correoLimpio)) return toast.error("Revisa tu correo");
+    if (detalle.length < 10) return toast.error("Cuéntanos un poco más");
+    const fecha = /^\d{4}-\d{2}-\d{2}$/.test(due) ? due : null;
     setSubmitting(true);
     const statusToken = newRequestStatusToken();
     const { error } = await supabase
@@ -55,14 +60,14 @@ export function RequestForm({
       .insert({
         org_id: orgId,
         status_token: statusToken,
-        requestor_email: email.trim(),
-        requestor_name: name.trim() || null,
-        brief: brief.trim(),
-        desired_due_date: due || null,
+        requestor_email: correoLimpio,
+        requestor_name: nombreLimpio || null,
+        brief: detalle,
+        desired_due_date: fecha,
       });
     setSubmitting(false);
     if (error) {
-      toast.error(error.message ?? "Could not submit");
+      toast.error("No pudimos enviar tu solicitud. Revisa los datos e intenta de nuevo.");
       return;
     }
     clearDraft();
@@ -72,7 +77,7 @@ export function RequestForm({
   return (
     <div className="space-y-4">
       <Field label="Tu nombre (opcional)">
-        <input value={name} onChange={(e) => setName(e.target.value)} className="request-input" placeholder="Juan" />
+        <input value={name} onChange={(e) => setName(e.target.value)} className="request-input" placeholder="Juan" maxLength={LIMITES.nombre} autoComplete="name" />
       </Field>
       <Field label="Correo *">
         <input
@@ -81,6 +86,8 @@ export function RequestForm({
           className="request-input"
           placeholder="juan@correo.com"
           type="email"
+          autoComplete="email"
+          maxLength={LIMITES.correo}
           readOnly={!!initialEmail}
         />
       </Field>
@@ -89,6 +96,7 @@ export function RequestForm({
           value={brief}
           onChange={(e) => setBrief(e.target.value)}
           rows={4}
+          maxLength={LIMITES.solicitud}
           placeholder="Una cotización para 50 arreglos de mesa para un evento."
           className="request-input resize-none"
         />
@@ -103,7 +111,7 @@ export function RequestForm({
       >
         {submitting ? "Enviando…" : submitLabel} <IconArrowRight size={14} />
       </button>
-      <style>{`.request-input { width: 100%; border-radius: 0.5rem; border: 1px solid hsl(var(--glass-border, 0 0% 100%/0.1)); background: hsl(var(--background, 0 0% 0%)/0.4); padding: 0.5rem 0.75rem; font-size: 0.875rem; outline: none; } .request-input:focus { border-color: hsl(var(--primary)/0.5); }`}</style>
+      <style>{`.request-input { width: 100%; border-radius: 0.5rem; border: 1px solid hsl(var(--glass-border, 0 0% 100%/0.1)); background: hsl(var(--background, 0 0% 0%)/0.4); padding: 0.5rem 0.75rem; font-size: 1rem; outline: none; } .request-input:focus { border-color: hsl(var(--primary)/0.5); }`}</style>
     </div>
   );
 }
