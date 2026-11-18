@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 
 import { BRAND } from "@/lib/brand";
 import { BrandHexLogo } from "@/components/app/BrandHexLogo";
+import { BotonesDemo } from "@/components/app/BotonesDemo";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -231,6 +232,8 @@ function LoginPage() {
               <>
               {mode !== "forgot" && (
                 <>
+                  <BotonesDemo className="mt-7" />
+                  <div className="my-5 h-px bg-glass-border" />
                   <button
                     type="button"
                     onClick={google}

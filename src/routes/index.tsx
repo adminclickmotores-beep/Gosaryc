@@ -11,6 +11,7 @@ import {
 import { SECTORES, buscarSector } from "@/lib/sectores";
 import { useAuth } from "@/contexts/AuthContext";
 import { BRAND } from "@/lib/brand";
+import { BotonesDemo } from "@/components/app/BotonesDemo";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -477,6 +478,7 @@ function LandingPage() {
                 <Download className="h-4 w-4" /> Descargar App Android / PC
               </Link>
             </div>
+            <BotonesDemo className="mt-4 max-w-md" />
             <ul className="gs-muted mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium">
               {["Funciona sin internet", "Facturación DIAN", "Nómina ley colombiana", "+50 sectores"].map((t) => (
                 <li key={t} className="inline-flex items-center gap-1.5"><Check className="gs-verde h-4 w-4" /> {t}</li>
@@ -571,6 +573,7 @@ function LandingPage() {
                 <p className="mt-5 font-semibold">Cómo funciona</p>
                 <p className="gs-muted mt-1 text-sm">{fichaModulo.como}</p>
                 <div className="mt-6 flex flex-col gap-3">
+                  <BotonesDemo />
                   <Link to="/login" search={{ mode: "signup" }} className="gs-cta inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
                     Crear cuenta y probar gratis <ArrowRight className="h-4 w-4" />
                   </Link>

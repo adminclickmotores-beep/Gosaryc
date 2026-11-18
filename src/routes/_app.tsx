@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Lock, GraduationCap, LifeBuoy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { BarraDemo } from "@/components/app/BarraDemo";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
 import { ThemeToggle } from "@/components/ui-custom/ThemeToggle";
 import {
@@ -377,6 +378,7 @@ function AppShell() {
         <CommandPalette />
 
         <main className="flex-1 min-w-0 overflow-x-hidden pb-[calc(env(safe-area-inset-bottom)+5rem)] md:pb-0">
+          <BarraDemo />
           {/* Mobile top bar */}
           <header className={`sticky top-0 z-30 ${completaFinal ? "hidden" : "flex"} items-center justify-between border-b border-glass-border bg-background/80 px-4 py-3 backdrop-blur-xl md:hidden`}>
             <Link to="/" className="flex items-center gap-2 text-foreground">

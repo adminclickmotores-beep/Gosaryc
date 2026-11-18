@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { BrandHexLogo } from "@/components/app/BrandHexLogo";
 import { toast } from "sonner";
 import { BRAND } from "@/lib/brand";
+import { esCuentaDemo } from "@/lib/demo-real";
 
 export const Route = createFileRoute("/reset-password")({
   component: ResetPasswordPage,
@@ -52,6 +53,11 @@ function ResetPasswordPage() {
     }
     if (password !== confirm) {
       toast.error("Las contraseñas no coinciden.");
+      return;
+    }
+    const { data: actual } = await supabase.auth.getUser();
+    if (esCuentaDemo(actual.user?.email)) {
+      toast.error("Las cuentas demo no permiten cambiar la contraseña.");
       return;
     }
     setBusy(true);
