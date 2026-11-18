@@ -13,7 +13,9 @@ export function BotonesDemo({ className = "" }: { className?: string }) {
     setCargando(tipo);
     try {
       await entrarDemo(tipo);
-      nav({ to: "/restaurante", replace: true });
+      // Entra directo a la ventana del primer paso del recorrido (sin pasar por el panel general).
+      if (tipo === "vehiculos") nav({ to: "/modulos/$id", params: { id: "vehiculos" }, replace: true });
+      else nav({ to: "/restaurante", search: { vista: "venta" } as never, replace: true });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No se pudo abrir la demo.");
     } finally {

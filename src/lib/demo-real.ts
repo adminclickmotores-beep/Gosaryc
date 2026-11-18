@@ -277,6 +277,9 @@ async function sembrarRestauranteNavegador(uid: string) {
 async function sembrar(tipo: TipoDemo, uid: string) {
   if (tipo === "vehiculos") await sembrarVehiculos(uid);
   else await sembrarRestaurante(uid);
+  // Ventas, ingresos y gastos con fecha de hoy: Finanzas, Ventas y Caja nunca quedan en $ 0.
+  const { error: errDia } = await supabase.rpc("demo_cifras_del_dia");
+  if (errDia) console.warn("Demo: no se cargaron las cifras del día", errDia.message);
   window.dispatchEvent(new Event("negocio:cambio"));
 }
 

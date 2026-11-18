@@ -115,9 +115,9 @@ export function DemoAgenteWhatsApp({ onConectarReal }: { onConectarReal: () => v
         owner_id: user.id,
         cliente_nombre: "Cliente WhatsApp (demo)",
         cliente_telefono: "3000000000",
-        estado: "pendiente",
+        estado: "nuevo",
         metodo_pago: "efectivo",
-        modalidad: "mostrador",
+        modalidad: "recoger",
         total,
       })
       .select("id")
@@ -182,8 +182,19 @@ export function DemoAgenteWhatsApp({ onConectarReal }: { onConectarReal: () => v
     setMensajes((m) => [...m, { de: "agente", texto: respuesta, hora: horaAhora() }]);
   };
 
+  // El piloto automático de la demo pide que un cliente escriba solo y la IA responda en vivo.
+  const enviarRef = useRef(enviar);
+  enviarRef.current = enviar;
+  useEffect(() => {
+    const alPedir = () => {
+      void enviarRef.current(RAPIDAS[tipo][1]);
+    };
+    window.addEventListener("gosaryc:demo-agente", alPedir);
+    return () => window.removeEventListener("gosaryc:demo-agente", alPedir);
+  }, [tipo]);
+
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div id="agente-whatsapp-demo" className="grid scroll-mt-20 gap-4 lg:grid-cols-2">
       <GlassPanel className="space-y-4 p-5">
         <div className="flex items-start gap-3">
           <span className="icon-chip h-10 w-10 shrink-0 rounded-xl"><Bot className="h-5 w-5" /></span>

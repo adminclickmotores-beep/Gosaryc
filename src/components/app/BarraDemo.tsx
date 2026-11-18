@@ -3,11 +3,15 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, Pause, Play, Radio, RefreshCw, Rocket } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { CORREO_DEMO, esCuentaDemo, restaurarDemo } from "@/lib/demo-real";
 
-/** Elemento de la pantalla sobre el que actúa el recorrido (por selector y/o por texto visible). */
+/** Cada cuánto el piloto automático pasa a la siguiente ventana. */
+const INTERVALO_MS = 4500;
+
+/** Elemento de la pantalla que se resalta como apoyo visual (opcional: la navegación no depende de él). */
 type Objetivo = { css?: string; texto?: RegExp };
-/** Una acción del ejercicio en vivo: aviso flotante + clic, resaltado o selección dentro del módulo. */
+/** Una acción dentro de la ventana: aviso flotante y, si aplica, un resaltado, un clic o el chat del agente. */
 type Accion = {
   ms: number;
   aviso: string;
@@ -15,155 +19,151 @@ type Accion = {
   clic?: Objetivo[];
   resaltar?: Objetivo[];
   elegir?: Objetivo[];
+  agente?: boolean;
 };
-type Paso = { titulo: string; texto: string; ruta: string; vista?: string; guion: Accion[] };
+type Paso = { titulo: string; texto: string; ruta: string; vista?: string; ancla?: string; guion: Accion[] };
 type Aviso = { id: number; texto: string; ok: boolean };
 
 const TEXTOS = "h1, h2, h3, h4, p, span, td, th, li, label, button, [role=button], a";
 
-// Restaurante y comidas: 6 pasos en vivo dentro de cada módulo.
+// Restaurante y comidas: 6 ventanas reales, una cada 4,5 segundos.
 const PASOS_RESTAURANTE: Paso[] = [
   {
-    titulo: "Vitrina del menú en mosaico y POS",
-    texto: "Abrimos Vender y cobrar: el menú con fotos HD y la vista dividida de un plato eligiendo papa francesa y salsa de ajo.",
+    titulo: "Vender y cobrar: menú en mosaico HD",
+    texto: "El punto de venta con las fotos de los platos y la selección en vivo de papa francesa y salsa de ajo.",
     ruta: "/restaurante",
     vista: "venta",
     guion: [
-      { ms: 1200, aviso: "Abriendo Vender y cobrar con el menú en mosaico", clic: [{ css: "button", texto: /mosaico/i }] },
-      { ms: 4000, aviso: "Se abre el plato en vista dividida: foto grande y opciones", clic: [{ css: "[role=button]", texto: /chuleta/i }, { css: "[role=button]:has(img)" }] },
-      { ms: 7500, aviso: "Eligiendo papa francesa", clic: [{ css: ".fixed button", texto: /papa francesa/i }] },
-      { ms: 10000, aviso: "Agregando salsa de ajo", clic: [{ css: ".fixed button", texto: /\bajo\b/i }] },
-      { ms: 12500, aviso: "Plato agregado a la cuenta con sus opciones", ok: true, clic: [{ css: "button", texto: /agregar al pedido/i }] },
+      { ms: 300, aviso: "Abriendo Vender y cobrar con el menú en fotos HD" },
+      { ms: 1000, aviso: "Se abre el plato con sus opciones", clic: [{ css: "[role=button]", texto: /chuleta/i }, { css: "[role=button]:has(img)" }] },
+      { ms: 2100, aviso: "Eligiendo papa francesa", clic: [{ css: ".fixed button", texto: /papa francesa/i }] },
+      { ms: 2900, aviso: "Agregando salsa de ajo", clic: [{ css: ".fixed button", texto: /\bajo\b/i }] },
+      { ms: 3700, aviso: "Plato agregado a la cuenta con sus opciones", ok: true, clic: [{ css: "button", texto: /agregar al pedido/i }] },
     ],
   },
   {
-    titulo: "Comanda automática a cocina",
-    texto: "El pedido se confirma y la comanda cae sola en Pedidos y cocina, lista para preparar.",
+    titulo: "Pedidos y cocina",
+    texto: "La comanda cae sola en pantalla, lista para preparar.",
     ruta: "/restaurante",
     vista: "pedidos",
     guion: [
-      { ms: 1200, aviso: "Pedido confirmado: la comanda sale sola a cocina", ok: true },
-      { ms: 3500, aviso: "La orden cae en pantalla lista para preparar", resaltar: [{ texto: /^\s*nuevo/i }, { texto: /nuevo/i }] },
-      { ms: 7500, aviso: "Cocina la pasa a preparación con un solo toque", resaltar: [{ texto: /preparando|en preparaci/i }] },
-      { ms: 11000, aviso: "Cuando está lista, se avisa al mesero o al domiciliario", resaltar: [{ texto: /^\s*listo/i }] },
+      { ms: 300, aviso: "La comanda llegó sola a cocina", resaltar: [{ texto: /^\s*nuevo/i }] },
+      { ms: 2000, aviso: "Cocina la pasa a preparación con un toque", resaltar: [{ texto: /preparando|en preparaci/i }] },
+      { ms: 3500, aviso: "Pedido listo para entregar", ok: true },
     ],
   },
   {
-    titulo: "Inventario de insumos y escandallo",
+    titulo: "Inventario de insumos",
     texto: "Cada venta descuenta los ingredientes de la receta y avisa cuando un insumo baja del mínimo.",
     ruta: "/restaurante",
     vista: "recetario",
     guion: [
-      { ms: 1200, aviso: "Abriendo Inventario de insumos y recetas" },
-      { ms: 3500, aviso: "Alerta: insumos por debajo del mínimo", resaltar: [{ texto: /m[ií]nimo|por debajo|agotad/i }] },
-      { ms: 7500, aviso: "Cada receta calcula el costo real del plato", resaltar: [{ texto: /costo/i }] },
-      { ms: 11000, aviso: "Ingredientes descontados automáticamente por la venta", ok: true },
+      { ms: 300, aviso: "Abriendo Inventario de insumos y recetas" },
+      { ms: 1700, aviso: "Alerta: insumos por debajo del mínimo", resaltar: [{ texto: /m[ií]nimo|por debajo|agotad/i }] },
+      { ms: 3400, aviso: "Ingredientes descontados automáticamente por receta", ok: true },
     ],
   },
   {
-    titulo: "Agente WhatsApp IA tomando pedidos",
-    texto: "Un cliente pide por chat y el agente responde solo y deja el pedido registrado.",
+    titulo: "Agente WhatsApp IA",
+    texto: "Un cliente pide por chat y la IA toma el pedido sola.",
     ruta: "/restaurante",
     vista: "negocio",
+    ancla: "agente-whatsapp-demo",
     guion: [
-      { ms: 1500, aviso: "Abriendo el simulador del agente de WhatsApp IA", resaltar: [{ texto: /Agente IA/i }] },
-      { ms: 4000, aviso: "Un cliente escribe por WhatsApp para pedir", clic: [{ css: "button", texto: /chuleta apanada con papa/i }, { css: "button", texto: /men[uú]/i }] },
-      { ms: 10500, aviso: "El agente respondió solo y registró el pedido", ok: true },
+      { ms: 300, aviso: "Abriendo el Agente WhatsApp IA" },
+      { ms: 800, aviso: "Un cliente escribe por WhatsApp para pedir", agente: true },
+      { ms: 3500, aviso: "La IA respondió sola y registró el pedido", ok: true },
     ],
   },
   {
-    titulo: "Caja con efectivo, Nequi y Daviplata",
-    texto: "El arqueo separa lo que entró en efectivo de lo que entró por transferencia.",
+    titulo: "Caja del restaurante",
+    texto: "El arqueo separa lo que entró en efectivo de lo que entró por Nequi, Daviplata o transferencia.",
     ruta: "/restaurante",
     vista: "caja",
     guion: [
-      { ms: 1200, aviso: "Abriendo la caja del restaurante con el turno del día" },
-      { ms: 3500, aviso: "Arqueo: lo que entró en efectivo", resaltar: [{ texto: /efectivo/i }] },
-      { ms: 7000, aviso: "Y lo que entró por Nequi, Daviplata o transferencia, por separado", resaltar: [{ texto: /transferencia|nequi|daviplata/i }] },
-      { ms: 10500, aviso: "Caja cuadrada al peso", ok: true },
+      { ms: 300, aviso: "Abriendo la caja con el turno del día" },
+      { ms: 1500, aviso: "Arqueo: lo que entró en efectivo", resaltar: [{ texto: /efectivo/i }] },
+      { ms: 2800, aviso: "Y lo que entró por Nequi, Daviplata o transferencia", resaltar: [{ texto: /transferencia|nequi|daviplata/i }] },
+      { ms: 3900, aviso: "Caja cuadrada al peso", ok: true },
     ],
   },
   {
-    titulo: "Ventas, costos y utilidad",
-    texto: "La ganancia real del día y el cierre listo para enviar por WhatsApp.",
-    ruta: "/restaurante",
-    vista: "reportes",
+    titulo: "Finanzas y rentabilidad",
+    texto: "Los ingresos reales del día, los gastos y la utilidad neta, con los asientos contables cuadrados.",
+    ruta: "/finanzas",
     guion: [
-      { ms: 1200, aviso: "Abriendo Ventas, costos y utilidad del día" },
-      { ms: 3500, aviso: "Ganancia real del día: ventas menos costos", resaltar: [{ texto: /utilidad|ganancia/i }] },
-      { ms: 7500, aviso: "Cierre del día listo para enviar por WhatsApp", resaltar: [{ css: "button", texto: /whatsapp/i }] },
-      { ms: 10500, aviso: "Tu restaurante, controlado de punta a punta", ok: true },
+      { ms: 300, aviso: "Abriendo Finanzas y rentabilidad" },
+      { ms: 1700, aviso: "Ingresos reales del día y utilidad neta", resaltar: [{ texto: /utilidad neta/i }] },
+      { ms: 3400, aviso: "Asientos contables creados y cuadrados solos", ok: true },
     ],
   },
 ];
 
-// Concesionario de vehículos: 6 pasos en vivo dentro de cada módulo.
+// Concesionario de vehículos: 6 ventanas reales, una cada 4,5 segundos.
 const PASOS_VEHICULOS: Paso[] = [
   {
-    titulo: "Vitrina en mosaico HD y rentabilidad",
-    texto: "Inventario en mosaico con fotos HD y la ficha de una moto: compra + alistamiento = utilidad neta, con su SOAT.",
+    titulo: "Inventario de vehículos en mosaico HD",
+    texto: "Fotos de motos y carros de gama media con su costo de compra, alistamiento y utilidad neta.",
     ruta: "/modulos/vehiculos",
     guion: [
-      { ms: 1200, aviso: "Abriendo el inventario de vehículos en vista mosaico", clic: [{ css: "button", texto: /^\s*mosaico\s*$/i }] },
-      { ms: 4000, aviso: "Fotos HD de motos y carros de gama media", resaltar: [{ css: "[class*=grid] img" }] },
-      { ms: 7000, aviso: "Abriendo la ficha ampliada del vehículo", clic: [{ css: "button", texto: /^\s*ficha\s*$/i }] },
-      { ms: 10000, aviso: "Compra + alistamiento = utilidad neta", resaltar: [{ texto: /utilidad/i }] },
-      { ms: 13500, aviso: "Estado del SOAT y la tecnomecánica al día", ok: true, resaltar: [{ texto: /soat/i }] },
+      { ms: 300, aviso: "Abriendo el inventario de vehículos", clic: [{ css: "button", texto: /^\s*mosaico\s*$/i }] },
+      { ms: 1500, aviso: "Fotos HD de motos y carros de gama media", resaltar: [{ css: "[class*=grid] img" }] },
+      { ms: 2800, aviso: "Compra + alistamiento = utilidad neta", resaltar: [{ texto: /utilidad/i }] },
+      { ms: 3800, aviso: "SOAT y tecnomecánica al día", ok: true },
     ],
   },
   {
-    titulo: "Cotización y simulador de cuota",
-    texto: "Se elige un vehículo y el sistema calcula la cuota inicial y la mensual, lista para WhatsApp.",
+    titulo: "Cotización y cuota mensual",
+    texto: "Se elige un vehículo y el sistema calcula la cuota inicial y la mensual, lista para enviar por WhatsApp.",
     ruta: "/modulos/cotizaciones_veh",
     guion: [
-      { ms: 1200, aviso: "Abriendo Cotizaciones con simulador de cuota" },
-      { ms: 3500, aviso: "Seleccionando un vehículo del inventario", elegir: [{ css: "select", texto: /\$/ }] },
-      { ms: 6000, aviso: "Forma de pago a crédito: cuota inicial y plazo", clic: [{ css: "button", texto: /^\s*a cr[eé]dito\s*$/i }] },
-      { ms: 9000, aviso: "Cuota mensual calculada al instante con la tasa del mes", resaltar: [{ texto: /cuota mensual/i }] },
-      { ms: 12500, aviso: "Lista para enviar por WhatsApp al cliente", ok: true, resaltar: [{ css: "button", texto: /whatsapp/i }] },
+      { ms: 300, aviso: "Abriendo Cotizaciones con simulador de cuota" },
+      { ms: 1000, aviso: "Seleccionando un vehículo del inventario", elegir: [{ css: "select", texto: /\$/ }] },
+      { ms: 1900, aviso: "Forma de pago a crédito", clic: [{ css: "button", texto: /^\s*a cr[eé]dito\s*$/i }] },
+      { ms: 2900, aviso: "Cuota mensual calculada al instante", resaltar: [{ texto: /cuota mensual/i }] },
+      { ms: 3800, aviso: "Lista para enviar por WhatsApp al cliente", ok: true, resaltar: [{ css: "button", texto: /whatsapp/i }] },
     ],
   },
   {
-    titulo: "Taller y alistamiento",
+    titulo: "Taller y mantenimientos",
     texto: "Una orden activa con repuestos y mano de obra que se suman al costo del vehículo.",
     ruta: "/modulos/taller",
     guion: [
-      { ms: 1200, aviso: "Abriendo Taller y mantenimientos" },
-      { ms: 3500, aviso: "Orden activa en el taller", resaltar: [{ texto: /en curso|en proceso|abierta|activa/i }] },
-      { ms: 7000, aviso: "Repuestos usados en la orden", resaltar: [{ texto: /repuesto/i }] },
-      { ms: 10500, aviso: "La mano de obra se suma al costo del vehículo", ok: true, resaltar: [{ texto: /mano de obra/i }] },
+      { ms: 300, aviso: "Abriendo Taller y mantenimientos" },
+      { ms: 1700, aviso: "Orden activa con repuestos y mano de obra", resaltar: [{ texto: /repuesto|mano de obra/i }] },
+      { ms: 3400, aviso: "El costo se suma al vehículo automáticamente", ok: true },
     ],
   },
   {
-    titulo: "Venta y facturación",
-    texto: "Se cierra una venta en vivo: el inventario se actualiza y la factura queda lista.",
+    titulo: "Ventas y entregas",
+    texto: "Ventas reales cerradas y una venta nueva en vivo que actualiza el inventario.",
     ruta: "/modulos/ventas_veh",
     guion: [
-      { ms: 1200, aviso: "Abriendo Ventas y entregas" },
-      { ms: 3500, aviso: "Cerrando la venta en vivo", resaltar: [{ texto: /vendid|entregad|venta/i }] },
-      { ms: 7000, aviso: "Venta registrada · Inventario actualizado · Factura lista", ok: true },
-      { ms: 10500, aviso: "Acta de entrega y traspaso listos", resaltar: [{ texto: /acta|traspaso|entrega/i }] },
+      { ms: 300, aviso: "Abriendo Ventas y entregas" },
+      { ms: 1600, aviso: "Cerrando una venta nueva en vivo", resaltar: [{ texto: /vendid|entregad|venta/i }] },
+      { ms: 3000, aviso: "Venta registrada · Inventario actualizado", ok: true },
     ],
   },
   {
     titulo: "Agente WhatsApp IA 24/7",
-    texto: "Un cliente cotiza un vehículo por chat y el agente responde solo, de día o de noche.",
-    ruta: "/restaurante",
+    texto: "Un cliente cotiza una moto por chat y la IA responde sola con precio y papeles.",
+    ruta: "/negocio/concesionario",
+    vista: "negocio",
+    ancla: "agente-whatsapp-demo",
     guion: [
-      { ms: 1500, aviso: "Abriendo el agente de WhatsApp IA 24/7", resaltar: [{ texto: /Agente IA/i }] },
-      { ms: 4000, aviso: "Un cliente cotiza una moto por WhatsApp", clic: [{ css: "button", texto: /moto 200cc/i }, { css: "button", texto: /motos tienen/i }] },
-      { ms: 10500, aviso: "El agente respondió solo con precio y papeles", ok: true },
+      { ms: 300, aviso: "Abriendo el Agente WhatsApp IA" },
+      { ms: 800, aviso: "Un cliente cotiza una moto por WhatsApp", agente: true },
+      { ms: 3500, aviso: "La IA respondió sola con precio y papeles", ok: true },
     ],
   },
   {
-    titulo: "Caja y contabilidad automática",
-    texto: "El ingreso de la venta se refleja en el arqueo y el asiento contable queda cuadrado solo.",
+    titulo: "Finanzas y rentabilidad",
+    texto: "Ingresos reales del día, utilidad neta y asientos contables cuadrados.",
     ruta: "/finanzas",
     guion: [
-      { ms: 1200, aviso: "Abriendo Caja y contabilidad" },
-      { ms: 3500, aviso: "La venta ya aparece como ingreso", resaltar: [{ texto: /ingreso/i }] },
-      { ms: 7000, aviso: "Asiento contable creado automáticamente", resaltar: [{ texto: /asiento|d[eé]bito/i }] },
-      { ms: 10500, aviso: "Débitos y créditos cuadrados al peso", ok: true },
+      { ms: 300, aviso: "Abriendo Finanzas y rentabilidad" },
+      { ms: 1700, aviso: "Ingresos del día y utilidad neta", resaltar: [{ texto: /utilidad neta/i }] },
+      { ms: 3400, aviso: "Débitos y créditos cuadrados al peso", ok: true },
     ],
   },
 ];
@@ -195,10 +195,14 @@ const marcar = (el: HTMLElement) => {
     el.style.outline = antes.outline;
     el.style.outlineOffset = antes.offset;
     el.style.boxShadow = antes.sombra;
-  }, 2600);
+  }, 2000);
 };
 
-/** Barra de recorrido guiado con ejercicio en vivo: solo en cuentas demo. */
+// ¿La pantalla actual ya es la del paso? (el panel del negocio puede vivir en /restaurante o /negocio/<tipo>).
+const enRutaDelPaso = (p: Paso, ruta: string): boolean =>
+  p.vista ? ruta === p.ruta || ruta === "/restaurante" || ruta.startsWith("/negocio/") : ruta === p.ruta;
+
+/** Barra del recorrido guiado: solo en cuentas demo. Cambia de ventana sola cada 4,5 segundos. */
 export function BarraDemo() {
   const { user } = useAuth();
   const nav = useNavigate();
@@ -207,40 +211,86 @@ export function BarraDemo() {
   const [auto, setAuto] = useState(true);
   const [avisos, setAvisos] = useState<Aviso[]>([]);
   const contador = useRef(0);
-  const arrancado = useRef(false);
+  const cifrasListas = useRef(false);
   const demo = esCuentaDemo(user?.email);
   const tipo = user?.email?.toLowerCase() === CORREO_DEMO.vehiculos ? "vehiculos" : "restaurante";
   const PASOS = tipo === "vehiculos" ? PASOS_VEHICULOS : PASOS_RESTAURANTE;
+  const indice = Math.min(paso, PASOS.length - 1);
 
-  // Abre la pantalla del paso (y la pestaña exacta del panel cuando la tiene).
+  // Abre la ventana real del paso (y la pestaña exacta del panel cuando la tiene).
   const abrir = (p: Paso) => {
     if (p.vista) nav({ to: p.ruta as never, search: { vista: p.vista } as never });
     else nav({ to: p.ruta as never });
   };
 
-  // Al entrar a la demo, el recorrido arranca directamente dentro del primer módulo.
+  // Al entrar a la demo se aseguran las cifras del día (Finanzas, Ventas y Caja nunca en $ 0).
   useEffect(() => {
-    if (!demo || arrancado.current) return;
-    arrancado.current = true;
-    abrir(PASOS[0]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!demo || cifrasListas.current) return;
+    cifrasListas.current = true;
+    void supabase.rpc("demo_cifras_del_dia").then(({ error }) => {
+      if (error) console.warn("Demo: no se cargaron las cifras del día", error.message);
+      else window.dispatchEvent(new Event("negocio:cambio"));
+    });
   }, [demo]);
 
-  // Ejercicio en vivo del paso actual: avisos flotantes + clics y resaltados dentro del módulo.
+  // Cada cambio de paso abre su ventana. Si otra pantalla se impone (por ejemplo el panel
+  // general), se vuelve a abrir la del paso para que el recorrido nunca se quede atascado.
+  useEffect(() => {
+    if (!demo) return;
+    const p = PASOS[indice];
+    abrir(p);
+    const corrector = window.setTimeout(() => {
+      if (!enRutaDelPaso(p, window.location.pathname)) abrir(p);
+    }, 1200);
+    return () => window.clearTimeout(corrector);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [demo, indice, tipo]);
+
+  // Temporizador real: cada 4,5 segundos avanza al siguiente paso (1 → 2 → … → 6).
   useEffect(() => {
     if (!demo || !auto) return;
-    const p = PASOS[Math.min(paso, PASOS.length - 1)];
+    const temporizador = window.setInterval(() => {
+      if (indice >= PASOS.length - 1) {
+        setAuto(false);
+        return;
+      }
+      setPaso(indice + 1);
+    }, INTERVALO_MS);
+    return () => window.clearInterval(temporizador);
+  }, [demo, auto, indice, PASOS.length]);
+
+  // Ejercicio en vivo dentro de la ventana: avisos flotantes y apoyos visuales.
+  useEffect(() => {
+    if (!demo || !auto) return;
+    const p = PASOS[indice];
     const timers: number[] = [];
     let vivo = true;
     setAvisos([]);
 
+    if (p.ancla) {
+      const ancla = p.ancla;
+      const llevar = (intento: number) => {
+        if (!vivo) return;
+        const el = document.getElementById(ancla);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        else if (intento < 8) timers.push(window.setTimeout(() => llevar(intento + 1), 250));
+      };
+      timers.push(window.setTimeout(() => llevar(0), 250));
+    }
+
     const ejecutar = (a: Accion, intento: number) => {
       if (!vivo) return;
+      if (a.agente) {
+        // El chat del agente puede tardar un instante en aparecer: se espera a que esté en pantalla.
+        if (document.getElementById("agente-whatsapp-demo")) window.dispatchEvent(new Event("gosaryc:demo-agente"));
+        else if (intento < 6) timers.push(window.setTimeout(() => ejecutar(a, intento + 1), 250));
+        return;
+      }
       const objetivo = a.clic ?? a.resaltar ?? a.elegir;
       if (!objetivo) return;
       const el = buscar(objetivo);
       if (!el) {
-        if (intento < 8) timers.push(window.setTimeout(() => ejecutar(a, intento + 1), 500));
+        if (intento < 4) timers.push(window.setTimeout(() => ejecutar(a, intento + 1), 250));
         return;
       }
       marcar(el);
@@ -252,7 +302,7 @@ export function BarraDemo() {
           el.dispatchEvent(new Event("change", { bubbles: true }));
         }
       }
-      if (a.clic) timers.push(window.setTimeout(() => vivo && el.click(), 700));
+      if (a.clic) timers.push(window.setTimeout(() => vivo && el.click(), 400));
     };
 
     p.guion.forEach((a: Accion) => {
@@ -261,47 +311,39 @@ export function BarraDemo() {
           contador.current += 1;
           const id = contador.current;
           setAvisos((prev: Aviso[]) => [...prev.slice(-2), { id, texto: a.aviso, ok: !!a.ok }]);
-          timers.push(window.setTimeout(() => setAvisos((prev: Aviso[]) => prev.filter((x: Aviso) => x.id !== id)), 6000));
+          timers.push(window.setTimeout(() => setAvisos((prev: Aviso[]) => prev.filter((x: Aviso) => x.id !== id)), 3500));
           ejecutar(a, 0);
         }, a.ms),
       );
     });
-
-    const fin = (p.guion[p.guion.length - 1]?.ms ?? 0) + 5000;
-    timers.push(
-      window.setTimeout(() => {
-        if (paso >= PASOS.length - 1) {
-          setAuto(false);
-          return;
-        }
-        setPaso(paso + 1);
-        abrir(PASOS[paso + 1]);
-      }, fin),
-    );
 
     return () => {
       vivo = false;
       timers.forEach((t: number) => window.clearTimeout(t));
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [demo, auto, paso, tipo]);
+  }, [demo, auto, indice, tipo]);
 
   if (!demo) return null;
-  const pasoActual = PASOS[Math.min(paso, PASOS.length - 1)];
+  const pasoActual = PASOS[indice];
   const enVivo = avisos[avisos.length - 1];
 
   const ir = (n: number) => {
     const i = Math.max(0, Math.min(n, PASOS.length - 1));
-    setPaso(i);
-    abrir(PASOS[i]);
+    if (i === indice) abrir(PASOS[i]);
+    else setPaso(i);
   };
 
   // Al terminar, el piloto automático vuelve a empezar desde el primer paso.
   const alternarAuto = () => {
-    if (!auto && paso >= PASOS.length - 1) ir(0);
-    else if (!auto) abrir(PASOS[paso]);
-    if (auto) setAvisos([]);
-    setAuto((a: boolean) => !a);
+    if (auto) {
+      setAvisos([]);
+      setAuto(false);
+      return;
+    }
+    if (indice >= PASOS.length - 1) setPaso(0);
+    else abrir(PASOS[indice]);
+    setAuto(true);
   };
 
   const restaurar = async () => {
@@ -317,7 +359,7 @@ export function BarraDemo() {
   };
 
   const btn =
-    "inline-flex min-h-10 items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/20 disabled:opacity-40";
+    "inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20 disabled:opacity-40 sm:text-base";
 
   return (
     <>
@@ -330,7 +372,7 @@ export function BarraDemo() {
         {avisos.map((a: Aviso) => (
           <div
             key={a.id}
-            className="flex w-full items-start gap-2.5 rounded-xl border-2 border-[#2563EB] bg-[#0F172A] px-3.5 py-3 text-sm font-medium text-white shadow-2xl animate-in fade-in slide-in-from-right-4 duration-300"
+            className="flex w-full items-start gap-2.5 rounded-xl border-2 border-[#2563EB] bg-[#0F172A] px-3.5 py-3 text-sm font-semibold text-white shadow-2xl animate-in fade-in slide-in-from-right-4 duration-300"
           >
             {a.ok ? (
               <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
@@ -342,34 +384,37 @@ export function BarraDemo() {
         ))}
       </div>
 
-      {/* Barra inferior del recorrido */}
+      {/* Barra inferior del recorrido: fondo sólido oscuro y texto blanco grande */}
       <div
         data-barra-demo
         className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-[60] flex justify-center px-3 md:bottom-4"
       >
-        <div className="pointer-events-auto w-full max-w-3xl space-y-3 rounded-2xl border-2 border-[#2563EB] bg-[#0F172A] p-4 text-white shadow-2xl">
+        <div
+          className="pointer-events-auto w-full max-w-3xl space-y-3 rounded-2xl border-2 border-[#2563EB] p-4 text-white shadow-2xl"
+          style={{ backgroundColor: "#0F172A" }}
+        >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 break-words">
-              <p className="text-base font-semibold leading-snug">
-                Paso {paso + 1} de {PASOS.length}: {pasoActual.titulo}
+              <p className="text-lg font-bold leading-snug text-white sm:text-xl">
+                Paso {indice + 1} de {PASOS.length}: {pasoActual.titulo}
               </p>
-              <p className="mt-1 text-sm leading-relaxed text-slate-200">{pasoActual.texto}</p>
+              <p className="mt-1 text-base leading-relaxed text-white/90">{pasoActual.texto}</p>
               {auto && enVivo && (
-                <p className="mt-1.5 flex items-center gap-1.5 text-sm font-medium text-[#93C5FD]">
-                  <Radio className="h-3.5 w-3.5 shrink-0 animate-pulse" /> En vivo: {enVivo.texto}
+                <p className="mt-1.5 flex items-center gap-1.5 text-base font-semibold text-[#93C5FD]">
+                  <Radio className="h-4 w-4 shrink-0 animate-pulse" /> En vivo: {enVivo.texto}
                 </p>
               )}
             </div>
             <span
-              className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${auto ? "bg-[#2563EB] text-white" : "bg-white/15 text-slate-200"}`}
+              className={`shrink-0 rounded-full px-3 py-1 text-sm font-bold ${auto ? "bg-[#2563EB] text-white" : "bg-white/15 text-white"}`}
             >
               {auto ? "Piloto automático" : "Explorando"}
             </span>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-white/15">
+          <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/15">
             <div
               className="h-full rounded-full bg-[#2563EB] transition-all duration-500"
-              style={{ width: `${((paso + 1) / PASOS.length) * 100}%` }}
+              style={{ width: `${((indice + 1) / PASOS.length) * 100}%` }}
             />
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2">
@@ -377,10 +422,10 @@ export function BarraDemo() {
               {auto ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
               {auto ? "Pausar / Explorar libremente" : "Piloto automático"}
             </button>
-            <button type="button" className={btn} onClick={() => ir(paso - 1)} disabled={paso === 0}>
+            <button type="button" className={btn} onClick={() => ir(indice - 1)} disabled={indice === 0}>
               <ChevronLeft className="h-4 w-4" /> Anterior
             </button>
-            <button type="button" className={btn} onClick={() => ir(paso + 1)} disabled={paso === PASOS.length - 1}>
+            <button type="button" className={btn} onClick={() => ir(indice + 1)} disabled={indice === PASOS.length - 1}>
               Siguiente <ChevronRight className="h-4 w-4" />
             </button>
             <button type="button" className={btn} onClick={restaurar} disabled={busy}>
@@ -390,7 +435,7 @@ export function BarraDemo() {
             <Link
               to="/login"
               search={{ mode: "signup" }}
-              className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-[#2563EB] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1D4ED8]"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-[#2563EB] px-4 py-2 text-sm font-bold text-white hover:bg-[#1D4ED8] sm:text-base"
             >
               <Rocket className="h-4 w-4" /> Crear mi cuenta gratis
             </Link>

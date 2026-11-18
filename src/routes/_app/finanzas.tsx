@@ -94,23 +94,25 @@ function FinanzasPage() {
 
       {cargando && <p className="text-sm text-muted-foreground">Calculando…</p>}
 
-      {!cargando && usaPedidos && (
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      {!cargando && (
+        <div className={`grid grid-cols-2 gap-3 ${usaPedidos ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
+          {usaPedidos && (
+            <GlassPanel className="p-4">
+              <p className="text-xs text-muted-foreground">Ventas entregadas</p>
+              <p className="truncate font-display text-xl text-foreground">{dinero(ventas)}</p>
+              <p className="text-xs text-muted-foreground">{pedidos} pedidos</p>
+            </GlassPanel>
+          )}
           <GlassPanel className="p-4">
-            <p className="text-xs text-muted-foreground">Ventas entregadas</p>
-            <p className="truncate font-display text-xl text-foreground">{dinero(ventas)}</p>
-            <p className="text-xs text-muted-foreground">{pedidos} pedidos</p>
-          </GlassPanel>
-          <GlassPanel className="p-4">
-            <p className="text-xs text-muted-foreground">Otros ingresos</p>
+            <p className="text-xs text-muted-foreground">{usaPedidos ? "Otros ingresos" : "Ingresos"}</p>
             <p className="truncate font-display text-xl text-foreground">{dinero(ingresos)}</p>
           </GlassPanel>
           <GlassPanel className="p-4">
             <p className="text-xs text-muted-foreground">Gastos</p>
             <p className="truncate font-display text-xl text-foreground">{dinero(gastos)}</p>
           </GlassPanel>
-          <GlassPanel className="p-4">
-            <p className="text-xs text-muted-foreground">Utilidad ({margen}%)</p>
+          <GlassPanel className={`p-4 ${usaPedidos ? "" : "col-span-2 lg:col-span-1"}`}>
+            <p className="text-xs text-muted-foreground">Utilidad neta ({margen}%)</p>
             <p className={`truncate font-display text-xl ${utilidad < 0 ? "text-destructive" : "text-primary"}`}>{dinero(utilidad)}</p>
           </GlassPanel>
         </div>
