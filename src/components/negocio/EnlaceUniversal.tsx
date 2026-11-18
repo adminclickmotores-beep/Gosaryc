@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { MessageCircle, CalendarCheck, Store, ShieldCheck, FileText } from "lucide-react";
+import { MessageCircle, CalendarCheck, Store, ShieldCheck, FileText, ImageOff, Minus, Plus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
@@ -17,7 +17,7 @@ function enlaceWhats(diez: string, texto: string): string {
   return `https://wa.me/${num}?text=${encodeURIComponent(texto)}`;
 }
 
-type Item = { id: string; nombre: string; precio: number };
+type Item = { id: string; nombre: string; precio: number; imagen: string | null; descripcion: string | null };
 
 /** ¿Este tipo de negocio es Salud Ocupacional / SG-SST / Medicina Laboral? Solo esos ven las tarjetas SST. */
 function esNegocioSST(tipo: string | null | undefined): boolean {
@@ -42,6 +42,8 @@ const CLAVES_SERVICIOS = new Set([
  */
 export function EnlaceUniversal({ dueno, nombre, telefono, descripcion, tipoNegocio }: { dueno: string; nombre: string; telefono: string; descripcion: string; tipoNegocio?: string | null }) {
   const [items, setItems] = useState<Item[]>([]);
+  const [abierto, setAbierto] = useState<Item | null>(null);
+  const [cantidad, setCantidad] = useState(1);
   const [citaNombre, setCitaNombre] = useState("");
   const [citaTel, setCitaTel] = useState("");
   const [citaFecha, setCitaFecha] = useState("");
@@ -92,12 +94,12 @@ export function EnlaceUniversal({ dueno, nombre, telefono, descripcion, tipoNego
     }
     void (async () => {
       const [a, b] = await Promise.all([
-        supabase.from("com_productos").select("id,nombre,precio_detal").eq("owner_id", dueno).eq("activo", true).order("nombre").limit(200),
-        supabase.from("restaurante_productos").select("id,nombre,precio").eq("owner_id", dueno).eq("activo", true).order("nombre").limit(200),
+        supabase.from("com_productos").select("id,nombre,precio_detal,imagen_url").eq("owner_id", dueno).eq("activo", true).order("nombre").limit(200),
+        supabase.from("restaurante_productos").select("id,nombre,precio,imagen_url,descripcion").eq("owner_id", dueno).eq("activo", true).order("nombre").limit(200),
       ]);
       const lista: Item[] = [
-        ...((a.data ?? []).map((p) => ({ id: p.id, nombre: p.nombre, precio: p.precio_detal })) as Item[]),
-        ...((b.data ?? []).map((p) => ({ id: p.id, nombre: p.nombre, precio: p.precio })) as Item[]),
+        ...(a.data ?? []).map((p): Item => ({ id: p.id, nombre: p.nombre, precio: p.precio_detal, imagen: p.imagen_url, descripcion: null })),
+        ...(b.data ?? []).map((p): Item => ({ id: p.id, nombre: p.nombre, precio: p.precio, imagen: p.imagen_url, descripcion: p.descripcion })),
       ];
       setItems(lista.slice(0, 200));
     })();
@@ -124,18 +126,33 @@ export function EnlaceUniversal({ dueno, nombre, telefono, descripcion, tipoNego
         </div>
       </div>
 
-      <GlassPanel className="mt-5 space-y-2 p-5">
+      <GlassPanel className="mt-5 space-y-3 p-5">
         <h2 className="font-medium text-foreground">{tituloCatalogo}</h2>
         {items.length === 0 && <p className="text-sm text-muted-foreground">Escríbenos por WhatsApp y te enviamos {CLAVES_SERVICIOS.has(clave) ? "la disponibilidad y los precios" : "el catálogo completo"}.</p>}
-        {items.map((p) => (
-          <div key={p.id} className="flex items-center justify-between gap-2 border-b border-glass-border pb-2 text-sm last:border-0">
-            <span className="min-w-0 break-words text-foreground">{p.nombre} · {dinero(p.precio)}</span>
-            <a href={enlaceWhats(telefono, `Hola ${nombre}, me interesa: ${p.nombre} (${dinero(p.precio)})`)} target="_blank" rel="noreferrer"
-              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground">
-              <MessageCircle className="h-3 w-3" /> Pedir
-            </a>
+        {items.length > 0 && (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {items.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => { setAbierto(p); setCantidad(1); }}
+                className="group min-w-0 overflow-hidden rounded-2xl border border-glass-border bg-card text-left shadow-sm transition hover:shadow-lg"
+              >
+                <div className="relative aspect-square w-full overflow-hidden bg-muted">
+                  {p.imagen ? (
+                    <img src={p.imagen} alt={p.nombre} loading="lazy" className="h-full w-full max-w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                  ) : (
+                    <span className="flex h-full w-full items-center justify-center text-muted-foreground/50"><ImageOff className="h-10 w-10" /></span>
+                  )}
+                </div>
+                <div className="space-y-0.5 p-3">
+                  <p className="break-words text-sm font-medium leading-snug text-foreground">{p.nombre}</p>
+                  <p className="precio-esmeralda text-base font-semibold">{dinero(p.precio)}</p>
+                </div>
+              </button>
+            ))}
           </div>
-        ))}
+        )}
         <a href={enlaceWhats(telefono, `Hola ${nombre}, quiero hacer un pedido.`)} target="_blank" rel="noreferrer"
           className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-sm text-foreground">
           <MessageCircle className="h-4 w-4" /> Pedir por WhatsApp
@@ -213,6 +230,52 @@ export function EnlaceUniversal({ dueno, nombre, telefono, descripcion, tipoNego
             <CalendarCheck className="h-4 w-4" /> {esTaller ? "Solicitar agendamiento por WhatsApp" : "Solicitar cita por WhatsApp"}
           </a>
         </GlassPanel>
+      )}
+
+      {abierto && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center sm:p-4" onClick={() => setAbierto(null)}>
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={abierto.nombre}
+            onClick={(e) => e.stopPropagation()}
+            className="relative grid max-h-[92dvh] w-full max-w-3xl grid-cols-1 overflow-y-auto rounded-t-3xl border border-glass-border bg-background shadow-2xl sm:rounded-3xl md:grid-cols-2"
+          >
+            <button type="button" aria-label="Cerrar" onClick={() => setAbierto(null)} className="absolute right-3 top-3 z-10 rounded-full bg-black/55 p-2 text-white hover:bg-black/75">
+              <X className="h-5 w-5" />
+            </button>
+            <div className="group relative aspect-[4/3] w-full overflow-hidden bg-muted md:aspect-auto md:min-h-[340px]">
+              {abierto.imagen ? (
+                <img src={abierto.imagen} alt={abierto.nombre} className="absolute inset-0 h-full w-full max-w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+              ) : (
+                <span className="absolute inset-0 flex items-center justify-center text-muted-foreground/50"><ImageOff className="h-16 w-16" /></span>
+              )}
+            </div>
+            <div className="flex min-w-0 flex-col gap-4 p-5">
+              <div>
+                <h3 className="break-words pr-10 font-display text-2xl leading-tight text-foreground">{abierto.nombre}</h3>
+                <p className="precio-esmeralda mt-1 text-2xl font-semibold">{dinero(abierto.precio)}</p>
+                {abierto.descripcion && <p className="mt-2 break-words text-sm text-muted-foreground">{abierto.descripcion}</p>}
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Cantidad</span>
+                <div className="flex items-center gap-3">
+                  <button type="button" aria-label="Quitar uno" onClick={() => setCantidad((c) => Math.max(1, c - 1))} className="rounded-full border border-glass-border p-2.5"><Minus className="h-4 w-4" /></button>
+                  <span className="w-8 text-center text-lg font-semibold tabular-nums">{cantidad}</span>
+                  <button type="button" aria-label="Agregar uno" onClick={() => setCantidad((c) => Math.min(50, c + 1))} className="rounded-full border border-glass-border p-2.5"><Plus className="h-4 w-4" /></button>
+                </div>
+              </div>
+              <a
+                href={enlaceWhats(telefono, `Hola ${nombre}, quiero pedir:\n${cantidad} x ${abierto.nombre}\nTotal: ${dinero(abierto.precio * cantidad)}`)}
+                target="_blank"
+                rel="noreferrer"
+                className="btn-pro mt-auto flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3.5 text-base font-semibold"
+              >
+                <MessageCircle className="h-5 w-5" /> Pedir por WhatsApp · {dinero(abierto.precio * cantidad)}
+              </a>
+            </div>
+          </div>
+        </div>
       )}
 
       <p className="mt-6 text-center text-xs text-muted-foreground">

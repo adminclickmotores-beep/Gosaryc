@@ -14,6 +14,8 @@ import {
   UtensilsCrossed,
   ChevronLeft,
   Store,
+  X,
+  ImageOff,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -80,6 +82,8 @@ function MenuPage() {
   const [opcionesTodas, setOpcionesTodas] = useState<OpcionProducto[]>([]);
   const [elegir, setElegir] = useState<Producto | null>(null);
   const [sel, setSel] = useState<Record<string, string[]>>({});
+  const [cantElegir, setCantElegir] = useState(1);
+  const [notaElegir, setNotaElegir] = useState("");
   const [paso, setPaso] = useState<"menu" | "datos" | "listo">("menu");
   const [enviando, setEnviando] = useState(false);
   const [codigo, setCodigo] = useState("");
@@ -148,19 +152,25 @@ function MenuPage() {
 
   const opcionesDe = (productoId: string) => opcionesTodas.filter((o) => o.producto_id === productoId);
 
-  const sumarLinea = (producto: Producto, opciones: Seleccion[]) => {
+  const sumarLinea = (producto: Producto, opciones: Seleccion[], cantidad = 1) => {
     const key = `${producto.id}|${opciones.map((o) => `${o.grupo}:${o.nombre}`).sort().join(",")}`;
     setCarrito((c) =>
       c.some((l) => l.key === key)
-        ? c.map((l) => (l.key === key ? { ...l, cantidad: l.cantidad + 1 } : l))
-        : [...c, { key, producto, cantidad: 1, opciones }],
+        ? c.map((l) => (l.key === key ? { ...l, cantidad: l.cantidad + cantidad } : l))
+        : [...c, { key, producto, cantidad, opciones }],
     );
+  };
+
+  const abrirProducto = (p: Producto) => {
+    setSel({});
+    setCantElegir(1);
+    setNotaElegir("");
+    setElegir(p);
   };
 
   const agregar = (p: Producto) => {
     if (opcionesDe(p.id).length > 0) {
-      setSel({});
-      setElegir(p);
+      abrirProducto(p);
     } else {
       sumarLinea(p, []);
     }
@@ -197,17 +207,34 @@ function MenuPage() {
     .flatMap((g) => g.items.filter((o) => (sel[g.grupo] ?? []).includes(o.id)))
     .reduce((s, o) => s + o.precio_extra, 0);
 
-  const confirmarOpciones = () => {
-    if (!elegir) return;
-    const faltante = gruposElegir.find((g) => g.obligatorio && (sel[g.grupo] ?? []).length === 0);
-    if (faltante) return toast.error(`Elige una opción en "${faltante.grupo}".`);
-    const opciones: Seleccion[] = gruposElegir.flatMap((g) =>
+  const opcionesElegidas = (): Seleccion[] =>
+    gruposElegir.flatMap((g) =>
       g.items
         .filter((o) => (sel[g.grupo] ?? []).includes(o.id))
         .map((o) => ({ grupo: g.grupo, nombre: o.nombre, precio: o.precio_extra })),
     );
-    sumarLinea(elegir, opciones);
+
+  const confirmarOpciones = () => {
+    if (!elegir) return;
+    const faltante = gruposElegir.find((g) => g.obligatorio && (sel[g.grupo] ?? []).length === 0);
+    if (faltante) return toast.error(`Elige una opción en "${faltante.grupo}".`);
+    sumarLinea(elegir, opcionesElegidas(), cantElegir);
     setElegir(null);
+  };
+
+  const pedirProductoWhatsapp = () => {
+    if (!elegir || !negocio?.telefono_pedidos) return;
+    const faltante = gruposElegir.find((g) => g.obligatorio && (sel[g.grupo] ?? []).length === 0);
+    if (faltante) return toast.error(`Elige una opción en "${faltante.grupo}".`);
+    const ops = opcionesElegidas();
+    const d = negocio.telefono_pedidos.replace(/\D/g, "");
+    const numero = d.length === 10 ? `57${d}` : d;
+    const texto =
+      `Hola ${negocio.nombre ?? ""}, quiero pedir:\n${cantElegir} x ${elegir.nombre}` +
+      (ops.length > 0 ? `\nOpciones: ${ops.map((o) => o.nombre).join(", ")}` : "") +
+      (notaElegir.trim() ? `\nNota: ${notaElegir.trim()}` : "") +
+      `\nTotal: ${dinero((elegir.precio + extrasElegidos) * cantElegir)}`;
+    window.open(`https://wa.me/${numero}?text=${encodeURIComponent(texto)}`, "_blank", "noopener,noreferrer");
   };
 
   const termino = busqueda.trim().toLowerCase();
@@ -278,22 +305,36 @@ function MenuPage() {
     const cant = carrito.filter((l) => l.producto.id === p.id).reduce((s, l) => s + l.cantidad, 0);
     const conOpciones = opcionesDe(p.id).length > 0;
     return (
-      <GlassPanel
+      <div
         key={p.id}
-        className={`flex items-stretch gap-3 overflow-hidden p-3 transition-colors ${cant > 0 ? "ring-1 ring-primary/50" : ""}`}
+        className={`flex min-w-0 flex-col overflow-hidden rounded-2xl border border-glass-border bg-card shadow-sm transition hover:shadow-lg ${cant > 0 ? "ring-2 ring-primary/50" : ""}`}
       >
-        <div className="flex min-w-0 flex-1 flex-col">
-          <p className="flex items-start gap-1.5 break-words font-medium leading-snug text-foreground">
-            <span className="min-w-0">{p.nombre}</span>
-            {p.destacado && (
-              <Star className="mt-0.5 h-3.5 w-3.5 shrink-0 fill-primary text-primary" aria-label="Recomendado" />
-            )}
-          </p>
-          {p.descripcion && (
-            <p className="mt-1 line-clamp-2 text-sm leading-snug text-muted-foreground">{p.descripcion}</p>
+        <button type="button" onClick={() => abrirProducto(p)} className="group relative block aspect-square w-full overflow-hidden bg-muted text-left" aria-label={`Ver ${p.nombre}`}>
+          {p.imagen_url ? (
+            <img
+              src={p.imagen_url}
+              alt={p.nombre}
+              loading="lazy"
+              className="h-full w-full max-w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <span className="flex h-full w-full items-center justify-center text-muted-foreground/50">
+              <ImageOff className="h-10 w-10" />
+            </span>
           )}
-          <div className="mt-auto flex items-center justify-between gap-2 pt-3">
-            <span className="text-base font-semibold text-foreground">{dinero(p.precio)}</span>
+          {p.destacado && (
+            <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-primary-foreground">
+              <Star className="h-3 w-3 fill-current" /> Recomendado
+            </span>
+          )}
+        </button>
+        <div className="flex min-w-0 flex-1 flex-col p-3">
+          <p className="break-words font-medium leading-snug text-foreground">{p.nombre}</p>
+          {p.descripcion && (
+            <p className="mt-1 line-clamp-2 text-xs leading-snug text-muted-foreground">{p.descripcion}</p>
+          )}
+          <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-3">
+            <span className="precio-esmeralda text-base font-semibold">{dinero(p.precio)}</span>
             {cant > 0 ? (
               <div className="flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 p-0.5">
                 <button
@@ -323,15 +364,7 @@ function MenuPage() {
             )}
           </div>
         </div>
-        {p.imagen_url && (
-          <img
-            src={p.imagen_url}
-            alt={p.nombre}
-            loading="lazy"
-            className="h-28 w-28 shrink-0 rounded-xl object-cover sm:h-32 sm:w-32"
-          />
-        )}
-      </GlassPanel>
+      </div>
     );
   };
 
@@ -516,7 +549,7 @@ function MenuPage() {
                 <h2 className="mb-3 flex items-center gap-2 font-display text-xl text-foreground">
                   <Star className="h-5 w-5 fill-primary text-primary" /> Recomendados
                 </h2>
-                <div className="grid gap-3 sm:grid-cols-2">{destacados.map(tarjeta)}</div>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{destacados.map(tarjeta)}</div>
               </section>
             )}
 
@@ -525,7 +558,7 @@ function MenuPage() {
                 <h2 className="mb-3 border-l-4 border-primary pl-3 font-display text-xl text-foreground">
                   {cat.nombre}
                 </h2>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                   {visibles.filter((p) => p.categoria_id === cat.id).map(tarjeta)}
                 </div>
               </section>
@@ -534,7 +567,7 @@ function MenuPage() {
             {sinCategoria.length > 0 && (
               <section className="mb-8">
                 <h2 className="mb-3 border-l-4 border-primary pl-3 font-display text-xl text-foreground">Otros</h2>
-                <div className="grid gap-3 sm:grid-cols-2">{sinCategoria.map(tarjeta)}</div>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{sinCategoria.map(tarjeta)}</div>
               </section>
             )}
           </div>
@@ -655,14 +688,40 @@ function MenuPage() {
       )}
 
       {elegir && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center" onClick={() => setElegir(null)}>
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center sm:p-4" onClick={() => setElegir(null)}>
           <div
-            className="max-h-[90dvh] w-full max-w-md space-y-4 overflow-y-auto rounded-t-3xl border border-glass-border bg-background p-5 sm:rounded-3xl"
+            role="dialog"
+            aria-modal="true"
+            aria-label={elegir.nombre}
+            className="relative grid max-h-[92dvh] w-full max-w-4xl grid-cols-1 overflow-y-auto rounded-t-3xl border border-glass-border bg-background shadow-2xl sm:rounded-3xl md:grid-cols-12"
             onClick={(e) => e.stopPropagation()}
           >
+            <button
+              type="button"
+              aria-label="Cerrar"
+              onClick={() => setElegir(null)}
+              className="absolute right-3 top-3 z-10 rounded-full bg-black/55 p-2 text-white hover:bg-black/75"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <div className="group relative aspect-[4/3] w-full overflow-hidden bg-muted md:col-span-7 md:aspect-auto md:min-h-[420px]">
+              {elegir.imagen_url ? (
+                <img
+                  src={elegir.imagen_url}
+                  alt={elegir.nombre}
+                  className="absolute inset-0 h-full w-full max-w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+              ) : (
+                <span className="absolute inset-0 flex items-center justify-center text-muted-foreground/50">
+                  <ImageOff className="h-16 w-16" />
+                </span>
+              )}
+            </div>
+            <div className="min-w-0 space-y-4 p-5 md:col-span-5">
             <div>
-              <h2 className="break-words font-display text-xl text-foreground">{elegir.nombre}</h2>
-              <p className="text-sm text-muted-foreground">{dinero(elegir.precio)}</p>
+              <h2 className="break-words pr-10 font-display text-2xl leading-tight text-foreground">{elegir.nombre}</h2>
+              <p className="precio-esmeralda mt-1 text-2xl font-semibold">{dinero(elegir.precio + extrasElegidos)}</p>
+              {elegir.descripcion && <p className="mt-2 break-words text-sm text-muted-foreground">{elegir.descripcion}</p>}
             </div>
             {gruposElegir.map((g) => (
               <div key={g.grupo} className="space-y-2">
@@ -689,13 +748,39 @@ function MenuPage() {
                 })}
               </div>
             ))}
-            <div className="flex gap-2">
-              <button type="button" onClick={() => setElegir(null)} className="rounded-full border border-glass-border px-5 py-3 text-sm text-foreground">
-                Cancelar
+            <textarea
+              className={campo}
+              rows={2}
+              placeholder="Notas: sin cebolla, sin hielo…"
+              value={notaElegir}
+              onChange={(e) => setNotaElegir(e.target.value)}
+            />
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Cantidad</span>
+              <div className="flex items-center gap-3">
+                <button type="button" aria-label="Quitar uno" onClick={() => setCantElegir((c) => Math.max(1, c - 1))} className="rounded-full border border-glass-border p-2.5">
+                  <Minus className="h-4 w-4" />
+                </button>
+                <span className="w-8 text-center text-lg font-semibold tabular-nums">{cantElegir}</span>
+                <button type="button" aria-label="Agregar uno" onClick={() => setCantElegir((c) => Math.min(50, c + 1))} className="rounded-full border border-glass-border p-2.5">
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <button type="button" onClick={confirmarOpciones} className="btn-pro w-full rounded-2xl px-4 py-3.5 text-base font-semibold">
+                Agregar al pedido · {dinero((elegir.precio + extrasElegidos) * cantElegir)}
               </button>
-              <button type="button" onClick={confirmarOpciones} className="flex-1 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground">
-                Agregar · {dinero(elegir.precio + extrasElegidos)}
-              </button>
+              {negocio.telefono_pedidos && (
+                <button
+                  type="button"
+                  onClick={pedirProductoWhatsapp}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-glass-border px-4 py-3 text-sm font-medium text-foreground hover:bg-glass/40"
+                >
+                  <MessageCircle className="h-4 w-4 text-primary" /> Pedir por WhatsApp
+                </button>
+              )}
+            </div>
             </div>
           </div>
         </div>

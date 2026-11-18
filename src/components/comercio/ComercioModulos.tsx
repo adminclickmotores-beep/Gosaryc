@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Loader2, Minus, Plus, Printer, ScanBarcode, ShieldAlert, Trash2, Wallet, X } from "lucide-react";
+import { ImageOff, LayoutGrid, List, Loader2, Minus, Plus, Printer, ScanBarcode, ShieldAlert, Trash2, Wallet, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -187,6 +187,8 @@ export function ProductosComercial() {
   const [pasillo, setPasillo] = useState("");
   const [estante, setEstante] = useState("");
   const [nivel, setNivel] = useState("");
+  const [vista, setVista] = useState<"mosaico" | "lista">("mosaico");
+  const [abierto, setAbierto] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
 
   const elegirImpuesto = (v: string) => {
@@ -318,8 +320,51 @@ export function ProductosComercial() {
 
       <div className="space-y-2">
         <input className={campo} placeholder="Buscar por nombre, código o SKU" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+        <div className="flex gap-2">
+          <button type="button" onClick={() => setVista("mosaico")} className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm ${vista === "mosaico" ? "border-primary bg-primary text-primary-foreground" : "border-glass-border text-muted-foreground"}`}>
+            <LayoutGrid className="h-4 w-4" /> Vista mosaico HD
+          </button>
+          <button type="button" onClick={() => setVista("lista")} className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm ${vista === "lista" ? "border-primary bg-primary text-primary-foreground" : "border-glass-border text-muted-foreground"}`}>
+            <List className="h-4 w-4" /> Vista lista
+          </button>
+        </div>
         {visibles.length === 0 && <p className="text-sm text-muted-foreground">Aún no hay productos.</p>}
-        {visibles.map((p) => (
+        {vista === "mosaico" && visibles.length > 0 && (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {visibles.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setAbierto(p.id)}
+                className={`group min-w-0 overflow-hidden rounded-2xl border border-glass-border bg-card text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg ${p.activo ? "" : "opacity-50"}`}
+              >
+                <div className="relative aspect-square w-full overflow-hidden bg-muted">
+                  {p.imagen_url ? (
+                    <img src={p.imagen_url} alt={p.nombre} loading="lazy" className="h-full w-full max-w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                  ) : (
+                    <span className="flex h-full w-full items-center justify-center text-muted-foreground/50"><ImageOff className="h-10 w-10" /></span>
+                  )}
+                  <span className={`absolute left-2 top-2 rounded-full px-2.5 py-0.5 text-xs font-medium ${p.stock <= p.stock_minimo ? "bg-destructive text-destructive-foreground" : "bg-primary text-primary-foreground"}`}>
+                    {p.stock <= p.stock_minimo ? "Stock bajo" : "Disponible"}
+                  </span>
+                </div>
+                <div className="space-y-0.5 p-3">
+                  <p className="break-words text-sm font-medium leading-snug text-foreground">{p.nombre}</p>
+                  <p className="text-xs text-muted-foreground">Stock {Math.round(p.stock * 1000) / 1000} {p.unidad_base}</p>
+                  <p className="precio-esmeralda text-base font-semibold">{dinero(p.precio_detal)}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+        {abierto && productos.find((x) => x.id === abierto) && (
+          <FichaProductoInventario
+            producto={productos.find((x) => x.id === abierto) as Producto}
+            onCerrar={() => setAbierto(null)}
+            onGuardado={recargar}
+          />
+        )}
+        {vista === "lista" && visibles.map((p) => (
           <GlassPanel key={p.id} className={`flex flex-wrap items-center justify-between gap-3 p-3 ${p.activo ? "" : "opacity-50"}`}>
             <div className="min-w-0 flex-1">
               <p className="break-words text-sm font-medium text-foreground">{p.nombre}</p>
@@ -337,6 +382,106 @@ export function ProductosComercial() {
             <button className={botonSec} onClick={() => alternar(p)}>{p.activo ? "Desactivar" : "Activar"}</button>
           </GlassPanel>
         ))}
+      </div>
+    </div>
+  );
+}
+
+/** Vista ampliada dividida del inventario: foto grande a la izquierda y ficha con edición rápida a la derecha. */
+function FichaProductoInventario({
+  producto: p,
+  onCerrar,
+  onGuardado,
+}: {
+  producto: Producto;
+  onCerrar: () => void;
+  onGuardado: () => Promise<void> | void;
+}) {
+  const [detal, setDetal] = useState(String(p.precio_detal));
+  const [mayorista, setMayorista] = useState(p.precio_mayorista !== null ? String(p.precio_mayorista) : "");
+  const [especial, setEspecial] = useState(p.precio_especial !== null ? String(p.precio_especial) : "");
+  const [stock, setStock] = useState(String(p.stock));
+  const [minimo, setMinimo] = useState(String(p.stock_minimo));
+  const [imagen, setImagen] = useState(p.imagen_url ?? "");
+  const [guardando, setGuardando] = useState(false);
+
+  useEffect(() => {
+    const alTeclear = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onCerrar();
+    };
+    window.addEventListener("keydown", alTeclear);
+    return () => window.removeEventListener("keydown", alTeclear);
+  }, [onCerrar]);
+
+  const guardarRapido = async () => {
+    if (num(detal) <= 0) return toast.error("El precio detal debe ser mayor a cero.");
+    setGuardando(true);
+    const { error } = await supabase
+      .from("com_productos")
+      .update({
+        precio_detal: num(detal),
+        precio_mayorista: mayorista.trim() ? num(mayorista) : null,
+        precio_especial: especial.trim() ? num(especial) : null,
+        stock: Math.max(num(stock), 0),
+        stock_minimo: Math.max(num(minimo), 0),
+        imagen_url: imagen.trim() || null,
+      })
+      .eq("id", p.id);
+    setGuardando(false);
+    if (error) return toast.error("No se pudo guardar el producto.");
+    toast.success("Producto actualizado.");
+    await onGuardado();
+    onCerrar();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4" onClick={onCerrar}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={p.nombre}
+        onClick={(e) => e.stopPropagation()}
+        className="relative grid max-h-[92dvh] w-full max-w-4xl grid-cols-1 overflow-y-auto rounded-t-3xl border border-glass-border bg-card text-card-foreground shadow-2xl sm:rounded-3xl md:grid-cols-12"
+      >
+        <button type="button" aria-label="Cerrar" onClick={onCerrar} className="absolute right-3 top-3 z-10 rounded-full bg-black/55 p-2 text-white hover:bg-black/75">
+          <X className="h-5 w-5" />
+        </button>
+        <div className="group relative aspect-[4/3] w-full overflow-hidden bg-muted md:col-span-6 md:aspect-auto md:min-h-[420px]">
+          {imagen.trim() ? (
+            <img src={imagen.trim()} alt={p.nombre} className="absolute inset-0 h-full w-full max-w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+          ) : (
+            <span className="absolute inset-0 flex items-center justify-center text-muted-foreground/50"><ImageOff className="h-16 w-16" /></span>
+          )}
+        </div>
+        <div className="flex min-w-0 flex-col gap-3 p-5 md:col-span-6">
+          <div>
+            <h3 className="break-words pr-10 font-display text-2xl leading-tight">{p.nombre}</h3>
+            <p className="precio-esmeralda mt-1 text-2xl font-semibold">{dinero(p.precio_detal)}</p>
+            <p className="mt-1 break-words text-xs text-muted-foreground">
+              {p.codigo_barras ? `Código de barras ${p.codigo_barras}` : "Sin código de barras"}
+              {p.sku ? ` · SKU ${p.sku}` : ""}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+            <p><span className="text-muted-foreground">Unidad: </span>{NOMBRE_UNIDAD[p.unidad_base] ?? p.unidad_base}</p>
+            <p><span className="text-muted-foreground">Por caja: </span>{p.unidades_por_caja ?? "—"}</p>
+            <p><span className="text-muted-foreground">Impuesto: </span>{p.tipo_impuesto === "exento" ? "Exento" : `${p.tipo_impuesto === "iva" ? "IVA" : "Impoconsumo"} ${p.impuesto_pct}%`}</p>
+            <p><span className="text-muted-foreground">Costo: </span>{dinero(p.costo)}</p>
+            <p className="col-span-2"><span className="text-muted-foreground">Ubicación: </span>{ubicacion(p) || "Sin ubicación"}</p>
+            <p className="col-span-2 text-xs text-muted-foreground">El stock es el total del negocio; los movimientos entre sucursales se registran en traslados.</p>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Campo etiqueta="Precio detal"><input className={campo} inputMode="decimal" value={detal} onChange={(e) => setDetal(e.target.value)} /></Campo>
+            <Campo etiqueta="Precio mayorista"><input className={campo} inputMode="decimal" value={mayorista} onChange={(e) => setMayorista(e.target.value)} /></Campo>
+            <Campo etiqueta="Precio especial"><input className={campo} inputMode="decimal" value={especial} onChange={(e) => setEspecial(e.target.value)} /></Campo>
+            <Campo etiqueta="Stock actual"><input className={campo} inputMode="decimal" value={stock} onChange={(e) => setStock(e.target.value)} /></Campo>
+            <Campo etiqueta="Stock mínimo"><input className={campo} inputMode="decimal" value={minimo} onChange={(e) => setMinimo(e.target.value)} /></Campo>
+            <Campo etiqueta="Enlace de la foto"><input className={campo} placeholder="https://…" value={imagen} onChange={(e) => setImagen(e.target.value)} /></Campo>
+          </div>
+          <button type="button" disabled={guardando} onClick={guardarRapido} className="btn-pro mt-auto w-full rounded-2xl px-4 py-3.5 text-base font-semibold disabled:opacity-60">
+            {guardando ? "Guardando…" : "Guardar cambios"}
+          </button>
+        </div>
       </div>
     </div>
   );

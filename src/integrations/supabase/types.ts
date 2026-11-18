@@ -2725,6 +2725,7 @@ export type Database = {
       }
       com_productos: {
         Row: {
+          imagen_url: string | null
           ubicacion_pasillo: string | null
           ubicacion_estante: string | null
           ubicacion_nivel: string | null
@@ -2773,8 +2774,10 @@ export type Database = {
           tipo_negocio?: string | null
           unidad_base?: string
           unidades_por_caja?: number | null
+          imagen_url?: string | null
         }
         Update: {
+          imagen_url?: string | null
           ubicacion_pasillo?: string | null
           ubicacion_estante?: string | null
           ubicacion_nivel?: string | null

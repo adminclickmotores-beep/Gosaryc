@@ -5,6 +5,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Car, Eye, FileText, ImagePlus, LayoutGrid, Pencil, Table2, Trash2, X } from "lucide-react";
 import { usePermisosVehiculos } from "@/hooks/use-permisos-vehiculos";
 import { FichaVehiculo, PROCEDENCIAS, calcularCostos } from "@/components/vehiculos/FichaVehiculo";
+import { VistaVehiculo } from "@/components/vehiculos/VistaVehiculo";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -92,7 +93,8 @@ export function InventarioVehiculos() {
   const [fModelo, setFModelo] = useState("todos");
   const [fProc, setFProc] = useState("todas");
   const [fDisp, setFDisp] = useState("todos");
-  const [vista, setVista] = useState<"tarjetas" | "tabla">("tarjetas");
+  const [vista, setVista] = useState<"mosaico" | "tarjetas" | "tabla">("mosaico");
+  const [abierto, setAbierto] = useState<string | null>(null);
   const [gastosPorVeh, setGastosPorVeh] = useState<Record<string, number>>({});
   const [ficha, setFicha] = useState<string | null>(null);
 
@@ -510,7 +512,8 @@ ${tarjetas}
             </select>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => setVista("tarjetas")} className={`${chip(vista === "tarjetas")} inline-flex items-center gap-1.5`}><LayoutGrid className="h-4 w-4" /> Tarjetas</button>
+            <button onClick={() => setVista("mosaico")} className={`${chip(vista === "mosaico")} inline-flex items-center gap-1.5`}><LayoutGrid className="h-4 w-4" /> Mosaico</button>
+            <button onClick={() => setVista("tarjetas")} className={`${chip(vista === "tarjetas")} inline-flex items-center gap-1.5`}><Car className="h-4 w-4" /> Lista</button>
             <label className="ml-auto inline-flex items-center gap-2 text-sm text-muted-foreground">
               <input type="checkbox" checked={verRetirados} onChange={(e) => setVerRetirados(e.target.checked)} /> Mostrar retirados
             </label>
@@ -571,6 +574,39 @@ ${tarjetas}
             </GlassPanel>
           )}
 
+          {vista === "mosaico" && visibles.length > 0 && (
+            <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
+              {visibles.map((v) => (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => setAbierto(v.id)}
+                  className={`group min-w-0 overflow-hidden rounded-2xl border border-glass-border bg-card text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg ${v.eliminado_en ? "opacity-50" : ""}`}
+                >
+                  <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+                    {v.fotos?.[0] ? (
+                      <FotoPrivada valor={v.fotos[0]} className="h-full w-full max-w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">Sin foto</span>
+                    )}
+                    <span className={`absolute left-2 top-2 rounded-full px-2.5 py-0.5 text-xs font-medium ${v.estado === "disponible" ? "bg-primary text-primary-foreground" : "bg-black/60 text-white"}`}>
+                      {textoEstado(v.estado)}
+                    </span>
+                  </div>
+                  <div className="space-y-0.5 p-3">
+                    <p className="break-words text-sm font-medium leading-snug text-foreground">{v.marca} {v.modelo} {v.anio ?? ""}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {v.tipo === "moto" ? "Moto" : "Carro"}
+                      {v.kilometraje !== null ? ` · ${v.kilometraje.toLocaleString("es-CO")} km` : ""}
+                      {v.transmision ? ` · ${v.transmision}` : ""}
+                    </p>
+                    <p className="precio-esmeralda text-base font-semibold">{dinero(v.precio)}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
           {vista === "tarjetas" && visibles.map((v) => (
             <GlassPanel key={v.id} className="flex flex-wrap gap-3 p-4">
               {v.fotos?.[0] ? (
@@ -619,6 +655,14 @@ ${tarjetas}
           ))}
         </div>
       </div>
+      {abierto && lista.find((x) => x.id === abierto) && (
+        <VistaVehiculo
+          vehiculo={lista.find((x) => x.id === abierto) as Vehiculo}
+          nombreNegocio={negocio?.nombre || "Nuestro concesionario"}
+          onCerrar={() => setAbierto(null)}
+          onAbrirFicha={() => { setFicha(abierto); setAbierto(null); }}
+        />
+      )}
       {fichaVeh && (
         <FichaVehiculo
           vehiculo={fichaVeh}
