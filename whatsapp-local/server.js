@@ -14,6 +14,28 @@ const http = require("http");
 const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
+
+// Detecta solo el Google Chrome o Microsoft Edge ya instalados (Windows, Mac y Linux), sin pedir comandos.
+function buscarNavegador() {
+  const pf = process.env["ProgramFiles"] || "C:\\Program Files";
+  const pf86 = process.env["ProgramFiles(x86)"] || "C:\\Program Files (x86)";
+  const local = process.env["LOCALAPPDATA"] || "";
+  const candidatos = [
+    path.join(pf, "Google", "Chrome", "Application", "chrome.exe"),
+    path.join(pf86, "Google", "Chrome", "Application", "chrome.exe"),
+    local && path.join(local, "Google", "Chrome", "Application", "chrome.exe"),
+    path.join(pf86, "Microsoft", "Edge", "Application", "msedge.exe"),
+    path.join(pf, "Microsoft", "Edge", "Application", "msedge.exe"),
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/usr/bin/google-chrome",
+    "/usr/bin/chromium",
+    "/usr/bin/microsoft-edge",
+  ].filter(Boolean);
+  for (const c of candidatos) {
+    try { if (fs.existsSync(c)) return c; } catch (_) {}
+  }
+  return "";
+}
 const qrcodeTerminal = require("qrcode-terminal");
 const QRCode = require("qrcode");
 const { Client, LocalAuth } = require("whatsapp-web.js");
@@ -319,7 +341,7 @@ function crearLinea({ id, nombre, clave, agente, perfil, instrucciones }) {
     puppeteer: {
       headless: true,
       // Con el instalador de escritorio se usa el Edge o Chrome ya instalado (CHROME_PATH).
-      executablePath: process.env.CHROME_PATH || undefined,
+      executablePath: process.env.CHROME_PATH || buscarNavegador() || undefined,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     },
   });

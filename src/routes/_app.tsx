@@ -37,6 +37,7 @@ import { AutosaveStatus } from "@/components/app/AutosaveStatus";
 import { purgeExpiredDrafts } from "@/hooks/use-draft";
 import { getCachedOnboardedAt } from "@/hooks/use-onboarding-status";
 import { esCuentaMaestra } from "@/lib/cuenta-maestra";
+import { esCuentaDemo } from "@/lib/demo-real";
 
 export const Route = createFileRoute("/_app")({
   component: AppShell,
@@ -168,6 +169,8 @@ function AppShell() {
     if (!user) return;
     // La cuenta maestra nunca pasa por la configuración inicial.
     if (esCuentaMaestra(user.email)) return;
+    // Las cuentas demo nunca pasan por la configuración inicial.
+    if (esCuentaDemo(user.email)) return;
     // En ventana completa (nueva pestaña) nunca redirigir a /welcome.
     if (new URLSearchParams(window.location.search).get("ventana") === "completa") return;
     // Se espera a que carguen los permisos para no mandar al personal a /welcome por error.

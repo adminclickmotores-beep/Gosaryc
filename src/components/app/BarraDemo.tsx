@@ -1,16 +1,52 @@
-import { useState } from "react";
-import { Link } from "@tanstack/react-router";
-import { Loader2, RefreshCw, Rocket } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { ChevronLeft, ChevronRight, Loader2, Pause, Play, RefreshCw, Rocket } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { CORREO_DEMO, esCuentaDemo, restaurarDemo } from "@/lib/demo-real";
 
-/** Barra discreta que solo aparece dentro de las cuentas demo reales. */
+type Paso = { titulo: string; texto: string; ruta: string };
+
+const PASOS: Paso[] = [
+  { titulo: "Portada y KPIs", texto: "Ventas del día, caja abierta y resumen del negocio.", ruta: "/dashboard" },
+  { titulo: "Vitrina en mosaico", texto: "Productos y vehículos con fotos, precios y vista dividida.", ruta: "/restaurante" },
+  { titulo: "Punto de venta / Comanda", texto: "Registra pedidos y ventas en segundos.", ruta: "/restaurante" },
+  { titulo: "Agente WhatsApp IA", texto: "Prueba el simulador de chat que atiende y toma pedidos.", ruta: "/settings" },
+  { titulo: "Caja y Contabilidad", texto: "Caja, asientos contables y reportes al día.", ruta: "/finanzas" },
+  { titulo: "Cierre", texto: "Crea tu cuenta gratis y empieza con tu propio negocio.", ruta: "/dashboard" },
+];
+
+/** Barra de recorrido guiado: solo en cuentas demo, abajo y centrada. */
 export function BarraDemo() {
   const { user } = useAuth();
+  const nav = useNavigate();
   const [busy, setBusy] = useState(false);
-  if (!esCuentaDemo(user?.email)) return null;
+  const [paso, setPaso] = useState(0);
+  const [auto, setAuto] = useState(true);
+  const demo = esCuentaDemo(user?.email);
+
+  useEffect(() => {
+    if (!demo || !auto) return;
+    const t = setTimeout(() => {
+      const sig = Math.min(paso + 1, PASOS.length - 1);
+      if (sig === paso) {
+        setAuto(false);
+        return;
+      }
+      setPaso(sig);
+      nav({ to: PASOS[sig].ruta as never });
+    }, 9000);
+    return () => clearTimeout(t);
+  }, [demo, auto, paso, nav]);
+
+  if (!demo) return null;
   const tipo = user?.email?.toLowerCase() === CORREO_DEMO.vehiculos ? "vehiculos" : "restaurante";
+
+  const ir = (n: number) => {
+    const i = Math.max(0, Math.min(n, PASOS.length - 1));
+    setPaso(i);
+    nav({ to: PASOS[i].ruta as never });
+  };
 
   const restaurar = async () => {
     setBusy(true);
@@ -24,28 +60,44 @@ export function BarraDemo() {
     }
   };
 
+  const btn = "inline-flex items-center gap-1.5 rounded-full border border-glass-border bg-glass px-3 py-1.5 text-xs font-medium hover:bg-glass-strong disabled:opacity-50";
+
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-xs text-foreground">
-      <span className="min-w-0 break-words font-medium">Modo Demo Real — Estás explorando con datos de prueba</span>
-      <span className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={restaurar}
-          disabled={busy}
-          className="inline-flex items-center gap-1.5 rounded-full border border-glass-border bg-glass px-3 py-1.5 font-medium hover:bg-glass-strong disabled:opacity-60"
-        >
-          {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-          Restaurar datos iniciales
-        </button>
-        <Link
-          to="/login"
-          search={{ mode: "signup" }}
-          className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 font-semibold text-primary-foreground hover:opacity-90"
-        >
-          <Rocket className="h-3.5 w-3.5" />
-          Crear mi cuenta gratis
-        </Link>
-      </span>
+    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-50 flex justify-center px-3 md:bottom-4">
+      <div className="pointer-events-auto w-full max-w-2xl space-y-2 rounded-2xl border border-emerald-500/40 bg-background/95 p-3 text-xs shadow-xl backdrop-blur-xl">
+        <div className="flex items-center justify-between gap-2">
+          <p className="min-w-0 break-words">
+            <span className="font-semibold">Paso {paso + 1} de {PASOS.length}: {PASOS[paso].titulo}</span>
+            <span className="block text-muted-foreground">{PASOS[paso].texto}</span>
+          </p>
+          <span className="shrink-0 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-medium">
+            {auto ? "Piloto automático" : "Explorando"}
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <button type="button" className={btn} onClick={() => ir(paso - 1)} disabled={paso === 0}>
+            <ChevronLeft className="h-3.5 w-3.5" /> Anterior
+          </button>
+          <button type="button" className={btn} onClick={() => setAuto((a) => !a)}>
+            {auto ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+            {auto ? "Pausar / Explorar" : "Piloto automático"}
+          </button>
+          <button type="button" className={btn} onClick={() => ir(paso + 1)} disabled={paso === PASOS.length - 1}>
+            Siguiente <ChevronRight className="h-3.5 w-3.5" />
+          </button>
+          <button type="button" className={btn} onClick={restaurar} disabled={busy}>
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+            Restaurar
+          </button>
+          <Link
+            to="/login"
+            search={{ mode: "signup" }}
+            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90"
+          >
+            <Rocket className="h-3.5 w-3.5" /> Crear mi cuenta gratis
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

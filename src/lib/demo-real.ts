@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { markOnboarded } from "@/hooks/use-onboarding-status";
 
 /**
  * Cuentas demo reales y ligeras. No se sube nada al Storage: las fotos son
@@ -222,6 +223,15 @@ export async function entrarDemo(tipo: TipoDemo): Promise<void> {
   }
   if (error || !data.session) {
     throw new Error("No se pudo abrir la demo en este momento. Inténtalo de nuevo en unos minutos.");
+  }
+  // La demo nunca pasa por «Cuéntanos de tu negocio»: se marca como configurada.
+  try {
+    const uid = data.session.user.id;
+    const ahora = new Date().toISOString();
+    await supabase.from("profiles").update({ onboarded_at: ahora }).eq("id", uid);
+    markOnboarded(uid, ahora);
+  } catch {
+    /* no bloquea la entrada */
   }
   // Cada visitante entra siempre con los datos iniciales impecables.
   await restaurarDemo(tipo);

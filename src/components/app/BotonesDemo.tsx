@@ -28,11 +28,11 @@ export function BotonesDemo({ className = "" }: { className?: string }) {
     <div className={`flex flex-col gap-2.5 ${className}`}>
       <button type="button" disabled={cargando !== null} onClick={() => entrar("vehiculos")} className={base}>
         {cargando === "vehiculos" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Car className="h-4 w-4" />}
-        Entrar a Demo Real: Concesionario y Taller
+        ▶ Ver Demo en Vivo: Concesionario y Taller
       </button>
       <button type="button" disabled={cargando !== null} onClick={() => entrar("restaurante")} className={base}>
         {cargando === "restaurante" ? <Loader2 className="h-4 w-4 animate-spin" /> : <UtensilsCrossed className="h-4 w-4" />}
-        Entrar a Demo Real: Restaurante y Comidas
+        ▶ Ver Demo en Vivo: Restaurante y Comidas
       </button>
     </div>
   );
