@@ -7,6 +7,18 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
+REM Detecta el Android SDK automaticamente (ANDROID_HOME o carpeta por defecto)
+if not defined ANDROID_HOME (
+  if exist "%LOCALAPPDATA%\Android\Sdk" set "ANDROID_HOME=%LOCALAPPDATA%\Android\Sdk"
+)
+if defined ANDROID_HOME echo Android SDK: %ANDROID_HOME%
+REM Escribe android\local.properties antes de compilar (si la carpeta ya existe)
+if defined ANDROID_HOME if exist "android-licencias\android" (
+  set "SDK_ESC=%ANDROID_HOME:\=\\%"
+  setlocal enabledelayedexpansion
+  >"android-licencias\android\local.properties" echo sdk.dir=!SDK_ESC::=\:!
+  endlocal
+)
 node crear-instaladores.cjs apk-licencias
 if errorlevel 1 (
   pause

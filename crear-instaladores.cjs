@@ -76,6 +76,13 @@ function apk(carpetaNombre, salida) {
   correr("node scripts/configurar-manifest.cjs", dir);
   correr("npx cap sync android", dir);
   const android = path.join(dir, "android");
+  // Escribe android/local.properties con la ruta del SDK (ANDROID_HOME o carpeta por defecto)
+  const rutaSdk = process.env.ANDROID_HOME || process.env.ANDROID_SDK_ROOT ||
+    (process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, "Android", "Sdk") : "");
+  if (rutaSdk && fs.existsSync(rutaSdk)) {
+    const escapada = rutaSdk.replace(/\\/g, "\\\\").replace(/:/g, "\\:");
+    fs.writeFileSync(path.join(android, "local.properties"), `sdk.dir=${escapada}\n`);
+  }
   if (!esWin) fs.chmodSync(path.join(android, "gradlew"), 0o755);
   correr(esWin ? "gradlew.bat assembleDebug" : "./gradlew assembleDebug", android);
   fs.copyFileSync(path.join(android, "app", "build", "outputs", "apk", "debug", "app-debug.apk"), path.join(raiz, salida));
