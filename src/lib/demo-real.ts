@@ -47,11 +47,19 @@ async function guardarConfig(uid: string, cfg: TablesInsert<"negocio_config">) {
     logo_url: cfg.logo_url,
     telefono_pedidos: cfg.telefono_pedidos,
   };
+  // Primero la base deja la cuenta como dueña de su propio negocio y con el tipo correcto
+  // (sin depender de las reglas de acceso del navegador, que fallaban en silencio).
+  const { error: errPrep } = await supabase.rpc("demo_preparar_negocio", {
+    p_tipo: cfg.tipo_negocio ?? "",
+    p_nombre: cfg.nombre ?? "",
+  });
+  if (errPrep) console.warn("Demo: no se pudo preparar el negocio", errPrep.message);
+
   const { data: existe } = await supabase.from("negocio_config").select("id").eq("owner_id", uid).order("created_at").limit(1).maybeSingle();
   if (existe) {
-    const { error } = await supabase.from("negocio_config").update(cfg).eq("id", existe.id);
-    if (error) {
-      console.warn("Demo: configuración completa rechazada, se guarda la básica", error.message);
+    const { data: hechos, error } = await supabase.from("negocio_config").update(cfg).eq("id", existe.id).select("id");
+    if (error || !hechos || hechos.length === 0) {
+      console.warn("Demo: configuración completa rechazada, se guarda la básica", error?.message);
       await supabase.from("negocio_config").update(basico).eq("id", existe.id);
     }
   } else {
