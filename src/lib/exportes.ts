@@ -37,7 +37,7 @@ export const escaparHtml = (v: unknown): string =>
   );
 
 /** Solo deja pasar direcciones http(s) o imágenes embebidas; cualquier otra cosa (javascript:, etc.) se descarta. */
-const urlSegura = (u: string | null | undefined): string | null => {
+export const urlSegura = (u: string | null | undefined): string | null => {
   const s = (u ?? "").trim();
   if (/^https?:\/\//i.test(s) || /^data:image\/(png|jpe?g|gif|webp);base64,[a-z0-9+/=\s]+$/i.test(s)) return escaparHtml(s);
   return null;

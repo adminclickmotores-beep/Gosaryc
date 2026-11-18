@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { TARIFAS_DOMICILIO, buscarTarifa } from "@/lib/tarifas-domicilio";
+import { escaparHtml } from "@/lib/exportes";
 import { useNegocio } from "@/hooks/use-negocio";
 import { mismoTipoNegocio } from "@/lib/modulos-negocio";
 import { autoComandaActivada, estadoApiLocal, fijarImpresionDirecta, impresionDirectaActivada, imprimirComandaCocina, imprimirTirillaLocal, leerImpresoraCaja } from "@/lib/impresion-local";
@@ -85,7 +86,7 @@ const textoComanda = (r: Recibo, nombreNegocio: string, paraCocina: boolean) => 
 const imprimirTicket = (r: Recibo, nombreNegocio: string) => {
   const w = window.open("", "_blank", "width=380,height=640");
   if (!w) return toast.error("El navegador bloqueó la ventana de impresión. Permite las ventanas emergentes.");
-  const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] ?? c);
+  const esc = escaparHtml;
   const filas = r.lineas
     .map((l) => `<tr><td>${l.cant} x ${esc(l.nombre)}</td><td style="text-align:right">${dinero(l.precio * l.cant)}</td></tr>`)
     .join("");

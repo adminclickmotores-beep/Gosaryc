@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
+import { escaparHtml, urlSegura } from "@/lib/exportes";
 
 type Solicitud = Tables<"solicitudes_credito">;
 
@@ -42,8 +43,7 @@ const NUMERICOS = [
 ];
 const ENTEROS = ["personas_a_cargo", "plazo_meses"];
 
-const esc = (s: string | number | null | undefined): string =>
-  String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] ?? c);
+const esc = escaparHtml;
 
 const sep = "||";
 
@@ -210,7 +210,7 @@ h2{margin:12px 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:1px;
 p.nota{font-size:10px;color:#555;margin-top:10px}
 footer{text-align:center;font-size:10px;color:#666;margin-top:14px;border-top:1px solid #ddd;padding-top:6px}
 </style></head><body>
-<header>${negocio?.logo_url ? `<img src="${esc(negocio.logo_url)}" alt="">` : ""}<div><h1>Solicitud de crédito de vehículo</h1>
+<header>${urlSegura(negocio?.logo_url) ? `<img src="${urlSegura(negocio?.logo_url)}" alt="">` : ""}<div><h1>Solicitud de crédito de vehículo</h1>
 <p>${esc(nombre)} · ${esc(fecha)}${s.entidad ? ` · Para estudio de: ${esc(s.entidad)}` : ""}</p></div></header>
 ${bloque("1. Datos del solicitante", [
   ["Nombre completo", s.nombre_completo], ["Tipo de documento", s.tipo_documento], ["Número de documento", s.numero_documento],

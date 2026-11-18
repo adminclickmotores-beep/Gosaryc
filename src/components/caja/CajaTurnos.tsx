@@ -9,6 +9,7 @@ import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { ResumenCierreWhatsApp } from "@/components/restaurante/Reportes";
 import { leerSucursalActual } from "@/lib/sucursales";
+import { escaparHtml } from "@/lib/exportes";
 
 type Turno = Tables<"turnos_caja">;
 type Mov = Tables<"movimientos_turno">;
@@ -31,7 +32,7 @@ const METODOS = [
 ];
 const CATEGORIAS_GASTO = ["Arriendo", "Servicios", "Nómina", "Proveedores", "Transporte", "Mantenimiento", "Otros"];
 
-const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] ?? c);
+const esc = escaparHtml;
 const entra = (tipo: string) => TIPOS.find((t) => t.clave === tipo)?.entra ?? false;
 
 function resumen(turno: Turno, movs: Mov[]) {

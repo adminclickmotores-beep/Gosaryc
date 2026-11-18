@@ -24,6 +24,7 @@ import { OpcionesProducto } from "@/components/restaurante/OpcionesProducto";
 import { BotonVentanaCompleta } from "@/components/app/BotonVentanaCompleta";
 import { IndicadoresNegocio } from "@/components/app/IndicadoresNegocio";
 import { DashboardConcesionario } from "@/components/vehiculos/DashboardConcesionario";
+import { escaparHtml } from "@/lib/exportes";
 
 const VISTAS_VALIDAS = ["venta", "pedidos", "menu", "qr", "mesas", "caja", "reportes", "recetario", "agente", "negocio"] as const;
 type VistaClave = (typeof VISTAS_VALIDAS)[number];
@@ -85,7 +86,7 @@ const leerOpciones = (o: Json): OpcionElegida[] =>
       )
     : [];
 
-const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const esc = escaparHtml;
 
 /** Comanda para cocina: exactamente lo que confirmó el cliente. */
 const imprimirComanda = (p: Pedido, lineas: Item[]) => {

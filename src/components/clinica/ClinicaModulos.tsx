@@ -7,6 +7,7 @@ import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
+import { escaparHtml } from "@/lib/exportes";
 
 type Paciente = Tables<"cl_pacientes">;
 type Historia = Tables<"cl_historias">;
@@ -45,8 +46,7 @@ const diasHasta = (fecha: string): number =>
   Math.round((new Date(`${fecha}T00:00:00`).getTime() - new Date(`${hoy()}T00:00:00`).getTime()) / 86400000);
 const fechaHora = (iso: string): string => new Date(iso).toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" });
 const fechaCorta = (f: string): string => new Date(`${f}T00:00:00`).toLocaleDateString("es-CO", { dateStyle: "medium" });
-const esc = (s: string): string =>
-  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const esc = escaparHtml;
 
 const leerFormula = (j: Json): FormulaItem[] => {
   if (!Array.isArray(j)) return [];

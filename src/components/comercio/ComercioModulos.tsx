@@ -7,7 +7,7 @@ import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { CLASE_NIVEL, diasPara, nivelVence, textoVence, type NivelVence } from "@/lib/lotes-comercio";
-import { exportarExcel, imprimirReporte } from "@/lib/exportes";
+import { escaparHtml, exportarExcel, imprimirReporte } from "@/lib/exportes";
 import { ImportadorMasivo } from "@/components/comercio/ImportadorMasivo";
 import { EtiquetasBarras } from "@/components/comercio/EtiquetasBarras";
 import { SucursalesTraslados } from "@/components/negocio/SucursalesTraslados";
@@ -130,7 +130,7 @@ export function usarProductos() {
   return { productos, cargando, recargar: cargar };
 }
 
-export const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] ?? c);
+export const esc = escaparHtml;
 
 type Ticket = {
   numero: string;

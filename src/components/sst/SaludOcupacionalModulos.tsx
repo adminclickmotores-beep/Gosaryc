@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { Campo, Cargando, Encabezado, boton, botonSec, campo, dinero, num } from "@/components/comercio/ComercioModulos";
-import { exportarExcel, imprimirReporte } from "@/lib/exportes";
+import { escaparHtml, exportarExcel, imprimirReporte } from "@/lib/exportes";
 
 type Empresa = Tables<"sst_empresas">;
 type Trab = Tables<"sst_trabajadores">;
@@ -25,7 +25,7 @@ const aWhatsapp = (tel: string | null | undefined, texto: string): string | null
   const n = d.length === 10 ? `57${d}` : d;
   return `https://wa.me/${n}?text=${encodeURIComponent(texto)}`;
 };
-const esc = (s: string): string => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const esc = escaparHtml;
 const hoyMas = (dias: number): string => {
   const d = new Date();
   d.setDate(d.getDate() + dias);

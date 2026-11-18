@@ -12,6 +12,7 @@ import { buscarModulo, identidadRubro, resolverTipoNegocio } from "@/lib/modulos
 import { useNegocio } from "@/hooks/use-negocio";
 import { configModulo } from "@/lib/modulos-config";
 import { TABLAS_SIN_BORRADO, tablaDeModulo } from "@/lib/tablas-modulo";
+import { escaparHtml } from "@/lib/exportes";
 import {
   alertaRubro, calcularRubro, camposDelModulo, useEsquemaRubro, validarCamposRubro, vocabulario,
   type TipoCampoRubro,
@@ -81,8 +82,7 @@ const textoExtras = (j: Json): string => {
 /** "Vehículo (placa, marca y modelo)" -> "Vehículo". */
 const etiquetaCorta = (s: string) => s.replace(/\s*\(.*$/, "").trim() || s;
 
-const esc = (s: string) =>
-  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const esc = escaparHtml;
 
 const hoyLocal = () => {
   const d = new Date();

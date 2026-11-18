@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
+import { escaparHtml, urlSegura } from "@/lib/exportes";
 
 type Vehiculo = Tables<"vehiculos_inventario">;
 
@@ -72,8 +73,7 @@ const num = (s: string): number | null => {
 };
 const txt = (s: string): string | null => (s.trim() ? s.trim() : null);
 
-const esc = (s: string | number | null | undefined): string =>
-  String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] ?? c);
+const esc = escaparHtml;
 
 export function InventarioVehiculos() {
   const { negocio } = useNegocio();
@@ -336,9 +336,11 @@ export function InventarioVehiculos() {
       ];
       const filas = datos.filter(([, x]) => x !== null && x !== "")
         .map(([k, x]) => `<tr><td>${esc(k)}</td><td>${esc(x)}</td></tr>`).join("");
-      const imgs = (await urlsFirmadas((v.fotos ?? []).slice(0, 3))).filter((u): u is string => !!u);
-      const principal = imgs[0] ? `<img class="principal" src="${esc(imgs[0])}" alt="">` : `<div class="sinfoto">Sin foto</div>`;
-      const extra = imgs.slice(1).map((u) => `<img src="${esc(u)}" alt="">`).join("");
+      const imgs = (await urlsFirmadas((v.fotos ?? []).slice(0, 3)))
+        .map((u) => urlSegura(u))
+        .filter((u): u is string => !!u);
+      const principal = imgs[0] ? `<img class="principal" src="${imgs[0]}" alt="">` : `<div class="sinfoto">Sin foto</div>`;
+      const extra = imgs.slice(1).map((u) => `<img src="${u}" alt="">`).join("");
       return `<section class="tarjeta">
         <div class="fotos">${principal}<div class="mini">${extra}</div></div>
         <div class="info">
@@ -367,7 +369,7 @@ table{border-collapse:collapse;width:100%;font-size:12px}td{padding:2px 4px;bord
 p{font-size:12px;margin:6px 0 0}
 footer{text-align:center;font-size:11px;color:#666;margin-top:10px;border-top:1px solid #ddd;padding-top:8px}
 </style></head><body>
-<header>${negocio?.logo_url ? `<img src="${esc(negocio.logo_url)}" alt="">` : ""}<div><h1>${esc(nombre)}</h1>
+<header>${urlSegura(negocio?.logo_url) ? `<img src="${urlSegura(negocio?.logo_url)}" alt="">` : ""}<div><h1>${esc(nombre)}</h1>
 <p>${esc(negocio?.eslogan || "Catálogo de vehículos")} · ${esc(fecha)}</p></div></header>
 ${tarjetas}
 <footer>${esc(contacto)}<br>Precios y disponibilidad sujetos a cambio sin previo aviso.</footer>
