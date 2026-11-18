@@ -1,14 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import type { ComponentType } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { ComponentType, ReactNode } from "react";
+import { motion } from "framer-motion";
 import {
-  UtensilsCrossed, ChefHat, Bike, Boxes, Wallet, Download, ArrowRight, Smartphone,
-  Palette, ShieldCheck, Sparkles, Check, Users, Receipt, BarChart3, Layers, Clock, TrendingUp,
-  FileText, Gift, CalendarDays, Bot, MessageCircle, Brain, Headphones, BellRing, RefreshCw, PlayCircle, X,
+  UtensilsCrossed, ChefHat, Bike, Boxes, Wallet, Download, ArrowRight, Check, Users, Receipt, BarChart3,
+  TrendingUp, FileText, Gift, CalendarDays, Bot, MessageCircle, Brain, Headphones, X, Search, Sun, Moon,
+  Car, Calculator, ChevronDown, ShieldCheck, Smartphone, WifiOff, CheckCheck, QrCode, Wrench, BadgeCheck,
+  Banknote, Radio,
 } from "lucide-react";
 import { SECTORES, buscarSector } from "@/lib/sectores";
-import { GradientMesh } from "@/components/ui-custom/GradientMesh";
-import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useAuth } from "@/contexts/AuthContext";
 import { BRAND } from "@/lib/brand";
 
@@ -27,49 +27,262 @@ export const Route = createFileRoute("/")({
 
 type Icono = ComponentType<{ className?: string }>;
 
-// Tarjetas de módulos con color propio por familia: cada tarjeta tiene su acento.
-// Tocar una tarjeta abre su ficha detallada aquí mismo, sin ir al inicio de sesión.
-const MODULOS: { Icon: Icono; label: string; desc: string; detalle: string; beneficios: string[]; como: string; color: string; grande?: boolean }[] = [
-  { Icon: UtensilsCrossed, label: "Ventas y catálogo digital", desc: "Presenta tus productos o servicios con tu marca, recibe pedidos desde el celular y cobra sin errores. Incluye código QR para mesas y vitrina.", detalle: "Publicas tus productos o servicios con tu marca y recibes pedidos desde el celular, el computador o un código QR, y cobras sin errores.", beneficios: ["Catálogo con fotos, precios y tu logo", "Pedidos de mesa, para llevar y a domicilio", "Cobro con todos los medios de pago y comprobante"], como: "Armas tu menú una vez y compartes el enlace: cada pedido llega solo a tu panel.", color: "#fb923c", grande: true },
-  { Icon: ChefHat, label: "Operación y producción en vivo", desc: "Tablero en tiempo real: cada pedido avanza de principio a fin, con comanda automática a cocina y control de tiempos.", detalle: "Un tablero en tiempo real donde cada pedido avanza de principio a fin, con comanda automática a cocina y control de tiempos.", beneficios: ["Tablero: nuevos, en cocina, listos y entregados", "Comanda impresa automática al registrar el pedido", "Control de mesas y tiempos de preparación"], como: "El pedido entra y aparece en cocina al instante; marcas cada avance con un toque.", color: "#f472b6" },
-  { Icon: Bike, label: "Domicilios y clientes", desc: "Rutas, tarifas por barrio, repartidores y base de clientes con historial de compras y direcciones.", detalle: "Organizas entregas con rutas, tarifas por barrio y repartidores, y guardas a cada cliente con su historial y direcciones.", beneficios: ["Tarifas de domicilio por barrio o zona", "Repartidores con liquidación de cada entrega", "Historial de cada cliente: qué pide y dónde vive"], como: "Registras el pedido con su dirección y se lo asignas al repartidor de turno.", color: "#22d3ee" },
-  { Icon: Boxes, label: "Inventario, recetas y costos", desc: "Existencias, costo real por plato o producto, alertas de faltantes, lotes y vencimientos. Sin hojas de cálculo.", detalle: "Controlas existencias, costo real por plato o producto, alertas de faltantes, lotes y vencimientos, sin hojas de cálculo.", beneficios: ["Costo real de cada plato con su receta", "Descuento automático al vender", "Alertas de stock bajo y productos por vencer"], como: "Cargas tus insumos una vez con su receta; cada venta descuenta sola.", color: "#a3e635" },
-  { Icon: Wallet, label: "Finanzas y rentabilidad", desc: "Caja por turnos con arqueo discriminado, cuentas por cobrar con recordatorios por WhatsApp y utilidad real del periodo.", detalle: "Llevas la caja por turnos con arqueo discriminado, las cuentas por cobrar con recordatorios por WhatsApp y la utilidad real del periodo.", beneficios: ["Cierre de caja por turno: efectivo, transferencia y tarjeta", "Cuentas por cobrar con recordatorio por WhatsApp", "Utilidad real: ventas menos costos y gastos"], como: "Abres turno, registras movimientos y cierras con el arqueo; el reporte sale solo.", color: "#60a5fa", grande: true },
-  { Icon: Users, label: "Equipo y nómina conforme a la ley colombiana", desc: "Empleados, turnos y liquidación de nómina con SMMLV, auxilio, salud, pensión, primas, cesantías y PILA según la normatividad vigente.", detalle: "Registras empleados y turnos, y liquidas la nómina con SMMLV, auxilios, salud, pensión, primas, cesantías y PILA según la norma vigente.", beneficios: ["Empleados con salario y auxilios de ley", "Liquidación automática: salud, pensión, primas y cesantías", "Desprendible por WhatsApp e histórico por periodo"], como: "Registras a cada empleado una vez; cada periodo liquidas con un clic.", color: "#c084fc" },
-  { Icon: ShieldCheck, label: "Diseñado para tu tipo de negocio", desc: "Restaurante con Rappi y sanidad, salud con RIPS y habilitación, concesionario con traspasos, tienda con código de barras, taller con órdenes: cada negocio con sus propios formularios.", detalle: "Cada negocio recibe sus propios módulos, textos y color: restaurante, salud, concesionario, tienda, taller y más de 50 tipos.", beneficios: ["Módulos exactos según tu tipo de negocio", "Textos y vocabulario de tu actividad, sin tecnicismos", "Tu color y tu logo en todo el programa"], como: "Eliges tu tipo al crear la cuenta y el programa se adapta solo.", color: "#34d399" },
-  { Icon: Receipt, label: "Caja, cuentas por cobrar y facturación electrónica DIAN", desc: "Registra ingresos y egresos, gestiona saldos pendientes por cliente y emite facturas electrónicas con CUFE y código QR.", detalle: "Registras ingresos y egresos, gestionas los saldos pendientes por cliente y emites facturas electrónicas con CUFE y código QR.", beneficios: ["Factura electrónica DIAN con CUFE y QR", "Cuentas por cobrar con abonos y saldos", "Resolución, prefijo y rangos configurables"], como: "Vendes, eliges facturar y el documento sale con todos los requisitos.", color: "#fbbf24" },
-  { Icon: BarChart3, label: "Reportes, metas e indicadores", desc: "Ventas por producto, por medio de pago, por sede y por periodo. Define metas semanales y mide el avance de cada equipo.", detalle: "Ves tus ventas por producto, medio de pago, sede y periodo, defines metas semanales y mides el avance de cada equipo.", beneficios: ["Ventas por producto, pago, sede y periodo", "Metas semanales con avance por equipo", "Exporta a Excel o imprime en PDF"], como: "Cada venta alimenta los reportes; consultas el periodo que quieras.", color: "#38bdf8" },
-  { Icon: FileText, label: "Cotizaciones y documentos", desc: "Cotizaciones profesionales enviadas por WhatsApp, control de vencimientos y archivo digital de tus documentos.", detalle: "Envías cotizaciones profesionales por WhatsApp, controlas sus vencimientos y archivas tus documentos por cliente.", beneficios: ["Cotización clara con tu logo, enviada por WhatsApp", "Control de vencimientos y seguimiento", "Documentos archivados por cliente"], como: "Armas la cotización con tus productos y la envías con un toque.", color: "#fb7185" },
-  { Icon: Gift, label: "Combos, puntos y fidelización", desc: "Promociones por horario, combos, puntos por compra y recompensas para que tus clientes regresen.", detalle: "Creas promociones por horario, combos, puntos por compra y recompensas para que tus clientes regresen.", beneficios: ["Combos y 2x1 por horario o día", "Puntos por cada compra", "Recompensas para clientes frecuentes"], como: "Defines el combo o los puntos una vez y se aplican solos al vender.", color: "#e879f9" },
-  { Icon: CalendarDays, label: "Agenda, reservas y pedidos recurrentes", desc: "Citas por profesional y recurso, reservas de mesas o espacios, y pedidos que se repiten cada semana sin olvidar ninguno.", detalle: "Atiendes citas por profesional, reservas de mesas o espacios, y pedidos que se repiten cada semana sin olvidar ninguno.", beneficios: ["Agenda por profesional, sin cruces", "Reservas de mesas o espacios con anticipo", "Pedidos semanales automáticos"], como: "Agendas la cita o el pedido recurrente y el programa te avisa.", color: "#2dd4bf" },
+type Modulo = {
+  Icon: Icono; label: string; desc: string; detalle: string; beneficios: string[]; como: string;
+  familia: "ventas" | "operacion" | "finanzas" | "equipo" | "cumplimiento"; ancho?: "dian" | "nomina";
+};
+
+// Degradados suaves por familia (ventas, operación, finanzas, equipo, cumplimiento).
+const FAMILIA: Record<Modulo["familia"], { fondo: string; texto: string }> = {
+  ventas: { fondo: "linear-gradient(135deg, #10b9812e, #10b98108)", texto: "#10b981" },
+  operacion: { fondo: "linear-gradient(135deg, #f59e0b2e, #f59e0b08)", texto: "#f59e0b" },
+  finanzas: { fondo: "linear-gradient(135deg, #3b82f62e, #3b82f608)", texto: "#3b82f6" },
+  equipo: { fondo: "linear-gradient(135deg, #8b5cf62e, #8b5cf608)", texto: "#8b5cf6" },
+  cumplimiento: { fondo: "linear-gradient(135deg, #06b6d42e, #06b6d408)", texto: "#06b6d4" },
+};
+
+const MODULOS: Modulo[] = [
+  { Icon: UtensilsCrossed, familia: "ventas", label: "Ventas y catálogo digital", desc: "Presenta tus productos o servicios con tu marca, recibe pedidos desde el celular y cobra sin errores. Incluye código QR para mesas y vitrina.", detalle: "Publicas tus productos o servicios con tu marca y recibes pedidos desde el celular, el computador o un código QR, y cobras sin errores.", beneficios: ["Catálogo con fotos, precios y tu logo", "Pedidos de mesa, para llevar y a domicilio", "Cobro con todos los medios de pago y comprobante"], como: "Armas tu menú una vez y compartes el enlace: cada pedido llega solo a tu panel." },
+  { Icon: ChefHat, familia: "operacion", label: "Operación y producción en vivo", desc: "Tablero en tiempo real: cada pedido avanza de principio a fin, con comanda automática a cocina y control de tiempos.", detalle: "Un tablero en tiempo real donde cada pedido avanza de principio a fin, con comanda automática a cocina y control de tiempos.", beneficios: ["Tablero: nuevos, en cocina, listos y entregados", "Comanda impresa automática al registrar el pedido", "Control de mesas y tiempos de preparación"], como: "El pedido entra y aparece en cocina al instante; marcas cada avance con un toque." },
+  { Icon: Receipt, familia: "cumplimiento", ancho: "dian", label: "Facturación electrónica DIAN", desc: "Registra ingresos y egresos, gestiona saldos pendientes por cliente y emite facturas electrónicas con CUFE y código QR.", detalle: "Registras ingresos y egresos, gestionas los saldos pendientes por cliente y emites facturas electrónicas con CUFE y código QR.", beneficios: ["Factura electrónica DIAN con CUFE y QR", "Cuentas por cobrar con abonos y saldos", "Resolución, prefijo y rangos configurables"], como: "Vendes, eliges facturar y el documento sale con todos los requisitos." },
+  { Icon: Bike, familia: "operacion", label: "Domicilios y clientes", desc: "Rutas, tarifas por barrio, repartidores y base de clientes con historial de compras y direcciones.", detalle: "Organizas entregas con rutas, tarifas por barrio y repartidores, y guardas a cada cliente con su historial y direcciones.", beneficios: ["Tarifas de domicilio por barrio o zona", "Repartidores con liquidación de cada entrega", "Historial de cada cliente: qué pide y dónde vive"], como: "Registras el pedido con su dirección y se lo asignas al repartidor de turno." },
+  { Icon: Boxes, familia: "operacion", label: "Inventario, recetas y costos", desc: "Existencias, costo real por plato o producto, alertas de faltantes, lotes y vencimientos. Sin hojas de cálculo.", detalle: "Controlas existencias, costo real por plato o producto, alertas de faltantes, lotes y vencimientos, sin hojas de cálculo.", beneficios: ["Costo real de cada plato con su receta", "Descuento automático al vender", "Alertas de stock bajo y productos por vencer"], como: "Cargas tus insumos una vez con su receta; cada venta descuenta sola." },
+  { Icon: Wallet, familia: "finanzas", label: "Finanzas y rentabilidad", desc: "Caja por turnos con arqueo discriminado, cuentas por cobrar con recordatorios por WhatsApp y utilidad real del periodo.", detalle: "Llevas la caja por turnos con arqueo discriminado, las cuentas por cobrar con recordatorios por WhatsApp y la utilidad real del periodo.", beneficios: ["Cierre de caja por turno: efectivo, transferencia y tarjeta", "Cuentas por cobrar con recordatorio por WhatsApp", "Utilidad real: ventas menos costos y gastos"], como: "Abres turno, registras movimientos y cierras con el arqueo; el reporte sale solo." },
+  { Icon: Users, familia: "equipo", ancho: "nomina", label: "Nómina ley colombiana", desc: "Empleados, turnos y liquidación de nómina con SMMLV, auxilio, salud, pensión, primas, cesantías y PILA según la normatividad vigente.", detalle: "Registras empleados y turnos, y liquidas la nómina con SMMLV, auxilios, salud, pensión, primas, cesantías y PILA según la norma vigente.", beneficios: ["Empleados con salario y auxilios de ley", "Liquidación automática: salud, pensión, primas y cesantías", "Desprendible por WhatsApp e histórico por periodo"], como: "Registras a cada empleado una vez; cada periodo liquidas con un clic." },
+  { Icon: ShieldCheck, familia: "cumplimiento", label: "Diseñado para tu tipo de negocio", desc: "Restaurante con Rappi y sanidad, salud con RIPS y habilitación, concesionario con traspasos, tienda con código de barras, taller con órdenes: cada negocio con sus propios formularios.", detalle: "Cada negocio recibe sus propios módulos, textos y color: restaurante, salud, concesionario, tienda, taller y más de 50 tipos.", beneficios: ["Módulos exactos según tu tipo de negocio", "Textos y vocabulario de tu actividad, sin tecnicismos", "Tu color y tu logo en todo el programa"], como: "Eliges tu tipo al crear la cuenta y el programa se adapta solo." },
+  { Icon: BarChart3, familia: "finanzas", label: "Reportes, metas e indicadores", desc: "Ventas por producto, por medio de pago, por sede y por periodo. Define metas semanales y mide el avance de cada equipo.", detalle: "Ves tus ventas por producto, medio de pago, sede y periodo, defines metas semanales y mides el avance de cada equipo.", beneficios: ["Ventas por producto, pago, sede y periodo", "Metas semanales con avance por equipo", "Exporta a Excel o imprime en PDF"], como: "Cada venta alimenta los reportes; consultas el periodo que quieras." },
+  { Icon: FileText, familia: "ventas", label: "Cotizaciones y documentos", desc: "Cotizaciones profesionales enviadas por WhatsApp, control de vencimientos y archivo digital de tus documentos.", detalle: "Envías cotizaciones profesionales por WhatsApp, controlas sus vencimientos y archivas tus documentos por cliente.", beneficios: ["Cotización clara con tu logo, enviada por WhatsApp", "Control de vencimientos y seguimiento", "Documentos archivados por cliente"], como: "Armas la cotización con tus productos y la envías con un toque." },
+  { Icon: Gift, familia: "ventas", label: "Combos, puntos y fidelización", desc: "Promociones por horario, combos, puntos por compra y recompensas para que tus clientes regresen.", detalle: "Creas promociones por horario, combos, puntos por compra y recompensas para que tus clientes regresen.", beneficios: ["Combos y 2x1 por horario o día", "Puntos por cada compra", "Recompensas para clientes frecuentes"], como: "Defines el combo o los puntos una vez y se aplican solos al vender." },
+  { Icon: CalendarDays, familia: "equipo", label: "Agenda, reservas y pedidos recurrentes", desc: "Citas por profesional y recurso, reservas de mesas o espacios, y pedidos que se repiten cada semana sin olvidar ninguno.", detalle: "Atiendes citas por profesional, reservas de mesas o espacios, y pedidos que se repiten cada semana sin olvidar ninguno.", beneficios: ["Agenda por profesional, sin cruces", "Reservas de mesas o espacios con anticipo", "Pedidos semanales automáticos"], como: "Agendas la cita o el pedido recurrente y el programa te avisa." },
 ];
 
-const POR_QUE: { Icon: Icono; titulo: string; desc: string; color: string }[] = [
-  { Icon: Layers, titulo: "Toda tu operación en un solo panel", desc: "Ventas, inventario, clientes, caja, nómina y finanzas conectados entre sí. Lo que vendes descuenta inventario, entra a caja y alimenta la contabilidad.", color: "#60a5fa" },
-  { Icon: Clock, titulo: "Ahorra horas cada semana", desc: "Pedidos que llegan solos, comandas que se imprimen sin pedirlo, cobros con recordatorio por WhatsApp y cierres de caja en minutos.", color: "#34d399" },
-  { Icon: TrendingUp, titulo: "Decide con cifras reales", desc: "Costo, margen y utilidad por producto, por sede y por periodo. Sabrás qué te deja ganancia y qué solo ocupa espacio.", color: "#fbbf24" },
-  { Icon: ShieldCheck, titulo: "Información protegida y privada", desc: "Cada negocio ve solo su información. El acceso por empleado se limita a los módulos que le asignes, con auditoría de accesos sensibles.", color: "#c084fc" },
+type Pestana = {
+  id: string; Icon: Icono; corto: string; titular: string; beneficios: string[];
+};
+
+const PESTANAS: Pestana[] = [
+  { id: "rest", Icon: UtensilsCrossed, corto: "Restaurantes y comidas", titular: "Vende más en horas pico sin que se pierda una sola comanda.", beneficios: ["Menú QR en mesa", "Comanda automática a cocina", "Escandallo que descuenta ingredientes por plato", "Operación sin internet"] },
+  { id: "veh", Icon: Car, corto: "Vehículos y talleres", titular: "Controla cada vehículo desde que entra hasta el traspaso final.", beneficios: ["Hoja de vida y utilidad neta por placa (compra + arreglos vs venta)", "Alertas de SOAT y Tecnomecánica", "Órdenes de taller"] },
+  { id: "dian", Icon: Receipt, corto: "Contabilidad y DIAN", titular: "Tus cuentas claras, tus impuestos al día y tu contador feliz.", beneficios: ["Facturación electrónica DIAN ilimitada con CUFE y QR", "Arqueo de caja por turnos", "Recordatorios de cobro por WhatsApp"] },
+  { id: "nom", Icon: Calculator, corto: "Nómina ley colombiana", titular: "Liquida tu nómina en minutos cumpliendo al 100% con la ley.", beneficios: ["Cálculo automático de SMMLV, auxilio y recargos", "Salud, pensión, primas y cesantías", "Archivo PILA listo"] },
 ];
 
-const VENTAJAS: { Icon: Icono; titulo: string; desc: string; color: string }[] = [
-  { Icon: Palette, titulo: "Con la imagen de tu marca", desc: "Logo, portada y colores de tu negocio en el menú público, las facturas y la app instalada.", color: "#f472b6" },
-  { Icon: Smartphone, titulo: "En cualquier pantalla", desc: "Computador, tableta y celular. Se instala como app y sigue funcionando sin internet.", color: "#22d3ee" },
-  { Icon: Sparkles, titulo: "Fácil desde el primer día", desc: "Guía de primeros pasos, academia con lecciones cortas y un asistente virtual que te enseña a usar cada pantalla.", color: "#a3e635" },
-  { Icon: BellRing, titulo: "Siempre al día, sin perder nada", desc: "Las actualizaciones se instalan solas conservando tu información. Cuando hay una mejora importante, te avisamos dentro del programa.", color: "#fb923c" },
+const CHAT: { de: "cliente" | "agente"; texto: string; hora: string }[] = [
+  { de: "cliente", texto: "Buenas noches, ¿siguen abiertos? Quiero pedir algo para la cena", hora: "11:42 p. m." },
+  { de: "agente", texto: "¡Hola! Sí, atendemos 24/7 por aquí. Hoy te recomiendo la Hamburguesa Artesanal con papas, la más pedida.", hora: "11:42 p. m." },
+  { de: "cliente", texto: "Dame 2 hamburguesas y una limonada de coco", hora: "11:43 p. m." },
+  { de: "agente", texto: "Perfecto: 2 x Hamburguesa $56.000 + Limonada $9.500 + domicilio $5.000 = $70.500. ¿Pagas por Nequi o contraentrega?", hora: "11:43 p. m." },
+  { de: "cliente", texto: "Nequi. Ya transferí", hora: "11:44 p. m." },
+  { de: "agente", texto: "Pago confirmado. Tu pedido ya está en cocina y llega en 35 min.", hora: "11:44 p. m." },
 ];
 
-const PASOS = [
-  { n: "01", titulo: "Cuéntanos de tu negocio", desc: "Nombre, logo, horarios y tipo de negocio. Así activamos los módulos exactos que necesitas." },
-  { n: "02", titulo: "Carga tu catálogo y tu equipo", desc: "Productos con precio, clientes frecuentes e invita a tu personal con sus permisos." },
-  { n: "03", titulo: "Vende, cobra y controla", desc: "Factura, gestiona caja y cuentas por cobrar, revisa reportes y haz crecer tu negocio." },
-];
+const COLORES_SECTOR = ["#10b981", "#3b82f6", "#f59e0b", "#8b5cf6", "#06b6d4", "#ec4899"];
 
-const COLORES_SECTOR = ["#fb923c", "#60a5fa", "#34d399", "#f472b6", "#fbbf24", "#22d3ee", "#c084fc", "#a3e635"];
+const ESTILOS = `
+.gs-land{--gs-bg:#F8FAFC;--gs-card:#FFFFFF;--gs-borde:#E2E8F0;--gs-texto:#0F172A;--gs-muted:#475569;--gs-cobalto:#1E40AF;--gs-esm:#059669;--gs-glass:rgba(255,255,255,.8);
+  background-color:var(--gs-bg);background-image:radial-gradient(#cbd5e1 1px,transparent 1px);background-size:22px 22px;color:var(--gs-texto);font-family:"Inter",ui-sans-serif,system-ui,sans-serif}
+.gs-land.gs-dark{--gs-bg:#090D16;--gs-card:#111827;--gs-borde:#1E293B;--gs-texto:#F8FAFC;--gs-muted:#94A3B8;--gs-cobalto:#3B82F6;--gs-esm:#10B981;--gs-glass:rgba(9,13,22,.8);
+  background-image:radial-gradient(#1e293b 1px,transparent 1px)}
+.gs-land .gs-titulo{font-family:"Plus Jakarta Sans","Inter",sans-serif;font-weight:800;letter-spacing:-0.03em}
+.gs-land .gs-num{font-variant-numeric:tabular-nums}
+.gs-land .gs-muted{color:var(--gs-muted)}
+.gs-land .gs-card{background:var(--gs-card);border:1px solid var(--gs-borde);border-radius:1.25rem;transition:transform .3s,border-color .3s,box-shadow .3s}
+.gs-land .gs-card-hover:hover{transform:translateY(-4px);border-color:var(--gs-cobalto);box-shadow:0 16px 40px -18px color-mix(in srgb,var(--gs-cobalto) 55%,transparent)}
+.gs-land .gs-cta{background:var(--gs-esm);color:#fff;font-weight:700;transition:transform .2s,filter .2s,box-shadow .2s}
+.gs-land .gs-cta:hover{transform:translateY(-1px);filter:brightness(1.08);box-shadow:0 12px 28px -10px var(--gs-esm)}
+.gs-land .gs-sec{border:1px solid var(--gs-borde);background:var(--gs-card);color:var(--gs-texto);font-weight:600;transition:border-color .2s,transform .2s}
+.gs-land .gs-sec:hover{border-color:var(--gs-cobalto);transform:translateY(-1px)}
+.gs-land .gs-nav{background:var(--gs-glass);border-bottom:1px solid var(--gs-borde)}
+.gs-land .gs-azul{color:var(--gs-cobalto)}
+.gs-land .gs-verde{color:var(--gs-esm)}
+.gs-land input.gs-input{background:var(--gs-card);border:1px solid var(--gs-borde);color:var(--gs-texto);font-size:16px}
+.gs-land input.gs-input:focus{outline:none;border-color:var(--gs-cobalto);box-shadow:0 0 0 3px color-mix(in srgb,var(--gs-cobalto) 25%,transparent)}
+.gs-land .gs-final{background:linear-gradient(135deg,#172554,#0f172a 55%,#000)}
+@keyframes gs-barra{from{transform:scaleY(.2)}to{transform:scaleY(1)}}
+.gs-land .gs-barra{transform-origin:bottom;animation:gs-barra .9s cubic-bezier(.2,.8,.2,1) both}
+`;
+
+function Aparece({ children, retraso = 0, className = "" }: { children: ReactNode; retraso?: number; className?: string }) {
+  return (
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.55, delay: retraso, ease: [0.23, 1, 0.32, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function Encabezado({ ojo, titulo, texto }: { ojo: string; titulo: string; texto?: string }) {
+  return (
+    <div className="mx-auto max-w-2xl text-center">
+      <p className="gs-azul text-xs font-bold uppercase tracking-[0.2em]">{ojo}</p>
+      <h2 className="gs-titulo mt-3 text-3xl sm:text-4xl">{titulo}</h2>
+      {texto ? <p className="gs-muted mt-3 text-sm sm:text-base">{texto}</p> : null}
+    </div>
+  );
+}
+
+function VistaPrevia({ id }: { id: string }) {
+  if (id === "rest") {
+    return (
+      <div className="gs-card p-5">
+        <div className="flex items-center justify-between">
+          <span className="gs-titulo text-lg">Mesa 04</span>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-1 text-xs font-semibold text-amber-500"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" /> En cocina</span>
+        </div>
+        <div className="mt-4 flex items-center justify-between rounded-xl border p-3" style={{ borderColor: "var(--gs-borde)" }}>
+          <span className="text-sm">2 × Hamburguesa Artesanal</span>
+          <span className="gs-num gs-verde text-sm font-bold">$56.000</span>
+        </div>
+        <p className="gs-muted gs-num mt-3 text-xs">Tiempo en cocina: 06:12 min · Comanda impresa automáticamente</p>
+      </div>
+    );
+  }
+  if (id === "veh") {
+    return (
+      <div className="gs-card p-5">
+        <div className="flex items-center justify-between">
+          <span className="gs-titulo text-lg">Placa KLM-45G</span>
+          <Wrench className="gs-azul h-5 w-5" />
+        </div>
+        <dl className="mt-4 space-y-2 text-sm">
+          <div className="flex justify-between"><dt className="gs-muted">Inversión</dt><dd className="gs-num font-semibold">$28.5M</dd></div>
+          <div className="flex justify-between"><dt className="gs-muted">Utilidad neta</dt><dd className="gs-num gs-verde font-bold">+$4.2M</dd></div>
+        </dl>
+        <p className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-semibold text-emerald-500"><Check className="h-3.5 w-3.5" /> SOAT vigente</p>
+      </div>
+    );
+  }
+  if (id === "dian") {
+    const celdas = [1,1,1,0,1,0,1, 1,0,1,1,0,0,1, 1,1,0,1,1,1,0, 0,1,1,0,1,0,1, 1,0,0,1,1,1,1, 0,1,0,1,0,0,1, 1,1,1,0,1,1,0];
+    return (
+      <div className="gs-card flex items-center gap-5 p-5">
+        <div className="min-w-0 flex-1">
+          <span className="gs-titulo text-lg">FE-1048</span>
+          <p className="gs-muted gs-num mt-1 text-xs">Total $214.200 · CUFE 8f3a…c91d</p>
+          <p className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-semibold text-emerald-500"><BadgeCheck className="h-3.5 w-3.5" /> Validada por la DIAN ✓</p>
+        </div>
+        <svg viewBox="0 0 7 7" className="h-20 w-20 shrink-0 rounded-lg bg-white p-1" aria-label="Código QR de la factura">
+          {celdas.map((c, i) => (c ? <rect key={i} x={i % 7} y={Math.floor(i / 7)} width="1" height="1" fill="#0F172A" /> : null))}
+        </svg>
+      </div>
+    );
+  }
+  return (
+    <div className="gs-card p-5">
+      <div className="flex items-center justify-between">
+        <span className="gs-titulo text-lg">Desprendible digital</span>
+        <Banknote className="gs-verde h-5 w-5" />
+      </div>
+      <p className="gs-num gs-verde mt-3 text-2xl font-extrabold">$1.847.300</p>
+      <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
+        {["SMMLV", "Seguridad Social", "Enviar por WhatsApp"].map((t) => (
+          <span key={t} className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-1 text-emerald-500"><Check className="h-3 w-3" /> {t}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SelectorEspecialidad() {
+  const [activa, setActiva] = useState<string>(PESTANAS[0].id);
+  const p = PESTANAS.find((x) => x.id === activa) ?? PESTANAS[0];
+  return (
+    <div className="gs-card mt-10 p-4 sm:p-6">
+      <div role="tablist" className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+        {PESTANAS.map(({ id, Icon, corto }) => {
+          const on = id === activa;
+          return (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={on}
+              onClick={() => setActiva(id)}
+              className="flex items-center gap-2 rounded-xl border px-3 py-3 text-left text-sm font-semibold transition"
+              style={{
+                borderColor: on ? "var(--gs-cobalto)" : "var(--gs-borde)",
+                background: on ? "color-mix(in srgb, var(--gs-cobalto) 12%, transparent)" : "transparent",
+                color: on ? "var(--gs-cobalto)" : "var(--gs-texto)",
+              }}
+            >
+              <Icon className="h-4 w-4 shrink-0" /> <span className="min-w-0">{corto}</span>
+            </button>
+          );
+        })}
+      </div>
+      <div className="mt-6 grid items-center gap-6 lg:grid-cols-2">
+        <motion.div key={p.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="min-w-0">
+          <h3 className="gs-titulo text-2xl sm:text-3xl">{p.titular}</h3>
+          <ul className="mt-4 space-y-2">
+            {p.beneficios.map((b) => (
+              <li key={b} className="flex items-start gap-2 text-sm"><Check className="gs-verde mt-0.5 h-4 w-4 shrink-0" /><span className="gs-muted">{b}</span></li>
+            ))}
+          </ul>
+        </motion.div>
+        <motion.div key={`${p.id}-ui`} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.35 }} className="min-w-0">
+          <VistaPrevia id={p.id} />
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
+function ChatWhatsApp() {
+  const [visibles, setVisibles] = useState<number>(1);
+  useEffect(() => {
+    const t = window.setTimeout(
+      () => setVisibles((v) => (v >= CHAT.length ? 1 : v + 1)),
+      visibles >= CHAT.length ? 4500 : 1700,
+    );
+    return () => window.clearTimeout(t);
+  }, [visibles]);
+  return (
+    <div className="gs-card overflow-hidden" style={{ background: "color-mix(in srgb, var(--gs-esm) 8%, var(--gs-card))" }}>
+      <div className="flex items-center gap-3 border-b px-4 py-3" style={{ borderColor: "var(--gs-borde)" }}>
+        <span className="grid h-9 w-9 place-items-center rounded-full text-white" style={{ background: "var(--gs-esm)" }}><Bot className="h-5 w-5" /></span>
+        <div className="min-w-0">
+          <p className="text-sm font-bold">Agente {BRAND.name}</p>
+          <p className="gs-verde text-xs">● en línea 24/7</p>
+        </div>
+      </div>
+      <div className="flex min-h-[22rem] flex-col gap-2.5 p-4">
+        {CHAT.slice(0, visibles).map((m, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-sm ${m.de === "cliente" ? "self-start" : "self-end text-white"}`}
+            style={m.de === "cliente" ? { background: "var(--gs-card)", border: "1px solid var(--gs-borde)" } : { background: "var(--gs-esm)" }}
+          >
+            <p>{m.texto}</p>
+            <p className={`mt-1 flex items-center justify-end gap-1 text-[10px] ${m.de === "cliente" ? "gs-muted" : "text-white/80"}`}>
+              {m.hora} {m.de === "agente" && i === visibles - 1 && i === CHAT.length - 1 ? <CheckCheck className="h-3.5 w-3.5 text-sky-300" /> : null}
+            </p>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function ExploradorSectores() {
   const [sel, setSel] = useState<string | null>(null);
+  const [busca, setBusca] = useState<string>("");
+  const [todos, setTodos] = useState<boolean>(false);
   const ficha = sel ? buscarSector(sel) : undefined;
   const FichaIcon = ficha?.Icon;
+
+  const lista = useMemo(() => {
+    const q = busca.trim().toLowerCase();
+    if (q) return SECTORES.filter((s) => s.label.toLowerCase().includes(q));
+    return todos ? SECTORES : SECTORES.slice(0, 6);
+  }, [busca, todos]);
 
   const guardarPreseleccion = (slug: string) => {
     try {
@@ -80,79 +293,128 @@ function ExploradorSectores() {
   };
 
   return (
-    <div>
-      <ul className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-        {SECTORES.map(({ Icon, label, slug }, i) => {
+    <div className="mt-10">
+      <div className="relative mx-auto max-w-md">
+        <Search className="gs-muted pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2" />
+        <input
+          type="search"
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          placeholder="Busca tu tipo de negocio…"
+          aria-label="Buscar tipo de negocio"
+          className="gs-input w-full rounded-full py-3 pl-11 pr-4"
+        />
+      </div>
+      <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        {lista.map(({ Icon, label, slug }, i) => {
           const color = COLORES_SECTOR[i % COLORES_SECTOR.length];
           const activo = sel === slug;
           return (
             <li key={slug}>
-              <button
-                type="button"
-                onClick={() => setSel(activo ? null : slug)}
-                aria-expanded={activo}
-                className="group block h-full w-full"
-              >
-                <GlassPanel className={`flex h-full flex-col items-center gap-3 border-b-4 p-4 text-center transition-transform duration-300 group-hover:-translate-y-1 ${activo ? "ring-2 ring-primary" : ""}`} style={{ borderBottomColor: color }}>
-                  <span className="icon-chip h-11 w-11 rounded-2xl" style={{ background: `${color}1f`, color }}><Icon className="h-5 w-5" /></span>
-                  <span className="text-xs font-medium text-foreground sm:text-sm">{label}</span>
-                </GlassPanel>
+              <button type="button" onClick={() => setSel(activo ? null : slug)} aria-expanded={activo} className="block h-full w-full">
+                <div className={`gs-card gs-card-hover flex h-full flex-col items-center gap-3 p-4 text-center ${activo ? "ring-2" : ""}`} style={activo ? { borderColor: "var(--gs-cobalto)" } : undefined}>
+                  <span className="grid h-11 w-11 place-items-center rounded-2xl" style={{ background: `${color}22`, color }}><Icon className="h-5 w-5" /></span>
+                  <span className="text-xs font-semibold sm:text-sm">{label}</span>
+                </div>
               </button>
             </li>
           );
         })}
       </ul>
+      {lista.length === 0 && <p className="gs-muted mt-6 text-center text-sm">No encontramos ese negocio. Prueba con otra palabra.</p>}
+      {!busca.trim() && (
+        <div className="mt-5 text-center">
+          <button type="button" onClick={() => setTodos((v) => !v)} className="gs-sec inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm">
+            {todos ? "Ver menos" : "Ver los +50 sectores"} <ChevronDown className={`h-4 w-4 transition ${todos ? "rotate-180" : ""}`} />
+          </button>
+        </div>
+      )}
 
       {ficha && FichaIcon ? (
-        <GlassPanel tier="strong" className="mt-6 p-6 text-left sm:p-8">
+        <div className="gs-card mt-6 p-6 text-left sm:p-8">
           <div className="flex flex-wrap items-center gap-4">
-            <span className="icon-chip h-12 w-12 shrink-0 rounded-2xl"><FichaIcon className="h-6 w-6" /></span>
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl" style={{ background: "color-mix(in srgb, var(--gs-cobalto) 14%, transparent)", color: "var(--gs-cobalto)" }}><FichaIcon className="h-6 w-6" /></span>
             <div className="min-w-0">
-              <p className="text-eyebrow">Ficha del negocio</p>
-              <h3 className="mt-1 break-words font-display text-2xl">{ficha.label}</h3>
+              <p className="gs-azul text-xs font-bold uppercase tracking-[0.2em]">Ficha del negocio</p>
+              <h3 className="gs-titulo mt-1 break-words text-2xl">{ficha.label}</h3>
             </div>
           </div>
-          <p className="mt-5 font-medium text-foreground">Qué problema resuelve</p>
-          <p className="mt-1 text-sm text-muted-foreground sm:text-base">{ficha.resumen}</p>
-          <p className="mt-5 font-medium text-foreground">Funciones reales incluidas</p>
+          <p className="mt-5 font-semibold">Qué problema resuelve</p>
+          <p className="gs-muted mt-1 text-sm sm:text-base">{ficha.resumen}</p>
+          <p className="mt-5 font-semibold">Funciones reales incluidas</p>
           <ul className="mt-2 grid gap-2 sm:grid-cols-2">
             {ficha.acciones.map((a) => (
               <li key={a.titulo} className="flex items-start gap-2 text-sm">
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                <span className="min-w-0"><strong className="text-foreground">{a.titulo}:</strong> <span className="text-muted-foreground">{a.texto}</span></span>
+                <Check className="gs-verde mt-0.5 h-4 w-4 shrink-0" />
+                <span className="min-w-0"><strong>{a.titulo}:</strong> <span className="gs-muted">{a.texto}</span></span>
               </li>
             ))}
           </ul>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Link
-              to="/login"
-              search={{ mode: "signup" }}
-              onClick={() => guardarPreseleccion(ficha.slug)}
-              className="btn-pro inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold"
-            >
-              Probar Gosaryc gratis para {ficha.label} <ArrowRight className="h-4 w-4" />
+            <Link to="/login" search={{ mode: "signup" }} onClick={() => guardarPreseleccion(ficha.slug)} className="gs-cta inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
+              Probar {BRAND.name} gratis para {ficha.label} <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link
-              to="/sectores/$slug"
-              params={{ slug: ficha.slug }}
-              className="btn-ghost-pro inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm text-foreground"
-            >
+            <Link to="/sectores/$slug" params={{ slug: ficha.slug }} className="gs-sec inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
               Ver ficha completa
             </Link>
           </div>
-        </GlassPanel>
+        </div>
       ) : (
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          Toca tu tipo de negocio para ver qué problema resuelve, sus funciones reales y cómo empezar gratis.
-        </p>
+        <p className="gs-muted mt-6 text-center text-sm">Toca tu tipo de negocio para ver qué problema resuelve, sus funciones reales y cómo empezar gratis.</p>
       )}
+    </div>
+  );
+}
+
+function MiniDian() {
+  return (
+    <div className="mt-5 flex items-center gap-3 rounded-xl border p-3" style={{ borderColor: "var(--gs-borde)" }}>
+      <QrCode className="gs-azul h-8 w-8 shrink-0" />
+      <div className="min-w-0 text-xs">
+        <p className="gs-num font-semibold">FE-1048 · CUFE 8f3a…c91d</p>
+        <p className="gs-verde font-semibold">Validada por la DIAN ✓</p>
+      </div>
+    </div>
+  );
+}
+
+function MiniNomina() {
+  return (
+    <div className="mt-5 grid grid-cols-3 gap-2 text-center text-xs">
+      {[["Salud", "4%"], ["Pensión", "4%"], ["Auxilio", "Sí"]].map(([k, v]) => (
+        <div key={k} className="rounded-xl border p-2" style={{ borderColor: "var(--gs-borde)" }}>
+          <p className="gs-muted">{k}</p>
+          <p className="gs-num gs-verde font-bold">{v}</p>
+        </div>
+      ))}
     </div>
   );
 }
 
 function LandingPage() {
   const { loading } = useAuth();
-  const [fichaModulo, setFichaModulo] = useState<(typeof MODULOS)[number] | null>(null);
+  const [fichaModulo, setFichaModulo] = useState<Modulo | null>(null);
+  const [oscuro, setOscuro] = useState<boolean>(false);
+
+  useEffect(() => {
+    try {
+      setOscuro(localStorage.getItem("gosaryc:tema_portada") === "oscuro");
+    } catch {
+      /* almacenamiento bloqueado */
+    }
+  }, []);
+
+  const cambiarTema = () => {
+    setOscuro((v) => {
+      const nuevo = !v;
+      try {
+        localStorage.setItem("gosaryc:tema_portada", nuevo ? "oscuro" : "claro");
+      } catch {
+        /* almacenamiento bloqueado */
+      }
+      return nuevo;
+    });
+  };
 
   useEffect(() => {
     if (!fichaModulo) return;
@@ -163,255 +425,228 @@ function LandingPage() {
     return () => window.removeEventListener("keydown", cerrar);
   }, [fichaModulo]);
 
+  const clase = `gs-land relative min-h-screen overflow-x-hidden${oscuro ? " gs-dark" : ""}`;
+
   if (loading) {
     return (
-      <div className="relative min-h-screen overflow-hidden">
-        <GradientMesh />
+      <div className={clase}>
+        <style>{ESTILOS}</style>
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
-      <GradientMesh />
-      <div className="hero-grid" aria-hidden="true" />
+    <div className={clase}>
+      <style>{ESTILOS}</style>
 
-      <header className="sticky top-0 z-30 border-b border-glass-border/60 bg-background/70 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-3.5 sm:px-8">
+      <header className="gs-nav sticky top-0 z-50 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-3 sm:px-8">
           <Link to="/" className="inline-flex min-w-0 items-center gap-2.5">
             <img src="/icono-app.svg" alt={`Logo de ${BRAND.name}`} className="h-9 w-9 rounded-xl object-cover" />
-            <span className="truncate font-display text-xl">{BRAND.name}</span>
+            <span className="gs-titulo truncate text-xl">{BRAND.name}</span>
           </Link>
           <div className="flex shrink-0 items-center gap-2">
-            <Link to="/instalar" className="hidden rounded-full px-4 py-2 text-sm text-muted-foreground sm:inline-flex">Descargar app</Link>
-            <Link to="/login" className="btn-pro inline-flex rounded-full px-5 py-2.5 text-sm font-semibold">Iniciar sesión</Link>
+            <button type="button" onClick={cambiarTema} aria-label={oscuro ? "Activar modo claro" : "Activar modo oscuro"} className="gs-sec grid h-10 w-10 place-items-center rounded-full">
+              {oscuro ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
+            <Link to="/instalar" className="gs-muted hidden rounded-full px-4 py-2 text-sm font-medium sm:inline-flex">Descargar app</Link>
+            <Link to="/login" search={{ mode: "signin" }} className="gs-cta inline-flex rounded-full px-5 py-2.5 text-sm">Iniciar sesión</Link>
           </div>
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto max-w-6xl px-5 pb-24 sm:px-8">
-        {/* 1. INFORMACIÓN PRIMERO: qué es, para quién, por qué */}
+      <main className="relative z-10 mx-auto max-w-6xl px-5 pb-16 sm:px-8">
+        {/* A. HERO */}
         <section className="grid items-center gap-10 pb-6 pt-12 sm:pt-20 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
-          <div className="rise min-w-0">
-            <p className="inline-flex items-center gap-2 rounded-full border border-glass-border bg-glass/60 px-4 py-1.5 text-xs text-muted-foreground backdrop-blur">
-              <Sparkles className="h-3.5 w-3.5 text-primary" /> {BRAND.tagline} · Hecho en Colombia
+          <div className="min-w-0">
+            <p className="gs-card inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium">
+              <span className="h-2 w-2 animate-pulse rounded-full" style={{ background: "var(--gs-esm)" }} />
+              Multiplataforma · Web, Android y PC · Hecho en Colombia
             </p>
-            <h1 className="mt-6 break-words font-display text-4xl leading-[1.05] tracking-tight sm:text-6xl">
-              Todo tu negocio, <span className="text-brand-gradient">en un solo lugar</span>
+            <h1 className="gs-titulo mt-6 break-words text-4xl leading-[1.05] sm:text-6xl">
+              Controla cada peso, cada venta y cada turno de tu negocio.
             </h1>
-            <p className="mt-6 max-w-xl text-base text-muted-foreground sm:text-lg">
-              {BRAND.description}
+            <p className="gs-muted mt-6 max-w-xl text-base sm:text-lg">
+              El sistema POS y administrativo todo-en-uno para restaurantes, compraventas de vehículos, tiendas y empresas en Colombia. Factura con la DIAN, liquida nómina legal y vende por WhatsApp 24/7, incluso sin internet.
             </p>
-            <div className="mt-6 flex flex-wrap gap-2 text-xs">
-              {["Más de 50 tipos de negocio", "Facturación electrónica DIAN", "Nómina según ley colombiana", "Funciona sin internet"].map((t) => (
-                <span key={t} className="inline-flex items-center gap-1.5 rounded-full border border-glass-border bg-glass/50 px-3 py-1.5 text-muted-foreground">
-                  <Check className="h-3.5 w-3.5 text-primary" /> {t}
-                </span>
-              ))}
-            </div>
-            <p className="mt-6 text-sm text-muted-foreground">
-              Primero conoce el programa con calma. Cuando estés listo, crea tu cuenta o inicia sesión: tus datos se conservan siempre, incluso al actualizar.
-            </p>
-            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <a href="#conocer" className="btn-pro inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold">
-                <PlayCircle className="h-4 w-4" /> Conocer el programa
-              </a>
-              <Link to="/instalar" className="btn-ghost-pro inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm text-foreground">
-                <Download className="h-4 w-4" /> Descargar app Android / PC
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Link to="/login" search={{ mode: "signup" }} className="gs-cta inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
+                Crear mi cuenta gratis <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link to="/instalar" className="gs-sec inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
+                <Download className="h-4 w-4" /> Descargar App Android / PC
               </Link>
             </div>
+            <ul className="gs-muted mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium">
+              {["Funciona sin internet", "Facturación DIAN", "Nómina ley colombiana", "+50 sectores"].map((t) => (
+                <li key={t} className="inline-flex items-center gap-1.5"><Check className="gs-verde h-4 w-4" /> {t}</li>
+              ))}
+            </ul>
           </div>
 
-          {/* Vista previa del panel */}
-          <div className="rise relative min-w-0" style={{ animationDelay: "120ms" }} aria-hidden="true">
-            <div className="absolute -inset-6 -z-10 rounded-[40px] bg-primary/10 blur-3xl" />
-            <GlassPanel tier="strong" className="space-y-4 p-5">
-              <div className="flex items-center justify-between">
+          <div className="relative min-w-0" aria-hidden="true">
+            <div className="absolute -inset-6 -z-10 rounded-[40px] opacity-20 blur-3xl" style={{ background: "linear-gradient(135deg, var(--gs-cobalto), var(--gs-esm))" }} />
+            <div className="gs-card space-y-4 p-5" style={{ boxShadow: "0 24px 60px -30px color-mix(in srgb, var(--gs-cobalto) 60%, transparent)" }}>
+              <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs text-muted-foreground">Ventas de hoy</p>
-                  <p className="font-display text-3xl">$1.284.500</p>
+                  <p className="gs-muted text-xs">Ventas de hoy</p>
+                  <p className="gs-titulo gs-num text-3xl">$1.284.500</p>
+                  <p className="gs-num gs-verde mt-1 text-xs font-bold">▲ +18.4% vs ayer</p>
                 </div>
-                <span className="icon-chip h-11 w-11 rounded-2xl"><TrendingUp className="h-5 w-5" /></span>
+                <span className="grid h-11 w-11 place-items-center rounded-2xl" style={{ background: "color-mix(in srgb, var(--gs-esm) 15%, transparent)", color: "var(--gs-esm)" }}><TrendingUp className="h-5 w-5" /></span>
               </div>
               <div className="flex h-24 items-end gap-2">
                 {[38, 55, 42, 70, 52, 88, 64].map((h, i) => (
-                  <div key={i} className="flex-1 rounded-t-lg" style={{ height: `${h}%`, background: `linear-gradient(to top, ${COLORES_SECTOR[i % COLORES_SECTOR.length]}33, ${COLORES_SECTOR[i % COLORES_SECTOR.length]})` }} />
+                  <div key={i} className="gs-barra flex-1 rounded-t-lg" style={{ height: `${h}%`, background: i % 2 === 0 ? "var(--gs-cobalto)" : "var(--gs-esm)", animationDelay: `${i * 80}ms` }} />
                 ))}
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <GlassPanel tier="inner" className="border-l-4 p-3" style={{ borderLeftColor: "#fb923c" }}><p className="text-xs text-muted-foreground">Pedidos de hoy</p><p className="font-display text-xl">38</p></GlassPanel>
-                <GlassPanel tier="inner" className="border-l-4 p-3" style={{ borderLeftColor: "#60a5fa" }}><p className="text-xs text-muted-foreground">Cuentas por cobrar</p><p className="font-display text-xl">$216.000</p></GlassPanel>
+                <div className="rounded-xl border p-3" style={{ borderColor: "var(--gs-borde)" }}>
+                  <p className="gs-muted flex items-center gap-1.5 text-xs"><Radio className="gs-verde h-3.5 w-3.5 animate-pulse" /> Pedidos activos</p>
+                  <p className="gs-titulo gs-num text-xl">38</p>
+                </div>
+                <div className="rounded-xl border p-3" style={{ borderColor: "var(--gs-borde)" }}>
+                  <p className="gs-muted text-xs">Por cobrar</p>
+                  <p className="gs-titulo gs-num text-xl">$216.000</p>
+                  <span className="mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold text-white" style={{ background: "var(--gs-esm)" }}><MessageCircle className="h-3 w-3" /> Cobrar por WhatsApp</span>
+                </div>
               </div>
-            </GlassPanel>
+              <p className="gs-muted flex items-center gap-2 rounded-lg px-1 text-xs"><WifiOff className="gs-verde h-3.5 w-3.5" /> <span className="gs-verde">●</span> Modo Offline Activo · Sincronización en la nube lista</p>
+            </div>
           </div>
         </section>
 
-        {/* 2. QUÉ INCLUYE (tarjetas de colores) */}
-        <section id="conocer" className="mt-16 scroll-mt-24" aria-labelledby="modulos">
-          <p className="text-eyebrow text-center">Qué incluye</p>
-          <h2 id="modulos" className="mt-3 text-center font-display text-3xl sm:text-4xl">Un programa completo, explicado en lenguaje claro</h2>
-          <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-muted-foreground sm:text-base">
-            Cada tarjeta es un módulo real del programa. Los colores identifican la familia: ventas, operación, finanzas, equipo y cumplimiento. Al crear tu cuenta, verás solo los módulos de tu tipo de negocio, con tus colores y tu logo.
-          </p>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {MODULOS.map((m) => (
-              <button key={m.label} type="button" onClick={() => setFichaModulo(m)} className={`group block h-full text-left ${m.grande ? "lg:col-span-2" : ""}`}>
-                <GlassPanel className="relative h-full overflow-hidden p-6 transition-transform duration-300 group-hover:-translate-y-1" style={{ borderTop: `3px solid ${m.color}` }}>
-                  <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full opacity-20 blur-2xl" style={{ background: m.color }} />
-                  <span className="icon-chip h-12 w-12 rounded-2xl" style={{ background: `${m.color}1f`, color: m.color }}><m.Icon className="h-5 w-5" /></span>
-                  <h3 className="mt-5 font-display text-lg">{m.label}</h3>
-                  <p className="mt-1.5 text-sm text-muted-foreground">{m.desc}</p>
-                  <span className="mt-4 inline-flex items-center gap-1 text-xs font-medium opacity-0 transition group-hover:opacity-100" style={{ color: m.color }}>
-                    Ver detalle <ArrowRight className="h-3 w-3" />
-                  </span>
-                </GlassPanel>
-              </button>
-            ))}
+        {/* B. SELECTOR POR ESPECIALIDAD */}
+        <Aparece className="mt-20">
+          <Encabezado ojo="Propuestas dirigidas" titulo="Una solución pensada para tu tipo de negocio" texto="Elige tu especialidad y mira cómo se ve Gosaryc en tu día a día." />
+          <SelectorEspecialidad />
+        </Aparece>
+
+        {/* C. ECOSISTEMA */}
+        <section id="conocer" className="mt-24 scroll-mt-24" aria-labelledby="modulos">
+          <Aparece>
+            <Encabezado ojo="Qué incluye" titulo="Un ecosistema completo, explicado en lenguaje claro" texto="12 módulos reales. Toca cualquier tarjeta para ver el detalle sin iniciar sesión." />
+          </Aparece>
+          <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-3">
+            {MODULOS.map((m, i) => {
+              const f = FAMILIA[m.familia];
+              return (
+                <Aparece key={m.label} retraso={(i % 3) * 0.06} className={m.ancho ? "md:col-span-2" : ""}>
+                  <button type="button" onClick={() => setFichaModulo(m)} className="block h-full w-full text-left">
+                    <div className="gs-card gs-card-hover relative h-full overflow-hidden p-6">
+                      <div className="pointer-events-none absolute inset-0" style={{ background: f.fondo }} />
+                      <div className="relative">
+                        <span className="grid h-12 w-12 place-items-center rounded-2xl" style={{ background: f.fondo, color: f.texto, border: `1px solid ${f.texto}33` }}><m.Icon className="h-5 w-5" /></span>
+                        <h3 className="gs-titulo mt-5 text-lg">{m.label}</h3>
+                        <p className="gs-muted mt-1.5 text-sm">{m.desc}</p>
+                        {m.ancho === "dian" && <MiniDian />}
+                        {m.ancho === "nomina" && <MiniNomina />}
+                        <span className="gs-azul mt-4 inline-flex items-center gap-1 text-xs font-semibold">Explorar módulo <ArrowRight className="h-3 w-3" /></span>
+                      </div>
+                    </div>
+                  </button>
+                </Aparece>
+              );
+            })}
           </div>
-          <p className="mt-4 text-center text-xs text-muted-foreground">
-            Toca cualquier tarjeta para ver el detalle sin iniciar sesión.
-          </p>
 
           {fichaModulo && (
-            <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center" role="dialog" aria-modal="true" aria-label={fichaModulo.label}>
+            <div className="gs-land fixed inset-0 z-[60] flex items-end justify-center p-4 sm:items-center" style={{ background: "transparent" }} role="dialog" aria-modal="true" aria-label={fichaModulo.label}>
               <button type="button" aria-label="Cerrar detalle" onClick={() => setFichaModulo(null)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-              <GlassPanel tier="strong" className="relative max-h-[90dvh] w-full max-w-lg overflow-y-auto p-6 text-left sm:p-8">
+              <div className={`${oscuro ? "gs-dark " : ""}gs-land gs-card relative max-h-[90dvh] w-full max-w-lg overflow-y-auto p-6 text-left backdrop-blur-xl sm:p-8`} style={{ backgroundImage: "none" }}>
                 <div className="flex items-start justify-between gap-4">
-                  <span className="icon-chip h-12 w-12 shrink-0 rounded-2xl" style={{ background: `${fichaModulo.color}1f`, color: fichaModulo.color }}><fichaModulo.Icon className="h-6 w-6" /></span>
-                  <button type="button" onClick={() => setFichaModulo(null)} aria-label="Cerrar" className="rounded-full border border-glass-border bg-glass/40 p-2 text-muted-foreground transition hover:text-foreground">
+                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl" style={{ background: FAMILIA[fichaModulo.familia].fondo, color: FAMILIA[fichaModulo.familia].texto }}><fichaModulo.Icon className="h-6 w-6" /></span>
+                  <button type="button" onClick={() => setFichaModulo(null)} aria-label="Cerrar" className="gs-sec rounded-full p-2">
                     <X className="h-4 w-4" />
                   </button>
                 </div>
-                <h3 className="mt-4 font-display text-2xl">{fichaModulo.label}</h3>
-                <p className="mt-2 text-sm text-muted-foreground sm:text-base">{fichaModulo.detalle}</p>
-                <p className="mt-5 font-medium text-foreground">Beneficios reales</p>
+                <h3 className="gs-titulo mt-4 text-2xl">{fichaModulo.label}</h3>
+                <p className="gs-muted mt-2 text-sm sm:text-base">{fichaModulo.detalle}</p>
+                <p className="mt-5 font-semibold">Beneficios reales</p>
                 <ul className="mt-2 space-y-2">
                   {fichaModulo.beneficios.map((b) => (
-                    <li key={b} className="flex items-start gap-2 text-sm">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                      <span className="text-muted-foreground">{b}</span>
-                    </li>
+                    <li key={b} className="flex items-start gap-2 text-sm"><Check className="gs-verde mt-0.5 h-4 w-4 shrink-0" /><span className="gs-muted">{b}</span></li>
                   ))}
                 </ul>
-                <p className="mt-5 font-medium text-foreground">Cómo funciona</p>
-                <p className="mt-1 text-sm text-muted-foreground">{fichaModulo.como}</p>
+                <p className="mt-5 font-semibold">Cómo funciona</p>
+                <p className="gs-muted mt-1 text-sm">{fichaModulo.como}</p>
                 <div className="mt-6 flex flex-col gap-3">
-                  <Link to="/login" search={{ mode: "signup" }} className="btn-pro inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold">
+                  <Link to="/login" search={{ mode: "signup" }} className="gs-cta inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
                     Crear cuenta y probar gratis <ArrowRight className="h-4 w-4" />
                   </Link>
-                  <Link to="/login" search={{ mode: "signin" }} className="btn-ghost-pro inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm text-foreground">
+                  <Link to="/login" search={{ mode: "signin" }} className="gs-sec inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
                     Ya tengo cuenta, iniciar sesión
                   </Link>
                 </div>
-              </GlassPanel>
+              </div>
             </div>
           )}
         </section>
 
-        {/* 3. AGENTE WHATSAPP */}
+        {/* D. AGENTE WHATSAPP */}
         <section className="mt-24" aria-labelledby="agente-ia">
-          <GlassPanel tier="strong" className="relative overflow-hidden p-6 sm:p-10">
-            <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-primary/20 blur-3xl" />
-            <p className="text-eyebrow text-center">Atención automática</p>
-            <h2 id="agente-ia" className="mt-3 text-center font-display text-3xl sm:text-4xl">
-              Un agente de WhatsApp que atiende y vende por ti, las 24 horas
-            </h2>
-            <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-muted-foreground sm:text-base">
-              Se conecta al número de tu negocio, responde dudas de horarios, precios y pedidos al instante, y aprende de tus propias respuestas para sonar cada vez más como tu equipo. Tú puedes intervenir cuando quieras.
-            </p>
-            <div className="relative mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Aparece>
+            <Encabezado ojo="Atención automática" titulo="Un agente de WhatsApp que atiende y vende por ti, las 24 horas" texto="Se conecta al número de tu negocio, responde al instante y cierra ventas mientras duermes. Tú intervienes cuando quieras." />
+          </Aparece>
+          <div className="mt-10 grid gap-5 lg:grid-cols-12">
+            <Aparece className="lg:col-span-7"><ChatWhatsApp /></Aparece>
+            <div className="grid gap-4 lg:col-span-5">
               {[
-                { Icon: Headphones, titulo: "Servicio al cliente", desc: "Resuelve dudas de horarios, precios, garantías y entregas al instante.", color: "#22d3ee" },
-                { Icon: Bot, titulo: "Asesor y vendedor", desc: "Recomienda productos, resuelve objeciones y ayuda a cerrar la venta.", color: "#f472b6" },
-                { Icon: Brain, titulo: "Aprende de tu negocio", desc: "Se adapta a tu tipo de negocio y mejora con cada conversación real.", color: "#a3e635" },
-                { Icon: MessageCircle, titulo: "Un número por negocio", desc: "Cada negocio conecta su propio WhatsApp. Tú puedes tomar el chat cuando quieras.", color: "#fb923c" },
-              ].map(({ Icon, titulo, desc, color }) => (
-                <GlassPanel key={titulo} tier="inner" className="border-t-2 p-4" style={{ borderTopColor: color }}>
-                  <span className="icon-chip h-10 w-10 rounded-xl" style={{ background: `${color}1f`, color }}><Icon className="h-5 w-5" /></span>
-                  <h3 className="mt-3 font-medium text-foreground">{titulo}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
-                </GlassPanel>
+                { Icon: Headphones, titulo: "Atención 24/7", desc: "Resuelve dudas de horarios, precios y entregas de día y de noche." },
+                { Icon: Bot, titulo: "Cierre de ventas automático", desc: "Recomienda, calcula el total y confirma el pago por ti." },
+                { Icon: Brain, titulo: "Aprende de tu negocio", desc: "Se adapta a tu tipo de negocio y mejora con cada conversación." },
+                { Icon: Users, titulo: "Control humano cuando quieras", desc: "Tomas el chat en cualquier momento, sin perder el contexto." },
+              ].map(({ Icon, titulo, desc }, i) => (
+                <Aparece key={titulo} retraso={i * 0.07}>
+                  <div className="gs-card gs-card-hover flex items-start gap-4 p-4">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl" style={{ background: "color-mix(in srgb, var(--gs-esm) 14%, transparent)", color: "var(--gs-esm)" }}><Icon className="h-5 w-5" /></span>
+                    <div className="min-w-0">
+                      <h3 className="font-bold">{titulo}</h3>
+                      <p className="gs-muted mt-0.5 text-sm">{desc}</p>
+                    </div>
+                  </div>
+                </Aparece>
               ))}
             </div>
-          </GlassPanel>
+          </div>
         </section>
 
-        {/* 4. ADAPTADO A CADA NEGOCIO */}
+        {/* E. +50 SECTORES */}
         <section className="mt-24" aria-labelledby="para-quien">
-          <p className="text-eyebrow text-center">Por tipo de negocio</p>
-          <h2 id="para-quien" className="mt-3 text-center font-display text-3xl sm:text-4xl">El programa se adapta a tu negocio, no al revés</h2>
-          <p className="mx-auto mt-3 max-w-xl text-center text-sm text-muted-foreground">Cada tipo de negocio recibe sus módulos, sus textos y su color. Elige el tuyo para ver el detalle.</p>
+          <Aparece>
+            <Encabezado ojo="+50 tipos de negocio" titulo="El programa se adapta a tu negocio, no al revés" texto="Cada tipo de negocio recibe sus módulos, sus textos y su color. Búscalo o elige uno de los más populares." />
+          </Aparece>
           <ExploradorSectores />
         </section>
 
-        {/* 5. POR QUÉ + ACTUALIZACIONES + APP */}
-        <section className="mt-24" aria-labelledby="por-que">
-          <p className="text-eyebrow text-center">Ventajas</p>
-          <h2 id="por-que" className="mt-3 text-center font-display text-3xl sm:text-4xl">¿Por qué elegir {BRAND.name}?</h2>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2">
-            {[...POR_QUE, ...VENTAJAS].map(({ Icon, titulo, desc, color }) => (
-              <GlassPanel key={titulo} className="flex items-start gap-4 border-l-4 p-5" style={{ borderLeftColor: color }}>
-                <span className="icon-chip h-11 w-11 shrink-0 rounded-xl" style={{ background: `${color}1f`, color }}><Icon className="h-5 w-5" /></span>
-                <div className="min-w-0">
-                  <h3 className="font-medium text-foreground">{titulo}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
-                </div>
-              </GlassPanel>
-            ))}
-          </div>
-          <GlassPanel tier="strong" className="mt-6 flex flex-col gap-4 p-6 sm:flex-row sm:items-center">
-            <span className="icon-chip h-12 w-12 shrink-0 rounded-2xl"><RefreshCw className="h-5 w-5" /></span>
-            <div className="min-w-0 flex-1">
-              <h3 className="font-medium text-foreground">Actualizaciones sin perder tu información</h3>
-              <p className="mt-1 text-sm text-muted-foreground">Cuando publiquemos una mejora, el programa te avisará con un mensaje dentro de la app. La actualización conserva tus productos, clientes, ventas y saldos. Solo se instala la base nueva; tu información queda intacta. Si la mejora incluye una app nueva, también te avisaremos para que descargues e instales la APK en tus celulares Android.</p>
-            </div>
-            <Link to="/instalar" className="btn-pro inline-flex shrink-0 items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold"><Download className="h-4 w-4" /> Descargar APK y app</Link>
-          </GlassPanel>
-        </section>
-
-        {/* 6. PASOS + ACCESO (login/registro al final) */}
-        <section className="mt-24" aria-labelledby="como">
-          <p className="text-eyebrow text-center">Cómo empezar</p>
-          <h2 id="como" className="mt-3 text-center font-display text-3xl sm:text-4xl">Empieza en 3 pasos</h2>
-          <ol className="mt-10 grid gap-4 md:grid-cols-3">
-            {PASOS.map((p, i) => (
-              <li key={p.n}>
-                <GlassPanel className="h-full border-t-4 p-6" style={{ borderTopColor: COLORES_SECTOR[i % COLORES_SECTOR.length] }}>
-                  <span className="font-display text-4xl text-brand-gradient">{p.n}</span>
-                  <h3 className="mt-3 font-medium text-foreground">{p.titulo}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{p.desc}</p>
-                </GlassPanel>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        {/* 7. CIERRE CON ACCESO */}
-        <section className="mt-24" id="acceso">
-          <GlassPanel tier="strong" className="relative mx-auto max-w-4xl overflow-hidden p-8 text-center sm:p-12">
-            <div className="pointer-events-none absolute -top-24 left-1/2 h-48 w-96 -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
-            <h2 className="relative font-display text-3xl sm:text-4xl">Lleva tu negocio al siguiente nivel</h2>
-            <p className="relative mx-auto mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">Ya viste lo que incluye. Ahora crea tu cuenta gratis o inicia sesión para activar los módulos de tu tipo de negocio, con tus colores y tu logo.</p>
-            <ul className="relative mx-auto mt-6 flex max-w-md flex-col gap-2 text-left text-sm text-muted-foreground">
-              {["Funciona en la web y como app instalable en Android y PC", "Tus colores, tu logo y tus datos siempre a salvo", "Módulos y textos según tu tipo de negocio"].map((t) => (
-                <li key={t} className="flex items-center gap-2"><Check className="h-4 w-4 shrink-0 text-primary" /> {t}</li>
+        {/* G. BANNER FINAL */}
+        <Aparece className="mt-24">
+          <section id="acceso" className="gs-final relative overflow-hidden rounded-[2rem] p-8 text-center text-white sm:p-14">
+            <div className="pointer-events-none absolute -top-24 left-1/2 h-48 w-96 -translate-x-1/2 rounded-full bg-blue-500/30 blur-3xl" />
+            <h2 className="gs-titulo relative text-3xl sm:text-5xl">Lleva tu negocio al siguiente nivel</h2>
+            <p className="relative mx-auto mt-4 max-w-xl text-sm text-slate-300 sm:text-base">
+              Crea tu cuenta gratis y activa los módulos de tu tipo de negocio, con tus colores y tu logo. Tus datos se conservan siempre, incluso al actualizar.
+            </p>
+            <ul className="relative mx-auto mt-6 flex max-w-md flex-col gap-2 text-left text-sm text-slate-200">
+              {["Web, app Android y PC en una sola cuenta", "Funciona sin internet y sincroniza después", "Módulos y textos según tu tipo de negocio"].map((t) => (
+                <li key={t} className="flex items-center gap-2"><Check className="h-4 w-4 shrink-0 text-emerald-400" /> {t}</li>
               ))}
             </ul>
             <div className="relative mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <Link to="/login" className="btn-pro inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-sm font-semibold">
-                Crear mi cuenta gratis <ArrowRight className="h-4 w-4" />
+              <Link to="/login" search={{ mode: "signup" }} className="inline-flex items-center justify-center gap-2 rounded-full bg-[#10B981] px-10 py-4 text-base font-bold text-white transition hover:brightness-110">
+                Empezar gratis ahora <ArrowRight className="h-5 w-5" />
               </Link>
-              <Link to="/login" className="btn-ghost-pro inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-sm text-foreground">
+              <Link to="/login" search={{ mode: "signin" }} className="inline-flex items-center justify-center gap-2 rounded-full border border-white/25 px-8 py-4 text-sm font-semibold text-white transition hover:bg-white/10">
                 Ya tengo cuenta: iniciar sesión
               </Link>
             </div>
-          </GlassPanel>
-        </section>
+            <p className="relative mt-6 inline-flex items-center gap-2 text-xs text-slate-400"><Smartphone className="h-3.5 w-3.5" /> Instálala como app desde <Link to="/instalar" className="underline">Descargar app</Link></p>
+          </section>
+        </Aparece>
 
-        <footer className="mt-20 space-y-1 border-t border-glass-border/60 pt-6 pb-6 text-center text-xs text-muted-foreground">
-          <p>© 2026 {BRAND.name}. Todos los derechos reservados.</p>
-          <p>Prohibida su distribución.</p>
-          <p>Diseñado y creado por Jhonathan Gonzalez Cortes</p>
+        <footer className="mt-16 space-y-1 border-t pt-6 pb-4 text-center text-xs" style={{ borderColor: "var(--gs-borde)" }}>
+          <p className="gs-muted">© 2026 {BRAND.name} · Diseñado y creado por Jhonathan Gonzalez Cortes</p>
+          <p className="gs-muted">Prohibida su distribución.</p>
         </footer>
       </main>
     </div>
