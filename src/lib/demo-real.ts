@@ -223,7 +223,8 @@ export async function entrarDemo(tipo: TipoDemo): Promise<void> {
   if (error || !data.session) {
     throw new Error("No se pudo abrir la demo en este momento. Inténtalo de nuevo en unos minutos.");
   }
-  await sembrar(tipo, data.session.user.id);
+  // Cada visitante entra siempre con los datos iniciales impecables.
+  await restaurarDemo(tipo);
 }
 
 /** Borra solo los datos de prueba de esta cuenta demo y vuelve a cargar los iniciales. */

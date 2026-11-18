@@ -16,6 +16,7 @@ import { EquipoPermisos } from "@/components/settings/EquipoPermisos";
 import { ResumenCierreWhatsApp } from "@/components/restaurante/Reportes";
 import { ThemeToggle } from "@/components/ui-custom/ThemeToggle";
 import { BRAND } from "@/lib/brand";
+import { esCuentaDemo } from "@/lib/demo-real";
 import { autoComandaActivada, estadoApiLocal, fijarAutoComanda, fijarImpresionDirecta, fijarImpresoraCaja, fijarImpresoraCocina, guardarConfigImpresoras, impresionDirectaActivada, imprimirTirillaLocal, leerImpresoraCaja, leerImpresoraCocina } from "@/lib/impresion-local";
 
 export const Route = createFileRoute("/_app/settings")({
@@ -463,6 +464,15 @@ function AccountTab({ email, fullName, orgName, signOut }: { email: string; full
           </button>
         </div>
       </GlassPanel>
+
+      {esCuentaDemo(email) && (
+        <GlassPanel className="p-6">
+          <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Cuenta demo protegida</div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            En las cuentas demo no se puede cambiar el correo ni la contraseña, ni eliminar el negocio. Crea tu cuenta gratis para tener tus propios datos.
+          </p>
+        </GlassPanel>
+      )}
 
       <GlassPanel className="flex flex-wrap items-center justify-between gap-4 p-6">
         <div>

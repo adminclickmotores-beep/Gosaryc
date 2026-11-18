@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { BRAND } from "@/lib/brand";
 import { BrandHexLogo } from "@/components/app/BrandHexLogo";
 import { BotonesDemo } from "@/components/app/BotonesDemo";
+import { esCuentaDemo } from "@/lib/demo-real";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -84,6 +85,10 @@ function LoginPage() {
           toast.success("Cuenta creada. ¡Bienvenido!");
         }
       } else if (mode === "forgot") {
+        if (esCuentaDemo(email.trim())) {
+          toast.error("Las cuentas demo no permiten cambiar la contraseña.");
+          return;
+        }
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/reset-password`,
         });
