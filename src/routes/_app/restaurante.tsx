@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Json, Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { NegocioConfig } from "@/components/restaurante/NegocioConfig";
+import { AgenteWhatsApp } from "@/components/restaurante/AgenteWhatsApp";
 import { RecetarioInventario } from "@/components/restaurante/RecetarioInventario";
 import { MenuQR } from "@/components/restaurante/MenuQR";
 import { Reportes } from "@/components/restaurante/Reportes";
@@ -24,7 +25,7 @@ import { BotonVentanaCompleta } from "@/components/app/BotonVentanaCompleta";
 import { IndicadoresNegocio } from "@/components/app/IndicadoresNegocio";
 import { DashboardConcesionario } from "@/components/vehiculos/DashboardConcesionario";
 
-const VISTAS_VALIDAS = ["venta", "pedidos", "menu", "qr", "mesas", "caja", "reportes", "recetario", "negocio"] as const;
+const VISTAS_VALIDAS = ["venta", "pedidos", "menu", "qr", "mesas", "caja", "reportes", "recetario", "agente", "negocio"] as const;
 type VistaClave = (typeof VISTAS_VALIDAS)[number];
 
 export const Route = createFileRoute("/_app/restaurante")({
@@ -158,19 +159,21 @@ export function RestaurantePage() {
     caja: ["caja_diaria"],
     reportes: ["finanzas"],
     recetario: ["insumos"],
+    agente: [],
     negocio: [],
   };
+  // El Agente WhatsApp IA tiene su propia pestaña (también en negocios sin pedidos, como el concesionario).
   const todasLasVistas: VistaClave[] = tipo.usaPedidos
-    ? ["venta", "pedidos", "menu", "qr", "mesas", "caja", "reportes", "recetario", "negocio"]
-    : ["negocio"];
+    ? ["venta", "pedidos", "menu", "qr", "mesas", "caja", "reportes", "recetario", "agente", "negocio"]
+    : ["agente", "negocio"];
   const vistas: VistaClave[] = todasLasVistas.filter((v: VistaClave) =>
     esAdmin ? true : v === "negocio" ? !tipo.usaPedidos : (PERMISO_VISTA[v] ?? []).some((id: string) => puede(id)),
   );
-  const vista: VistaClave = !tipo.usaPedidos
-    ? "negocio"
-    : vistas.includes(vistaElegida)
-      ? vistaElegida
-      : (vistas[0] ?? "negocio");
+  const vista: VistaClave = vistas.includes(vistaElegida)
+    ? vistaElegida
+    : tipo.usaPedidos
+      ? (vistas[0] ?? "negocio")
+      : "negocio";
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [mesas, setMesas] = useState<Tables<"restaurante_mesas">[]>([]);
@@ -418,7 +421,7 @@ export function RestaurantePage() {
             className={`inline-flex items-center overflow-hidden rounded-full text-sm ${vista === v ? "bg-primary text-primary-foreground" : "border border-glass-border text-muted-foreground"}`}
           >
             <button onClick={() => setVista(v)} className={`py-2 pl-5 ${completa ? "pr-5" : "pr-2"}`}>
-              {v === "venta" ? "Vender y cobrar" : v === "pedidos" ? "Pedidos y cocina" : v === "menu" ? "Menú" : v === "qr" ? "QR del menú" : v === "mesas" ? "Mesas" : v === "caja" ? "Caja" : v === "reportes" ? "Reportes" : v === "recetario" ? "Recetario e inventario" : "Mi negocio"}
+              {v === "venta" ? "Vender y cobrar" : v === "pedidos" ? "Pedidos y cocina" : v === "menu" ? "Menú" : v === "qr" ? "QR del menú" : v === "mesas" ? "Mesas" : v === "caja" ? "Caja" : v === "reportes" ? "Reportes" : v === "recetario" ? "Recetario e inventario" : v === "agente" ? "Agente WhatsApp IA" : "Mi negocio"}
             </button>
             {!completa && <BotonVentanaCompleta vista={v} className="py-2 pl-1 pr-3 opacity-80 hover:opacity-100" />}
           </span>
@@ -537,6 +540,8 @@ export function RestaurantePage() {
         <Reportes />
       ) : vista === "recetario" ? (
         <RecetarioInventario />
+      ) : vista === "agente" ? (
+        <AgenteWhatsApp />
       ) : (
         <NegocioConfig />
       )}

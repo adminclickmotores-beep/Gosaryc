@@ -67,7 +67,7 @@ const PASOS_RESTAURANTE: Paso[] = [
     titulo: "Agente WhatsApp IA",
     texto: "Un cliente pide por chat y la IA toma el pedido sola.",
     ruta: "/restaurante",
-    vista: "negocio",
+    vista: "agente",
     ancla: "agente-whatsapp-demo",
     guion: [
       { ms: 300, aviso: "Abriendo el Agente WhatsApp IA" },
@@ -148,7 +148,7 @@ const PASOS_VEHICULOS: Paso[] = [
     titulo: "Agente WhatsApp IA 24/7",
     texto: "Un cliente cotiza una moto por chat y la IA responde sola con precio y papeles.",
     ruta: "/negocio/concesionario",
-    vista: "negocio",
+    vista: "agente",
     ancla: "agente-whatsapp-demo",
     guion: [
       { ms: 300, aviso: "Abriendo el Agente WhatsApp IA" },
@@ -198,9 +198,13 @@ const marcar = (el: HTMLElement) => {
   }, 2000);
 };
 
-// ¿La pantalla actual ya es la del paso? (el panel del negocio puede vivir en /restaurante o /negocio/<tipo>).
-const enRutaDelPaso = (p: Paso, ruta: string): boolean =>
-  p.vista ? ruta === p.ruta || ruta === "/restaurante" || ruta.startsWith("/negocio/") : ruta === p.ruta;
+// ¿La pantalla actual ya es la del paso? (el panel del negocio puede vivir en /restaurante o /negocio/<tipo>,
+// y además debe estar abierta la pestaña exacta: nunca se queda en Configuración).
+const enRutaDelPaso = (p: Paso, ruta: string, busqueda: string): boolean =>
+  p.vista
+    ? (ruta === p.ruta || ruta === "/restaurante" || ruta.startsWith("/negocio/")) &&
+      new URLSearchParams(busqueda).get("vista") === p.vista
+    : ruta === p.ruta;
 
 /** Barra del recorrido guiado: solo en cuentas demo. Cambia de ventana sola cada 4,5 segundos. */
 export function BarraDemo() {
@@ -208,7 +212,7 @@ export function BarraDemo() {
   const nav = useNavigate();
   const [busy, setBusy] = useState(false);
   const [paso, setPaso] = useState(0);
-  const [auto, setAuto] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [avisos, setAvisos] = useState<Aviso[]>([]);
   const contador = useRef(0);
   const cifrasListas = useRef(false);
@@ -239,29 +243,30 @@ export function BarraDemo() {
     if (!demo) return;
     const p = PASOS[indice];
     abrir(p);
-    const corrector = window.setTimeout(() => {
-      if (!enRutaDelPaso(p, window.location.pathname)) abrir(p);
-    }, 1200);
-    return () => window.clearTimeout(corrector);
+    const revisar = () => {
+      if (!enRutaDelPaso(p, window.location.pathname, window.location.search)) abrir(p);
+    };
+    const correctores = [window.setTimeout(revisar, 1200), window.setTimeout(revisar, 2600)];
+    return () => correctores.forEach((t: number) => window.clearTimeout(t));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demo, indice, tipo]);
 
   // Temporizador real: cada 4,5 segundos avanza al siguiente paso (1 → 2 → … → 6).
   useEffect(() => {
-    if (!demo || !auto) return;
+    if (!demo || !isPlaying) return;
     const temporizador = window.setInterval(() => {
       if (indice >= PASOS.length - 1) {
-        setAuto(false);
+        setIsPlaying(false);
         return;
       }
       setPaso(indice + 1);
     }, INTERVALO_MS);
     return () => window.clearInterval(temporizador);
-  }, [demo, auto, indice, PASOS.length]);
+  }, [demo, isPlaying, indice, PASOS.length]);
 
   // Ejercicio en vivo dentro de la ventana: avisos flotantes y apoyos visuales.
   useEffect(() => {
-    if (!demo || !auto) return;
+    if (!demo || !isPlaying) return;
     const p = PASOS[indice];
     const timers: number[] = [];
     let vivo = true;
@@ -322,7 +327,7 @@ export function BarraDemo() {
       timers.forEach((t: number) => window.clearTimeout(t));
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [demo, auto, indice, tipo]);
+  }, [demo, isPlaying, indice, tipo]);
 
   if (!demo) return null;
   const pasoActual = PASOS[indice];
@@ -336,14 +341,14 @@ export function BarraDemo() {
 
   // Al terminar, el piloto automático vuelve a empezar desde el primer paso.
   const alternarAuto = () => {
-    if (auto) {
+    if (isPlaying) {
       setAvisos([]);
-      setAuto(false);
+      setIsPlaying(false);
       return;
     }
     if (indice >= PASOS.length - 1) setPaso(0);
     else abrir(PASOS[indice]);
-    setAuto(true);
+    setIsPlaying(true);
   };
 
   const restaurar = async () => {
@@ -399,16 +404,16 @@ export function BarraDemo() {
                 Paso {indice + 1} de {PASOS.length}: {pasoActual.titulo}
               </p>
               <p className="mt-1 text-base leading-relaxed text-white/90">{pasoActual.texto}</p>
-              {auto && enVivo && (
+              {isPlaying && enVivo && (
                 <p className="mt-1.5 flex items-center gap-1.5 text-base font-semibold text-[#93C5FD]">
                   <Radio className="h-4 w-4 shrink-0 animate-pulse" /> En vivo: {enVivo.texto}
                 </p>
               )}
             </div>
             <span
-              className={`shrink-0 rounded-full px-3 py-1 text-sm font-bold ${auto ? "bg-[#2563EB] text-white" : "bg-white/15 text-white"}`}
+              className={`shrink-0 rounded-full px-3 py-1 text-sm font-bold ${isPlaying ? "bg-[#2563EB] text-white" : "bg-white/15 text-white"}`}
             >
-              {auto ? "Piloto automático" : "Explorando"}
+              {isPlaying ? "Piloto automático" : "Explorando"}
             </span>
           </div>
           <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/15">
@@ -419,8 +424,8 @@ export function BarraDemo() {
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2">
             <button type="button" className={btn} onClick={alternarAuto}>
-              {auto ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-              {auto ? "Pausar / Explorar libremente" : "Piloto automático"}
+              {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              {isPlaying ? "Pausar / Explorar libremente" : "Piloto automático"}
             </button>
             <button type="button" className={btn} onClick={() => ir(indice - 1)} disabled={indice === 0}>
               <ChevronLeft className="h-4 w-4" /> Anterior

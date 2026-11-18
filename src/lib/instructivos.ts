@@ -215,7 +215,7 @@ const POR_RUTA: Record<string, Instructivo> = {
     pasos: [
       "Completa nombre, logo, colores y horarios: eso ven tus clientes en el menú y las facturas.",
       "En “Datos fiscales” escribe razón social, NIT con DV, régimen, resolución con rango y vencimiento, y el pie de página: todo sale impreso en cada factura.",
-      "Conecta el Agente WhatsApp IA, define sus respuestas y mira los chats en vivo.",
+      "Abre la pestaña «Agente WhatsApp IA» para conectarlo, definir sus respuestas y mirar los chats en vivo.",
       "Copia tu enlace público o QR y pégalo en el local o en redes.",
     ],
     consejo: "Las facturas siempre llevan tu logo, régimen y pie de página: revísalos aquí antes de facturar.",
