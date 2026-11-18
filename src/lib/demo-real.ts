@@ -101,6 +101,9 @@ async function sembrarVehiculos(uid: string) {
     console.warn("Demo: carga desde la base no disponible, se usa la del navegador", errSiembra.message);
     await sembrarVehiculosNavegador(uid);
   }
+  // Ventas, alistamiento, cartera y comisiones tienen su propia tabla: se completan aparte.
+  const { error: errCompletar } = await supabase.rpc("demo_completar_vehiculos");
+  if (errCompletar) console.warn("Demo: no se completaron los módulos de vehículos", errCompletar.message);
   const { count: turnos } = await supabase.from("turnos_caja").select("id", { count: "exact", head: true }).eq("owner_id", uid);
   if ((turnos ?? 0) === 0) {
     await supabase.from("turnos_caja").insert({ owner_id: uid, cajero: "Demo", fondo_inicial: 300000, estado: "abierto" });

@@ -144,6 +144,10 @@ export function RestaurantePage() {
   const [vistaElegida, setVista] = useState<VistaClave>(
     (VISTAS_VALIDAS as readonly string[]).includes(busqueda.vista ?? "") ? (busqueda.vista as VistaClave) : "venta",
   );
+  // Si cambia la vista en el enlace (por ejemplo, el recorrido de la demo), se abre esa pestaña.
+  useEffect(() => {
+    if ((VISTAS_VALIDAS as readonly string[]).includes(busqueda.vista ?? "")) setVista(busqueda.vista as VistaClave);
+  }, [busqueda.vista]);
   // Qué módulo (de los que asigna el administrador) abre cada pestaña del panel.
   const PERMISO_VISTA: Record<string, string[]> = {
     venta: ["pedidos"],
