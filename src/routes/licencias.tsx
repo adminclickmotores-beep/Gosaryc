@@ -101,10 +101,7 @@ function LicenciasPage() {
   };
 
   const rechazar = async (s: Solicitud) => {
-    const { error } = await supabase
-      .from("solicitudes_licencia")
-      .update({ estado: "rechazada", updated_at: new Date().toISOString() })
-      .eq("id", s.id);
+    const { error } = await supabase.rpc("admin_rechazar_solicitud_licencia", { p_id: s.id });
     if (error) return toast.error("No se pudo rechazar la solicitud.");
     toast.success("Solicitud rechazada.");
     cargar();
@@ -125,13 +122,12 @@ function LicenciasPage() {
     if (!cliente.trim()) return toast.error("Escribe el nombre del cliente.");
     const prueba = Math.min(Math.max(parseInt(diasPrueba) || 30, 1), 365);
     const dias = tipoNueva === "prueba" ? prueba : 365;
-    const { error } = await supabase.from("licencias").insert({
-      cliente: cliente.trim(),
-      telefono: telefono.trim() || null,
-      ciudad: ciudad.trim() || null,
-      tipo: tipoNueva,
-      inicio: hoy,
-      vence_el: sumarDias(hoy, dias),
+    const { error } = await supabase.rpc("admin_crear_licencia", {
+      p_cliente: cliente.trim(),
+      p_telefono: telefono.trim(),
+      p_ciudad: ciudad.trim(),
+      p_tipo: tipoNueva,
+      p_dias: dias,
     });
     if (error) return toast.error("No se pudo crear la licencia.");
     setCliente("");
@@ -142,10 +138,12 @@ function LicenciasPage() {
   };
 
   const actualizar = async (l: Licencia, cambios: Partial<Pick<Licencia, "tipo" | "estado" | "vence_el">>, mensaje: string) => {
-    const { error } = await supabase
-      .from("licencias")
-      .update({ ...cambios, updated_at: new Date().toISOString() })
-      .eq("id", l.id);
+    const { error } = await supabase.rpc("admin_actualizar_licencia", {
+      p_id: l.id,
+      p_tipo: cambios.tipo ?? undefined,
+      p_estado: cambios.estado ?? undefined,
+      p_vence_el: cambios.vence_el ?? undefined,
+    });
     if (error) return toast.error("No se pudo guardar el cambio.");
     toast.success(mensaje);
     cargar();

@@ -86,9 +86,12 @@ function SuperAdminPage() {
   }, [permitido, cargar]);
 
   const actualizar = async (ownerId: string, cambios: Partial<Pick<Suscripcion, "plan" | "estado" | "vence_el">>) => {
-    const { error } = await supabase
-      .from("suscripciones_negocio")
-      .upsert({ owner_id: ownerId, ...cambios, updated_at: new Date().toISOString() }, { onConflict: "owner_id" });
+    const { error } = await supabase.rpc("admin_actualizar_suscripcion", {
+      p_owner: ownerId,
+      p_plan: cambios.plan ?? undefined,
+      p_estado: cambios.estado ?? undefined,
+      p_vence_el: cambios.vence_el ?? undefined,
+    });
     if (error) return toast.error("No se pudo guardar el cambio.");
     toast.success("Cambio guardado.");
     cargar();
@@ -133,10 +136,7 @@ function SuperAdminPage() {
   };
 
   const rechazarPago = async (p: Pago) => {
-    const { error } = await supabase
-      .from("pagos_licencia")
-      .update({ estado: "rechazado", revisado_en: new Date().toISOString() })
-      .eq("id", p.id);
+    const { error } = await supabase.rpc("admin_rechazar_pago_licencia", { p_id: p.id });
     if (error) return toast.error("No se pudo rechazar el pago.");
     toast.success("Pago rechazado.");
     cargar();

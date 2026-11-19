@@ -8231,6 +8231,11 @@ export type Database = {
       }
       aprobar_solicitud_licencia: { Args: { p_id: string; p_tipo: string }; Returns: string }
       aprobar_pago_licencia: { Args: { p_id: string }; Returns: Json }
+      admin_actualizar_suscripcion: { Args: { p_owner: string; p_plan?: string; p_estado?: string; p_vence_el?: string }; Returns: undefined }
+      admin_rechazar_pago_licencia: { Args: { p_id: string }; Returns: undefined }
+      admin_rechazar_solicitud_licencia: { Args: { p_id: string }; Returns: undefined }
+      admin_crear_licencia: { Args: { p_cliente: string; p_telefono: string; p_ciudad: string; p_tipo: string; p_dias: number }; Returns: undefined }
+      admin_actualizar_licencia: { Args: { p_id: string; p_tipo?: string; p_estado?: string; p_vence_el?: string }; Returns: undefined }
       generar_clave_activacion: { Args: { p_owner: string }; Returns: string }
       activar_licencia: { Args: { p_clave: string }; Returns: Json }
       mi_licencia_vigente: { Args: never; Returns: Json }
