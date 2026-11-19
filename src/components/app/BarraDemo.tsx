@@ -187,7 +187,7 @@ const buscar = (objetivos: Objetivo[]): HTMLElement | null => {
 
 // Resalta el elemento con un borde azul cobalto y lo trae al centro de la pantalla.
 const marcar = (el: HTMLElement) => {
-  el.scrollIntoView({ behavior: "smooth", block: "center" });
+  el.scrollIntoView({ behavior: "auto", block: "center" });
   const antes = { outline: el.style.outline, offset: el.style.outlineOffset, sombra: el.style.boxShadow };
   el.style.outline = "3px solid #2563EB";
   el.style.outlineOffset = "4px";
@@ -394,7 +394,7 @@ export function BarraDemo() {
             <Radio className="h-5 w-5" />
           </button>
         ) : minimizada ? (
-          <div className="pointer-events-auto flex items-center gap-1.5 rounded-full border border-[#2563EB]/60 bg-[#0F172A]/90 px-2 py-1.5 text-white shadow-xl backdrop-blur-md">
+          <div className="pointer-events-auto flex items-center gap-1.5 rounded-full border border-[#2563EB]/60 bg-[#0F172A] px-2 py-1.5 text-white shadow-xl">
             <button
               type="button"
               onClick={() => setMinimizada(false)}
@@ -431,7 +431,7 @@ export function BarraDemo() {
             </button>
           </div>
         ) : (
-          <div className="pointer-events-auto w-[min(23rem,calc(100vw-1.5rem))] space-y-2 rounded-2xl border border-[#2563EB]/60 bg-[#0F172A]/90 p-3 text-white shadow-xl backdrop-blur-md">
+          <div className="pointer-events-auto w-[min(23rem,calc(100vw-1.5rem))] space-y-2 rounded-2xl border border-[#2563EB]/60 bg-[#0F172A] p-3 text-white shadow-xl">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">

@@ -206,11 +206,17 @@ export function RestaurantePage() {
     }
   }, []);
 
+  // Solo los negocios con pedidos consultan pedidos/mesas; el resto (p. ej. concesionario) no gasta consultas.
+  // La actualización periódica se pausa con la pestaña oculta y es más espaciada en las cuentas demo.
+  const usaPedidos = tipo.usaPedidos;
   useEffect(() => {
+    if (!usaPedidos) return;
     cargar();
-    const t = setInterval(cargar, 15000);
+    const t = setInterval(() => {
+      if (document.visibilityState === "visible") void cargar();
+    }, demoRestaurante ? 45000 : 15000);
     return () => clearInterval(t);
-  }, [cargar]);
+  }, [cargar, usaPedidos, demoRestaurante]);
 
   const mover = async (p: Pedido, estado: string) => {
     const { error } = await supabase
