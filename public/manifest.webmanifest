@@ -7,8 +7,8 @@
   "id": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#14101f",
-  "theme_color": "#5b21b6",
+  "background_color": "#0F172A",
+  "theme_color": "#4F46E5",
   "lang": "es",
   "icons": [
     { "src": "/icono-app.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
