@@ -388,19 +388,19 @@ function AppShell() {
               <BrandHexLogo key={logoIntro ? "intro-m" : "base-m"} intro={logoIntro} size={26} />
               <span className="font-display text-base tracking-tight">{BRAND.name}</span>
             </Link>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  const ev = new KeyboardEvent("keydown", { key: "k", metaKey: true });
-                  window.dispatchEvent(ev);
-                }}
-                className="inline-flex items-center gap-2 rounded-lg border border-glass-border bg-glass/40 px-2.5 py-1.5 text-xs text-muted-foreground"
-                aria-label="Abrir búsqueda"
-              >
-                <IconCommand size={14} />
-                <span>Buscar</span>
-              </button>
-            </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              onClick={() => {
+                const ev = new KeyboardEvent("keydown", { key: "k", metaKey: true });
+                window.dispatchEvent(ev);
+              }}
+              className="inline-flex items-center gap-2 rounded-lg border border-glass-border bg-glass/40 px-2.5 py-1.5 text-xs text-muted-foreground"
+              aria-label="Abrir búsqueda"
+            >
+              <IconCommand size={14} />
+              <span>Buscar</span>
+            </button>
+          </div>
           </header>
           {/* En ventana completa no hay menú: botón para volver al menú de inicio. */}
           {completaFinal && !enRutaPanel && (
@@ -415,7 +415,7 @@ function AppShell() {
             </div>
           )}
           {/* Single user-control mount for both mobile and desktop. */}
-          <div className="pointer-events-none fixed right-4 top-3 z-40 flex items-center gap-2 md:right-5 md:top-4">
+          <div className="relative z-40 flex min-w-0 flex-wrap items-center justify-end gap-2 px-4 py-2 md:pointer-events-none md:fixed md:right-5 md:top-4 md:flex-nowrap md:p-0">
             <div className="pointer-events-auto hidden md:block">
               <AutosaveStatus />
             </div>
@@ -434,9 +434,9 @@ function AppShell() {
           </div>
 
           {/* Mobile autosave status sits inline below header */}
-          <div className="sticky top-[57px] z-20 flex justify-end px-4 pt-2 md:hidden">
-            <AutosaveStatus />
-          </div>
+        <div className={`${completaFinal ? "flex" : "hidden"} relative z-20 justify-end px-4 py-2 md:hidden`}>
+          <AutosaveStatus />
+        </div>
           <div
             className={`mx-auto w-full pb-10 pt-6 transition-[padding,max-width] duration-200 ${completaFinal ? "md:pt-16" : "md:pt-20"} ${
               anchoGrande ? "max-w-full px-3 sm:px-5" : "max-w-6xl px-4 sm:px-6"

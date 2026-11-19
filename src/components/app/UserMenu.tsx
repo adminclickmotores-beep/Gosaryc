@@ -75,7 +75,7 @@ export function UserMenu() {
       <DropdownMenuTrigger asChild>
         <button
           aria-label="Menú de la cuenta"
-          className="group inline-flex items-center gap-2 rounded-full border border-glass-border bg-glass/50 py-1 pl-1 pr-3 text-xs text-muted-foreground backdrop-blur-xl transition hover:border-primary/30 hover:text-foreground"
+          className="group inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-glass-border bg-glass/50 py-1 pl-1 pr-2 text-xs text-muted-foreground backdrop-blur-xl transition hover:border-primary/30 hover:text-foreground md:pr-3"
         >
           <span
             className="inline-flex size-7 items-center justify-center rounded-full bg-gradient-to-br from-primary/70 to-accent/70 font-display text-[11px] font-medium text-primary-foreground"
@@ -83,7 +83,7 @@ export function UserMenu() {
           >
             {initials}
           </span>
-          <span className="hidden max-w-[140px] truncate md:inline">{displayName}</span>
+          <span className="hidden max-w-[100px] truncate lg:inline xl:max-w-[140px]">{displayName}</span>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent

@@ -200,18 +200,43 @@ export function OnboardingChecklist({ variant = "auto" }: { variant?: "auto" | "
 
   return (
     <AnimatePresence>
-      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+      <motion.div
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+        className={variant === "pill" && expanded
+          ? "fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/70 p-4"
+          : "w-full"}
+        onClick={variant === "pill" && expanded
+          ? (evento) => {
+              if (evento.target === evento.currentTarget) setExpanded(false);
+            }
+          : undefined}
+      >
+        <div className={variant === "pill" && expanded
+          ? "max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto overscroll-contain"
+          : "w-full"}>
         <GlassPanel tier="strong" glow className="readable-glass-surface p-6" data-tour="onboarding-checklist">
-          <div className="flex items-start justify-between gap-4">
-            <div>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0">
               <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Get started</div>
               <h2 className="mt-1 font-display text-xl">
                 {count}/{total} steps · {pct}% there
               </h2>
             </div>
-            <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            {variant === "pill" && expanded && (
               <button
-                onClick={() => window.dispatchEvent(new CustomEvent("lovable:start-tour"))}
+                type="button"
+                onClick={() => setExpanded(false)}
+                aria-label="Cerrar ventana de primeros pasos"
+                className="rounded-lg border border-glass-border px-3 py-1.5 text-xs text-foreground hover:bg-glass"
+              >
+                Cerrar
+              </button>
+            )}
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent("lovable:start-tour"))}
                 className="text-xs text-muted-foreground hover:text-foreground"
               >
                 Replay tour
@@ -247,7 +272,7 @@ export function OnboardingChecklist({ variant = "auto" }: { variant?: "auto" | "
                       : "border-glass-border bg-glass/40 text-foreground hover:bg-glass-strong"
                   }`}
                 >
-                  <span className="flex items-center gap-3">
+                  <span className="flex min-w-0 items-center gap-3">
                     <span
                       className={`inline-flex size-6 shrink-0 items-center justify-center rounded-full border ${
                         isDone
@@ -257,9 +282,9 @@ export function OnboardingChecklist({ variant = "auto" }: { variant?: "auto" | "
                     >
                       {isDone ? <IconCheck size={12} /> : null}
                     </span>
-                    <span className={isDone ? "line-through" : ""}>
-                      <span className="font-medium">{t.label}</span>
-                      <span className="ml-2 text-xs text-muted-foreground">{t.hint}</span>
+                    <span className={`min-w-0 break-words ${isDone ? "line-through" : ""}`}>
+                      <span className="block font-medium">{t.label}</span>
+                      <span className="block text-xs text-muted-foreground">{t.hint}</span>
                     </span>
                   </span>
                   {!isDone && (
@@ -273,6 +298,7 @@ export function OnboardingChecklist({ variant = "auto" }: { variant?: "auto" | "
             })}
           </div>
         </GlassPanel>
+        </div>
       </motion.div>
     </AnimatePresence>
   );
