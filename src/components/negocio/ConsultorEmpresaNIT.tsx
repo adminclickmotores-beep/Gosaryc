@@ -276,9 +276,10 @@ export function ConsultorEmpresaNIT({ modo, valor = "", cotizarSST = false }: Pr
       correo: datos.correo.trim() || null,
       direccion: datos.direccion.trim() || null,
       documento: r.base,
-      digito_verificacion: String(r.dvCorrecto),
-      notas: notas || null,
-    });
+    digito_verificacion: String(r.dvCorrecto),
+    notas: notas || null,
+    ciiu: datos.ciiu.trim() || null,
+  } as never);
     setGuardando(false);
     if (error) {
       toast.error("No se pudo guardar el cliente.");

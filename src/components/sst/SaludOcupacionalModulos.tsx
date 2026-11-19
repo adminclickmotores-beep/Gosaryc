@@ -9,7 +9,7 @@ import { escaparHtml, exportarExcel, imprimirReporte } from "@/lib/exportes";
 import { ClasificacionEmpleados } from "@/components/empresa/ClasificacionEmpleados";
 import { EVENTO_COTIZAR_SST, estandaresSST, type DatosCotizarSST } from "@/lib/clasificacion-empresa";
 
-type Empresa = Tables<"sst_empresas">;
+type Empresa = Tables<"sst_empresas"> & { ciiu?: string | null };
 type Trab = Tables<"sst_trabajadores">;
 type Eva = Tables<"sst_evaluaciones">;
 type Prof = Tables<"sst_profesiogramas">;
@@ -81,6 +81,7 @@ export function EmpresasSST() {
   const [contacto, setContacto] = useState("");
   const [tel, setTel] = useState("");
   const [ntrab, setNtrab] = useState("");
+  const [ciiu, setCiiu] = useState("");
   const [riesgo, setRiesgo] = useState("I");
   const cargar = useCallback(async () => {
     const { data } = await supabase.from("sst_empresas").select("*").order("created_at", { ascending: false }).limit(80);
@@ -93,9 +94,10 @@ export function EmpresasSST() {
     const alRecibir = (ev: Event) => {
       const d = (ev as CustomEvent<DatosCotizarSST>).detail;
       if (!d) return;
-      if (d.nombre) setNombre(d.nombre);
-      if (d.nit) setNit(d.nit);
-      setNtrab(String(d.empleados));
+    if (d.nombre) setNombre(d.nombre);
+    if (d.nit) setNit(d.nit);
+    setCiiu(d.ciiu);
+    setNtrab(String(d.empleados));
       setCotiz({ empleados: d.empleados, ciiu: d.ciiu });
     };
     window.addEventListener(EVENTO_COTIZAR_SST, alRecibir);
@@ -103,12 +105,13 @@ export function EmpresasSST() {
   }, []);
   const crear = async () => {
     if (nombre.trim().length < 2) return toast.error("Escribe el nombre de la empresa cliente.");
-    const { error } = await supabase.from("sst_empresas").insert({
-      nombre: nombre.trim(), nit: nit.trim() || null, contacto: contacto.trim() || null,
-      telefono: tel.trim() || null, n_trabajadores: Math.max(Math.round(num(ntrab)), 0), riesgo,
-    });
+  const { error } = await supabase.from("sst_empresas").insert({
+    nombre: nombre.trim(), nit: nit.trim() || null, contacto: contacto.trim() || null,
+    telefono: tel.trim() || null, n_trabajadores: Math.max(Math.round(num(ntrab)), 0), riesgo,
+    ciiu: ciiu.trim() || null,
+  } as never);
     if (error) return toast.error(msg(error.message, "No se pudo guardar."));
-    setNombre(""); setNit(""); setContacto(""); setTel(""); setNtrab("");
+    setNombre(""); setNit(""); setContacto(""); setTel(""); setNtrab(""); setCiiu("");
     toast.success("Empresa cliente creada.");
     void cargar();
   };
@@ -132,8 +135,9 @@ export function EmpresasSST() {
       )}
       <div className="grid gap-2 sm:grid-cols-3">
         <Campo etiqueta="Empresa"><input className={campo} value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Intersalud / cliente…" /></Campo>
-        <Campo etiqueta="NIT"><input className={campo} value={nit} onChange={(e) => setNit(e.target.value)} /></Campo>
-        <Campo etiqueta="Contacto"><input className={campo} value={contacto} onChange={(e) => setContacto(e.target.value)} /></Campo>
+      <Campo etiqueta="NIT"><input className={campo} value={nit} onChange={(e) => setNit(e.target.value)} /></Campo>
+      <Campo etiqueta="Código CIIU"><input className={campo} value={ciiu} onChange={(e) => setCiiu(e.target.value)} /></Campo>
+      <Campo etiqueta="Contacto"><input className={campo} value={contacto} onChange={(e) => setContacto(e.target.value)} /></Campo>
         <Campo etiqueta="Celular"><input className={campo} inputMode="tel" value={tel} onChange={(e) => setTel(e.target.value)} /></Campo>
         <Campo etiqueta="N.º trabajadores"><input className={campo} inputMode="numeric" value={ntrab} onChange={(e) => setNtrab(e.target.value)} /></Campo>
         <Campo etiqueta="Riesgo ARL">
@@ -148,7 +152,7 @@ export function EmpresasSST() {
           const wa = aWhatsapp(e.telefono, `Hola ${e.contacto ?? e.nombre}, te compartimos el estado de cumplimiento SG-SST de ${e.nombre}.`);
           return (
             <div key={e.id} className="rounded-xl border border-glass-border p-3">
-              <p className="font-semibold">{e.nombre} <span className="text-xs text-muted-foreground">· NIT {e.nit ?? "—"} · riesgo {e.riesgo} · {e.n_trabajadores} trabajadores</span></p>
+              <p className="font-semibold">{e.nombre} <span className="text-xs text-muted-foreground">· NIT {e.nit ?? "—"} · CIIU {e.ciiu || "—"} · riesgo {e.riesgo} · {e.n_trabajadores} trabajadores</span></p>
               <div className="mt-1 flex flex-wrap gap-2">
                 {wa && <a className={botonSec} href={wa} target="_blank" rel="noreferrer"><MessageCircle className="h-4 w-4" /> WhatsApp</a>}
                 <button type="button" className={botonSec} onClick={() => void exportarExcel(`empresa-${e.nombre}`, ["Empresa", "NIT", "Contacto", "Trabajadores", "Riesgo"], [[e.nombre, e.nit ?? "", e.contacto ?? "", e.n_trabajadores ?? 0, e.riesgo]])}>Excel</button>
