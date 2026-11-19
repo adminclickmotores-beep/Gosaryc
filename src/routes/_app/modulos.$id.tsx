@@ -192,7 +192,7 @@ function ModuloPage() {
   if (mostrarConsultorNIT(tipo.clave, id)) {
     return (
       <>
-        <ConsultorEmpresaNIT modo="completo" />
+        <ConsultorEmpresaNIT modo="completo" cotizarSST={tipo.clave === "salud"} />
         {contenido}
       </>
     );

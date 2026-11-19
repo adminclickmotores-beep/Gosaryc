@@ -9,6 +9,23 @@ export type ClasificacionEmpresa = {
   categoria: CategoriaEmpresaColombia;
 };
 
+/** Evento que lleva la cantidad de trabajadores y el CIIU desde el consultor de NIT hasta Empresas cliente SG-SST. */
+export const EVENTO_COTIZAR_SST = "gosaryc:cotizar-sst";
+
+export type DatosCotizarSST = {
+  empleados: number;
+  ciiu: string;
+  nombre: string;
+  nit: string;
+};
+
+/** Estándares mínimos de la Res. 0312 de 2019 según el número de trabajadores. */
+export function estandaresSST(empleados: number): number {
+  if (empleados <= 10) return 7;
+  if (empleados <= 50) return 21;
+  return 60;
+}
+
 export function normalizarCantidadEmpleados(
   valor: unknown,
 ): number | null {

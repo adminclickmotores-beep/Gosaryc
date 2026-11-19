@@ -1,7 +1,9 @@
 import { useRef, useState } from "react";
-import { BadgeCheck, Building2, Copy, ExternalLink, FileUp, Globe, Save, Search, ShieldCheck, TriangleAlert } from "lucide-react";
+import { BadgeCheck, Building2, ClipboardList, Copy, ExternalLink, FileUp, Globe, Save, Search, ShieldCheck, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ClasificacionEmpleados } from "@/components/empresa/ClasificacionEmpleados";
+import { EVENTO_COTIZAR_SST, clasificarEmpresaPorEmpleados, type DatosCotizarSST } from "@/lib/clasificacion-empresa";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { boton, campo } from "@/components/comercio/ComercioModulos";
 
@@ -93,6 +95,8 @@ type Props = {
   modo: "rapido" | "completo";
   /** Solo para el modo rápido: el NIT escrito en el formulario. */
   valor?: string;
+  /** Muestra el botón «Cotizar SG-SST según empleados» (solo en Salud Ocupacional). */
+  cotizarSST?: boolean;
 };
 
 type DatosEmpresa = {
@@ -151,7 +155,7 @@ function leerTextoRUT(texto: string): { nit: string; datos: DatosEmpresa } {
   };
 }
 
-export function ConsultorEmpresaNIT({ modo, valor = "" }: Props) {
+export function ConsultorEmpresaNIT({ modo, valor = "", cotizarSST = false }: Props) {
   const [texto, setTexto] = useState("");
   const [buscando, setBuscando] = useState(false);
   const [coincidencias, setCoincidencias] = useState<Coincidencia[] | null>(null);
@@ -167,6 +171,13 @@ export function ConsultorEmpresaNIT({ modo, valor = "" }: Props) {
   }
 
   const r = analizarNIT(texto);
+  const clasif = clasificarEmpresaPorEmpleados(datos.empleados);
+  const cotizarSg = () => {
+    if (!clasif) return;
+    const detalle: DatosCotizarSST = { empleados: clasif.cantidadEmpleados, ciiu: datos.ciiu, nombre: datos.razonSocial, nit: r ? `${r.base}-${r.dvCorrecto}` : "" };
+    window.dispatchEvent(new CustomEvent<DatosCotizarSST>(EVENTO_COTIZAR_SST, { detail: detalle }));
+    toast.success("Trabajadores y CIIU enviados a Empresas cliente SG-SST.");
+  };
   const cambiar = (k: keyof DatosEmpresa, v: string) => setDatos((d: DatosEmpresa) => ({ ...d, [k]: v }));
 
   const consultarAbiertos = async () => {
@@ -377,6 +388,16 @@ export function ConsultorEmpresaNIT({ modo, valor = "" }: Props) {
           </label>
         ))}
       </div>
+      {clasif && (
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <ClasificacionEmpleados cantidad={datos.empleados} />
+          {cotizarSST && (
+            <button type="button" className={boton} onClick={cotizarSg}>
+              <ClipboardList className="h-4 w-4" /> Cotizar SG-SST según empleados
+            </button>
+          )}
+        </div>
+      )}
       <div className="mt-2">
         <button type="button" className={boton} onClick={() => void guardarCliente()} disabled={guardando}>
           <Save className="h-4 w-4" /> {guardando ? "Guardando…" : "Guardar en Clientes"}

@@ -6,6 +6,8 @@ import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { Campo, Cargando, Encabezado, boton, botonSec, campo, dinero, num } from "@/components/comercio/ComercioModulos";
 import { escaparHtml, exportarExcel, imprimirReporte } from "@/lib/exportes";
+import { ClasificacionEmpleados } from "@/components/empresa/ClasificacionEmpleados";
+import { EVENTO_COTIZAR_SST, estandaresSST, type DatosCotizarSST } from "@/lib/clasificacion-empresa";
 
 type Empresa = Tables<"sst_empresas">;
 type Trab = Tables<"sst_trabajadores">;
@@ -86,6 +88,19 @@ export function EmpresasSST() {
     setCargando(false);
   }, []);
   useEffect(() => { void cargar(); }, [cargar]);
+  const [cotiz, setCotiz] = useState<{ empleados: number; ciiu: string } | null>(null);
+  useEffect(() => {
+    const alRecibir = (ev: Event) => {
+      const d = (ev as CustomEvent<DatosCotizarSST>).detail;
+      if (!d) return;
+      if (d.nombre) setNombre(d.nombre);
+      if (d.nit) setNit(d.nit);
+      setNtrab(String(d.empleados));
+      setCotiz({ empleados: d.empleados, ciiu: d.ciiu });
+    };
+    window.addEventListener(EVENTO_COTIZAR_SST, alRecibir);
+    return () => window.removeEventListener(EVENTO_COTIZAR_SST, alRecibir);
+  }, []);
   const crear = async () => {
     if (nombre.trim().length < 2) return toast.error("Escribe el nombre de la empresa cliente.");
     const { error } = await supabase.from("sst_empresas").insert({
@@ -106,6 +121,15 @@ export function EmpresasSST() {
         <div className="rounded-xl border border-glass-border bg-sky-500/10 p-3"><p className="text-xs text-muted-foreground">Empresas activas</p><p className="font-display text-2xl">{activas}</p></div>
         <div className="rounded-xl border border-glass-border bg-emerald-500/10 p-3"><p className="text-xs text-muted-foreground">Trabajadores cubiertos</p><p className="font-display text-2xl">{lista.reduce((a, e) => a + (e.n_trabajadores ?? 0), 0)}</p></div>
       </div>
+      {cotiz && (
+        <div className="mb-3 rounded-xl border border-primary/30 bg-primary/10 p-3 text-sm">
+          <p className="font-semibold">Cotización SG-SST</p>
+          <p className="mt-1 flex flex-wrap items-center gap-2">
+            <ClasificacionEmpleados cantidad={cotiz.empleados} />
+            <span className="text-muted-foreground">CIIU: {cotiz.ciiu || "—"} · Estándares mínimos Res. 0312: {estandaresSST(cotiz.empleados)}</span>
+          </p>
+        </div>
+      )}
       <div className="grid gap-2 sm:grid-cols-3">
         <Campo etiqueta="Empresa"><input className={campo} value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Intersalud / cliente…" /></Campo>
         <Campo etiqueta="NIT"><input className={campo} value={nit} onChange={(e) => setNit(e.target.value)} /></Campo>
