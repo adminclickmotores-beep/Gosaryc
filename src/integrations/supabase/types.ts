@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      asesor_ia_diagnosticos: {
+        Row: {
+          id: string
+          negocio_id: string
+          owner_id: string
+          diagnostico: Json
+          creado_en: string
+          actualizado_en: string
+        }
+        Insert: {
+          id?: string
+          negocio_id: string
+          owner_id: string
+          diagnostico: Json
+          creado_en?: string
+          actualizado_en?: string
+        }
+        Update: {
+          id?: string
+          negocio_id?: string
+          owner_id?: string
+          diagnostico?: Json
+          creado_en?: string
+          actualizado_en?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asesor_ia_diagnosticos_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: true
+            referencedRelation: "negocio_config"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipo_negocio: {
         Row: {
           activo: boolean
