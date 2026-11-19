@@ -128,7 +128,17 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
           .select('default_org_id')
           .eq('id', user.id)
           .maybeSingle()
-        const callerOrgId = (profile?.default_org_id as string | null) ?? null
+        let callerOrgId = (profile?.default_org_id as string | null) ?? null
+        // El negocio activo debe ser uno del que el usuario realmente es miembro.
+        if (callerOrgId) {
+          const { data: miembro } = await supabase
+            .from('org_members')
+            .select('user_id')
+            .eq('org_id', callerOrgId)
+            .eq('user_id', user.id)
+            .limit(1)
+          if ((miembro?.length ?? 0) === 0) callerOrgId = null
+        }
 
         // Per-user rate limit: reject when a caller has sent more than
         // RATE_LIMIT_MAX_SENDS in the last RATE_LIMIT_WINDOW_MINUTES.
