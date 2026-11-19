@@ -13,6 +13,7 @@ import { useNegocio } from "@/hooks/use-negocio";
 import { configModulo } from "@/lib/modulos-config";
 import { TABLAS_SIN_BORRADO, tablaDeModulo } from "@/lib/tablas-modulo";
 import { escaparHtml } from "@/lib/exportes";
+import { LIMITES, limpiarTexto } from "@/lib/validacion-publica";
 import {
   alertaRubro, calcularRubro, camposDelModulo, useEsquemaRubro, validarCamposRubro, vocabulario,
   type TipoCampoRubro,
@@ -269,7 +270,9 @@ export function ModuloOperativo({ id }: { id: string }) {
       if (cantidad > 0) hist.push({ f: new Date().toISOString(), t: `Existencia inicial: ${cantidad}` });
     }
     const extrasGuardados: Record<string, string | number> = Object.fromEntries(
-      Object.entries(extras).filter(([k, v]) => v.trim() && campos.some((c) => c.clave === k)),
+      Object.entries(extras)
+        .filter(([k, v]) => v.trim() && campos.some((c) => c.clave === k))
+        .map(([k, v]): [string, string] => [k, limpiarTexto(v, LIMITES.nota_linea)]),
     );
     // Cálculos automáticos del rubro (ej. IVA, comisión, total por cantidad) quedan guardados con el registro.
     for (const c of calcularRubro(esquema, id, precio, extras)) extrasGuardados[c.clave] = c.valor;
@@ -277,10 +280,10 @@ export function ModuloOperativo({ id }: { id: string }) {
     const fila: Omit<TablesInsert<"modulo_registros">, "modulo"> & { modulo?: string } = {
       ...(tabla === "modulo_registros" ? { modulo: id } : {}),
       estado,
-      titulo: titulo.trim(),
-      detalle: detalle.trim() || null,
-      contacto: contacto.trim() || null,
-      telefono: telefono.trim() || null,
+      titulo: limpiarTexto(titulo, LIMITES.nombre),
+      detalle: limpiarTexto(detalle, LIMITES.solicitud, true) || null,
+      contacto: limpiarTexto(contacto, LIMITES.nombre) || null,
+      telefono: limpiarTexto(telefono, LIMITES.telefono) || null,
       monto: precio,
       fecha: fecha || null,
       abonado,

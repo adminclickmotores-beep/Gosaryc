@@ -7,6 +7,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { TARIFAS_DOMICILIO, buscarTarifa } from "@/lib/tarifas-domicilio";
 import { escaparHtml } from "@/lib/exportes";
+import { LIMITES, limpiarTexto } from "@/lib/validacion-publica";
 import { useNegocio } from "@/hooks/use-negocio";
 import { mismoTipoNegocio } from "@/lib/modulos-negocio";
 import { autoComandaActivada, estadoApiLocal, fijarImpresionDirecta, impresionDirectaActivada, imprimirComandaCocina, imprimirTirillaLocal, leerImpresoraCaja } from "@/lib/impresion-local";
@@ -235,7 +236,12 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
     .filter((p) => (cuenta[p.id] ?? 0) > 0)
     .map((p) => ({ p, cant: cuenta[p.id], precio: p.precio + (detalle[p.id]?.extra ?? 0) }));
   const subtotal = lineas.reduce((s, l) => s + l.precio * l.cant, 0);
-  const notasFinal = [notas.trim(), ...lineas.map((l) => detalle[l.p.id]?.texto ?? "")].filter((x) => x !== "").join(" · ");
+  const notasFinal = limpiarTexto(
+    [limpiarTexto(notas, LIMITES.notas), ...lineas.map((l) => limpiarTexto(detalle[l.p.id]?.texto ?? "", LIMITES.nota_linea))]
+      .filter((x) => x !== "")
+      .join(" · "),
+    LIMITES.notas,
+  );
 
   const agregarDesdeVista = (p: Producto, sel: SeleccionProducto) => {
     setDetalle((d) => ({ ...d, [p.id]: { extra: sel.extraUnidad, texto: sel.texto } }));
