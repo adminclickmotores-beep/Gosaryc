@@ -11,7 +11,9 @@ const fechaHoy = (): string => {
 };
 
 const escaparCelda = (v: string | number): string => {
-  const s = String(v ?? "");
+  let s = String(v ?? "");
+  // Evita fórmulas en Excel/CSV: texto que empieza por = + - @ se guarda como texto.
+  if (typeof v === "string" && /^[=+\-@\t\r]/.test(s)) s = `'${s}`;
   return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 

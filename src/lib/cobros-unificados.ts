@@ -56,7 +56,7 @@ export async function cobrarCitaAgenda(
   const { data: prod } = await supabase
     .from("com_productos")
     .select("id, stock")
-    .ilike("nombre", cita.titulo.trim())
+    .ilike("nombre", cita.titulo.trim().replace(/[\\%_]/g, "\\$&"))
     .limit(1);
   if (prod && prod.length > 0 && prod[0].stock > 0) {
     const nuevo = Math.max(prod[0].stock - 1, 0);

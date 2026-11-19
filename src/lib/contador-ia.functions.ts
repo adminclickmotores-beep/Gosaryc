@@ -136,7 +136,10 @@ Reglas:
 • Respuestas cortas (máximo 150 palabras), sin tecnicismos innecesarios.`,
           },
           { role: "user", content: `Cifras reales del negocio:\n${data.cifras}` },
-          ...data.messages.slice(-10),
+          ...(Array.isArray(data.messages) ? data.messages : [])
+            .filter((m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
+            .map((m) => ({ role: m.role, content: m.content.slice(0, 2000) }))
+            .slice(-10),
         ],
       }),
     });
