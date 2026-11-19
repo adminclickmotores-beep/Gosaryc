@@ -7,6 +7,7 @@ import { PasoAPaso } from "@/components/restaurante/PasoAPaso";
 import { resolverTipoNegocio, mismoTipoNegocio, TIPOS_NEGOCIO } from "@/lib/modulos-negocio";
 import { toast } from "sonner";
 import { GuiaRapida } from "@/components/app/GuiaRapida";
+import { AsesorIADashboard } from "@/components/app/AsesorIADashboard";
 import { GUIAS_NEGOCIO } from "@/lib/guia-negocio";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json, Tables } from "@/integrations/supabase/types";
@@ -371,6 +372,8 @@ export function RestaurantePage() {
 
       {tipo.clave === "concesionario" && <DashboardConcesionario />}
       {!tipo.usaPedidos && tipo.clave !== "concesionario" && <IndicadoresNegocio tipo={tipo} />}
+
+      <AsesorIADashboard tipoNegocio={tipo.etiqueta} />
 
       <GuiaRapida tipo={tipo.clave} />
 
