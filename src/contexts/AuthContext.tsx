@@ -50,9 +50,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, s) => apply(s));
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, s) => {
+    // La sesión inicial se valida contra Supabase antes de habilitar el panel.
+    if (!initializedRef.current) return;
+    apply(s);
+  });
 
     (async () => {
       // "Recordarme" desmarcado: al abrir el navegador de nuevo se cierra la sesión anterior.

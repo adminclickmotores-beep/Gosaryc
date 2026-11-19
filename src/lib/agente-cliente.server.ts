@@ -42,6 +42,18 @@ async function buscarAgente(clave: string) {
     .maybeSingle();
   if (!ag) throw new ErrorAgente(401, "Clave del agente inválida");
   if (!ag.activo) throw new ErrorAgente(403, "El agente está desactivado para este negocio");
+
+  const { data: negocio, error: errorNegocio } = await supabaseAdmin
+    .from("negocio_config")
+    .select("id")
+    .eq("id", ag.negocio_id)
+    .eq("owner_id", ag.owner_id)
+    .maybeSingle();
+
+  if (errorNegocio || !negocio) {
+    throw new ErrorAgente(403, "El agente no pertenece a un negocio autorizado");
+  }
+
   return ag;
 }
 
@@ -79,15 +91,17 @@ async function guardarMemoria(ag: DuenoMemoria, tipo: "respuesta_dueno" | "patro
     .from("agente_memoria")
     .select("id,veces")
     .eq("negocio_id", ag.negocio_id)
+    .eq("owner_id", ag.owner_id)
     .eq("tipo", tipo)
     .eq("contenido", texto)
     .maybeSingle();
   if (previo) {
     await supabaseAdmin
       .from("agente_memoria")
-      .update({ veces: previo.veces + 1 })
-      .eq("id", previo.id)
-      .eq("negocio_id", ag.negocio_id);
+    .update({ veces: previo.veces + 1 })
+    .eq("id", previo.id)
+    .eq("negocio_id", ag.negocio_id)
+    .eq("owner_id", ag.owner_id);
     return;
   }
   await supabaseAdmin.from("agente_memoria").insert({ negocio_id: ag.negocio_id, owner_id: ag.owner_id, tipo, contenido: texto });
@@ -96,12 +110,20 @@ async function guardarMemoria(ag: DuenoMemoria, tipo: "respuesta_dueno" | "patro
     .from("agente_memoria")
     .select("id")
     .eq("negocio_id", ag.negocio_id)
+    .eq("owner_id", ag.owner_id)
     .eq("tipo", tipo)
     .order("veces", { ascending: false })
     .order("created_at", { ascending: false })
     .range(60, 200);
   const ids = (sobrantes ?? []).map((s) => s.id);
-  if (ids.length > 0) await supabaseAdmin.from("agente_memoria").delete().in("id", ids).eq("negocio_id", ag.negocio_id);
+  if (ids.length > 0) {
+    await supabaseAdmin
+      .from("agente_memoria")
+      .delete()
+      .in("id", ids)
+      .eq("negocio_id", ag.negocio_id)
+      .eq("owner_id", ag.owner_id);
+  }
 }
 
 /** El dueño respondió desde su celular: esa respuesta real se guarda como ejemplo de cómo atiende el negocio. */
@@ -224,6 +246,7 @@ export async function responderComoAgente(clave: string, mensajes: MensajeClient
     .from("agente_memoria")
     .select("tipo,contenido,veces")
     .eq("negocio_id", ag.negocio_id)
+    .eq("owner_id", ag.owner_id)
     .order("veces", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(40);
