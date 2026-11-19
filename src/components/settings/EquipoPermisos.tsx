@@ -24,7 +24,7 @@ const ROLES_RAPIDOS: { nombre: string; modulos: string[] }[] = [
   { nombre: "Contador/a", modulos: ["finanzas", "facturas", "caja_diaria"] },
   { nombre: "Bodega / compras", modulos: ["insumos", "proveedores"] },
   { nombre: "Asesor de ventas (vehículos)", modulos: ["vehiculos", "veh_ver", "veh_estados"] },
-  { nombre: "Jefe de patio (vehículos)", modulos: ["vehiculos", "veh_ver", "veh_crear", "veh_editar", "veh_gastos", "veh_estados", "veh_costos"] },
+  { nombre: "Jefe de patio (vehículos)", modulos: ["vehiculos", "veh_ver", "veh_crear", "veh_editar", "veh_gastos", "veh_estados"] },
   { nombre: "Agenda y clientes", modulos: ["agenda", "clientes", "cotizaciones"] },
 ];
 

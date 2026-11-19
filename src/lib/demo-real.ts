@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { markOnboarded } from "@/hooks/use-onboarding-status";
+
 import type { TablesInsert } from "@/integrations/supabase/types";
 
 /**
@@ -14,8 +14,7 @@ export const CORREO_DEMO: Record<TipoDemo, string> = {
   restaurante: "demo.restaurante@gosaryc.com",
 };
 
-// Clave interna de las cuentas demo: el visitante nunca la escribe.
-const CLAVE_DEMO = "GosarycDemoReal-2026";
+
 
 export const esCuentaDemo = (correo?: string | null): boolean =>
   !!correo && Object.values(CORREO_DEMO).includes(correo.toLowerCase());
@@ -283,45 +282,25 @@ async function sembrar(tipo: TipoDemo, uid: string) {
   window.dispatchEvent(new Event("negocio:cambio"));
 }
 
-/** Crea la cuenta demo si no existe, inicia sesión sin pedir clave y carga los datos de prueba. */
-export async function entrarDemo(tipo: TipoDemo): Promise<void> {
-  const email = CORREO_DEMO[tipo];
-  try {
-    localStorage.setItem("gosaly:recordarme", "1");
-    sessionStorage.setItem("gosaly:sesion_activa", "1");
-  } catch {
-    /* almacenamiento bloqueado */
-  }
-  let { data, error } = await supabase.auth.signInWithPassword({ email, password: CLAVE_DEMO });
-  if (error || !data.session) {
-    const reg = await supabase.auth.signUp({ email, password: CLAVE_DEMO });
-    if (reg.error && !/already|registered/i.test(reg.error.message)) throw reg.error;
-    const intento = await supabase.auth.signInWithPassword({ email, password: CLAVE_DEMO });
-    data = intento.data;
-    error = intento.error;
-  }
-  if (error || !data.session) {
-    throw new Error("No se pudo abrir la demo en este momento. Inténtalo de nuevo en unos minutos.");
-  }
-  // La demo nunca pasa por «Cuéntanos de tu negocio»: se marca como configurada.
-  try {
-    const uid = data.session.user.id;
-    const ahora = new Date().toISOString();
-    await supabase.from("profiles").update({ onboarded_at: ahora }).eq("id", uid);
-    markOnboarded(uid, ahora);
-  } catch {
-    /* no bloquea la entrada */
-  }
-  // Cada visitante entra siempre con los datos iniciales impecables.
-  await restaurarDemo(tipo);
+/**
+ * Las cuentas demo compartidas no pueden utilizarse para autenticar visitantes.
+ * La demostración debe ejecutarse con identidades aisladas por visitante.
+ */
+export async function entrarDemo(_tipo: TipoDemo): Promise<void> {
+  throw new Error(
+    "El acceso a las cuentas demo compartidas está deshabilitado por seguridad."
+  );
 }
 
-/** Borra solo los datos de prueba de esta cuenta demo y vuelve a cargar los iniciales. */
-export async function restaurarDemo(tipo: TipoDemo): Promise<void> {
-  const { data } = await supabase.auth.getUser();
-  const uid = data.user?.id;
-  if (!uid || !esCuentaDemo(data.user?.email)) return;
-  // No se borra nada: la carga de la base repone lo que falte (y los pedidos del día
-  // cuando aún no hay ninguno hoy), así la demo nunca queda vacía.
-  await sembrar(tipo, uid);
+/**
+ * La restauración de datos demo no se ejecuta desde una sesión de navegador.
+ * La siembra debe realizarse exclusivamente desde un proceso administrativo.
+ */
+export async function restaurarDemo(_tipo: TipoDemo): Promise<void> {
+  throw new Error(
+    "La restauración de demos compartidas está deshabilitada por seguridad."
+  );
 }
+
+// Mantener la función de siembra fuera de los flujos públicos del navegador.
+void sembrar;

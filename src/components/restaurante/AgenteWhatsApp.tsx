@@ -10,7 +10,16 @@ import type { Tables } from "@/integrations/supabase/types";
 import { esCuentaDemo } from "@/lib/demo-real";
 import { DemoAgenteWhatsApp } from "@/components/restaurante/DemoAgenteWhatsApp";
 
-type AgenteFila = Tables<"agente_whatsapp">;
+type AgenteFila = Pick<
+  Tables<"agente_whatsapp">,
+  | "id"
+  | "negocio_id"
+  | "owner_id"
+  | "activo"
+  | "nombre_agente"
+  | "instrucciones"
+  | "ia_activa"
+>;
 type Conocimiento = Tables<"whatsapp_conocimiento_negocio">;
 type AvisoDB = Tables<"whatsapp_avisos">;
 type LineaLocal = { id: string; nombre: string; estado: string; agente: boolean; conClave: boolean; qr: string; aviso: string };
@@ -76,13 +85,15 @@ function AgenteWhatsAppReal() {
   const idLinea = (negocio?.id ?? "").slice(0, 8) || "negocio";
   const tipoNegocio = ((negocio as unknown as { tipo_negocio?: string | null } | null)?.tipo_negocio ?? "").slice(0, 80);
 
-  useEffect(() => {
-    setClaveLocal(localStorage.getItem("whatsapp_local_token") ?? "");
-  }, []);
+  // La clave de acceso permanece únicamente en memoria durante esta sesión.
 
   const cargar = useCallback(async () => {
     if (!negocio) return;
-    const { data } = await supabase.from("agente_whatsapp").select("*").eq("negocio_id", negocio.id).maybeSingle();
+    const { data } = await supabase
+      .from("agente_whatsapp")
+      .select("id,negocio_id,owner_id,activo,nombre_agente,instrucciones,ia_activa")
+      .eq("negocio_id", negocio.id)
+      .maybeSingle();
     setAgente(data);
     if (data) {
       setNombreAgente(data.nombre_agente);
@@ -258,13 +269,21 @@ function AgenteWhatsAppReal() {
   const guardar = async (cambios: Partial<Pick<AgenteFila, "activo" | "nombre_agente" | "instrucciones" | "ia_activa">>) => {
     if (!negocio || !user) return;
     setGuardando(true);
-    const { data, error } = agente
-      ? await supabase.from("agente_whatsapp").update(cambios).eq("id", agente.id).select("*").maybeSingle()
-      : await supabase
-          .from("agente_whatsapp")
-          .insert({ negocio_id: negocio.id, owner_id: user.id, ...cambios })
-          .select("*")
-          .maybeSingle();
+  const columnasAgente =
+    "id,negocio_id,owner_id,activo,nombre_agente,instrucciones,ia_activa";
+
+  const { data, error } = agente
+    ? await supabase
+        .from("agente_whatsapp")
+        .update(cambios)
+        .eq("id", agente.id)
+        .select(columnasAgente)
+        .maybeSingle()
+    : await supabase
+        .from("agente_whatsapp")
+        .insert({ negocio_id: negocio.id, owner_id: user.id, ...cambios })
+        .select(columnasAgente)
+        .maybeSingle();
     setGuardando(false);
     if (error) {
       toast.error("No se pudo guardar el agente");
@@ -311,13 +330,21 @@ function AgenteWhatsAppReal() {
       toast.error("Pega la clave de acceso de la API local");
       return;
     }
-    localStorage.setItem("whatsapp_local_token", claveLocal.trim());
-    try {
-      const r = await fetch(`${API_LOCAL}/lineas`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${claveLocal.trim()}` },
-        body: JSON.stringify({ id: idLinea, nombre: negocio?.nombre ?? idLinea, clave: agente?.clave ?? "", agente: iaActiva && (agente?.activo ?? true), perfil: tipoNegocio, instrucciones }),
-      });
+  try {
+    const r = await fetch(`${API_LOCAL}/lineas`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${claveLocal.trim()}`
+      },
+      body: JSON.stringify({
+        id: idLinea,
+        nombre: negocio?.nombre ?? idLinea,
+        agente: iaActiva && (agente?.activo ?? true),
+        perfil: tipoNegocio,
+        instrucciones
+      }),
+    });
       if (!r.ok) throw new Error(r.status === 401 ? "Clave incorrecta" : "Error");
       toast.success("Número agregado. Escanea el código con el WhatsApp de este negocio.");
       void consultarLinea();
