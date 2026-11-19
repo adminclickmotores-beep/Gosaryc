@@ -304,11 +304,7 @@ export async function entrarDemo(tipo: TipoDemo): Promise<void> {
  * La restauración de datos demo no se ejecuta desde una sesión de navegador.
  * La siembra debe realizarse exclusivamente desde un proceso administrativo.
  */
-export async function restaurarDemo(tipo: TipoDemo): Promise<void> {
-  const { data } = await supabase.auth.getUser();
-  const user = data.user;
-  if (!user || user.email?.toLowerCase() !== CORREO_DEMO[tipo]) {
-    throw new Error("Solo se puede restaurar desde la cuenta demo.");
-  }
-  await sembrar(tipo, user.id);
+export async function restaurarDemo(_tipo: TipoDemo): Promise<void> {
+  // La demo es de solo lectura: no hay cambios que restaurar.
+  void sembrar;
 }
