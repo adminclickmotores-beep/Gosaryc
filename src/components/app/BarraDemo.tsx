@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, Pause, Play, Radio, RefreshCw, Rocket, Minimize2, Maximize2, X } from "lucide-react";
-import { toast } from "sonner";
+import { CheckCircle2, ChevronLeft, ChevronRight, Pause, Play, Radio, Rocket, Minimize2, Maximize2, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { CORREO_DEMO, esCuentaDemo, restaurarDemo } from "@/lib/demo-real";
+import { CORREO_DEMO, esCuentaDemo } from "@/lib/demo-real";
 
 /** Cada cuánto el piloto automático pasa a la siguiente ventana. */
 const INTERVALO_MS = 20000;
@@ -211,7 +210,6 @@ const enRutaDelPaso = (p: Paso, ruta: string, busqueda: string): boolean =>
 export function BarraDemo() {
   const { user } = useAuth();
   const nav = useNavigate();
-  const [busy, setBusy] = useState(false);
   const [paso, setPaso] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [avisos, setAvisos] = useState<Aviso[]>([]);
@@ -354,18 +352,6 @@ export function BarraDemo() {
     setIsPlaying(true);
   };
 
-  const restaurar = async () => {
-    setBusy(true);
-    try {
-      await restaurarDemo(tipo);
-      toast.success("Datos iniciales restaurados.");
-    } catch {
-      toast.error("No se pudieron restaurar los datos. Inténtalo de nuevo.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const btn =
     "inline-flex min-h-8 items-center gap-1 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-white/20 disabled:opacity-40";
 
@@ -505,10 +491,6 @@ export function BarraDemo() {
               </button>
               <button type="button" className={btn} onClick={() => ir(indice + 1)} disabled={indice === PASOS.length - 1}>
                 Siguiente <ChevronRight className="h-3.5 w-3.5" />
-              </button>
-              <button type="button" className={btn} onClick={restaurar} disabled={busy}>
-                {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-                Restaurar
               </button>
               <Link
                 to="/login"
