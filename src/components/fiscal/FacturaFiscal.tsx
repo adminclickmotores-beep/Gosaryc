@@ -8,6 +8,7 @@ import { useNegocio } from "@/hooks/use-negocio";
 import { Campo, Cargando, Encabezado, boton, botonSec, campo, dinero, num } from "@/components/comercio/ComercioModulos";
 import { exportarExcel, imprimirFactura, type DatosFactura, type ItemFactura } from "@/lib/exportes";
 import { estadoApiLocal, fijarImpresionDirecta, guardarColaLocal, impresionDirectaActivada, imprimirTirillaLocal, leerImpresoraCaja } from "@/lib/impresion-local";
+import { ConsultorEmpresaNIT } from "@/components/negocio/ConsultorEmpresaNIT";
 import { construirJsonFiscal, enlaceSolicitudDian, enviarFacturaDian, guardarCufeQr, marcarDianPendiente } from "@/lib/dian";
 
 type Fac = Tables<"fac_emitidas">;
@@ -205,7 +206,7 @@ export function FacturaFiscal() {
       </div>
       <div className="grid gap-2 sm:grid-cols-3">
         <Campo etiqueta="Cliente"><input className={campo} value={cliente} onChange={(e) => setCliente(e.target.value)} placeholder="Nombre o razón social" /></Campo>
-        <Campo etiqueta="NIT o CC del cliente"><input className={campo} value={docCli} onChange={(e) => setDocCli(e.target.value)} placeholder="Opcional" /></Campo>
+        <Campo etiqueta="NIT o CC del cliente"><input className={campo} value={docCli} onChange={(e) => setDocCli(e.target.value)} placeholder="Opcional" /><ConsultorEmpresaNIT modo="rapido" valor={docCli} /></Campo>
         <Campo etiqueta="Formato">
           <select className={campo} value={formato} onChange={(e) => setFormato(e.target.value as "tirilla" | "carta")}>
             <option value="tirilla">Tirilla 80 mm</option>

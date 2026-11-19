@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, type ReactElement } from "react";
 import { Loader2, Lock } from "lucide-react";
 import { ModuloOperativo } from "@/components/modulos/ModuloOperativo";
 import { InventarioVehiculos } from "@/components/vehiculos/InventarioVehiculos";
@@ -65,6 +65,7 @@ import { JoyeriaPiezas, LavanderiaOrdenes, LicoreraDomicilios, PapeleriaEncargos
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
+import { ConsultorEmpresaNIT, mostrarConsultorNIT } from "@/components/negocio/ConsultorEmpresaNIT";
 
 export const Route = createFileRoute("/_app/modulos/$id")({
   head: () => ({ meta: [{ title: "Módulo del negocio" }] }),
@@ -114,6 +115,7 @@ function ModuloPage() {
     );
   }
 
+  const contenido = ((): ReactElement => {
   if (id === "pan_produccion") return <ProduccionPan />;
   if (id === "pan_recetas") return <RecetasPan />;
   if (id === "pan_mermas") return <MermasPan />;
@@ -184,4 +186,16 @@ function ModuloPage() {
   if (id === "cotizaciones_veh") return <CotizacionesVehiculos />;
   if (id === "facturas" || id.startsWith("facturas_")) return (<Suspense fallback={<CargaModulo texto="Cargando facturación…" />}><FacturaFiscalLazy /></Suspense>);
   return <ModuloOperativo id={id} />;
+  })();
+
+  // Consultor de empresa por NIT: solo en la ficha de clientes corporativos / cotizaciones de los rubros B2B.
+  if (mostrarConsultorNIT(tipo.clave, id)) {
+    return (
+      <>
+        <ConsultorEmpresaNIT modo="completo" />
+        {contenido}
+      </>
+    );
+  }
+  return contenido;
 }
