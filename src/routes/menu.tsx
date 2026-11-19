@@ -137,21 +137,46 @@ function MenuPage() {
   }, [pedidoId, paso]);
 
   useEffect(() => {
+    let cancelado = false;
+
+    setCargando(true);
+    setCategorias([]);
+    setProductos([]);
+    setOpcionesTodas([]);
+
     if (!dueno) {
       if (!cargandoNegocio) setCargando(false);
-      return;
+      return () => {
+        cancelado = true;
+      };
     }
-    (async () => {
+
+    void (async () => {
       const [c, p, o] = await Promise.all([
         supabase.from("restaurante_categorias").select("*").eq("owner_id", dueno).eq("activa", true).order("orden"),
         supabase.from("restaurante_productos").select("*").eq("owner_id", dueno).eq("activo", true).order("nombre"),
         supabase.from("restaurante_producto_opciones").select("*").eq("owner_id", dueno).eq("activa", true).order("created_at"),
       ]);
-      setCategorias((c.data ?? []).filter((x) => mismoTipoNegocio(x.tipo_negocio, negocio?.tipo_negocio)));
-      setProductos((p.data ?? []).filter((x) => mismoTipoNegocio(x.tipo_negocio, negocio?.tipo_negocio)));
-      setOpcionesTodas(o.data ?? []);
+
+      if (cancelado) return;
+
+      setCategorias(
+        (c.data ?? []).filter(
+          (x) => x.owner_id === dueno && mismoTipoNegocio(x.tipo_negocio, negocio?.tipo_negocio),
+        ),
+      );
+      setProductos(
+        (p.data ?? []).filter(
+          (x) => x.owner_id === dueno && mismoTipoNegocio(x.tipo_negocio, negocio?.tipo_negocio),
+        ),
+      );
+      setOpcionesTodas((o.data ?? []).filter((x) => x.owner_id === dueno));
       setCargando(false);
     })();
+
+    return () => {
+      cancelado = true;
+    };
   }, [dueno, cargandoNegocio, negocio?.tipo_negocio]);
 
   const lineas = carrito;
@@ -246,24 +271,44 @@ function MenuPage() {
   };
 
   const termino = busqueda.trim().toLowerCase();
+
+  const productosNegocio = useMemo(
+    () => productos.filter((p) => p.owner_id === dueno),
+    [productos, dueno],
+  );
+
   const visibles = useMemo(
     () =>
       termino
-        ? productos.filter(
+        ? productosNegocio.filter(
             (p) => p.nombre.toLowerCase().includes(termino) || (p.descripcion ?? "").toLowerCase().includes(termino),
           )
-        : productos,
-    [productos, termino],
+        : productosNegocio,
+    [productosNegocio, termino],
   );
-  const destacados = useMemo(() => (termino ? [] : productos.filter((p) => p.destacado)), [productos, termino]);
-  const categoriasConItems = categorias.filter((c) => visibles.some((p) => p.categoria_id === c.id));
-  const sinCategoria = visibles.filter((p) => !p.categoria_id || !categorias.some((c) => c.id === p.categoria_id));
+
+  const destacados = useMemo(
+    () => (termino ? [] : productosNegocio.filter((p) => p.destacado)),
+    [productosNegocio, termino],
+  );
+
+  const categoriasConItems = categorias.filter(
+    (c) => c.owner_id === dueno && visibles.some((p) => p.categoria_id === c.id),
+  );
+
+  const sinCategoria = visibles.filter(
+    (p) => !p.categoria_id || !categoriasConItems.some((c) => c.id === p.categoria_id),
+  );
 
   const irA = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const enviar = async () => {
+    if (!dueno || !negocio?.owner_id || dueno !== negocio.owner_id) {
+      return toast.error("Este menú no está disponible. Vuelve a abrir el enlace del negocio.");
+    }
+
     const nombreLimpio = limpiarTexto(nombre, LIMITES.nombre);
     const telefonoLimpio = limpiarTelefono(telefono);
     const direccionLimpia = limpiarTexto(direccion, LIMITES.direccion);

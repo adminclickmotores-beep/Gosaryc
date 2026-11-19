@@ -167,8 +167,8 @@ function AppShell() {
   // El personal (no administrador) entra directo a su panel: nunca pasa por /welcome.
   useEffect(() => {
     if (!user) return;
-    // La cuenta maestra nunca pasa por la configuración inicial.
-    if (esCuentaMaestra(user.email)) return;
+  // La cuenta maestra solo omite la configuración inicial si confirmó su correo.
+  if (esCuentaMaestra(user.email) && user.email_confirmed_at) return;
     // Las cuentas demo nunca pasan por la configuración inicial.
     if (esCuentaDemo(user.email)) return;
     // En ventana completa (nueva pestaña) nunca redirigir a /welcome.

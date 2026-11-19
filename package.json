@@ -9,6 +9,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
+    "verificar": "tsc --noEmit && eslint . --max-warnings=0 && vite build",
     "format": "prettier --write .",
     "escritorio:instalar": "npm --prefix escritorio install",
     "instalador:windows": "npm --prefix escritorio run instalador:windows",
