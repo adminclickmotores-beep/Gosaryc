@@ -13,7 +13,7 @@ import { useNegocio } from "@/hooks/use-negocio";
 import { configModulo } from "@/lib/modulos-config";
 import { TABLAS_SIN_BORRADO, tablaDeModulo } from "@/lib/tablas-modulo";
 import { escaparHtml } from "@/lib/exportes";
-import { LIMITES, limpiarTexto } from "@/lib/validacion-publica";
+import { LIMITES, MAX_DINERO, limpiarTelefono, limpiarTexto, telefonoValido } from "@/lib/validacion-publica";
 import {
   alertaRubro, calcularRubro, camposDelModulo, useEsquemaRubro, validarCamposRubro, vocabulario,
   type TipoCampoRubro,
@@ -242,6 +242,8 @@ export function ModuloOperativo({ id }: { id: string }) {
   const agregar = async () => {
     const precio = monto.trim() ? Number(monto) : 0;
     if (!titulo.trim() || !Number.isFinite(precio) || precio < 0) return toast.error("Escribe un título y un valor válido.");
+    if (precio > MAX_DINERO) return toast.error("El valor es demasiado grande.");
+    if (telefono.trim() && !telefonoValido(limpiarTelefono(telefono))) return toast.error("Escribe un teléfono válido (7 a 15 dígitos).");
     if (cfg.exigeFecha && !fecha) return toast.error(`Indica la fecha: ${cfg.etiquetaFecha.toLowerCase()}.`);
     const errorRubro = validarCamposRubro(camposRubro, extras);
     if (errorRubro) return toast.error(errorRubro);
@@ -283,7 +285,7 @@ export function ModuloOperativo({ id }: { id: string }) {
       titulo: limpiarTexto(titulo, LIMITES.nombre),
       detalle: limpiarTexto(detalle, LIMITES.solicitud, true) || null,
       contacto: limpiarTexto(contacto, LIMITES.nombre) || null,
-      telefono: limpiarTexto(telefono, LIMITES.telefono) || null,
+      telefono: limpiarTelefono(telefono) || null,
       monto: precio,
       fecha: fecha || null,
       abonado,

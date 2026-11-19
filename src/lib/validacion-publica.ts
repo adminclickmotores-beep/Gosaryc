@@ -47,6 +47,59 @@ export function correoValido(valor: string): boolean {
   return valor.length > 0 && valor.length <= LIMITES.correo && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(valor);
 }
 
+// ---------------------------------------------------------------------------
+// Esquemas Zod reutilizables: limpian (sanean) y validan en un solo paso.
+// Uso: esquemaCorreo.safeParse(valor) -> { success, data | error }.
+// Nunca se inserta HTML sin escapar: los textos se guardan sin "<" ni ">" y los
+// documentos impresos pasan por escaparHtml (src/lib/exportes.ts).
+// ---------------------------------------------------------------------------
+import { z } from "zod";
+
+export const MAX_DINERO = 999_999_999_999;
+export const MAX_CANTIDAD = 9_999_999;
+
+export const esquemaTexto = (max: number, opciones?: { multilinea?: boolean; minimo?: number }) =>
+  z
+    .string()
+    .transform((v) => limpiarTexto(v, max, opciones?.multilinea))
+    .refine((v) => v.length >= (opciones?.minimo ?? 0), { message: "Este campo es obligatorio." });
+
+export const esquemaCorreo = z
+  .string()
+  .transform((v) => limpiarCorreo(v))
+  .refine((v) => correoValido(v), { message: "Escribe un correo válido." });
+
+export const esquemaTelefono = z
+  .string()
+  .transform((v) => limpiarTelefono(v))
+  .refine((v) => telefonoValido(v), { message: "Escribe un teléfono válido (7 a 15 dígitos)." });
+
+const aNumero = (v: unknown): unknown => (typeof v === "string" ? (v.trim() === "" ? undefined : Number(v.replace(",", "."))) : v);
+
+/** Precio o valor en dinero: número finito, de 0 en adelante. */
+export const esquemaPrecio = z.preprocess(
+  aNumero,
+  z.number({ message: "Escribe un valor válido." }).finite().min(0, "El valor no puede ser negativo.").max(MAX_DINERO, "El valor es demasiado grande."),
+);
+
+/** Cantidad: número finito, de 0 en adelante. */
+export const esquemaCantidad = z.preprocess(
+  aNumero,
+  z.number({ message: "Escribe una cantidad válida." }).finite().min(0, "La cantidad no puede ser negativa.").max(MAX_CANTIDAD, "La cantidad es demasiado grande."),
+);
+
+/** Cantidad que debe ser mayor que cero (ventas, pedidos). */
+export const esquemaCantidadPositiva = z.preprocess(
+  aNumero,
+  z.number({ message: "Escribe una cantidad válida." }).finite().gt(0, "La cantidad debe ser mayor que cero.").max(MAX_CANTIDAD, "La cantidad es demasiado grande."),
+);
+
+/** Devuelve el primer mensaje de error de un esquema, o null si el valor es válido. */
+export function primerError(esquema: z.ZodTypeAny, valor: unknown): string | null {
+  const r = esquema.safeParse(valor);
+  return r.success ? null : (r.error.issues[0]?.message ?? "Dato no válido.");
+}
+
 /** Código seguro de certificados: solo letras, números y guiones. */
 export function limpiarCodigo(valor: string | null | undefined): string {
   return (valor ?? "").replace(/[^A-Za-z0-9-]/g, "").slice(0, LIMITES.codigo);
