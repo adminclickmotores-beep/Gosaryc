@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, Pause, Play, Radio, RefreshCw, Rocket } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, Pause, Play, Radio, RefreshCw, Rocket, Minimize2, Maximize2, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -215,6 +215,8 @@ export function BarraDemo() {
   const [paso, setPaso] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [avisos, setAvisos] = useState<Aviso[]>([]);
+  const [minimizada, setMinimizada] = useState(false);
+  const [cerrada, setCerrada] = useState(false);
   const contador = useRef(0);
   const cifrasListas = useRef(false);
   const demo = esCuentaDemo(user?.email);
@@ -365,7 +367,7 @@ export function BarraDemo() {
   };
 
   const btn =
-    "inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20 disabled:opacity-40 sm:text-base";
+    "inline-flex min-h-8 items-center gap-1 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-white/20 disabled:opacity-40";
 
   return (
     <>
@@ -390,63 +392,134 @@ export function BarraDemo() {
         ))}
       </div>
 
-      {/* Barra inferior del recorrido: fondo sólido oscuro y texto blanco grande */}
+      {/* Control compacto del recorrido, sin cubrir el contenido */}
       <div
         data-barra-demo
-        className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-[60] flex justify-center px-3 md:bottom-4"
+        className="pointer-events-none fixed bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] right-3 z-[60] flex justify-end md:bottom-4 md:right-4"
       >
-        <div
-          className="pointer-events-auto w-full max-w-3xl space-y-3 rounded-2xl border-2 border-[#2563EB] p-4 text-white shadow-2xl"
-          style={{ backgroundColor: "#0F172A" }}
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 break-words">
-              <p className="text-lg font-bold leading-snug text-white sm:text-xl">
-                Paso {indice + 1} de {PASOS.length}: {pasoActual.titulo}
-              </p>
-              <p className="mt-1 text-base leading-relaxed text-white/90">{pasoActual.texto}</p>
-              {isPlaying && enVivo && (
-                <p className="mt-1.5 flex items-center gap-1.5 text-base font-semibold text-[#93C5FD]">
-                  <Radio className="h-4 w-4 shrink-0 animate-pulse" /> En vivo: {enVivo.texto}
-                </p>
-              )}
-            </div>
-            <span
-              className={`shrink-0 rounded-full px-3 py-1 text-sm font-bold ${isPlaying ? "bg-[#2563EB] text-white" : "bg-white/15 text-white"}`}
+        {cerrada ? (
+          <button
+            type="button"
+            onClick={() => setCerrada(false)}
+            aria-label="Mostrar recorrido de demostración"
+            title="Mostrar recorrido"
+            className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full border border-[#2563EB]/60 bg-[#0F172A]/85 text-[#93C5FD] shadow-lg backdrop-blur-md transition hover:bg-[#1E293B]"
+          >
+            <Radio className="h-5 w-5" />
+          </button>
+        ) : minimizada ? (
+          <div className="pointer-events-auto flex items-center gap-1.5 rounded-full border border-[#2563EB]/60 bg-[#0F172A]/90 px-2 py-1.5 text-white shadow-xl backdrop-blur-md">
+            <button
+              type="button"
+              onClick={() => setMinimizada(false)}
+              className="flex items-center gap-2 rounded-full px-2 py-1 text-xs font-semibold hover:bg-white/10"
+              aria-label="Ampliar recorrido"
             >
-              {isPlaying ? "Piloto automático" : "Explorando"}
-            </span>
-          </div>
-          <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/15">
-            <div
-              className="h-full rounded-full bg-[#2563EB] transition-all duration-500"
-              style={{ width: `${((indice + 1) / PASOS.length) * 100}%` }}
-            />
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <button type="button" className={btn} onClick={alternarAuto}>
+              <Radio className="h-4 w-4 shrink-0 text-[#60A5FA]" />
+              <span>Paso {indice + 1}/{PASOS.length}</span>
+              <span className="text-white/60">{isPlaying ? "En vivo" : "Pausado"}</span>
+            </button>
+            <button
+              type="button"
+              onClick={alternarAuto}
+              aria-label={isPlaying ? "Pausar recorrido" : "Reanudar recorrido"}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-white/80 transition hover:bg-white/15 hover:text-white"
+            >
               {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-              {isPlaying ? "Pausar / Explorar libremente" : "Piloto automático"}
             </button>
-            <button type="button" className={btn} onClick={() => ir(indice - 1)} disabled={indice === 0}>
-              <ChevronLeft className="h-4 w-4" /> Anterior
-            </button>
-            <button type="button" className={btn} onClick={() => ir(indice + 1)} disabled={indice === PASOS.length - 1}>
-              Siguiente <ChevronRight className="h-4 w-4" />
-            </button>
-            <button type="button" className={btn} onClick={restaurar} disabled={busy}>
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-              Restaurar
-            </button>
-            <Link
-              to="/login"
-              search={{ mode: "signup" }}
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-[#2563EB] px-4 py-2 text-sm font-bold text-white hover:bg-[#1D4ED8] sm:text-base"
+            <button
+              type="button"
+              onClick={() => setMinimizada(false)}
+              aria-label="Expandir recorrido"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-white/80 transition hover:bg-white/15 hover:text-white"
             >
-              <Rocket className="h-4 w-4" /> Crear mi cuenta gratis
-            </Link>
+              <Maximize2 className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setCerrada(true)}
+              aria-label="Cerrar recorrido"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-white/60 transition hover:bg-white/15 hover:text-white"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
-        </div>
+        ) : (
+          <div className="pointer-events-auto w-[min(23rem,calc(100vw-1.5rem))] space-y-2 rounded-2xl border border-[#2563EB]/60 bg-[#0F172A]/90 p-3 text-white shadow-xl backdrop-blur-md">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <Radio className={`h-4 w-4 shrink-0 text-[#60A5FA] ${isPlaying ? "animate-pulse" : ""}`} />
+                  <span className="text-xs font-bold text-[#93C5FD]">
+                    {isPlaying ? "Piloto automático" : "Explorando"}
+                  </span>
+                  <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white/70">
+                    Paso {indice + 1}/{PASOS.length}
+                  </span>
+                </div>
+                <p className="mt-1 text-sm font-bold leading-snug">{pasoActual.titulo}</p>
+                <p className="mt-0.5 text-xs leading-relaxed text-white/70">{pasoActual.texto}</p>
+                {isPlaying && enVivo && (
+                  <p className="mt-1.5 flex items-start gap-1.5 text-xs font-semibold leading-relaxed text-[#93C5FD]">
+                    <Radio className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-pulse" />
+                    <span>{enVivo.texto}</span>
+                  </p>
+                )}
+              </div>
+              <div className="flex shrink-0 items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setMinimizada(true)}
+                  aria-label="Minimizar recorrido"
+                  title="Minimizar"
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-white/70 transition hover:bg-white/15 hover:text-white"
+                >
+                  <Minimize2 className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCerrada(true)}
+                  aria-label="Cerrar recorrido"
+                  title="Cerrar"
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-white/70 transition hover:bg-white/15 hover:text-white"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="h-1 w-full overflow-hidden rounded-full bg-white/15">
+              <div
+                className="h-full rounded-full bg-[#2563EB] transition-all duration-500"
+                style={{ width: `${((indice + 1) / PASOS.length) * 100}%` }}
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button type="button" className={btn} onClick={alternarAuto}>
+                {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+                {isPlaying ? "Pausar" : "Reanudar"}
+              </button>
+              <button type="button" className={btn} onClick={() => ir(indice - 1)} disabled={indice === 0}>
+                <ChevronLeft className="h-3.5 w-3.5" /> Anterior
+              </button>
+              <button type="button" className={btn} onClick={() => ir(indice + 1)} disabled={indice === PASOS.length - 1}>
+                Siguiente <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+              <button type="button" className={btn} onClick={restaurar} disabled={busy}>
+                {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                Restaurar
+              </button>
+              <Link
+                to="/login"
+                search={{ mode: "signup" }}
+                className="inline-flex min-h-8 items-center gap-1 rounded-full bg-[#2563EB] px-3 py-1 text-xs font-bold text-white transition hover:bg-[#1D4ED8]"
+              >
+                <Rocket className="h-3.5 w-3.5" /> Crear cuenta
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
