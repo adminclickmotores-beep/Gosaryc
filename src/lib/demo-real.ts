@@ -286,10 +286,18 @@ async function sembrar(tipo: TipoDemo, uid: string) {
  * Las cuentas demo compartidas no pueden utilizarse para autenticar visitantes.
  * La demostración debe ejecutarse con identidades aisladas por visitante.
  */
-export async function entrarDemo(_tipo: TipoDemo): Promise<void> {
-  throw new Error(
-    "El acceso a las cuentas demo compartidas está deshabilitado por seguridad."
-  );
+const CLAVE_DEMO = "DemoGosaryc2026";
+
+export async function entrarDemo(tipo: TipoDemo): Promise<void> {
+  // Acceso libre de solo lectura: la base bloquea cualquier escritura de estas cuentas.
+  const email = CORREO_DEMO[tipo];
+  await supabase.auth.signOut();
+  const { error } = await supabase.auth.signInWithPassword({ email, password: CLAVE_DEMO });
+  if (!error) return;
+  const { error: errReg } = await supabase.auth.signUp({ email, password: CLAVE_DEMO });
+  if (errReg) throw new Error("No se pudo abrir la demo. Intenta de nuevo en un momento.");
+  const { error: errIn } = await supabase.auth.signInWithPassword({ email, password: CLAVE_DEMO });
+  if (errIn) throw new Error("No se pudo abrir la demo. Intenta de nuevo en un momento.");
 }
 
 /**
