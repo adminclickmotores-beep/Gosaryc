@@ -71,6 +71,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // en vez de quedarse en "Iniciando" para siempre.
       try {
         const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          // Se valida la sesión contra el servidor: un token revocado, borrado o vencido no entra.
+          const { error } = await supabase.auth.getUser();
+          const rechazada =
+            !!error && typeof error.status === "number" && error.status >= 400 && error.status < 500 && error.status !== 429;
+          if (rechazada) {
+            await supabase.auth.signOut();
+            apply(null);
+            return;
+          }
+        }
         apply(data.session);
       } catch {
         apply(null);
