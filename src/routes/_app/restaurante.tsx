@@ -26,6 +26,8 @@ import { BotonVentanaCompleta } from "@/components/app/BotonVentanaCompleta";
 import { IndicadoresNegocio } from "@/components/app/IndicadoresNegocio";
 import { DashboardConcesionario } from "@/components/vehiculos/DashboardConcesionario";
 import { escaparHtml } from "@/lib/exportes";
+import { useAuth } from "@/contexts/AuthContext";
+import { CORREO_DEMO } from "@/lib/demo-real";
 
 const VISTAS_VALIDAS = ["venta", "pedidos", "menu", "qr", "mesas", "caja", "reportes", "recetario", "agente", "negocio"] as const;
 type VistaClave = (typeof VISTAS_VALIDAS)[number];
@@ -130,7 +132,10 @@ const campo =
 
 export function RestaurantePage() {
   const { negocio } = useNegocio();
-  const tipo = resolverTipoNegocio(negocio?.tipo_negocio);
+  const { user } = useAuth();
+  // La demo de restaurante siempre muestra el panel de restaurante, sin mezclarse con el concesionario.
+  const demoRestaurante = user?.email?.toLowerCase() === CORREO_DEMO.restaurante;
+  const tipo = resolverTipoNegocio(demoRestaurante ? "restaurante" : negocio?.tipo_negocio);
   const busqueda = useSearch({ strict: false }) as { vista?: string; ventana?: string };
   const navegar = useNavigate();
   const { pathname } = useLocation();
