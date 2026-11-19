@@ -7,7 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { CORREO_DEMO, esCuentaDemo, restaurarDemo } from "@/lib/demo-real";
 
 /** Cada cuánto el piloto automático pasa a la siguiente ventana. */
-const INTERVALO_MS = 4500;
+const INTERVALO_MS = 14000;
+/** Los tiempos de cada guion se multiplican por esto para que se alcance a leer cada aviso. */
+const ESCALA = 3;
 
 /** Elemento de la pantalla que se resalta como apoyo visual (opcional: la navegación no depende de él). */
 type Objetivo = { css?: string; texto?: RegExp };
@@ -195,15 +197,14 @@ const marcar = (el: HTMLElement) => {
     el.style.outline = antes.outline;
     el.style.outlineOffset = antes.offset;
     el.style.boxShadow = antes.sombra;
-  }, 2000);
+  }, 5000);
 };
 
 // ¿La pantalla actual ya es la del paso? (el panel del negocio puede vivir en /restaurante o /negocio/<tipo>,
 // y además debe estar abierta la pestaña exacta: nunca se queda en Configuración).
 const enRutaDelPaso = (p: Paso, ruta: string, busqueda: string): boolean =>
   p.vista
-    ? (ruta === p.ruta || ruta === "/restaurante" || ruta.startsWith("/negocio/")) &&
-      new URLSearchParams(busqueda).get("vista") === p.vista
+    ? ruta === p.ruta && new URLSearchParams(busqueda).get("vista") === p.vista
     : ruta === p.ruta;
 
 /** Barra del recorrido guiado: solo en cuentas demo. Cambia de ventana sola cada 4,5 segundos. */
@@ -246,7 +247,7 @@ export function BarraDemo() {
     const revisar = () => {
       if (!enRutaDelPaso(p, window.location.pathname, window.location.search)) abrir(p);
     };
-    const correctores = [window.setTimeout(revisar, 1200), window.setTimeout(revisar, 2600)];
+    const correctores = [window.setTimeout(revisar, 1500), window.setTimeout(revisar, 3500), window.setTimeout(revisar, 6500)];
     return () => correctores.forEach((t: number) => window.clearTimeout(t));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demo, indice, tipo]);
@@ -307,7 +308,7 @@ export function BarraDemo() {
           el.dispatchEvent(new Event("change", { bubbles: true }));
         }
       }
-      if (a.clic) timers.push(window.setTimeout(() => vivo && el.click(), 400));
+      if (a.clic) timers.push(window.setTimeout(() => vivo && el.click(), 1200));
     };
 
     p.guion.forEach((a: Accion) => {
@@ -316,9 +317,9 @@ export function BarraDemo() {
           contador.current += 1;
           const id = contador.current;
           setAvisos((prev: Aviso[]) => [...prev.slice(-2), { id, texto: a.aviso, ok: !!a.ok }]);
-          timers.push(window.setTimeout(() => setAvisos((prev: Aviso[]) => prev.filter((x: Aviso) => x.id !== id)), 3500));
+          timers.push(window.setTimeout(() => setAvisos((prev: Aviso[]) => prev.filter((x: Aviso) => x.id !== id)), 7000));
           ejecutar(a, 0);
-        }, a.ms),
+        }, a.ms * ESCALA),
       );
     });
 
