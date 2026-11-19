@@ -7,9 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { CORREO_DEMO, esCuentaDemo, restaurarDemo } from "@/lib/demo-real";
 
 /** Cada cuánto el piloto automático pasa a la siguiente ventana. */
-const INTERVALO_MS = 14000;
+const INTERVALO_MS = 20000;
 /** Los tiempos de cada guion se multiplican por esto para que se alcance a leer cada aviso. */
-const ESCALA = 3;
+const ESCALA = 4.5;
 
 /** Elemento de la pantalla que se resalta como apoyo visual (opcional: la navegación no depende de él). */
 type Objetivo = { css?: string; texto?: RegExp };
@@ -317,7 +317,7 @@ export function BarraDemo() {
           contador.current += 1;
           const id = contador.current;
           setAvisos((prev: Aviso[]) => [...prev.slice(-2), { id, texto: a.aviso, ok: !!a.ok }]);
-          timers.push(window.setTimeout(() => setAvisos((prev: Aviso[]) => prev.filter((x: Aviso) => x.id !== id)), 7000));
+          timers.push(window.setTimeout(() => setAvisos((prev: Aviso[]) => prev.filter((x: Aviso) => x.id !== id)), 10000));
           ejecutar(a, 0);
         }, a.ms * ESCALA),
       );
