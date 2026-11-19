@@ -8166,6 +8166,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      registro_es_del_negocio: { Args: { p_tabla: string; p_id: string; p_owner: string }; Returns: boolean }
       tal_agregar_repuesto: { Args: { p_orden: string; p_repuesto: string; p_cantidad: number }; Returns: Json }
       tal_cobrar_orden: { Args: { p_orden: string; p_metodo: string }; Returns: Json }
       tal_liquidar: { Args: { p_profesional: string; p_metodo: string }; Returns: number }
