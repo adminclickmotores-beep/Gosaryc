@@ -366,7 +366,7 @@ export function BarraDemo() {
         {avisos.map((a: Aviso) => (
           <div
             key={a.id}
-            className="flex w-full items-start gap-2.5 rounded-xl border-2 border-[#2563EB] bg-[#0F172A] px-3.5 py-3 text-sm font-semibold text-white shadow-2xl animate-in fade-in slide-in-from-right-4 duration-300"
+            className="demo-oscuro flex w-full items-start gap-2.5 rounded-xl border-2 border-[#2563EB] bg-[#0F172A] px-3.5 py-3 text-sm font-semibold text-white shadow-2xl animate-in fade-in slide-in-from-right-4 duration-300"
           >
             {a.ok ? (
               <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
@@ -381,7 +381,7 @@ export function BarraDemo() {
       {/* Control compacto del recorrido, sin cubrir el contenido */}
       <div
         data-barra-demo
-        className="pointer-events-none fixed bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] right-3 z-[60] flex justify-end md:bottom-4 md:right-4"
+        className="demo-oscuro pointer-events-none fixed bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] right-3 z-[60] flex justify-end md:bottom-4 md:right-4"
       >
         {cerrada ? (
           <button

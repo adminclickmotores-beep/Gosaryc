@@ -873,6 +873,15 @@ html.light input::placeholder, html.light textarea::placeholder { color: oklch(0
 }
 .light [class*="bg-white/"] { background-color: oklch(0.2 0.03 255 / 0.06); }
 .light [class*="border-white/"] { border-color: oklch(0.2 0.03 255 / 0.18); }
+
+/* Piloto automático de las demos: siempre fondo oscuro, así que mantiene texto claro en modo claro. */
+.light .demo-oscuro:not(#_), .light .demo-oscuro [class*="text-white"]:not(#_) { color: #ffffff; }
+.light .demo-oscuro [class*="text-white/"]:not(#_) { color: rgb(255 255 255 / 0.8); }
+.light .demo-oscuro [class*="bg-white/"]:not(#_) { background-color: rgb(255 255 255 / 0.12); }
+.light .demo-oscuro [class*="border-white/"]:not(#_) { border-color: rgb(255 255 255 / 0.25); }
+.light .demo-oscuro [class*="text-[#93C5FD]"]:not(#_) { color: #93c5fd; }
+.light .demo-oscuro [class*="text-[#60A5FA]"]:not(#_) { color: #60a5fa; }
+.light .demo-oscuro [class*="text-emerald-400"]:not(#_) { color: #34d399; }
 .light [class*="divide-white/"] > * + * { border-color: oklch(0.2 0.03 255 / 0.14); }
 .light .text-muted-foreground { color: oklch(0.42 0.02 255); }
 .light .btn-pro, .light .btn-pro * { color: oklch(0.99 0.01 270); }
