@@ -304,11 +304,11 @@ export async function entrarDemo(tipo: TipoDemo): Promise<void> {
  * La restauración de datos demo no se ejecuta desde una sesión de navegador.
  * La siembra debe realizarse exclusivamente desde un proceso administrativo.
  */
-export async function restaurarDemo(_tipo: TipoDemo): Promise<void> {
-  throw new Error(
-    "La restauración de demos compartidas está deshabilitada por seguridad."
-  );
+export async function restaurarDemo(tipo: TipoDemo): Promise<void> {
+  const { data } = await supabase.auth.getUser();
+  const user = data.user;
+  if (!user || user.email?.toLowerCase() !== CORREO_DEMO[tipo]) {
+    throw new Error("Solo se puede restaurar desde la cuenta demo.");
+  }
+  await sembrar(tipo, user.id);
 }
-
-// Mantener la función de siembra fuera de los flujos públicos del navegador.
-void sembrar;
