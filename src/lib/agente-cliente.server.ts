@@ -83,7 +83,11 @@ async function guardarMemoria(ag: DuenoMemoria, tipo: "respuesta_dueno" | "patro
     .eq("contenido", texto)
     .maybeSingle();
   if (previo) {
-    await supabaseAdmin.from("agente_memoria").update({ veces: previo.veces + 1 }).eq("id", previo.id);
+    await supabaseAdmin
+      .from("agente_memoria")
+      .update({ veces: previo.veces + 1 })
+      .eq("id", previo.id)
+      .eq("negocio_id", ag.negocio_id);
     return;
   }
   await supabaseAdmin.from("agente_memoria").insert({ negocio_id: ag.negocio_id, owner_id: ag.owner_id, tipo, contenido: texto });
@@ -97,7 +101,7 @@ async function guardarMemoria(ag: DuenoMemoria, tipo: "respuesta_dueno" | "patro
     .order("created_at", { ascending: false })
     .range(60, 200);
   const ids = (sobrantes ?? []).map((s) => s.id);
-  if (ids.length > 0) await supabaseAdmin.from("agente_memoria").delete().in("id", ids);
+  if (ids.length > 0) await supabaseAdmin.from("agente_memoria").delete().in("id", ids).eq("negocio_id", ag.negocio_id);
 }
 
 /** El dueño respondió desde su celular: esa respuesta real se guarda como ejemplo de cómo atiende el negocio. */
@@ -148,6 +152,7 @@ export async function responderComoAgente(clave: string, mensajes: MensajeClient
     .from("negocio_config")
     .select("nombre,tipo_negocio,eslogan,descripcion,horarios,ciudad,cobertura,aviso_entrega,telefono_pedidos,whatsapp_cocina,instagram,sitio_web,moneda")
     .eq("id", ag.negocio_id)
+    .eq("owner_id", ag.owner_id)
     .maybeSingle();
 
   const giro = resolverTipoNegocio(cfg?.tipo_negocio ?? null);
@@ -166,7 +171,11 @@ export async function responderComoAgente(clave: string, mensajes: MensajeClient
   const idsCat = Array.from(new Set(productos.map((p) => p.categoria_id).filter((x): x is string => !!x)));
   const nombreCat = new Map<string, string>();
   if (idsCat.length > 0) {
-    const { data: cats } = await supabaseAdmin.from("restaurante_categorias").select("id,nombre").in("id", idsCat);
+    const { data: cats } = await supabaseAdmin
+      .from("restaurante_categorias")
+      .select("id,nombre")
+      .in("id", idsCat)
+      .eq("owner_id", ag.owner_id);
     for (const c of cats ?? []) nombreCat.set(c.id, c.nombre);
   }
   const catalogo =
