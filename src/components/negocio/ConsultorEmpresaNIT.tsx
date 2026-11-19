@@ -10,6 +10,7 @@ import { boton, campo } from "@/components/comercio/ComercioModulos";
 /** Tipos de negocio B2B / corporativos donde se muestra el consultor completo. */
 const RUBROS_B2B = new Set<string>([
   "profesional", // contabilidad y despachos
+  "seguros",
   "inmobiliaria",
   "construccion",
   "concesionario",
