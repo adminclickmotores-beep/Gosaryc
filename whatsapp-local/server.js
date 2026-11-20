@@ -741,7 +741,7 @@ process.on("uncaughtException", (e) => {
   console.log("[Error no controlado]", enmascararNumero(e && e.stack ? e.stack : e));
 });
 process.on("unhandledRejection", (e) => {
-  console.log("[Promesa rechazada]", e && e.stack ? e.stack : e);
+  console.log("[Promesa rechazada]", enmascararNumero(e && e.stack ? e.stack : e));
 });
 
 cargarLineas();

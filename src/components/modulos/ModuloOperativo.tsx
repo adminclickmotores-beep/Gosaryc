@@ -12,7 +12,7 @@ import { buscarModulo, identidadRubro, resolverTipoNegocio } from "@/lib/modulos
 import { useNegocio } from "@/hooks/use-negocio";
 import { configModulo } from "@/lib/modulos-config";
 import { TABLAS_SIN_BORRADO, tablaDeModulo } from "@/lib/tablas-modulo";
-import { escaparHtml } from "@/lib/exportes";
+import { escaparCelda, escaparHtml } from "@/lib/exportes";
 import { LIMITES, MAX_DINERO, limpiarTelefono, limpiarTexto, telefonoValido } from "@/lib/validacion-publica";
 import {
   alertaRubro, calcularRubro, camposDelModulo, useEsquemaRubro, validarCamposRubro, vocabulario,
@@ -456,7 +456,11 @@ export function ModuloOperativo({ id }: { id: string }) {
   };
 
   const exportar = () => {
-    const celda = (v: string | number | null) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    // escaparCelda neutraliza fórmulas (= + - @ ...) incluso con espacios o caracteres invisibles al inicio.
+    const celda = (v: string | number | null): string => {
+      const s = escaparCelda(v ?? "");
+      return s.startsWith('"') ? s : `"${s}"`;
+    };
     const cab = ["Título", "Contacto", "Teléfono", "Fecha", "Estado", "Valor", "Abonado", "Saldo", "Cantidad", "Mínimo", "Anulado", "Motivo", "Creado"];
     const filas = visibles.map((r) => [
       r.titulo, r.contacto, r.telefono, r.fecha, r.anulado ? "Anulado" : textoEstado(r.estado), r.monto, r.abonado,

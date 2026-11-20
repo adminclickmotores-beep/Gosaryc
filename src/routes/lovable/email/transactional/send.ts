@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 import { createFileRoute } from '@tanstack/react-router'
 import { TEMPLATES } from '@/lib/email-templates/registry'
 import { BRAND } from '@/lib/brand'
+import { appUrlBase } from '@/lib/app-url'
 
 // Configuration — read from env with placeholder fallbacks so remixers don't
 // accidentally send from the template author's domain.
@@ -365,6 +366,40 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
         }
 
         // 4. Render React Email template to HTML and plain text
+        // Invitaciones: nada de lo que mande el cliente (enlace, negocio, nombre) llega al correo.
+        // Todo se consulta en el servidor con el negocio del usuario autenticado y el enlace usa solo el dominio oficial.
+        if (/invit/i.test(templateName)) {
+          if (!callerOrgId) {
+            return Response.json({ error: 'No active organization' }, { status: 403 })
+          }
+          const patron = effectiveRecipient.toLowerCase().replace(/[\\%_]/g, (c) => '\\' + c)
+          const [{ data: inv }, { data: org }, { data: quien }] = await Promise.all([
+            supabase
+              .from('org_invites')
+              .select('token')
+              .eq('org_id', callerOrgId)
+              .ilike('email', patron)
+              .is('accepted_at', null)
+              .gt('expires_at', new Date().toISOString())
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle(),
+            supabase.from('organizations').select('name').eq('id', callerOrgId).maybeSingle(),
+            supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle(),
+          ])
+          if (!inv?.token) {
+            return Response.json({ error: 'Invitation not found' }, { status: 404 })
+          }
+          const base = appUrlBase()
+          templateData = {
+            siteName: SITE_NAME,
+            siteUrl: base,
+            confirmationUrl: `${base}/invite/${encodeURIComponent(inv.token)}`,
+            orgName: org?.name ?? SITE_NAME,
+            inviterName: quien?.full_name ?? undefined,
+          }
+        }
+
         const element = React.createElement(template.component, templateData)
         const html = await render(element)
         const plainText = await render(element, { plainText: true })

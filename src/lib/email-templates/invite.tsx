@@ -44,7 +44,7 @@ export const InviteEmail = ({
       if (x.protocol !== 'https:') return null
       const host = x.hostname.toLowerCase()
       const oficialHost = new URL(oficial).hostname.toLowerCase()
-      const ok = host === oficialHost || host.endsWith('.supabase.co') || host === BRAND_HOST
+      const ok = host === oficialHost || host === BRAND_HOST
       return ok ? x.toString() : null
     } catch {
       return null
