@@ -27,6 +27,8 @@ import { RouteProgressBar } from "@/components/app/RouteProgressBar";
 import { BrandHexLogo } from "@/components/app/BrandHexLogo";
 import { EstadoSinConexion } from "@/components/app/EstadoSinConexion";
 import { LicenciaNegocio } from "@/components/app/LicenciaNegocio";
+import { RespaldoTotal } from "@/components/negocio/RespaldoTotal";
+import { evaluarVigenciaLicencia, guardarTokenLicenciaOffline, leerTokenLicenciaOffline } from "@/lib/licencia-offline";
 import { BRAND } from "@/lib/brand";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
@@ -207,25 +209,43 @@ function AppShell() {
     // Fragile: this guard must not depend on location.pathname.
   }, [loading, session, nav]);
 
-  // Bloqueo por suspensión o vencimiento de la suscripción de la empresa.
+  // Bloqueo por suspensión o vencimiento de la suscripción (con validación online + token firmado offline y periodo de gracia).
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
     const revisar = async () => {
-      const { data } = await supabase.from("suscripciones_negocio").select("estado, vence_en").maybeSingle();
-      if (cancelled || !data) return;
-      if (data.estado === "suspendido") setBloqueo("suspendido");
-      else if (new Date(data.vence_en).getTime() <= Date.now()) setBloqueo("vencido");
-      else setBloqueo(null);
+      try {
+        const { data } = await supabase.from("suscripciones_negocio").select("*").maybeSingle();
+        if (cancelled) return;
+        if (data) {
+          const diasGracia = (data as { dias_gracia?: number | null }).dias_gracia ?? 3;
+          await guardarTokenLicenciaOffline({
+            owner_id: data.owner_id,
+            negocio_id: negocio?.id ?? data.owner_id,
+            plan: data.plan,
+            estado: data.estado,
+            vence_en: data.vence_en,
+            dias_gracia: diasGracia,
+          });
+          const res = evaluarVigenciaLicencia(data.estado, data.vence_en, diasGracia);
+          setBloqueo(res.bloqueo);
+          return;
+        }
+      } catch {
+        // Sin internet: se evalúa con el token firmado localmente para no perder acceso mientras la licencia esté vigente.
+      }
+      const local = await leerTokenLicenciaOffline(user.id);
+      if (cancelled || !local) return;
+      const res = evaluarVigenciaLicencia(local.estado, local.vence_en, local.dias_gracia);
+      setBloqueo(res.bloqueo);
     };
-    // Se valida al iniciar sesión y se vuelve a validar cada minuto mientras la app está abierta.
     void revisar();
     const t = setInterval(() => void revisar(), 60000);
     return () => {
       cancelled = true;
       clearInterval(t);
     };
-  }, [user?.id]);
+  }, [user?.id, negocio?.id]);
 
   if (loading || !session) {
     return (
@@ -452,16 +472,19 @@ function AppShell() {
             <InstructivoPagina />
             {!bloqueo && <LicenciaNegocio modo="aviso" />}
             {bloqueo ? (
-              <div className="mx-auto mt-10 max-w-md rounded-2xl border border-glass-border bg-glass/30 p-8 text-center">
+              <div className="mx-auto mt-10 max-w-lg space-y-4 rounded-2xl border border-glass-border bg-glass/30 p-6 text-center sm:p-8">
                 <Lock className="mx-auto h-8 w-8 text-destructive" />
-                <h1 className="mt-3 font-display text-2xl">
-                  {bloqueo === "suspendido" ? "Cuenta suspendida" : "Suscripción vencida"}
+                <h1 className="mt-2 font-display text-2xl">
+                  {bloqueo === "suspendido" ? "Cuenta suspendida" : "Tu licencia venció"}
                 </h1>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   {bloqueo === "suspendido"
-                    ? "Tu cuenta está suspendida por falta de pago. Escríbenos a gosarycsoftware@gmail.com para reactivarla."
-                    : "El periodo de uso de tu cuenta venció. Para seguir con acceso ilimitado, la licencia cuesta $100.000 COP al año e incluye soporte, instalación local y web. Envía el soporte de pago al WhatsApp 333 276 5584 o a gosarycsoftware@gmail.com para renovarla."}
+                    ? "Tu cuenta está suspendida por falta de pago. Tus datos permanecen intactos; escríbenos a gosarycsoftware@gmail.com para reactivarla."
+                    : "El periodo de uso y los días de gracia terminaron. Tus datos nunca se borran: puedes descargar un respaldo completo en Excel ahora mismo o activar una nueva clave de licencia para continuar vendiendo."}
                 </p>
+                <div className="text-left">
+                  <RespaldoTotal />
+                </div>
                 <LicenciaNegocio modo="bloqueo" />
               </div>
             ) : errorPermisos && !esAdmin ? (

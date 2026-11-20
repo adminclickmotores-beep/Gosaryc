@@ -5037,6 +5037,12 @@ export type Database = {
           pie_factura: string | null
           crm_activo: boolean
           permitir_inventario_negativo: boolean
+          prefijo_facturacion: string | null
+          dian_software_id: string | null
+          dian_pin: string | null
+          dian_certificado_nombre: string | null
+          dian_certificado_vence: string | null
+          dian_ambiente: string
         }
         Insert: {
           aviso_entrega?: string | null
@@ -5081,6 +5087,12 @@ export type Database = {
           pie_factura?: string | null
           crm_activo?: boolean
           permitir_inventario_negativo?: boolean
+          prefijo_facturacion?: string | null
+          dian_software_id?: string | null
+          dian_pin?: string | null
+          dian_certificado_nombre?: string | null
+          dian_certificado_vence?: string | null
+          dian_ambiente?: string
         }
         Update: {
           aviso_entrega?: string | null
@@ -5125,6 +5137,12 @@ export type Database = {
           pie_factura?: string | null
           crm_activo?: boolean
           permitir_inventario_negativo?: boolean
+          prefijo_facturacion?: string | null
+          dian_software_id?: string | null
+          dian_pin?: string | null
+          dian_certificado_nombre?: string | null
+          dian_certificado_vence?: string | null
+          dian_ambiente?: string
         }
         Relationships: []
       }
@@ -5132,42 +5150,54 @@ export type Database = {
         Row: {
           activa: boolean
           ambiente: string
+          certificado_nombre: string | null
+          certificado_vence: string | null
           created_at: string
           id: string
           owner_id: string | null
+          pin: string | null
           prefijo: string | null
           proveedor_url: string | null
           rango_desde: number | null
           rango_hasta: number | null
           resolucion: string | null
+          software_id: string | null
           token_api: string | null
           updated_at: string
         }
         Insert: {
           activa?: boolean
           ambiente?: string
+          certificado_nombre?: string | null
+          certificado_vence?: string | null
           created_at?: string
           id?: string
           owner_id?: string | null
+          pin?: string | null
           prefijo?: string | null
           proveedor_url?: string | null
           rango_desde?: number | null
           rango_hasta?: number | null
           resolucion?: string | null
+          software_id?: string | null
           token_api?: string | null
           updated_at?: string
         }
         Update: {
           activa?: boolean
           ambiente?: string
+          certificado_nombre?: string | null
+          certificado_vence?: string | null
           created_at?: string
           id?: string
           owner_id?: string | null
+          pin?: string | null
           prefijo?: string | null
           proveedor_url?: string | null
           rango_desde?: number | null
           rango_hasta?: number | null
           resolucion?: string | null
+          software_id?: string | null
           token_api?: string | null
           updated_at?: string
         }

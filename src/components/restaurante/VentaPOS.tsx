@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { TARIFAS_DOMICILIO, buscarTarifa } from "@/lib/tarifas-domicilio";
-import { escaparHtml } from "@/lib/exportes";
+import { escaparHtml, imprimirComandaTermica, imprimirFactura } from "@/lib/exportes";
 import { LIMITES, limpiarTexto } from "@/lib/validacion-publica";
 import { useNegocio } from "@/hooks/use-negocio";
 import { useBarcodeScanner } from "@/hooks/use-barcode-scanner";
@@ -156,20 +156,75 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
   const [personas, setPersonas] = useState("1");
   const [guardando, setGuardando] = useState(false);
   const [directa, setDirecta] = useState(() => impresionDirectaActivada());
+  const [anchoTirilla, setAnchoTirilla] = useState<"58mm" | "80mm">("80mm");
   const [apiMsg, setApiMsg] = useState("");
 
   const imprimirDirectoOSilencioso = async (r: Recibo) => {
+    const nitFmt = negocio?.nit ? `${negocio.nit}${negocio.digito_verificacion ? `-${negocio.digito_verificacion}` : ""}` : "Sin NIT";
     if (directa) {
       const ok = await imprimirTirillaLocal({
-        negocio: nombreNegocio, numero: r.numero != null ? String(r.numero) : r.id.slice(0, 6).toUpperCase(),
+        negocio: negocio?.razon_social || nombreNegocio,
+        nit: nitFmt,
+        direccion: negocio?.direccion_fiscal ?? undefined,
+        telefono: negocio?.telefono_pedidos ?? undefined,
+        resolucion: negocio?.resolucion_facturacion ?? undefined,
+        numero: r.numero != null ? String(r.numero) : r.id.slice(0, 6).toUpperCase(),
         cliente: r.cliente, items: r.lineas.map((l) => ({ descripcion: l.nombre, cantidad: l.cant, precio: l.precio })),
-        subtotal: r.total - r.envio, total: r.total, metodo: r.metodo, formato: "80mm",
+        subtotal: r.total - r.envio, total: r.total, metodo: r.metodo, formato: anchoTirilla,
         impresora: leerImpresoraCaja() || undefined,
       });
       if (ok) return;
-      // Sin API local (celular): impresión normal, sin error.
     }
-    imprimirTicket(r, nombreNegocio);
+    imprimirFactura(
+      {
+        negocio: negocio?.razon_social || nombreNegocio,
+        nit: nitFmt,
+        direccion: negocio?.direccion_fiscal ?? undefined,
+        telefono: negocio?.telefono_pedidos ?? undefined,
+        resolucion: negocio?.resolucion_facturacion ?? undefined,
+        prefijo: negocio?.prefijo_facturacion ?? undefined,
+        logoUrl: negocio?.logo_url ?? undefined,
+        regimen: [negocio?.regimen_tributario, negocio?.responsabilidad_fiscal].filter(Boolean).join(" · ") || undefined,
+        piePagina: negocio?.pie_factura ?? undefined,
+        numero: r.numero != null ? String(r.numero) : r.id.slice(0, 6).toUpperCase(),
+        metodoPago: r.metodo,
+        cliente: r.cliente,
+        items: [
+          ...r.lineas.map((l) => ({ descripcion: l.nombre, cantidad: l.cant, precio: l.precio })),
+          ...(r.envio > 0 ? [{ descripcion: `Domicilio (${r.barrio || "Entrega"})`, cantidad: 1, precio: r.envio }] : []),
+        ],
+        ivaPct: negocio?.iva_porcentaje ?? 0,
+      },
+      anchoTirilla,
+    );
+  };
+
+  const imprimirComandaTermicaOSilenciosa = async (r: Recibo) => {
+    const numTxt = r.numero != null ? String(r.numero) : r.id.slice(0, 6).toUpperCase();
+    if (directa) {
+      const ok = await imprimirComandaCocina({
+        negocio: nombreNegocio,
+        numero: numTxt,
+        cliente: r.cliente, telefono: r.telefono, modalidad: r.modalidad,
+        mesa: r.mesa, direccion: r.direccion, barrio: r.barrio, notas: r.notas,
+        canal: "Mostrador",
+        items: r.lineas.map((l) => ({ nombre: l.nombre, cantidad: l.cant })),
+        formato: anchoTirilla,
+      });
+      if (ok) return;
+    }
+    imprimirComandaTermica(
+      {
+        negocio: nombreNegocio,
+        numero: numTxt,
+        modalidad: r.modalidad,
+        mesa: r.mesa,
+        cliente: r.cliente,
+        notas: r.notas,
+        items: r.lineas.map((l) => ({ nombre: l.nombre, cantidad: l.cant })),
+      },
+      anchoTirilla,
+    );
   };
 
   const imprimirComandaSinConfirmar = async (r: Recibo) => {
@@ -182,7 +237,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
       mesa: r.mesa, direccion: r.direccion, barrio: r.barrio, notas: r.notas,
       canal: "Mostrador",
       items: r.lineas.map((l) => ({ nombre: l.nombre, cantidad: l.cant })),
-      formato: "80mm",
+      formato: anchoTirilla,
     });
   };
 
@@ -190,11 +245,30 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
     setApiMsg("Buscando impresora…");
     const est = await estadoApiLocal();
     if (!est.disponible) {
-      setApiMsg("La API local no está corriendo aquí (celular/navegador). Se usa la impresión normal.");
+      setApiMsg(`API local no detectada: abriendo vista previa térmica (${anchoTirilla}).`);
+      imprimirTicket(
+        {
+          id: "PRUEBA",
+          numero: null,
+          cliente: "Prueba POS",
+          telefono: "",
+          modalidad: "mesa",
+          mesa: "1",
+          direccion: "",
+          barrio: "",
+          notas: `Formato ${anchoTirilla}`,
+          lineas: [{ nombre: "Tirilla de prueba", cant: 1, precio: 1000 }],
+          envio: 0,
+          total: 1000,
+          metodo: "Efectivo",
+          cobrado: true,
+        },
+        nombreNegocio,
+      );
       return;
     }
-    const ok = await imprimirTirillaLocal({ negocio: nombreNegocio, numero: "PRUEBA", cliente: "Prueba", items: [{ descripcion: "Tirilla de prueba", cantidad: 1, precio: 1000 }], total: 1000, formato: "80mm", impresora: leerImpresoraCaja() || undefined });
-    setApiMsg(ok ? `Impreso en ${leerImpresoraCaja() || est.predeterminada || "la de caja"}.` : "No se pudo imprimir. Revisa la impresora de caja en Windows.");
+    const ok = await imprimirTirillaLocal({ negocio: nombreNegocio, numero: "PRUEBA", cliente: "Prueba", items: [{ descripcion: "Tirilla de prueba", cantidad: 1, precio: 1000 }], total: 1000, formato: anchoTirilla, impresora: leerImpresoraCaja() || undefined });
+    setApiMsg(ok ? `Impreso en ${leerImpresoraCaja() || est.predeterminada || "la de caja"} (${anchoTirilla}).` : "No se pudo imprimir. Revisa la impresora de caja en Windows.");
   };
   const [zonaManual, setZonaManual] = useState("");
   const [correo, setCorreo] = useState("");
@@ -669,7 +743,13 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
                 onClick={() => void imprimirDirectoOSilencioso(recibo)}
                 className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-glass-border px-2 py-2.5 text-foreground"
               >
-                <Printer className="h-4 w-4" /> Imprimir
+                <Printer className="h-4 w-4" /> Tirilla ({anchoTirilla})
+              </button>
+              <button
+                onClick={() => void imprimirComandaTermicaOSilenciosa(recibo)}
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-glass-border px-2 py-2.5 text-foreground"
+              >
+                <ChefHat className="h-4 w-4" /> Comanda (sin precios)
               </button>
               <button
                 onClick={() => {
@@ -719,6 +799,15 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
             <input type="checkbox" checked={directa} onChange={(e) => { setDirecta(e.target.checked); fijarImpresionDirecta(e.target.checked); }} className="h-4 w-4 accent-primary" />
             Impresión directa (caja y cocina)
           </label>
+          <select
+            aria-label="Ancho de tirilla"
+            value={anchoTirilla}
+            onChange={(e) => setAnchoTirilla(e.target.value as "58mm" | "80mm")}
+            className="rounded-lg border border-glass-border bg-glass/60 px-2 py-1 text-base text-foreground sm:text-xs"
+          >
+            <option value="58mm">58 mm</option>
+            <option value="80mm">80 mm</option>
+          </select>
           <button type="button" onClick={() => void probarImpresora()} className="text-xs text-primary hover:underline">Probar impresora</button>
         </div>
         {apiMsg && <p className="text-xs text-muted-foreground">{apiMsg}</p>}

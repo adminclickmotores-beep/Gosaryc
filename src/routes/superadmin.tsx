@@ -388,8 +388,32 @@ function SuperAdminPage() {
                   onClick={() => hoy && actualizar(oid, { vence_el: sumarDias(base, 30), estado: "activo" })}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-glass-border px-3 py-2.5 text-xs text-foreground hover:bg-glass/60"
                 >
-                  <CalendarPlus className="h-3.5 w-3.5" /> Extender 30 días
+                  <CalendarPlus className="h-3.5 w-3.5" /> +30 días
                 </button>
+                <button
+                  onClick={() => hoy && actualizar(oid, { plan: "anual", vence_el: sumarDias(base, 365), estado: "activo" })}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-3 py-2.5 text-xs font-medium text-primary hover:bg-primary/20"
+                >
+                  <CalendarPlus className="h-3.5 w-3.5" /> Activar 1 año (365 días)
+                </button>
+                <label className="space-y-1">
+                  <span className="block text-xs text-muted-foreground">Días de gracia</span>
+                  <select
+                    className={campo}
+                    value={String((s as { dias_gracia?: number | null } | undefined)?.dias_gracia ?? 3)}
+                    onChange={async (ev) => {
+                      const d = Math.max(0, Math.min(30, Number(ev.target.value) || 0));
+                      const { error } = await supabase.from("suscripciones_negocio").update({ dias_gracia: d } as never).eq("owner_id", oid);
+                      if (error) return toast.error("No se pudo actualizar los días de gracia.");
+                      toast.success(`Periodo de gracia fijado en ${d} días.`);
+                      void cargar();
+                    }}
+                  >
+                    {[0, 3, 5, 7, 15].map((d) => (
+                      <option key={d} value={String(d)}>{d} días</option>
+                    ))}
+                  </select>
+                </label>
                 <button
                   onClick={() => actualizar(oid, { estado: estado === "activo" ? "suspendido" : "activo" })}
                   className={`rounded-lg px-3 py-2.5 text-xs font-medium ${

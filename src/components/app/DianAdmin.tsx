@@ -21,6 +21,10 @@ type Cfg = {
   rango_desde: string;
   rango_hasta: string;
   ambiente: string;
+  software_id: string;
+  pin: string;
+  certificado_nombre: string;
+  certificado_vence: string;
 };
 
 const campo =
@@ -36,6 +40,10 @@ const VACIA: Cfg = {
   rango_desde: "",
   rango_hasta: "",
   ambiente: "Pruebas",
+  software_id: "",
+  pin: "",
+  certificado_nombre: "",
+  certificado_vence: "",
 };
 
 /**
@@ -61,6 +69,7 @@ export function DianAdmin() {
     for (const c of (b.data ?? []) as {
       owner_id: string; activa: boolean; proveedor_url: string | null; token_api: string | null;
       prefijo: string | null; resolucion: string | null; rango_desde: number | null; rango_hasta: number | null; ambiente: string;
+      software_id?: string | null; pin?: string | null; certificado_nombre?: string | null; certificado_vence?: string | null;
     }[]) {
       m[c.owner_id] = {
         owner_id: c.owner_id,
@@ -72,6 +81,10 @@ export function DianAdmin() {
         rango_desde: c.rango_desde != null ? String(c.rango_desde) : "",
         rango_hasta: c.rango_hasta != null ? String(c.rango_hasta) : "",
         ambiente: c.ambiente ?? "Pruebas",
+        software_id: c.software_id ?? "",
+        pin: c.pin ?? "",
+        certificado_nombre: c.certificado_nombre ?? "",
+        certificado_vence: c.certificado_vence ?? "",
       };
     }
     setMapa(m);
@@ -104,6 +117,10 @@ export function DianAdmin() {
         rango_desde: form.rango_desde ? Math.max(Math.floor(Number(form.rango_desde)) || 0, 0) || null : null,
         rango_hasta: form.rango_hasta ? Math.max(Math.floor(Number(form.rango_hasta)) || 0, 0) || null : null,
         ambiente: form.ambiente === "Producción" ? "Producción" : "Pruebas",
+        software_id: form.software_id.trim() || null,
+        pin: form.pin.trim() || null,
+        certificado_nombre: form.certificado_nombre.trim() || null,
+        certificado_vence: form.certificado_vence || null,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "owner_id" },
@@ -191,11 +208,27 @@ export function DianAdmin() {
               <span className="text-xs text-muted-foreground">Rango final</span>
               <input className={campo} inputMode="numeric" value={form.rango_hasta} onChange={(e) => setForm({ ...form, rango_hasta: e.target.value })} />
             </label>
+            <label className="block space-y-1">
+              <span className="text-xs text-muted-foreground">Software ID (DIAN)</span>
+              <input className={campo} placeholder="ID del software" value={form.software_id} onChange={(e) => setForm({ ...form, software_id: e.target.value })} />
+            </label>
+            <label className="block space-y-1">
+              <span className="text-xs text-muted-foreground">PIN de software</span>
+              <input className={campo} type="password" autoComplete="off" placeholder="PIN" value={form.pin} onChange={(e) => setForm({ ...form, pin: e.target.value })} />
+            </label>
+            <label className="block space-y-1">
+              <span className="text-xs text-muted-foreground">Certificado digital</span>
+              <input className={campo} placeholder="Entidad / archivo .p12" value={form.certificado_nombre} onChange={(e) => setForm({ ...form, certificado_nombre: e.target.value })} />
+            </label>
+            <label className="block space-y-1">
+              <span className="text-xs text-muted-foreground">Vigencia certificado</span>
+              <input className={campo} type="date" value={form.certificado_vence} onChange={(e) => setForm({ ...form, certificado_vence: e.target.value })} />
+            </label>
           </div>
           <label className="block space-y-1">
             <span className="text-xs text-muted-foreground">Ambiente</span>
             <select className={campo} value={form.ambiente} onChange={(e) => setForm({ ...form, ambiente: e.target.value })}>
-              <option value="Pruebas">Pruebas</option>
+              <option value="Pruebas">Pruebas / Habilitación</option>
               <option value="Producción">Producción</option>
             </select>
           </label>

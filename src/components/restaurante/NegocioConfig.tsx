@@ -45,6 +45,12 @@ type Form = {
   pie_factura: string;
   iva_defecto: string;
   permitir_inventario_negativo: boolean;
+  prefijo_facturacion: string;
+  dian_software_id: string;
+  dian_pin: string;
+  dian_certificado_nombre: string;
+  dian_certificado_vence: string;
+  dian_ambiente: string;
 };
 
 const VACIO: Form = {
@@ -76,6 +82,12 @@ const VACIO: Form = {
   pie_factura: "",
   iva_defecto: "0",
   permitir_inventario_negativo: false,
+  prefijo_facturacion: "",
+  dian_software_id: "",
+  dian_pin: "",
+  dian_certificado_nombre: "",
+  dian_certificado_vence: "",
+  dian_ambiente: "Pruebas",
 };
 
 const CAMPOS: { clave: keyof Form; etiqueta: string; ejemplo: string; largo?: boolean }[] = [
@@ -172,6 +184,12 @@ export function NegocioConfig() {
       pie_factura: negocio.pie_factura ?? "",
       iva_defecto: String(negocio.iva_defecto ?? 0),
       permitir_inventario_negativo: Boolean(negocio.permitir_inventario_negativo),
+      prefijo_facturacion: negocio.prefijo_facturacion ?? "",
+      dian_software_id: negocio.dian_software_id ?? "",
+      dian_pin: negocio.dian_pin ?? "",
+      dian_certificado_nombre: negocio.dian_certificado_nombre ?? "",
+      dian_certificado_vence: negocio.dian_certificado_vence ?? "",
+      dian_ambiente: negocio.dian_ambiente ?? "Pruebas",
     });
   }, [negocio]);
 
@@ -222,6 +240,12 @@ export function NegocioConfig() {
       pie_factura: form.pie_factura.trim() || null,
       iva_defecto: Math.min(Math.max(Number(form.iva_defecto) || 0, 0), 100),
       permitir_inventario_negativo: form.permitir_inventario_negativo,
+      prefijo_facturacion: form.prefijo_facturacion.trim().toUpperCase() || null,
+      dian_software_id: form.dian_software_id.trim() || null,
+      dian_pin: form.dian_pin.trim() || null,
+      dian_certificado_nombre: form.dian_certificado_nombre.trim() || null,
+      dian_certificado_vence: form.dian_certificado_vence || null,
+      dian_ambiente: form.dian_ambiente === "Producción" ? "Producción" : "Pruebas",
       updated_at: new Date().toISOString(),
     };
     const { data: guardado, error } = negocio
@@ -471,6 +495,35 @@ export function NegocioConfig() {
             <span className="text-xs text-muted-foreground">La resolución vence el</span>
             <input type="date" className={campo} value={form.resolucion_vence} onChange={(e) => setForm({ ...form, resolucion_vence: e.target.value })} />
           </label>
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">Prefijo autorizado DIAN</span>
+            <input className={campo} placeholder="Ej: SETP, FE, POS" value={form.prefijo_facturacion} onChange={(e) => setForm({ ...form, prefijo_facturacion: e.target.value })} />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">Software ID (DIAN)</span>
+            <input className={campo} placeholder="ID de software en portal DIAN" value={form.dian_software_id} onChange={(e) => setForm({ ...form, dian_software_id: e.target.value })} />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">PIN de software DIAN</span>
+            <input className={campo} type="password" autoComplete="off" placeholder="PIN (5 dígitos)" value={form.dian_pin} onChange={(e) => setForm({ ...form, dian_pin: e.target.value })} />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">Certificado digital (.p12 / entidad)</span>
+            <input className={campo} placeholder="Ej: Andes SCD / GSE / Certicámara" value={form.dian_certificado_nombre} onChange={(e) => setForm({ ...form, dian_certificado_nombre: e.target.value })} />
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block space-y-1">
+              <span className="text-xs text-muted-foreground">Vigencia certificado</span>
+              <input type="date" className={campo} value={form.dian_certificado_vence} onChange={(e) => setForm({ ...form, dian_certificado_vence: e.target.value })} />
+            </label>
+            <label className="block space-y-1">
+              <span className="text-xs text-muted-foreground">Ambiente DIAN</span>
+              <select className={campo} value={form.dian_ambiente} onChange={(e) => setForm({ ...form, dian_ambiente: e.target.value })}>
+                <option value="Pruebas">Pruebas / Habilitación</option>
+                <option value="Producción">Producción</option>
+              </select>
+            </label>
+          </div>
           <label className="block space-y-1 md:col-span-2">
             <span className="text-xs text-muted-foreground">Pie de página de la factura (garantía, devoluciones, agradecimiento)</span>
             <input className={campo} placeholder="Ej: Gracias por su compra. Garantía de 30 días presentando esta factura." value={form.pie_factura} onChange={(e) => setForm({ ...form, pie_factura: e.target.value })} />

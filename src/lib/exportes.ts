@@ -90,6 +90,7 @@ export type DatosFactura = {
   direccion?: string;
   telefono?: string;
   resolucion?: string;
+  prefijo?: string;
   /** Logo del negocio (URL o data URL): sale impreso arriba de la factura. */
   logoUrl?: string;
   /** Régimen y responsabilidad fiscal: sale debajo del NIT. */
@@ -97,58 +98,73 @@ export type DatosFactura = {
   /** Texto libre al pie de la factura (garantía, devoluciones, gracias por su compra). */
   piePagina?: string;
   numero: string;
+  fechaHora?: string;
+  metodoPago?: string;
   cliente: string;
   clienteNit?: string;
+  clienteCorreo?: string;
   items: ItemFactura[];
   ivaPct?: number;
+  incPct?: number;
   dianCufe?: string | null;
   dianQr?: string | null;
   dianEstado?: string | null;
 };
 
+export type FormatoFactura = "58mm" | "80mm" | "tirilla" | "carta";
+
 /**
- * Formato de factura profesional (tirilla de 80 mm y carta) listo para
- * conectarse por API a un proveedor tecnológico DIAN: los datos salen
- * tal cual para el JSON del proveedor.
+ * Formato de factura profesional (tirilla térmica 58 mm, 80 mm y carta) listo para
+ * conectarse por API a un proveedor tecnológico DIAN con CUFE y QR verificable.
  */
-export function facturaHTML(d: DatosFactura, formato: "tirilla" | "carta"): string {
+export function facturaHTML(d: DatosFactura, formato: FormatoFactura): string {
   const subtotal = d.items.reduce((s, i) => s + i.cantidad * i.precio, 0);
   const iva = Math.round(subtotal * ((d.ivaPct ?? 0) / 100));
-  const total = subtotal + iva;
+  const inc = Math.round(subtotal * ((d.incPct ?? 0) / 100));
+  const total = subtotal + iva + inc;
   const cop = (n: number) => new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
   const e = escaparHtml;
+  const es58 = formato === "58mm";
+  const esTirilla = es58 || formato === "80mm" || formato === "tirilla";
+  const fechaMostrar = d.fechaHora || new Date().toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" });
+  const numeroCompleto = d.prefijo ? `${d.prefijo}-${d.numero}` : d.numero;
   const filas = d.items
     .map((i) => `<tr><td>${e(i.descripcion)}</td><td class="num">${e(i.cantidad)}</td><td class="num">${cop(i.precio)}</td><td class="num">${cop(i.cantidad * i.precio)}</td></tr>`)
     .join("");
   const qrUrl = urlSegura(d.dianQr);
   const esImgQr = Boolean(qrUrl && d.dianQr && (/^data:image/i.test(d.dianQr) || /\.(png|jpe?g|gif|webp)(\?|$)/i.test(d.dianQr)));
+  const qrImagenSrc = esImgQr && qrUrl
+    ? qrUrl
+    : qrUrl
+      ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(d.dianQr ?? "")}`
+      : null;
   const bloqueDian = d.dianCufe || d.dianQr
-    ? `<div class="dian"><strong>Factura electrónica DIAN${d.dianEstado ? ` · ${e(d.dianEstado)}` : ""}</strong><br>CUFE: ${e(d.dianCufe ?? "en trámite")}${d.dianQr && !esImgQr ? `<br>QR oficial: ${qrUrl ? `<a href="${qrUrl}">${qrUrl}</a>` : e(d.dianQr)}` : ""}${esImgQr && qrUrl ? `<br><img src="${qrUrl}" alt="QR DIAN" style="width:140px;height:140px;margin-top:6px;" />` : ""}</div>`
+    ? `<div class="dian"><strong>Factura electrónica DIAN${d.dianEstado ? ` · ${e(d.dianEstado)}` : ""}</strong><br>CUFE: ${e(d.dianCufe ?? "en trámite")}${qrImagenSrc ? `<div class="c" style="margin-top:6px;"><img src="${qrImagenSrc}" alt="QR DIAN" style="width:${es58 ? "105px" : "130px"};height:${es58 ? "105px" : "130px"};" /></div>` : ""}${qrUrl && !esImgQr ? `<div style="font-size:9px;margin-top:4px;"><a href="${qrUrl}">Verificar en DIAN</a></div>` : ""}</div>`
     : "";
-  const ancho = formato === "tirilla" ? "300px" : "100%";
+  const ancho = es58 ? "215px" : esTirilla ? "300px" : "100%";
+  const pageRule = es58 ? "@page { size: 58mm auto; margin: 2mm; }" : esTirilla ? "@page { size: 80mm auto; margin: 3mm; }" : "@page { size: letter; margin: 12mm; }";
   const logoUrl = urlSegura(d.logoUrl);
   const logo = logoUrl
-    ? `<div class="c"><img src="${logoUrl}" alt="Logo" style="max-width:${formato === "tirilla" ? "120px" : "180px"};max-height:90px;object-fit:contain;" /></div>`
+    ? `<div class="c"><img src="${logoUrl}" alt="Logo" style="max-width:${es58 ? "90px" : esTirilla ? "120px" : "180px"};max-height:76px;object-fit:contain;" /></div>`
     : "";
-  return `<html><head><title>Factura ${e(d.numero)}</title>${estilosImpresion}
-    <style>body { max-width: ${ancho}; margin: ${formato === "tirilla" ? "0 auto" : "24px"}; } .c { text-align: center; }</style>
+  return `<html><head><meta charset="utf-8"><title>Factura ${e(numeroCompleto)}</title>${estilosImpresion}
+    <style>${pageRule} body { max-width: ${ancho}; margin: ${esTirilla ? "0 auto" : "24px"}; font-size: ${es58 ? "10px" : esTirilla ? "11px" : "12px"}; } table { font-size: ${es58 ? "10px" : esTirilla ? "11px" : "12px"}; } th, td { padding: ${es58 ? "3px 4px" : "5px 6px"}; } .c { text-align: center; }</style>
     </head><body>
-    <div style="height:6px;border-radius:99px;background:linear-gradient(90deg,#4F46E5,#10B981);margin-bottom:12px;"></div>
+    <div style="height:5px;border-radius:99px;background:linear-gradient(90deg,#4F46E5,#10B981);margin-bottom:10px;"></div>
     ${logo}
-    <h1 class="c">${e(d.negocio)}</h1>
-    <p class="c sub">NIT ${e(d.nit)}${d.regimen ? ` · ${e(d.regimen)}` : ""}${d.direccion ? ` · ${e(d.direccion)}` : ""}${d.telefono ? ` · Tel. ${e(d.telefono)}` : ""}${d.resolucion ? `<br>Res. DIAN ${e(d.resolucion)}` : ""}</p>
-    <p><strong>Factura de venta ${e(d.numero)}</strong><br>Fecha: ${fechaHoy()}<br>Cliente: ${e(d.cliente)}${d.clienteNit ? ` · ${e(d.clienteNit)}` : ""}</p>
+    <h1 class="c" style="font-size:${es58 ? "14px" : esTirilla ? "16px" : "20px"};">${e(d.negocio)}</h1>
+    <p class="c sub">NIT ${e(d.nit)}${d.regimen ? ` · ${e(d.regimen)}` : ""}${d.direccion ? `<br>${e(d.direccion)}` : ""}${d.telefono ? ` · Tel. ${e(d.telefono)}` : ""}${d.resolucion ? `<br>Res. DIAN ${e(d.resolucion)}` : ""}</p>
+    <p><strong>Factura de venta ${e(numeroCompleto)}</strong><br>Fecha/Hora: ${e(fechaMostrar)}<br>Cliente: ${e(d.cliente)}${d.clienteNit ? ` · ${e(d.clienteNit)}` : ""}${d.clienteCorreo ? `<br>Correo: ${e(d.clienteCorreo)}` : ""}${d.metodoPago ? `<br>Medio de pago: ${e(d.metodoPago)}` : ""}</p>
     <table><thead><tr><th>Descripción</th><th class="num">Cant.</th><th class="num">Precio</th><th class="num">Total</th></tr></thead><tbody>${filas}</tbody></table>
-    <div class="totales">Subtotal: ${cop(subtotal)}<br>IVA${d.ivaPct ? ` (${d.ivaPct}%)` : ""}: ${cop(iva)}<br><strong>Total: ${cop(total)}</strong></div>
+    <div class="totales">Subtotal: ${cop(subtotal)}<br>IVA${d.ivaPct ? ` (${d.ivaPct}%)` : ""}: ${cop(iva)}${inc > 0 ? `<br>INC (${d.incPct}%): ${cop(inc)}` : ""}<br><strong>Total: ${cop(total)}</strong></div>
     ${bloqueDian}
-    <p class="sub c">${d.piePagina ? e(d.piePagina) : "Documento generado por Gosaryc · listo para facturación electrónica DIAN vía proveedor tecnológico."}</p>
+    <p class="sub c">${d.piePagina ? e(d.piePagina) : "Documento generado por Gosaryc · listo para facturación electrónica DIAN."}</p>
   </body></html>`;
 }
 
-/** Imprime la factura (el usuario elige Guardar como PDF o la impresora de tirilla). */
-export function imprimirFactura(d: DatosFactura, formato: "tirilla" | "carta"): void {
-  // Web y celular sin programa instalado: diálogo nativo (58/80 mm o carta). Nunca muestra error.
-  const w = window.open("", "_blank", "width=420,height=700");
+/** Imprime la factura (58mm, 80mm o carta) o descarga respaldo HTML si se bloquea la ventana. */
+export function imprimirFactura(d: DatosFactura, formato: FormatoFactura): void {
+  const w = window.open("", "_blank", "width=440,height=720");
   if (!w) {
     descargarHtml(`Factura-${d.numero}.html`, facturaHTML(d, formato));
     return;
@@ -157,6 +173,49 @@ export function imprimirFactura(d: DatosFactura, formato: "tirilla" | "carta"): 
   w.document.close();
   w.focus();
   setTimeout(() => w.print(), 400);
+}
+
+export type DatosComandaTermica = {
+  negocio: string;
+  numero: string;
+  fechaHora?: string;
+  modalidad: string;
+  mesa?: string;
+  cliente: string;
+  notas?: string;
+  items: { nombre: string; cantidad: number }[];
+};
+
+/** Genera una comanda térmica de cocina/producción SIN precios (58mm u 80mm). */
+export function comandaCocinaHTML(d: DatosComandaTermica, formato: "58mm" | "80mm" = "80mm"): string {
+  const e = escaparHtml;
+  const es58 = formato === "58mm";
+  const ancho = es58 ? "52mm" : "72mm";
+  const fechaMostrar = d.fechaHora || new Date().toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" });
+  const donde = d.modalidad === "mesa" ? (d.mesa ? `MESA ${d.mesa}` : "MESA") : d.modalidad === "recoger" ? "PARA LLEVAR" : "DOMICILIO";
+  const filas = d.items
+    .map((i) => `<tr><td style="font-size:${es58 ? "13px" : "15px"};font-weight:bold;padding:4px 0;">${e(i.cantidad)} × ${e(i.nombre)}</td></tr>`)
+    .join("");
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Comanda #${e(d.numero)}</title>
+<style>@page{size:${formato} auto;margin:2mm}body{font-family:monospace;font-size:${es58 ? "11px" : "13px"};width:${ancho};margin:0 auto;color:#000}h1{font-size:${es58 ? "14px" : "16px"};text-align:center;margin:0 0 4px}hr{border:0;border-top:1px dashed #000;margin:6px 0}table{width:100%;border-collapse:collapse}.c{text-align:center}</style></head><body>
+<h1>COMANDA COCINA</h1>
+<p class="c"><strong>${e(d.negocio)}</strong><br>#${e(d.numero)} · ${e(fechaMostrar)}<br><strong>${e(donde)}</strong></p><hr>
+<p>Cliente: ${e(d.cliente)}</p><hr>
+<table>${filas}</table><hr>
+${d.notas ? `<p><strong>NOTAS:</strong> ${e(d.notas)}</p><hr>` : ""}
+<p class="c">*** SIN PRECIOS · SOLO PRODUCCIÓN ***</p>
+<script>window.onload=function(){window.print()}</script></body></html>`;
+}
+
+/** Abre la vista previa térmica de comanda de cocina (58mm u 80mm, sin precios). */
+export function imprimirComandaTermica(d: DatosComandaTermica, formato: "58mm" | "80mm" = "80mm"): void {
+  const w = window.open("", "_blank", "width=380,height=620");
+  if (!w) {
+    descargarHtml(`Comanda-${d.numero}.html`, comandaCocinaHTML(d, formato));
+    return;
+  }
+  w.document.write(comandaCocinaHTML(d, formato));
+  w.document.close();
 }
 
 /** Descarga un HTML (respaldo cuando el navegador bloquea la ventana de impresión). */
