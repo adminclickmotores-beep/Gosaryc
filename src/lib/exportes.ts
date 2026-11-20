@@ -17,7 +17,7 @@ export const escaparCelda = (v: string | number): string => {
   if (typeof v === "string" && (/^[\t\r]/.test(s) || /^[\s\u0000-\u001f ​-‏⁠﻿]*[=+\-@|%]/.test(s))) {
     s = `'${s.replace(/^[\s\u0000-\u001f ​-‏⁠﻿]+/, "")}`;
   }
-  return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  return /[;,"\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 
 /** Descarga los datos como .xls (hoja compatible con Excel) con el nombre dado. */

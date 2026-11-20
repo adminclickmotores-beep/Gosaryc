@@ -12,7 +12,7 @@ const SEGMENTOS_PERMITIDOS = new Set([
 function destinoPermitido(d: string): boolean {
   if (d === "/") return true;
   if (d.length > 120 || d.includes("\\") || d.includes("//") || d.includes("..")) return false;
-  if (!/^\/[a-z0-9_\-./$]+$/i.test(d)) return false;
+  if (!/^\/[a-z0-9_\-./]+$/i.test(d)) return false;
   return SEGMENTOS_PERMITIDOS.has(d.split("/")[1] ?? "");
 }
 

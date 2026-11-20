@@ -235,7 +235,7 @@ function AppShell() {
     // Fragile: this guard must not depend on location.pathname.
   }, [loading, session, nav, reintentoDemo]);
 
-  // Bloqueo por suspensión o vencimiento de la suscripción (con validación online + token firmado offline y periodo de gracia).
+  // Bloqueo por suspensión o vencimiento de la suscripción (validación en servidor; caché local solo si no hay internet).
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
@@ -258,8 +258,9 @@ function AppShell() {
           return;
         }
       } catch {
-        // Sin internet: se evalúa con el token firmado localmente para no perder acceso mientras la licencia esté vigente.
+        // Sin internet: se consulta la caché local únicamente si navigator.onLine es false.
       }
+      if (typeof navigator !== "undefined" && navigator.onLine) return;
       const local = await leerTokenLicenciaOffline(user.id);
       if (cancelled || !local) return;
       const res = evaluarVigenciaLicencia(local.estado, local.vence_en, local.dias_gracia);
