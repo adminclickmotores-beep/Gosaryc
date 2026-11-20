@@ -227,6 +227,55 @@ async function registrarLead(ag: DuenoMemoria, telefono: string, canal: string, 
   await supabaseAdmin.from("agente_leads").insert({ negocio_id: ag.negocio_id, owner_id: ag.owner_id, telefono, canal_origen: canal, ...calif });
 }
 
+/** Refleja el lead y la PQRS del agente en el CRM y Embudo IA (sin tocar la etapa que movió una persona). */
+async function sincronizarCrm(ag: DuenoMemoria, telefono: string, canal: string, lead: LeadAgente | null, pqrs: PqrsAgente | null, escalar: boolean): Promise<void> {
+  if (!telefono) return;
+  const { data: previo } = await supabaseAdmin
+    .from("crm_leads")
+    .select("id,etapa_embudo")
+    .eq("negocio_id", ag.negocio_id)
+    .eq("telefono", telefono)
+    .maybeSingle();
+  const calif = lead
+    ? {
+        temperatura: String(lead.temperatura ?? "").toUpperCase().slice(0, 12) || null,
+        puntaje: Number.isFinite(Number(lead.puntaje)) ? Math.max(0, Math.min(100, Math.round(Number(lead.puntaje)))) : null,
+        interes: String(lead.interes ?? "").slice(0, 300) || null,
+        capacidad_pago: String(lead.capacidad_pago ?? "").slice(0, 300) || null,
+        urgencia: String(lead.urgencia ?? "").slice(0, 300) || null,
+        datos_extra: { datos_confirmados: String(lead.datos_confirmados ?? "").slice(0, 500) },
+      }
+    : {};
+  const ahora = new Date().toISOString();
+  let leadId = previo?.id ?? "";
+  if (previo) {
+    await supabaseAdmin
+      .from("crm_leads")
+      .update({ ...calif, ultima_interaccion: ahora, ...(lead && previo.etapa_embudo === "nuevo" ? { etapa_embudo: "calificacion" } : {}) })
+      .eq("id", previo.id)
+      .eq("owner_id", ag.owner_id);
+  } else {
+    const { data: creado } = await supabaseAdmin
+      .from("crm_leads")
+      .insert({ negocio_id: ag.negocio_id, owner_id: ag.owner_id, telefono, canal_origen: canal, etapa_embudo: lead ? "calificacion" : "nuevo", ...calif })
+      .select("id")
+      .maybeSingle();
+    leadId = creado?.id ?? "";
+  }
+  if (escalar && leadId) await supabaseAdmin.from("crm_leads").update({ atendido_por_humano: false }).eq("id", leadId).eq("owner_id", ag.owner_id);
+  if (pqrs) {
+    await supabaseAdmin.from("crm_pqrs").insert({
+      negocio_id: ag.negocio_id,
+      owner_id: ag.owner_id,
+      lead_id: leadId || null,
+      telefono: telefono.slice(0, 30),
+      tipo: String(pqrs.tipo ?? "Peticion").slice(0, 30),
+      resumen: String(pqrs.resumen ?? "").slice(0, 500) || null,
+      urgencia: String(pqrs.urgencia ?? "Media").slice(0, 20),
+    });
+  }
+}
+
 export async function responderComoAgente(clave: string, mensajes: MensajeCliente[], telefono = "", canalOrigen = "", sectorPrueba = ""): Promise<RespuestaAgente> {
   // Modo prueba: la ventana "Probar en vivo" simula otro sector y no guarda leads, PQRS ni aprendizaje.
   const esPrueba = sectorPrueba.trim().length > 0;
@@ -404,6 +453,11 @@ Reglas:
       if (pqrs) await guardarEtiquetaAgente(ag, "pqrs", telefono, pqrs);
     } catch (e) {
       console.error("Agente: no se pudo guardar lead/PQRS", e);
+    }
+    try {
+      await sincronizarCrm(ag, telefono, canal, lead, pqrs, escalar);
+    } catch (e) {
+      console.error("Agente: no se pudo sincronizar el CRM", e);
     }
   }
 

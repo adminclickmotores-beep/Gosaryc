@@ -150,6 +150,16 @@ const POR_RUTA: Record<string, Instructivo> = {
       "Liquida lo que le debes y márcalo como pagado.",
     ],
   },
+  "/crm-embudo": {
+    titulo: "CRM y Embudo IA",
+    paraQue: "Seguir a cada prospecto del agente de WhatsApp desde que escribe hasta que cierra.",
+    pasos: [
+      "Alterna entre Tablero (arrastra cada tarjeta a su etapa) y Cola de llegada (atiende por turno).",
+      "Filtra por canal, temperatura (caliente, tibio, frío) o estado, o busca por nombre o teléfono.",
+      "Abre una tarjeta para ver el perfil calificado por la IA, la línea de tiempo y sus PQRS.",
+      "Usa los 4 botones: abrir chat, crear cotización, agendar cita o convertir a cliente.",
+    ],
+  },
   "/resenas-pqrs": {
     titulo: "Reseñas y PQRS",
     paraQue: "Atender quejas, reclamos y opiniones con seguimiento.",

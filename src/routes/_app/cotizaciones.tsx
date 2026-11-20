@@ -60,6 +60,22 @@ function CotizacionesPage() {
     cargar();
   }, [cargar]);
 
+  // Datos que manda el CRM y Embudo IA al pulsar «Crear cotización».
+  useEffect(() => {
+    const crudo = window.sessionStorage.getItem("crm:cotizar");
+    if (!crudo) return;
+    window.sessionStorage.removeItem("crm:cotizar");
+    try {
+      const d = JSON.parse(crudo) as { cliente?: string; telefono?: string; nota?: string; valor?: number };
+      setCliente(String(d.cliente ?? "").slice(0, 80));
+      setTelefono(String(d.telefono ?? "").slice(0, 20));
+      setNotas(String(d.nota ?? "").slice(0, 300));
+      if (d.valor && d.valor > 0) setLineas([{ descripcion: String(d.nota ?? "").slice(0, 80), cantidad: "1", precio: String(Math.round(d.valor)) }]);
+    } catch {
+      // datos ilegibles: se ignoran
+    }
+  }, []);
+
   const lineasValidas: Linea[] = lineas
     .map((l) => ({ descripcion: l.descripcion.trim(), cantidad: Number(l.cantidad), precio: Number(l.precio) }))
     .filter((l) => l.descripcion && Number.isFinite(l.cantidad) && l.cantidad > 0 && Number.isFinite(l.precio) && l.precio >= 0);

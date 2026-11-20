@@ -1303,6 +1303,24 @@ for (const t of TIPOS_NEGOCIO) {
   t.modulos.splice(pos >= 0 ? pos : t.modulos.length, 0, COTIZACIONES);
 }
 
+/** CRM y Embudo IA: se activa solo en negocios con seguimiento comercial; en mostrador es un switch en el panel del agente. */
+export const MODULO_CRM: ModuloNegocio = {
+  id: "crm_embudo",
+  titulo: "CRM y Embudo IA",
+  descripcion: "Prospectos del agente de WhatsApp en tablero Kanban y cola por orden de llegada, con calificación IA.",
+  Icon: Target,
+  ruta: "/crm-embudo",
+  estado: "Activo",
+};
+/** Tipos de negocio que lo traen activo de fábrica. */
+export const CRM_AUTOMATICO: TipoNegocioClave[] = [
+  "concesionario", "taller", "alquiler_vehiculos", "inmobiliaria", "construccion", "salud", "belleza", "mascotas", "gimnasio",
+  "profesional", "servicios", "educacion", "eventos", "hospedaje", "tecnologia", "transporte", "ferreteria", "optica", "agro", "prestamos",
+];
+for (const t of TIPOS_NEGOCIO) {
+  if (!t.modulos.some((x) => x.id === MODULO_CRM.id)) t.modulos.push(MODULO_CRM);
+}
+
 /** Busca un módulo por id en todos los tipos de negocio. */
 export function buscarModulo(id: string): ModuloNegocio | undefined {
   for (const t of TIPOS_NEGOCIO) {

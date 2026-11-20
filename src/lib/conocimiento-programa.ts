@@ -163,7 +163,7 @@ export const MANUAL_FIJO = `
 const RUTAS_INSTRUCTIVO = [
   "/", "/cartera-fiados", "/combos", "/cotizaciones", "/domicilios", "/equipo-nomina", "/finanzas",
   "/pagos-digitales", "/pedidos-recurrentes", "/propinas", "/proveedores-compras", "/puntos-recompensas",
-  "/repartidores", "/resenas-pqrs", "/metas", "/asistente-virtual", "/leads", "/calendar", "/requests",
+  "/repartidores", "/resenas-pqrs", "/metas", "/asistente-virtual", "/leads", "/calendar", "/requests", "/crm-embudo",
 ];
 
 /** Instructivos de las pantallas propias (de instructivos.ts). */

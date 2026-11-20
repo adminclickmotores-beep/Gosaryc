@@ -31,7 +31,7 @@ import { BRAND } from "@/lib/brand";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { useAnunciarPresencia } from "@/hooks/use-presencia";
-import { resolverTipoNegocio } from "@/lib/modulos-negocio";
+import { resolverTipoNegocio, CRM_AUTOMATICO, MODULO_CRM } from "@/lib/modulos-negocio";
 
 import { AutosaveStatus } from "@/components/app/AutosaveStatus";
 import { purgeExpiredDrafts } from "@/hooks/use-draft";
@@ -74,7 +74,15 @@ function AppShell() {
   const completaFinal = completa || (!cargandoPermisos && !esAdmin && enRutaPanel);
   const anchoGrande = completaFinal || enRutaPanel;
   const verPanel = ["pedidos", "cocina", "mesas", "caja_diaria", "insumos"].some((id) => puede(id));
-  const modulosVisibles = tipoNegocio.modulos;
+  const [crmManual, setCrmManual] = useState(false);
+  useEffect(() => {
+    const leer = () => setCrmManual(window.localStorage.getItem("crm:activo") === "1");
+    leer();
+    window.addEventListener("crm:cambio", leer);
+    return () => window.removeEventListener("crm:cambio", leer);
+  }, []);
+  const crmVisible = CRM_AUTOMATICO.includes(tipoNegocio.clave) || crmManual;
+  const modulosVisibles = tipoNegocio.modulos.filter((m) => m.id !== MODULO_CRM.id || crmVisible);
   const navItems: NavItem[] = [
     ...(verPanel || cargandoPermisos
       ? [{ to: rutaPanel, label: tipoNegocio.panel, Icon: IconBolt } as NavItem]

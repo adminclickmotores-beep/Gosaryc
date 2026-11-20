@@ -92,6 +92,10 @@ function AgenteWhatsAppReal() {
   const { negocio } = useNegocio();
   const { user } = useAuth();
   const [probarVivo, setProbarVivo] = useState(false);
+  const [crmActivo, setCrmActivo] = useState(false);
+  useEffect(() => {
+    setCrmActivo(window.localStorage.getItem("crm:activo") === "1");
+  }, []);
   const [agente, setAgente] = useState<AgenteFila | null>(null);
   const [nombreAgente, setNombreAgente] = useState("Asistente");
   const [instrucciones, setInstrucciones] = useState("");
@@ -684,6 +688,19 @@ function AgenteWhatsAppReal() {
         <label className="flex cursor-pointer items-center gap-2 text-sm">
           <input type="checkbox" className="h-4 w-4" checked={iaActiva} onChange={(e) => void cambiarIA(e.target.checked)} disabled={guardando} />
           IA comercial y de servicio activada
+        </label>
+        <label className="flex cursor-pointer items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            className="h-4 w-4"
+            checked={crmActivo}
+            onChange={(e) => {
+              window.localStorage.setItem("crm:activo", e.target.checked ? "1" : "0");
+              setCrmActivo(e.target.checked);
+              window.dispatchEvent(new Event("crm:cambio"));
+            }}
+          />
+          Mostrar «CRM y Embudo IA» en el menú
         </label>
       </div>
 

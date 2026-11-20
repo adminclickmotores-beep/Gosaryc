@@ -4732,6 +4732,111 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_leads: {
+        Row: {
+          atendido_por_humano: boolean
+          canal_origen: string
+          capacidad_pago: string | null
+          created_at: string
+          datos_extra: Json
+          etapa_embudo: string
+          fecha_llegada: string
+          id: string
+          interes: string | null
+          negocio_id: string
+          nombre: string | null
+          numero_turno: number
+          owner_id: string
+          puntaje: number | null
+          telefono: string
+          temperatura: string | null
+          ultima_interaccion: string
+          urgencia: string | null
+          valor_estimado: number
+        }
+        Insert: {
+          atendido_por_humano?: boolean
+          canal_origen?: string
+          capacidad_pago?: string | null
+          created_at?: string
+          datos_extra?: Json
+          etapa_embudo?: string
+          fecha_llegada?: string
+          id?: string
+          interes?: string | null
+          negocio_id: string
+          nombre?: string | null
+          numero_turno?: number
+          owner_id: string
+          puntaje?: number | null
+          telefono?: string
+          temperatura?: string | null
+          ultima_interaccion?: string
+          urgencia?: string | null
+          valor_estimado?: number
+        }
+        Update: {
+          atendido_por_humano?: boolean
+          canal_origen?: string
+          capacidad_pago?: string | null
+          created_at?: string
+          datos_extra?: Json
+          etapa_embudo?: string
+          fecha_llegada?: string
+          id?: string
+          interes?: string | null
+          negocio_id?: string
+          nombre?: string | null
+          numero_turno?: number
+          owner_id?: string
+          puntaje?: number | null
+          telefono?: string
+          temperatura?: string | null
+          ultima_interaccion?: string
+          urgencia?: string | null
+          valor_estimado?: number
+        }
+        Relationships: []
+      }
+      crm_pqrs: {
+        Row: {
+          created_at: string
+          estado: string
+          id: string
+          lead_id: string | null
+          negocio_id: string
+          owner_id: string
+          resumen: string | null
+          telefono: string
+          tipo: string
+          urgencia: string
+        }
+        Insert: {
+          created_at?: string
+          estado?: string
+          id?: string
+          lead_id?: string | null
+          negocio_id: string
+          owner_id: string
+          resumen?: string | null
+          telefono?: string
+          tipo?: string
+          urgencia?: string
+        }
+        Update: {
+          created_at?: string
+          estado?: string
+          id?: string
+          lead_id?: string | null
+          negocio_id?: string
+          owner_id?: string
+          resumen?: string | null
+          telefono?: string
+          tipo?: string
+          urgencia?: string
+        }
+        Relationships: []
+      }
       agente_leads: {
         Row: {
           atendido_por_humano: boolean
