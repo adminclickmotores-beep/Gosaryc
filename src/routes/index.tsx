@@ -433,14 +433,6 @@ function LandingPage() {
 
   const clase = `gs-land relative min-h-screen overflow-x-hidden${oscuro ? " gs-dark" : ""}`;
 
-  if (loading) {
-    return (
-      <div className={clase}>
-        <style>{ESTILOS}</style>
-      </div>
-    );
-  }
-
   return (
     <div className={clase}>
       <style>{ESTILOS}</style>
@@ -456,7 +448,11 @@ function LandingPage() {
               {oscuro ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
             <Link to="/instalar" className="gs-muted hidden rounded-full px-4 py-2 text-sm font-medium sm:inline-flex">Descargar app</Link>
-            <Link to="/login" search={{ mode: "signin" }} className="gs-cta inline-flex rounded-full px-5 py-2.5 text-sm">Iniciar sesión</Link>
+            {session && !esCuentaDemo(session.user?.email) ? (
+              <Link to={"/restaurante" as "/dashboard"} className="gs-cta inline-flex rounded-full px-5 py-2.5 text-sm">Ir a mi panel</Link>
+            ) : (
+              <Link to="/login" search={{ mode: "signin" }} className="gs-cta inline-flex rounded-full px-5 py-2.5 text-sm">Iniciar sesión</Link>
+            )}
           </div>
         </div>
       </header>
