@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Bot, Eye, EyeOff, Link2, Plus, RefreshCw, Send, Trash2, UserCheck } from "lucide-react";
+import { Bot, Eye, EyeOff, Facebook, Globe, Instagram, Link2, MessageCircle, Plus, RefreshCw, Search, Send, Trash2, UserCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { ResumenCierreWhatsApp } from "@/components/restaurante/Reportes";
@@ -25,7 +25,20 @@ type AgenteFila = Pick<
   | "cierre_autonomo"
 >;
 type MemoriaFila = { id: string; tipo: string; contenido: string; created_at: string };
-const PERSONALIDADES = ["Persuasivo Vendedor", "Amable y Cercano", "Ejecutivo Formal", "Técnico Experto"];
+const INFO_CANAL: Record<string, { icono: typeof Bot; clase: string }> = {
+  Facebook: { icono: Facebook, clase: "bg-blue-500/15 text-blue-600" },
+  Instagram: { icono: Instagram, clase: "bg-purple-500/15 text-purple-600" },
+  "Página Web": { icono: Globe, clase: "bg-slate-500/15 text-slate-600" },
+  "WhatsApp Directo": { icono: MessageCircle, clase: "bg-green-500/15 text-green-600" },
+  "Google / Otro": { icono: Search, clase: "bg-orange-500/15 text-orange-600" },
+};
+const ENLACES_CANAL = [
+  { canal: "Instagram", texto: "Hola, vengo de Instagram" },
+  { canal: "Facebook", texto: "Hola, vengo de Facebook" },
+  { canal: "Página Web", texto: "Hola, vengo de la web" },
+  { canal: "Google", texto: "Hola, te encontré en Google" },
+];
+const PERSONALIDADES =["Persuasivo Vendedor", "Amable y Cercano", "Ejecutivo Formal", "Técnico Experto"];
 const OBJETIVOS_CIERRE = ["Cerrar pedido directo", "Agendar cita", "Enviar link de pago"];
 const COLUMNAS_AGENTE = "id,negocio_id,owner_id,activo,nombre_agente,instrucciones,ia_activa,personalidad,objetivo_cierre,cierre_autonomo";
 function leerJsonSeguro(t: string): Record<string, unknown> {
@@ -103,6 +116,10 @@ function AgenteWhatsAppReal() {
   const [cierreAutonomo, setCierreAutonomo] = useState(true);
   const [memoria, setMemoria] = useState<MemoriaFila[]>([]);
   const [entrenando, setEntrenando] = useState(false);
+  const [leads, setLeads] = useState<Tables<"agente_leads">[]>([]);
+  const [filtroCanal, setFiltroCanal] = useState("Todos");
+  const [filtroTemp, setFiltroTemp] = useState("Todas");
+  const [filtroEstado, setFiltroEstado] = useState("Todos");
   const [nuevaRegla, setNuevaRegla] = useState("");
 
   const idLinea = (negocio?.id ?? "").slice(0, 8) || "negocio";
@@ -127,6 +144,43 @@ function AgenteWhatsAppReal() {
       setCierreAutonomo(data.cierre_autonomo !== false);
     }
   }, [negocio]);
+
+  const cargarLeads = useCallback(async () => {
+    if (!negocio) return;
+    const { data } = await supabase
+      .from("agente_leads")
+      .select("*")
+      .eq("negocio_id", negocio.id)
+      .order("numero_turno", { ascending: true })
+      .limit(300);
+    setLeads(data ?? []);
+  }, [negocio]);
+
+  useEffect(() => {
+    void cargarLeads();
+    const t = setInterval(() => void cargarLeads(), 30000);
+    return () => clearInterval(t);
+  }, [cargarLeads]);
+
+  const marcarAtendido = async (id: string, v: boolean) => {
+    setLeads((ls) => ls.map((l) => (l.id === id ? { ...l, atendido_por_humano: v } : l)));
+    const { error } = await supabase.from("agente_leads").update({ atendido_por_humano: v }).eq("id", id);
+    if (error) {
+      toast.error("No se pudo actualizar el estado");
+      void cargarLeads();
+    }
+  };
+
+  const leadsFiltrados = leads.filter((l) => {
+    if (filtroCanal !== "Todos" && l.canal_origen !== filtroCanal) return false;
+    if (filtroTemp !== "Todas" && String(l.temperatura ?? "").toUpperCase() !== filtroTemp) return false;
+    if (filtroEstado === "pendientes" && l.atendido_por_humano) return false;
+    if (filtroEstado === "atendidos" && !l.atendido_por_humano) return false;
+    return true;
+  });
+
+  const telNegocio = String((negocio as unknown as { telefono_pedidos?: string | null } | null)?.telefono_pedidos ?? "").replace(/\D/g, "");
+  const numeroEnlace = telNegocio.length === 10 ? `57${telNegocio}` : telNegocio;
 
   const cargarMemoria = useCallback(async () => {
     if (!negocio) return;
@@ -718,23 +772,63 @@ function AgenteWhatsAppReal() {
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-2">
-            <span className="block text-sm font-medium">Leads calificados</span>
-            {memoria.filter((m) => m.tipo === "lead").length === 0 && <p className="text-xs text-muted-foreground">Aún no hay leads calificados por el bot.</p>}
-            {memoria.filter((m) => m.tipo === "lead").slice(0, 12).map((m) => {
-              const d = leerJsonSeguro(m.contenido);
-              const temp = String(d.temperatura ?? "").toUpperCase();
+          <div className="space-y-2 sm:col-span-2">
+            <span className="block text-sm font-medium">Leads por orden de llegada (primero en entrar, primero en atender)</span>
+            <div className="flex flex-wrap gap-2 text-xs">
+              <select aria-label="Canal" className="rounded-lg border border-glass-border bg-background/60 px-2 py-1.5 text-base" value={filtroCanal} onChange={(e) => setFiltroCanal(e.target.value)}>
+                {["Todos", "Facebook", "Instagram", "Página Web", "WhatsApp Directo", "Google / Otro"].map((c) => <option key={c} value={c}>{c === "Todos" ? "Canal: Todos" : c}</option>)}
+              </select>
+              <select aria-label="Temperatura" className="rounded-lg border border-glass-border bg-background/60 px-2 py-1.5 text-base" value={filtroTemp} onChange={(e) => setFiltroTemp(e.target.value)}>
+                <option value="Todas">Temperatura: Todas</option>
+                <option value="CALIENTE">Calientes</option>
+                <option value="TIBIO">Tibios</option>
+                <option value="FRIO">Fríos</option>
+              </select>
+              <select aria-label="Estado" className="rounded-lg border border-glass-border bg-background/60 px-2 py-1.5 text-base" value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)}>
+                <option value="Todos">Estado: Todos</option>
+                <option value="pendientes">Pendientes por atender</option>
+                <option value="atendidos">Atendidos</option>
+              </select>
+            </div>
+            {leadsFiltrados.length === 0 && <p className="text-xs text-muted-foreground">Aún no hay leads con esos filtros.</p>}
+            {leadsFiltrados.slice(0, 50).map((l) => {
+              const temp = String(l.temperatura ?? "").toUpperCase();
               const color = temp === "CALIENTE" ? "bg-red-500/15 text-red-600" : temp === "TIBIO" ? "bg-amber-500/15 text-amber-600" : "bg-sky-500/15 text-sky-600";
+              const info = INFO_CANAL[l.canal_origen] ?? INFO_CANAL["Google / Otro"];
+              const Icono = info.icono;
               return (
-                <div key={m.id} className="rounded-lg border border-glass-border/60 bg-background/40 px-3 py-2 text-xs">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className={`rounded-full px-2 py-0.5 font-medium ${color}`}>{temp === "CALIENTE" ? "Caliente" : temp === "TIBIO" ? "Tibio" : "Frío"} · {String(d.puntaje ?? 0)}</span>
-                    <span className="text-muted-foreground">{String(d.telefono ?? "")}</span>
+                <div key={l.id} className="rounded-lg border border-glass-border/60 bg-background/40 px-3 py-2 text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-semibold">#{l.numero_turno} · {new Date(l.fecha_llegada).toLocaleString("es-CO", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium ${info.clase}`}><Icono className="h-3 w-3" />{l.canal_origen}</span>
+                    <span className={`rounded-full px-2 py-0.5 font-medium ${color}`}>{temp === "CALIENTE" ? "Caliente" : temp === "TIBIO" ? "Tibio" : temp === "FRIO" ? "Frío" : "Sin calificar"}{l.puntaje != null ? ` · ${l.puntaje}` : ""}</span>
                   </div>
-                  <p className="mt-1 break-words">{String(d.interes ?? "")} {d.datos_confirmados ? `· ${String(d.datos_confirmados)}` : ""}</p>
+                  <p className="mt-1 break-words text-muted-foreground">{l.telefono}{l.interes ? ` · ${l.interes}` : ""}{l.datos_confirmados ? ` · ${l.datos_confirmados}` : ""}</p>
+                  <label className="mt-1 flex cursor-pointer items-center gap-2">
+                    <input type="checkbox" className="h-4 w-4" checked={l.atendido_por_humano} onChange={(e) => void marcarAtendido(l.id, e.target.checked)} />
+                    Atendido por una persona
+                  </label>
                 </div>
               );
             })}
+          </div>
+          <div className="space-y-2 sm:col-span-2 rounded-lg border border-glass-border/60 bg-background/40 p-3">
+            <span className="block text-sm font-medium">Enlaces de rastreo para WhatsApp</span>
+            <p className="text-xs text-muted-foreground">Copia el enlace de cada canal y pégalo en tu biografía de Instagram, botón de Facebook o página web. El agente reconoce de dónde llega cada cliente.</p>
+            {numeroEnlace.length < 10 ? (
+              <p className="text-xs text-muted-foreground">Configura el teléfono de pedidos de tu negocio para generar los enlaces.</p>
+            ) : (
+              ENLACES_CANAL.map((e) => {
+                const url = `https://wa.me/${numeroEnlace}?text=${encodeURIComponent(e.texto)}`;
+                return (
+                  <div key={e.canal} className="flex items-center gap-2">
+                    <span className="w-24 shrink-0 text-xs font-medium">{e.canal}</span>
+                    <input readOnly className="min-w-0 flex-1 rounded-lg border border-glass-border bg-background/60 px-2 py-1.5 text-base" value={url} />
+                    <button onClick={() => { void navigator.clipboard.writeText(url); toast.success(`Enlace de ${e.canal} copiado`); }} className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-xs text-primary-foreground">Copiar</button>
+                  </div>
+                );
+              })
+            )}
           </div>
           <div className="space-y-2">
             <span className="block text-sm font-medium">PQRS radicadas por el bot</span>

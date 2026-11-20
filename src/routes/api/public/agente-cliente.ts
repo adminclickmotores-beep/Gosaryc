@@ -12,6 +12,7 @@ export const Route = createFileRoute("/api/public/agente-cliente")({
           pregunta?: string;
           respuesta?: string;
           telefono?: string;
+          canal_origen?: string;
           mensajes?: Array<{ role: "user" | "assistant"; content: string }>;
         } = {};
         try {
@@ -25,7 +26,7 @@ export const Route = createFileRoute("/api/public/agente-cliente")({
             await aprenderRespuestaDueno(clave, cuerpo.pregunta ?? "", cuerpo.respuesta ?? "");
             return Response.json({ ok: true });
           }
-          const r = await responderComoAgente(clave, cuerpo.mensajes ?? [], String(cuerpo.telefono ?? "").replace(/[^0-9]/g, ""));
+          const r = await responderComoAgente(clave, cuerpo.mensajes ?? [], String(cuerpo.telefono ?? "").replace(/[^0-9]/g, ""), String(cuerpo.canal_origen ?? "").slice(0, 40));
           return Response.json(r);
         } catch (e) {
           const estado = typeof (e as { estado?: unknown })?.estado === "number" ? (e as { estado: number }).estado : 500;

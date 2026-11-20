@@ -4732,6 +4732,60 @@ export type Database = {
         }
         Relationships: []
       }
+      agente_leads: {
+        Row: {
+          atendido_por_humano: boolean
+          canal_origen: string
+          created_at: string
+          datos_confirmados: string | null
+          fecha_llegada: string
+          id: string
+          interes: string | null
+          negocio_id: string
+          nombre: string | null
+          numero_turno: number
+          owner_id: string
+          puntaje: number | null
+          telefono: string
+          temperatura: string | null
+          updated_at: string
+        }
+        Insert: {
+          atendido_por_humano?: boolean
+          canal_origen?: string
+          created_at?: string
+          datos_confirmados?: string | null
+          fecha_llegada?: string
+          id?: string
+          interes?: string | null
+          negocio_id: string
+          nombre?: string | null
+          numero_turno?: number
+          owner_id: string
+          puntaje?: number | null
+          telefono: string
+          temperatura?: string | null
+          updated_at?: string
+        }
+        Update: {
+          atendido_por_humano?: boolean
+          canal_origen?: string
+          created_at?: string
+          datos_confirmados?: string | null
+          fecha_llegada?: string
+          id?: string
+          interes?: string | null
+          negocio_id?: string
+          nombre?: string | null
+          numero_turno?: number
+          owner_id?: string
+          puntaje?: number | null
+          telefono?: string
+          temperatura?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       whatsapp_avisos: {
         Row: {
           chat_id: string | null

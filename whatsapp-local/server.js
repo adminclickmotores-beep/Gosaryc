@@ -225,7 +225,7 @@ async function consultarNube(linea, jid, chat) {
     const r = await fetch(URL_AGENTE_NUBE, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${linea.clave}` },
-      body: JSON.stringify({ mensajes: chat.historial.slice(-20), telefono: String(jid || "").replace(/@c\.us$/, "") }),
+      body: JSON.stringify({ mensajes: chat.historial.slice(-20), telefono: String(jid || "").replace(/@c\.us$/, ""), canal_origen: chat.canalOrigen || "WhatsApp Directo" }),
       signal: control.signal,
     });
     if (r.status === 401 || r.status === 403) {
@@ -309,6 +309,21 @@ function yaProcesado(id) {
 }
 const DEBOUNCE_MS = 3500;
 
+// Detecta por dónde llegó el cliente: anuncio de Meta o frases del primer mensaje.
+function detectarCanal(msg) {
+  try {
+    const app = String((msg._data && msg._data.ctwaContext && msg._data.ctwaContext.sourceApp) || "").toLowerCase();
+    if (app.includes("instagram")) return "Instagram";
+    if (app.includes("facebook")) return "Facebook";
+  } catch (_) {}
+  const t = " " + normalizar(msg.body || "") + " ";
+  if (/ instagram | ig /.test(t)) return "Instagram";
+  if (/ facebook | fb | marketplace /.test(t)) return "Facebook";
+  if (/ vengo de la web | pagina web | sitio web | tiktok /.test(t)) return "Página Web";
+  if (/ google /.test(t)) return "Google / Otro";
+  return "WhatsApp Directo";
+}
+
 function alMensaje(linea, msg) {
   if (!linea.agente) return;
   if (msg.fromMe || msg.isStatus || msg.from === "status@broadcast" || msg.from.endsWith("@g.us")) return;
@@ -316,6 +331,11 @@ function alMensaje(linea, msg) {
   const jid = msg.from;
   const chat = linea.chats.get(jid) || { historial: [], pausadoHasta: 0, ocupado: false, timer: null, avisoMedia: 0, nombre: String(jid).replace(/@c\.us$/, ""), noLeidos: 0, visto: "" };
   linea.chats.set(jid, chat);
+  // Canal de origen: solo se fija con el primer mensaje del contacto.
+  if (!chat.canalOrigen) {
+    chat.canalOrigen = detectarCanal(msg);
+    chat.fechaLlegada = new Date().toISOString();
+  }
   chat.noLeidos = (chat.noLeidos || 0) + 1;
   try {
     const alias = msg._data && msg._data.notifyName ? String(msg._data.notifyName).slice(0, 60) : "";

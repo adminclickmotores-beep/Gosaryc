@@ -201,7 +201,34 @@ async function aprenderPatrones(ag: DuenoMemoria, historial: MensajeCliente[]): 
 }
 
 /** Responde a un cliente final de WhatsApp como agente de ventas, atención y asesoría del negocio. */
-export async function responderComoAgente(clave: string, mensajes: MensajeCliente[], telefono = ""): Promise<RespuestaAgente> {
+const CANALES = ["Instagram", "Facebook", "Página Web", "Google / Otro", "WhatsApp Directo"];
+
+/** Crea el lead la primera vez (turno y fecha de llegada los fija la base) y luego solo actualiza su calificación. */
+async function registrarLead(ag: DuenoMemoria, telefono: string, canal: string, lead: LeadAgente | null): Promise<void> {
+  if (!telefono) return;
+  const { data: previo } = await supabaseAdmin
+    .from("agente_leads")
+    .select("id")
+    .eq("negocio_id", ag.negocio_id)
+    .eq("telefono", telefono)
+    .maybeSingle();
+  const calif = lead
+    ? {
+        temperatura: String(lead.temperatura ?? "").toUpperCase().slice(0, 12) || null,
+        puntaje: Number.isFinite(Number(lead.puntaje)) ? Math.max(0, Math.min(100, Math.round(Number(lead.puntaje)))) : null,
+        interes: String(lead.interes ?? "").slice(0, 300) || null,
+        datos_confirmados: String(lead.datos_confirmados ?? "").slice(0, 500) || null,
+      }
+    : {};
+  if (previo) {
+    if (lead) await supabaseAdmin.from("agente_leads").update(calif).eq("id", previo.id).eq("owner_id", ag.owner_id);
+    return;
+  }
+  await supabaseAdmin.from("agente_leads").insert({ negocio_id: ag.negocio_id, owner_id: ag.owner_id, telefono, canal_origen: canal, ...calif });
+}
+
+export async function responderComoAgente(clave: string, mensajes: MensajeCliente[], telefono = "", canalOrigen = ""): Promise<RespuestaAgente> {
+  const canal = CANALES.includes(canalOrigen) ? canalOrigen : "WhatsApp Directo";
   const ag = await buscarAgente(clave);
 
   const { data: cfg } = await supabaseAdmin
@@ -316,6 +343,8 @@ export async function responderComoAgente(clave: string, mensajes: MensajeClient
 Personalidad: ${personalidad}. Escribes en español, con ese tono, mensajes cortos propios de WhatsApp (máximo 4 o 5 líneas, sin tablas ni títulos). Habla con el vocabulario profesional del tipo de negocio "${giro.panel}". Áreas del negocio: ${modulos || "atención general"}.
 Objetivo de cierre del negocio: ${objetivo}. ${cierraSolo ? "Tienes AUTONOMÍA para cerrar: lleva la conversación hasta ese cierre (confirma pedido con total calculado, agenda cita con fecha y hora exactas o entrega los datos de pago configurados) sin esperar a una persona." : "NO cierres tú la operación: reúne los datos y avisa que una persona del equipo la confirma (usa [[ASESOR]])."}
 
+Canal por el que llegó este cliente: ${canal}. En tu PRIMER mensaje adapta la bienvenida: si viene de Instagram o Facebook agradece que los siga o haya visto su publicación; si viene de la página web, agradece su visita; si es WhatsApp directo, saluda normal. No lo repitas después.
+
 MEMORIA DEL HILO (regla estricta): antes de responder, revisa TODO el historial de esta conversación. NUNCA vuelvas a preguntar un dato que el cliente ya entregó (nombre, presupuesto, cuota inicial, modelo, dirección, fecha, cantidad, etc.). Reutilízalo y pregunta solo lo que falta, una cosa a la vez.
 
 Tres modos automáticos (elige según lo que escriba el cliente):
@@ -368,7 +397,7 @@ Reglas:
   const lead = conLead.valor && typeof conLead.valor === "object" ? conLead.valor : null;
   const pqrs = conPqrs.valor && typeof conPqrs.valor === "object" ? conPqrs.valor : null;
   try {
-    if (lead) await guardarEtiquetaAgente(ag, "lead", telefono, lead);
+    await registrarLead(ag, telefono, canal, lead);
     if (pqrs) await guardarEtiquetaAgente(ag, "pqrs", telefono, pqrs);
   } catch (e) {
     console.error("Agente: no se pudo guardar lead/PQRS", e);
