@@ -5043,6 +5043,7 @@ export type Database = {
           dian_certificado_nombre: string | null
           dian_certificado_vence: string | null
           dian_ambiente: string
+          es_demo_publico: boolean
         }
         Insert: {
           aviso_entrega?: string | null
@@ -5093,6 +5094,7 @@ export type Database = {
           dian_certificado_nombre?: string | null
           dian_certificado_vence?: string | null
           dian_ambiente?: string
+          es_demo_publico?: boolean
         }
         Update: {
           aviso_entrega?: string | null
@@ -5143,6 +5145,7 @@ export type Database = {
           dian_certificado_nombre?: string | null
           dian_certificado_vence?: string | null
           dian_ambiente?: string
+          es_demo_publico?: boolean
         }
         Relationships: []
       }

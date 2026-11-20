@@ -9,6 +9,7 @@ import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { DianAdmin } from "@/components/app/DianAdmin";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 import { useUsuariosEnLinea } from "@/hooks/use-presencia";
+import { esCuentaMaestra } from "@/lib/cuenta-maestra";
 
 export const Route = createFileRoute("/superadmin")({
   head: () => ({ meta: [{ title: "Panel del dueño" }] }),
@@ -62,6 +63,10 @@ function SuperAdminPage() {
     if (loading) return;
     if (!session) {
       nav({ to: "/login", search: { redirect: "/superadmin", mode: "signin" }, replace: true });
+      return;
+    }
+    if (!esCuentaMaestra(session.user?.email)) {
+      setPermitido(false);
       return;
     }
     supabase.rpc("es_superadmin").then(({ data }) => setPermitido(data === true));
