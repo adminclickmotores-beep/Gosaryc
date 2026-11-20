@@ -288,24 +288,52 @@ async function sembrar(tipo: TipoDemo, uid: string) {
  */
 export async function entrarDemo(tipo: TipoDemo): Promise<void> {
   // Acceso libre de solo lectura sin contraseñas: el servidor emite un enlace de un solo uso.
-  const fallo = "No se pudo abrir la demo. Intenta de nuevo en un momento.";
-  await supabase.auth.signOut({ scope: "local" });
-  let tokenHash = "";
+  const CLAVE = "gosaryc:demo_iniciando";
+  const quitarMarca = () => {
+    try {
+      sessionStorage.removeItem(CLAVE);
+    } catch {
+      /* almacenamiento bloqueado */
+    }
+  };
+  // Marca "iniciando demo": el panel espera la sesión en vez de mandar a /login.
   try {
-    const res = await fetch("/api/public/demo-sesion", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tipo }),
-    });
-    if (!res.ok) throw new Error(fallo);
-    const datos = (await res.json()) as { token_hash?: string };
-    tokenHash = datos.token_hash ?? "";
+    sessionStorage.setItem(CLAVE, String(Date.now()));
   } catch {
-    throw new Error(fallo);
+    /* almacenamiento bloqueado */
   }
-  if (!tokenHash) throw new Error(fallo);
-  const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: "magiclink" });
-  if (error) throw new Error(fallo);
+  try {
+    await supabase.auth.signOut({ scope: "local" });
+    let tokenHash = "";
+    let res: Response;
+    try {
+      res = await fetch("/api/public/demo-sesion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tipo }),
+      });
+    } catch (e) {
+      throw new Error(`No se pudo contactar al servidor de la demo: ${e instanceof Error ? e.message : "sin conexión"}`);
+    }
+    const datos = (await res.json().catch(() => ({}))) as { token_hash?: string; error?: string };
+    if (!res.ok) throw new Error(`Demo: ${datos.error ?? "el servidor respondió con error"} (código ${res.status})`);
+    tokenHash = datos.token_hash ?? "";
+    if (!tokenHash) throw new Error("Demo: el servidor no devolvió el acceso temporal.");
+    const { data, error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: "magiclink" });
+    if (error) throw new Error(`Demo: no se pudo iniciar la sesión (${error.message})`);
+    const uid = data.user?.id ?? data.session?.user?.id;
+    if (!data.session || !uid) throw new Error("Demo: la sesión no se estableció.");
+    // Primera vez: si el negocio demo aún no existe, se prepara con sus datos de ejemplo (sin borrar nada).
+    try {
+      const { data: cfg } = await supabase.from("negocio_config").select("id").eq("owner_id", uid).limit(1).maybeSingle();
+      if (!cfg) await sembrar(tipo, uid);
+    } catch (e) {
+      console.warn("Demo: no se pudieron preparar los datos de ejemplo", e instanceof Error ? e.message : e);
+    }
+  } catch (e) {
+    quitarMarca();
+    throw e;
+  }
 }
 
 /**

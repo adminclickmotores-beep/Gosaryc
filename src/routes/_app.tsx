@@ -54,6 +54,8 @@ type NavItem = {
 
 function AppShell() {
   const { session, loading, user } = useAuth();
+  const [iniciandoDemo, setIniciandoDemo] = useState(false);
+  const [reintentoDemo, setReintentoDemo] = useState(0);
   const loc = useLocation();
   const nav = useNavigate();
   const completa = (loc.search as Record<string, unknown> | undefined)?.ventana === "completa";
@@ -200,15 +202,38 @@ function AppShell() {
   }, [user?.id, cargandoPermisos, esAdmin]);
 
   useEffect(() => {
-    if (!loading && !session) {
-      nav({
-        to: "/login",
-        search: { redirect: pathnameRef.current, mode: "signin" },
-        replace: true,
-      });
+    if (loading) return;
+    const CLAVE_DEMO = "gosaryc:demo_iniciando";
+    if (session) {
+      try {
+        sessionStorage.removeItem(CLAVE_DEMO);
+      } catch {
+        /* almacenamiento bloqueado */
+      }
+      setIniciandoDemo(false);
+      return;
     }
+    // Si se está abriendo una demo en vivo, se espera a que se establezca la sesión antes de ir a /login.
+    let enCurso = false;
+    try {
+      const t = Number(sessionStorage.getItem(CLAVE_DEMO) ?? 0);
+      enCurso = t > 0 && Date.now() - t < 12000;
+    } catch {
+      enCurso = false;
+    }
+    if (enCurso) {
+      setIniciandoDemo(true);
+      const t = setTimeout(() => setReintentoDemo((n) => n + 1), 800);
+      return () => clearTimeout(t);
+    }
+    setIniciandoDemo(false);
+    nav({
+      to: "/login",
+      search: { redirect: pathnameRef.current, mode: "signin" },
+      replace: true,
+    });
     // Fragile: this guard must not depend on location.pathname.
-  }, [loading, session, nav]);
+  }, [loading, session, nav, reintentoDemo]);
 
   // Bloqueo por suspensión o vencimiento de la suscripción (con validación online + token firmado offline y periodo de gracia).
   useEffect(() => {
@@ -271,7 +296,7 @@ function AppShell() {
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
             </span>
             <span className="font-display tracking-wide">
-              {loading ? `Iniciando ${BRAND.name}` : "Redirigiendo al inicio de sesión"}
+              {iniciandoDemo ? "Iniciando demo en vivo..." : loading ? `Iniciando ${BRAND.name}` : "Redirigiendo al inicio de sesión"}
             </span>
           </div>
         </motion.div>

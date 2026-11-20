@@ -23,10 +23,15 @@ export const Route = createFileRoute("/api/public/demo-sesion")({
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { data, error } = await supabaseAdmin.auth.admin.generateLink({ type: "magiclink", email });
           const token = data?.properties?.hashed_token;
-          if (error || !token) return Response.json({ error: "No se pudo abrir la demo" }, { status: 500 });
+          if (error || !token) {
+            return Response.json({ error: `No se pudo generar el acceso demo: ${error?.message ?? "sin token"}` }, { status: 500 });
+          }
           return Response.json({ token_hash: token });
-        } catch {
-          return Response.json({ error: "No se pudo abrir la demo" }, { status: 500 });
+        } catch (e) {
+          return Response.json(
+            { error: `Configuración del servidor incompleta: ${e instanceof Error ? e.message : "error desconocido"}` },
+            { status: 500 },
+          );
         }
       },
     },
