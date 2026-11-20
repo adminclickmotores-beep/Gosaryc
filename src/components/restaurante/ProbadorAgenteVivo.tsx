@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AlertTriangle, Bot, Flame, Loader2, RotateCcw, Send, Snowflake, Sun, UserRound, X } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 import { useAuth } from "@/contexts/AuthContext";
 import { TIPOS_NEGOCIO } from "@/lib/modulos-negocio";
+import { asegurarConfiguracionAutomaticaAgente } from "@/lib/agente-autoconfig";
 
 type Lead = { temperatura?: string; puntaje?: number; interes?: string; capacidad_pago?: string; urgencia?: string; datos_confirmados?: string };
 type Pqrs = { tipo?: string; resumen?: string; urgencia?: string };
@@ -42,19 +42,19 @@ export function ProbadorAgenteVivo({ onCerrar }: { onCerrar?: () => void }) {
 
   const cargarClave = useCallback(async () => {
     if (!user || !negocio?.id) return;
-    const { data: fila } = await supabase.from("agente_whatsapp").select("clave").eq("negocio_id", negocio.id).maybeSingle();
-    if (fila?.clave) {
-      setClave(fila.clave);
-      return;
+    setErrorClave("");
+    const res = await asegurarConfiguracionAutomaticaAgente({
+      negocioId: negocio.id,
+      ownerId: negocio.owner_id ?? user.id,
+      tipoNegocio: (negocio as unknown as { tipo_negocio?: string | null }).tipo_negocio ?? null,
+      nombreNegocio: negocio.nombre,
+    });
+    if (res.agente?.clave) {
+      setClave(res.agente.clave);
+    } else {
+      setErrorClave(res.error ?? "No se pudo preparar el agente de este negocio.");
     }
-    const { data: nueva, error: e } = await supabase
-      .from("agente_whatsapp")
-      .insert({ negocio_id: negocio.id, owner_id: user.id })
-      .select("clave")
-      .maybeSingle();
-    if (nueva?.clave) setClave(nueva.clave);
-    else setErrorClave(e?.message ?? "No se pudo preparar el agente de este negocio.");
-  }, [user, negocio?.id]);
+  }, [user, negocio]);
 
   useEffect(() => {
     void cargarClave();

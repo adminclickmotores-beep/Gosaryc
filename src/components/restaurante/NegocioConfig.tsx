@@ -11,6 +11,7 @@ import { MenuQR } from "@/components/restaurante/MenuQR";
 import { SucursalesTraslados } from "@/components/negocio/SucursalesTraslados";
 import { RespaldoTotal } from "@/components/negocio/RespaldoTotal";
 import { TIPOS_NEGOCIO, resolverTipoNegocio } from "@/lib/modulos-negocio";
+import { asegurarConfiguracionAutomaticaAgente } from "@/lib/agente-autoconfig";
 
 const campo =
   "w-full rounded-lg border border-glass-border bg-glass/40 px-3 py-2.5 text-base text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary/50";
@@ -220,11 +221,20 @@ export function NegocioConfig() {
       updated_at: new Date().toISOString(),
     };
     const { data: guardado, error } = negocio
-      ? await supabase.from("negocio_config").update(datos).eq("id", negocio.id).select("id")
-      : await supabase.from("negocio_config").insert(datos).select("id");
+      ? await supabase.from("negocio_config").update(datos).eq("id", negocio.id).select("id,owner_id")
+      : await supabase.from("negocio_config").insert(datos).select("id,owner_id");
     setGuardando(false);
     if (error || !guardado || guardado.length === 0)
       return toast.error("No se pudieron guardar los datos. Tu cuenta debe ser la del administrador del negocio.");
+    const fila = guardado[0];
+    if (fila?.id && fila?.owner_id) {
+      void asegurarConfiguracionAutomaticaAgente({
+        negocioId: fila.id,
+        ownerId: fila.owner_id,
+        tipoNegocio: tipoActual.clave,
+        nombreNegocio: datos.nombre,
+      });
+    }
     toast.success("Datos del negocio guardados.");
     recargar();
     window.dispatchEvent(new Event("negocio:cambio"));

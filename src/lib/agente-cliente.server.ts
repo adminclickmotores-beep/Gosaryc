@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { generarConfiguracionAutomaticaSector } from "@/lib/agente-autoconfig";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 import { tarifasComoTexto } from "@/lib/tarifas-domicilio";
 
@@ -339,13 +340,27 @@ export async function responderComoAgente(clave: string, mensajes: MensajeClient
   const giro = resolverTipoNegocio(esPrueba ? sectorPrueba.slice(0, 80) : (cfg?.tipo_negocio ?? null));
   const tipo = (esPrueba ? sectorPrueba : cfg?.tipo_negocio || "general").trim().slice(0, 80);
 
-  const { data: prods } = await supabaseAdmin
-    .from("restaurante_productos")
-    .select("nombre,precio,categoria_id,descripcion,tipo_negocio")
-    .eq("owner_id", ag.owner_id)
-    .eq("activo", true)
-    .order("nombre")
-    .limit(200);
+  const [{ data: prods }, { data: prodsComercio }, { data: vehs }] = await Promise.all([
+    supabaseAdmin
+      .from("restaurante_productos")
+      .select("nombre,precio,categoria_id,descripcion,tipo_negocio")
+      .eq("owner_id", ag.owner_id)
+      .eq("activo", true)
+      .order("nombre")
+      .limit(200),
+    supabaseAdmin
+      .from("com_productos")
+      .select("nombre,precio_detal,stock")
+      .eq("owner_id", ag.owner_id)
+      .order("nombre")
+      .limit(200),
+    supabaseAdmin
+      .from("vehiculos_inventario")
+      .select("tipo,marca,modelo,version,anio,precio,estado,kilometraje")
+      .eq("owner_id", ag.owner_id)
+      .order("created_at", { ascending: false })
+      .limit(80),
+  ]);
   const productos = (prods ?? []).filter(
     (p) => !p.tipo_negocio || resolverTipoNegocio(p.tipo_negocio).clave === giro.clave,
   );
@@ -359,15 +374,27 @@ export async function responderComoAgente(clave: string, mensajes: MensajeClient
       .eq("owner_id", ag.owner_id);
     for (const c of cats ?? []) nombreCat.set(c.id, c.nombre);
   }
+  const lineasCatalogo: string[] = [
+    ...productos.map((p) => {
+      const cat = p.categoria_id ? nombreCat.get(p.categoria_id) : undefined;
+      const desc = p.descripcion ? ` — ${p.descripcion.slice(0, 120)}` : "";
+      return `- ${p.nombre}${cat ? ` (${cat})` : ""}: ${Number(p.precio)}${desc}`;
+    }),
+    ...(prodsComercio ?? []).map((c) => {
+      const stockTxt = Number.isFinite(Number(c.stock)) ? ` | stock: ${Number(c.stock)}` : "";
+      return `- ${c.nombre}: ${Number(c.precio_detal ?? 0)}${stockTxt}`;
+    }),
+    ...(vehs ?? [])
+      .filter((v) => !v.estado || !/vendid/i.test(String(v.estado)))
+      .map((v) => {
+        const nombreV = `${v.marca} ${v.modelo}${v.version ? ` ${v.version}` : ""}${v.anio ? ` ${v.anio}` : ""}`;
+        const km = v.kilometraje ? ` | ${Number(v.kilometraje).toLocaleString("es-CO")} km` : "";
+        return `- [${v.tipo}] ${nombreV}: ${v.precio ? Number(v.precio) : "Precio a consultar"}${km}`;
+      }),
+  ];
   const catalogo =
-    productos.length > 0
-      ? productos
-          .map((p) => {
-            const cat = p.categoria_id ? nombreCat.get(p.categoria_id) : undefined;
-            const desc = p.descripcion ? ` — ${p.descripcion.slice(0, 120)}` : "";
-            return `- ${p.nombre}${cat ? ` (${cat})` : ""}: ${Number(p.precio)}${desc}`;
-          })
-          .join("\n")
+    lineasCatalogo.length > 0
+      ? lineasCatalogo.slice(0, 250).join("\n")
       : "No hay productos o servicios cargados. Si preguntan precios, di que una persona del equipo les confirma.";
 
   const dato = (etiqueta: string, v: string | null | undefined) =>
@@ -433,12 +460,13 @@ export async function responderComoAgente(clave: string, mensajes: MensajeClient
       ? `\nPatrones observados en conversaciones anteriores (son solo pistas para atender mejor; NO son datos del negocio ni sustituyen precios, horarios o políticas):\n${patrones.join("\n")}\n`
       : "");
 
-  const personalidad = (ag.personalidad || "Amable y Cercano").slice(0, 60);
-  const objetivo = (ag.objetivo_cierre || "Cerrar pedido directo").slice(0, 80);
+  const autoSector = generarConfiguracionAutomaticaSector(tipo, cfg?.nombre);
+  const personalidad = (esPrueba ? autoSector.personalidad : ag.personalidad || autoSector.personalidad).slice(0, 160);
+  const objetivo = (esPrueba ? autoSector.objetivo_cierre : ag.objetivo_cierre || autoSector.objetivo_cierre).slice(0, 180);
   const cierraSolo = ag.cierre_autonomo !== false;
 
   const system = `Eres ${nombreAgente}, la persona que atiende por WhatsApp a los CLIENTES de "${cfg?.nombre || "este negocio"}" (tipo de negocio: ${giro.panel}). Eres a la vez agente de servicio al cliente, asesor comercial y vendedor.
-Personalidad: ${personalidad}. Escribes en español, con ese tono, mensajes cortos propios de WhatsApp (máximo 4 o 5 líneas, sin tablas ni títulos). Habla con el vocabulario profesional del tipo de negocio "${giro.panel}". Áreas del negocio: ${modulos || "atención general"}.
+Personalidad: ${personalidad}. Escribes en español, con ese tono, mensajes cortos propios de WhatsApp (máximo 3 líneas por mensaje, sin tablas ni títulos, 1 sola pregunta por turno). Habla con el vocabulario profesional del tipo de negocio "${giro.panel}". Áreas del negocio: ${modulos || "atención general"}.
 Objetivo de cierre del negocio: ${objetivo}. ${cierraSolo ? "Tienes AUTONOMÍA para cerrar: lleva la conversación hasta ese cierre (confirma pedido con total calculado, agenda cita con fecha y hora exactas o entrega los datos de pago configurados) sin esperar a una persona." : "NO cierres tú la operación: reúne los datos y avisa que una persona del equipo la confirma (usa [[ASESOR]])."}
 
 Canal por el que llegó este cliente: ${canal}. En tu PRIMER mensaje adapta la bienvenida: si viene de Instagram o Facebook agradece que los siga o haya visto su publicación; si viene de la página web, agradece su visita; si es WhatsApp directo, saluda normal. No lo repitas después.
