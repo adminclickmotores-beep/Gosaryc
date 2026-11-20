@@ -118,7 +118,7 @@ function useUrlFirmada(ruta: string | null): string | null {
   useEffect(() => {
     if (!ruta) return;
     void (async () => {
-      const { data } = await supabase.storage.from(BUCKET).createSignedUrl(ruta, 3600);
+      const { data } = await supabase.storage.from(BUCKET).createSignedUrl(ruta, 120);
       setUrl(data?.signedUrl ?? null);
     })();
   }, [ruta]);

@@ -168,8 +168,18 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
         if (!template.to) {
           const recipientLower = effectiveRecipient.toLowerCase()
           const isSelf = recipientLower === (user.email ?? '').toLowerCase()
-          let allowed = isSelf
-          if (!allowed && callerOrgId) {
+          // Las invitaciones solo pueden ir a un correo que ya tenga una invitación registrada en el negocio del remitente.
+          const esInvitacion = /invit/i.test(templateName)
+          let allowed = isSelf && !esInvitacion
+          if (!allowed && callerOrgId && esInvitacion) {
+            const { data: inv } = await supabase
+              .from('org_invites')
+              .select('id')
+              .eq('org_id', callerOrgId)
+              .ilike('email', recipientLower)
+              .limit(1)
+            allowed = (inv?.length ?? 0) > 0
+          } else if (!allowed && callerOrgId) {
             const [inviteRes, contactRes, requestRes] = await Promise.all([
               supabase
                 .from('org_invites')

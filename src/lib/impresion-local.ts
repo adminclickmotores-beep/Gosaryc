@@ -21,6 +21,11 @@ function leerClave(clave: string): string {
   }
 }
 
+/** Deja solo caracteres normales de un nombre de impresora (sin comillas, $, ;, &, |, <, >, etc.). */
+export function limpiarNombreImpresora(nombre: string): string {
+  return (nombre || "").replace(/[^\p{L}\p{N} ._\-()[\]#\\/]/gu, "").slice(0, 200).trim();
+}
+
 function guardarClave(clave: string, valor: string): void {
   try {
     window.localStorage.setItem(clave, valor);
@@ -45,7 +50,7 @@ export function leerImpresoraCaja(): string {
 }
 
 export function fijarImpresoraCaja(nombre: string): void {
-  guardarClave(CLAVE_CAJA, (nombre || "").slice(0, 200));
+  guardarClave(CLAVE_CAJA, limpiarNombreImpresora(nombre));
 }
 
 /** Nombre de la impresora de cocina (comandas). Vacío = predeterminada de Windows. */
@@ -54,7 +59,7 @@ export function leerImpresoraCocina(): string {
 }
 
 export function fijarImpresoraCocina(nombre: string): void {
-  guardarClave(CLAVE_COCINA, (nombre || "").slice(0, 200));
+  guardarClave(CLAVE_COCINA, limpiarNombreImpresora(nombre));
 }
 
 /** ¿Imprimir la comanda en cocina automáticamente al entrar un pedido? (por defecto sí). */
@@ -135,7 +140,7 @@ export async function guardarConfigImpresoras(caja: string, cocina: string): Pro
     const r = await fetch(`${URL_BASE}/api/config`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ impresoraCaja: caja || "", impresoraCocina: cocina || "" }),
+      body: JSON.stringify({ impresoraCaja: limpiarNombreImpresora(caja), impresoraCocina: limpiarNombreImpresora(cocina) }),
     });
     return r.ok;
   } catch {
@@ -190,7 +195,7 @@ export async function imprimirEnImpresora(d: TirillaLocal, impresora: string): P
     const r = await fetch(`${URL_BASE}/api/imprimir-tirilla`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...d, impresora: impresora || "" }),
+      body: JSON.stringify({ ...d, impresora: limpiarNombreImpresora(impresora) }),
     });
     if (!r.ok) return false;
     const j = (await r.json()) as { ok?: boolean };
@@ -216,7 +221,7 @@ export async function imprimirComandaCocina(d: ComandaCocina): Promise<boolean> 
     const r = await fetch(`${URL_BASE}/api/imprimir-comanda`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...d, tipo: "comanda", impresora: cocina || "" }),
+      body: JSON.stringify({ ...d, tipo: "comanda", impresora: limpiarNombreImpresora(cocina) }),
     });
     if (!r.ok) return false;
     const j = (await r.json()) as { ok?: boolean };

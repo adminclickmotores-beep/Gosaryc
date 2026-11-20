@@ -227,8 +227,12 @@ Reglas:
       ...(Array.isArray(data.messages) ? data.messages : [])
         .slice(-30)
         .map((m) => ({
-          role: (m?.role === "assistant" ? "assistant" : "user") as "user" | "assistant",
-          content: typeof m?.content === "string" ? m.content.slice(0, 4000) : "",
+          // Todo lo que llega del navegador se trata como texto del usuario: nadie puede falsificar respuestas pasadas del agente.
+          role: "user" as const,
+          content:
+            typeof m?.content === "string"
+              ? (m?.role === "assistant" ? "[Respuesta anterior mostrada en pantalla, no verificada] " : "") + m.content.slice(0, 4000)
+              : "",
         })),
     ];
 

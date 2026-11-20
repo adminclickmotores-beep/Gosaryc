@@ -12,9 +12,10 @@ export async function urlFirmada(valor: string): Promise<string | null> {
   if (!esRutaPrivada(valor)) return valor;
   const c = cache.get(valor);
   if (c && c.vence > Date.now()) return c.url;
-  const { data, error } = await supabase.storage.from(BUCKET_FOTOS).createSignedUrl(valor, 3600);
+  const { data, error } = await supabase.storage.from(BUCKET_FOTOS).createSignedUrl(valor, 120);
   if (error || !data) return null;
-  cache.set(valor, { url: data.signedUrl, vence: Date.now() + 50 * 60 * 1000 });
+  // Enlace corto: si una persona sale del equipo, deja de ver las fotos en pocos minutos.
+  cache.set(valor, { url: data.signedUrl, vence: Date.now() + 90 * 1000 });
   return data.signedUrl;
 }
 

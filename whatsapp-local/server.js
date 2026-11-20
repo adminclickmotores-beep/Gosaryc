@@ -742,5 +742,6 @@ process.on("unhandledRejection", (e) => {
 cargarLineas();
 servidor.listen(PUERTO, "127.0.0.1", () => {
   console.log(`API local de WhatsApp en http://localhost:${PUERTO}`);
-  console.log(`Tu clave de acceso (guárdala en el panel): ${TOKEN}`);
+  // La clave nunca se escribe en los registros: queda solo en el archivo token.txt de la carpeta de datos.
+  console.log(`Tu clave de acceso está guardada en: ${ARCHIVO_TOKEN}`);
 });

@@ -8,6 +8,11 @@ const CLAVE_TOKEN = "gosaryc:licencia-token-v1";
 const CLAVE_DISPOSITIVO = "gosaryc:dispositivo-id-v1";
 const SEMILLA_FIRMA = "gosaryc-colombia-lic-2026-v1";
 
+/** Sin internet el token sirve como máximo 7 días desde la última validación en línea. */
+const VIDA_MAX_OFFLINE_MS = 7 * 86400000;
+/** Ninguna licencia real vence más de ~2 años después de validarse. */
+const VENCE_MAX_MS = 800 * 86400000;
+
 export type TokenLicenciaOffline = {
   owner_id: string;
   negocio_id: string;
@@ -122,6 +127,14 @@ export async function leerTokenLicenciaOffline(ownerId?: string): Promise<TokenL
     };
     const esperada = await firmarCarga(construirCarga(base));
     if (esperada !== parsed.firma) return null;
+    // Límites que un token fabricado a mano no puede saltarse:
+    const validadoMs = new Date(base.validado_en).getTime();
+    const venceMs = new Date(base.vence_en).getTime();
+    if (!Number.isFinite(validadoMs) || !Number.isFinite(venceMs)) return null;
+    if (validadoMs > Date.now() + 5 * 60 * 1000) return null; // validado "en el futuro"
+    if (Date.now() - validadoMs > VIDA_MAX_OFFLINE_MS) return null; // hay que reconectar a internet
+    if (venceMs - validadoMs > VENCE_MAX_MS) return null; // vencimiento imposible de largo
+    if (base.dispositivo_id !== obtenerIdDispositivo()) return null; // token copiado de otro equipo
     return { ...base, firma: parsed.firma };
   } catch {
     return null;

@@ -12,7 +12,7 @@ const http = require("http");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const { execFileSync, exec } = require("child_process");
+const { execFileSync, execFile } = require("child_process");
 
 const PUERTO = Number(process.env.GOSARYC_PRINT_PORT || 8765);
 const VERSION = "1.1.0";
@@ -179,15 +179,18 @@ function imprimirSilencioso(texto, nombreImpresora) {
     } catch (e) { resolve({ ok: false, error: "No se pudo escribir el ticket" }); return; }
     if (nombreImpresora) {
       // Impresora elegida por el dueño (caja o cocina): sale directo sin diálogos.
-      const seguro = String(nombreImpresora).replace(/"/g, "");
-      exec(`powershell -NoProfile -Command "Get-Content -Raw -LiteralPath ${JSON.stringify(f)} | Out-Printer -Name ${JSON.stringify(seguro)}"`, { windowsHide: true, timeout: 30000 }, (err) => {
+      // Lista blanca: solo letras, números, espacios y . _ - ( ) [ ] # \ / ; nada que PowerShell pueda ejecutar.
+      const seguro = String(nombreImpresora).replace(/[^\p{L}\p{N} ._\-()\[\]#\\\/]/gu, "").slice(0, 200).trim();
+      if (!seguro) { resolve({ ok: false, error: "Nombre de impresora no válido" }); return; }
+      // Sin shell: el nombre y el archivo viajan por variables de entorno, nunca dentro del comando.
+      execFile("powershell", ["-NoProfile", "-NonInteractive", "-Command", "Get-Content -Raw -LiteralPath $env:GS_ARCHIVO | Out-Printer -Name $env:GS_IMPRESORA"], { windowsHide: true, timeout: 30000, env: { ...process.env, GS_ARCHIVO: f, GS_IMPRESORA: seguro } }, (err) => {
         if (err) resolve({ ok: false, error: `No se pudo imprimir en "${seguro}". Revisa que siga instalada.` });
         else resolve({ ok: true, destino: seguro });
       });
       return;
     }
     // Sin impresora elegida: va a la predeterminada de Windows, sin abrir diálogos.
-    exec(`notepad /p ${JSON.stringify(f)}`, { windowsHide: true, timeout: 30000 }, (err) => {
+    execFile("notepad", ["/p", f], { windowsHide: true, timeout: 30000 }, (err) => {
       if (err) resolve({ ok: false, error: "No se pudo enviar a la impresora. Revisa que haya una predeterminada." });
       else resolve({ ok: true, destino: "predeterminada" });
     });
