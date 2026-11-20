@@ -470,6 +470,9 @@ function LandingPage() {
               <Link to="/login" search={{ mode: "signup" }} className="gs-cta inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
                 Empieza 30 días gratis sin compromiso <ArrowRight className="h-4 w-4" />
               </Link>
+              <Link to={"/demo" as "/"} className="gs-sec inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-bold">
+                ▶ Probar Demo Interactiva en Vivo (Sin registro)
+              </Link>
               <Link to="/instalar" className="gs-sec inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
                 <Download className="h-4 w-4" /> Descargar App Android / PC
               </Link>

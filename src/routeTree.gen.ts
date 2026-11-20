@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AgenteRouteImport } from './routes/agente'
+import { Route as DemoRouteImport } from './routes/demo'
 import { Route as ImagenCompartirRouteImport } from './routes/imagen-compartir'
 import { Route as IngresarRouteImport } from './routes/ingresar'
 import { Route as InstalarRouteImport } from './routes/instalar'
@@ -83,6 +84,11 @@ const AppRoute = AppRouteImport.update({
 const AgenteRoute = AgenteRouteImport.update({
   id: '/agente',
   path: '/agente',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ImagenCompartirRoute = ImagenCompartirRouteImport.update({
@@ -353,6 +359,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/agente': typeof AgenteRoute
+  '/demo': typeof DemoRoute
   '/imagen-compartir': typeof ImagenCompartirRoute
   '/ingresar': typeof IngresarRoute
   '/instalar': typeof InstalarRoute
@@ -410,6 +417,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/agente': typeof AgenteRoute
+  '/demo': typeof DemoRoute
   '/imagen-compartir': typeof ImagenCompartirRoute
   '/ingresar': typeof IngresarRoute
   '/instalar': typeof InstalarRoute
@@ -469,6 +477,7 @@ export interface FileRoutesById {
   '/$': typeof SplatRoute
   '/_app': typeof AppRouteWithChildren
   '/agente': typeof AgenteRoute
+  '/demo': typeof DemoRoute
   '/imagen-compartir': typeof ImagenCompartirRoute
   '/ingresar': typeof IngresarRoute
   '/instalar': typeof InstalarRoute
@@ -528,6 +537,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/agente'
+    | '/demo'
     | '/imagen-compartir'
     | '/ingresar'
     | '/instalar'
@@ -585,6 +595,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/agente'
+    | '/demo'
     | '/imagen-compartir'
     | '/ingresar'
     | '/instalar'
@@ -643,6 +654,7 @@ export interface FileRouteTypes {
     | '/$'
     | '/_app'
     | '/agente'
+    | '/demo'
     | '/imagen-compartir'
     | '/ingresar'
     | '/instalar'
@@ -702,6 +714,7 @@ export interface RootRouteChildren {
   SplatRoute: typeof SplatRoute
   AppRoute: typeof AppRouteWithChildren
   AgenteRoute: typeof AgenteRoute
+  DemoRoute: typeof DemoRoute
   ImagenCompartirRoute: typeof ImagenCompartirRoute
   IngresarRoute: typeof IngresarRoute
   InstalarRoute: typeof InstalarRoute
@@ -757,6 +770,13 @@ declare module '@tanstack/react-router' {
       path: '/agente'
       fullPath: '/agente'
       preLoaderRoute: typeof AgenteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/imagen-compartir': {
@@ -1193,6 +1213,7 @@ const rootRouteChildren: RootRouteChildren = {
   SplatRoute: SplatRoute,
   AppRoute: AppRouteWithChildren,
   AgenteRoute: AgenteRoute,
+  DemoRoute: DemoRoute,
   ImagenCompartirRoute: ImagenCompartirRoute,
   IngresarRoute: IngresarRoute,
   InstalarRoute: InstalarRoute,
