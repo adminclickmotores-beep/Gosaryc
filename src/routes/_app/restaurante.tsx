@@ -148,7 +148,7 @@ export function RestaurantePage() {
   const [vistaElegida, setVista] = useState<VistaClave>(
     (VISTAS_VALIDAS as readonly string[]).includes(busqueda.vista ?? "") ? (busqueda.vista as VistaClave) : "venta",
   );
-  // Si cambia la vista en el enlace (por ejemplo, el recorrido de la demo), se abre esa pestaña.
+  // Si cambia la vista en el enlace, se abre esa pestaña.
   useEffect(() => {
     if ((VISTAS_VALIDAS as readonly string[]).includes(busqueda.vista ?? "")) setVista(busqueda.vista as VistaClave);
   }, [busqueda.vista]);
@@ -203,7 +203,7 @@ export function RestaurantePage() {
   }, []);
 
   // Solo los negocios con pedidos consultan pedidos/mesas; el resto (p. ej. concesionario) no gasta consultas.
-  // La actualización periódica se pausa con la pestaña oculta y es más espaciada en las cuentas demo.
+  // La actualización periódica se pausa con la pestaña oculta.
   const usaPedidos = tipo.usaPedidos;
   useEffect(() => {
     if (!usaPedidos) return;

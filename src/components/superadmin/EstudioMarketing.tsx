@@ -180,7 +180,7 @@ function generarTextoCampana(
       "",
       `Funciona en celular, web y computador de escritorio (incluso si se cae el internet). Si decides quedarte, la licencia anual es de solo *${precio}*.`,
       "",
-      `Puedes ver una demo en vivo o activar tus 30 días gratis aquí: ${enlace}`,
+      `Puedes activar tus 30 días gratis aquí: ${enlace}`,
       `¿Te gustaría que te ayude a dejarlo listo en 5 minutos?`,
     ].join("\n");
   }

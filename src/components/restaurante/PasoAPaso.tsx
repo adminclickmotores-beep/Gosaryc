@@ -97,8 +97,6 @@ export function PasoAPaso({ negocio, tipo, onAbrirNegocio, onAbrirMenu }: Props)
     // Casi todo listo: mostrar solo el último paso de forma discreta.
   }
 
-  // Las cuentas demo lucen como negocios ya operando: sin la tarjeta de primeros pasos.
-
   return (
     <GlassPanel className="space-y-4 p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">

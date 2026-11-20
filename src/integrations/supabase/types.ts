@@ -5043,7 +5043,6 @@ export type Database = {
           dian_certificado_nombre: string | null
           dian_certificado_vence: string | null
           dian_ambiente: string
-          es_demo_publico: boolean
         }
         Insert: {
           aviso_entrega?: string | null
@@ -5094,7 +5093,6 @@ export type Database = {
           dian_certificado_nombre?: string | null
           dian_certificado_vence?: string | null
           dian_ambiente?: string
-          es_demo_publico?: boolean
         }
         Update: {
           aviso_entrega?: string | null
@@ -5145,7 +5143,6 @@ export type Database = {
           dian_certificado_nombre?: string | null
           dian_certificado_vence?: string | null
           dian_ambiente?: string
-          es_demo_publico?: boolean
         }
         Relationships: []
       }
@@ -8498,11 +8495,6 @@ export type Database = {
         Returns: Json
       }
       ofi_cobrar: { Args: { p_tabla: string; p_id: string; p_valor: number; p_metodo: string }; Returns: Json }
-      demo_preparar_negocio: { Args: { p_tipo: string; p_nombre: string }; Returns: string }
-      demo_sembrar_vehiculos: { Args: never; Returns: number }
-      demo_sembrar_restaurante: { Args: never; Returns: number }
-      demo_completar_vehiculos: { Args: never; Returns: number }
-      demo_cifras_del_dia: { Args: never; Returns: number }
       sst_cobrar: { Args: { p_tabla: string; p_id: string; p_valor: number; p_metodo: string }; Returns: Json }
       sst_validar_certificado: { Args: { p_codigo: string }; Returns: Json }
       obr_registrar_vale: {
