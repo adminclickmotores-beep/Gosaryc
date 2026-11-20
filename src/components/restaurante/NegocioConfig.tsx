@@ -275,6 +275,14 @@ export function NegocioConfig() {
                 if (errTipo || !ok || ok.length === 0) {
                   return toast.error("No se pudo cambiar el tipo de negocio. Tu cuenta debe ser la del administrador.");
                 }
+                if (negocio.owner_id) {
+                  void asegurarConfiguracionAutomaticaAgente({
+                    negocioId: negocio.id,
+                    ownerId: negocio.owner_id,
+                    tipoNegocio: nuevo,
+                    nombreNegocio: `Mi ${resolverTipoNegocio(nuevo).etiqueta.split("/")[0].trim().toLowerCase()}`,
+                  });
+                }
                 window.dispatchEvent(new Event("negocio:cambio"));
                 // La dirección sigue al tipo elegido, al instante.
                 const destino = nuevo === "restaurante" ? "/restaurante" : `/negocio/${nuevo}`;

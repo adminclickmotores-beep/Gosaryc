@@ -152,12 +152,12 @@ const POR_RUTA: Record<string, Instructivo> = {
   },
   "/crm-embudo": {
     titulo: "CRM y Embudo IA",
-    paraQue: "Seguir a cada prospecto del agente de WhatsApp desde que escribe hasta que cierra.",
+    paraQue: "Seguir prospectos del agente de WhatsApp, gestionar la Bandeja PQRS y revisar la Inteligencia IA automática de tu sector.",
     pasos: [
-      "Alterna entre Tablero (arrastra cada tarjeta a su etapa) y Cola de llegada (atiende por turno).",
-      "Filtra por canal, temperatura (caliente, tibio, frío) o estado, o busca por nombre o teléfono.",
-      "Abre una tarjeta para ver el perfil calificado por la IA, la línea de tiempo y sus PQRS.",
-      "Usa los 4 botones: abrir chat, crear cotización, agendar cita o convertir a cliente.",
+      "Usa «Tablero Kanban» para arrastrar cada tarjeta entre etapas o «Cola de Llegada» para atender por turno.",
+      "Filtra por canal, temperatura (caliente, tibio, frío) o estado, y abre cualquier cliente para ver su Ficha 360°.",
+      "Revisa «Bandeja PQRS» para gestionar las PQRS radicadas por el bot (Abierta, En gestión, Resuelta) con acceso directo a la Ficha 360°.",
+      "En «Inteligencia IA» verifica el resumen automático de tu sector y, solo si lo necesitas, despliega «Personalizar reglas avanzadas (Opcional)».",
     ],
   },
   "/resenas-pqrs": {
@@ -225,7 +225,7 @@ const POR_RUTA: Record<string, Instructivo> = {
     pasos: [
       "Completa nombre, logo, colores y horarios: eso ven tus clientes en el menú y las facturas.",
       "En “Datos fiscales” escribe razón social, NIT con DV, régimen, resolución con rango y vencimiento, y el pie de página: todo sale impreso en cada factura.",
-      "Abre la pestaña «Agente WhatsApp IA» para conectarlo, definir sus respuestas y mirar los chats en vivo.",
+      "Abre la pestaña «Agente WhatsApp IA» para vincular tu número con QR 24/7, copiar enlaces de rastreo, activar el CRM en el menú y probar el agente en vivo.",
       "Copia tu enlace público o QR y pégalo en el local o en redes.",
     ],
     consejo: "Las facturas siempre llevan tu logo, régimen y pie de página: revísalos aquí antes de facturar.",
