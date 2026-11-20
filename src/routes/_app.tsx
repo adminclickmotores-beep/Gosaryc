@@ -41,6 +41,7 @@ import { purgeExpiredDrafts } from "@/hooks/use-draft";
 import { getCachedOnboardedAt } from "@/hooks/use-onboarding-status";
 import { esCuentaMaestra } from "@/lib/cuenta-maestra";
 import { esCuentaDemo } from "@/lib/demo-real";
+import { leerModoDemo } from "@/lib/demo-sandbox";
 
 export const Route = createFileRoute("/_app")({
   component: AppShell,
@@ -131,6 +132,8 @@ function AppShell() {
   useEffect(() => {
     const onClickModulo = (e: MouseEvent) => {
       if (e.defaultPrevented || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+      // En la demo (sandbox en memoria) todo se abre en la misma pestaña: una pestaña nueva perdería la demo.
+      if (leerModoDemo()) return;
       if (!(e.target instanceof Element)) return;
       const enlace = e.target.closest("a[href]");
       if (!(enlace instanceof HTMLAnchorElement)) return;
@@ -203,6 +206,8 @@ function AppShell() {
 
   useEffect(() => {
     if (loading) return;
+    // Demo en vivo activa: nunca se manda a /login (la sesión de demostración se aplica en memoria).
+    if (leerModoDemo()) return;
     const CLAVE_DEMO = "gosaryc:demo_iniciando";
     if (session) {
       try {

@@ -3,6 +3,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { prefetchOrgId } from "@/hooks/use-org";
 import { esCuentaDemo } from "@/lib/demo-real";
+import { leerModoDemo, salirModoDemo, sesionDemo } from "@/lib/demo-sandbox";
 
 interface AuthCtx {
   session: Session | null;
@@ -58,10 +59,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   } = supabase.auth.onAuthStateChange((_event, s) => {
     // La sesión inicial se valida contra Supabase antes de habilitar el panel.
     if (!initializedRef.current) return;
+    if (leerModoDemo()) return;
     apply(s);
   });
 
+    // Demo en vivo: se entra y se sale del modo demo sin pasar por el servidor de autenticación.
+    const alCambiarDemo = () => {
+      if (leerModoDemo()) {
+        apply(sesionDemo());
+      } else {
+        void supabase.auth.getSession().then(({ data }) => apply(data.session)).catch(() => apply(null));
+      }
+    };
+    window.addEventListener("gosaryc:demo-cambio", alCambiarDemo);
+
     (async () => {
+      if (leerModoDemo()) {
+        apply(sesionDemo());
+        return;
+      }
       // "Recordarme" desmarcado: al abrir el navegador de nuevo se cierra la sesión anterior.
       try {
         if (
@@ -95,10 +111,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     })();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener("gosaryc:demo-cambio", alCambiarDemo);
+    };
   }, []);
 
   const signOut = useCallback(async () => {
+    if (leerModoDemo()) {
+      salirModoDemo();
+      sessionRef.current = null;
+      lastUserIdRef.current = null;
+      setSession(null);
+      return;
+    }
     const demo = esCuentaDemo(sessionRef.current?.user?.email);
     try {
       await supabase.auth.signOut(demo ? { scope: "local" } : undefined);

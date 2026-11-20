@@ -514,7 +514,7 @@ export function BarraDemo() {
                 onClick={() => void salirDeDemo("signup")}
                 className="inline-flex min-h-8 items-center gap-1 rounded-full bg-[#2563EB] px-3 py-1 text-xs font-bold text-white transition hover:bg-[#1D4ED8] disabled:opacity-50"
               >
-                <Rocket className="h-3.5 w-3.5" /> Crear cuenta
+                <Rocket className="h-3.5 w-3.5" /> Crear mi cuenta gratis (30 días)
               </button>
             </div>
           </div>
