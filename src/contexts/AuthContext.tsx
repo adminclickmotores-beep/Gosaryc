@@ -37,6 +37,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Fragile: auth fires both the storage-restored session and the initial
       // auth event. Keep object identity stable and only flip loading once, or
       // the app shell remounts/paints twice during every fresh load.
+      // Si la demo se activó mientras la lectura de la sesión real seguía en curso, gana la demo.
+      if (leerModoDemo()) s = sesionDemo();
       sessionRef.current = s;
       setSession((prev) => (sessionsEqual(prev, s) ? prev : s));
       if (!initializedRef.current) {
@@ -81,6 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // "Recordarme" desmarcado: al abrir el navegador de nuevo se cierra la sesión anterior.
       try {
         if (
+          !leerModoDemo() &&
           localStorage.getItem("gosaly:recordarme") === "0" &&
           !sessionStorage.getItem("gosaly:sesion_activa")
         ) {
@@ -94,11 +97,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // en vez de quedarse en "Iniciando" para siempre.
       try {
         const { data } = await supabase.auth.getSession();
+        if (leerModoDemo()) {
+          apply(sesionDemo());
+          return;
+        }
         if (data.session) {
           // Se valida la sesión contra el servidor: un token revocado, borrado o vencido no entra.
           const { error } = await supabase.auth.getUser();
           const rechazada =
             !!error && typeof error.status === "number" && error.status >= 400 && error.status < 500 && error.status !== 429;
+          if (leerModoDemo()) {
+            apply(sesionDemo());
+            return;
+          }
           if (rechazada) {
             await supabase.auth.signOut();
             apply(null);
