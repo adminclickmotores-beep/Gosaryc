@@ -168,6 +168,11 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
         if (!template.to) {
           const recipientLower = effectiveRecipient.toLowerCase()
           const isSelf = recipientLower === (user.email ?? '').toLowerCase()
+          // Comodines de ilike (% _ \) escapados: el destinatario se compara literalmente, nunca como patrón.
+          const patronExacto = recipientLower.replace(/[\\%_]/g, (c) => '\\' + c)
+          if (!/^[^\s@%*]+@[^\s@%*]+\.[^\s@%*]+$/.test(recipientLower)) {
+            return Response.json({ error: 'Invalid recipient' }, { status: 400 })
+          }
           // Las invitaciones solo pueden ir a un correo que ya tenga una invitación registrada en el negocio del remitente.
           const esInvitacion = /invit/i.test(templateName)
           let allowed = isSelf && !esInvitacion
@@ -176,7 +181,7 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
               .from('org_invites')
               .select('id')
               .eq('org_id', callerOrgId)
-              .ilike('email', recipientLower)
+              .ilike('email', patronExacto)
               .limit(1)
             allowed = (inv?.length ?? 0) > 0
           } else if (!allowed && callerOrgId) {
@@ -185,19 +190,19 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
                 .from('org_invites')
                 .select('id')
                 .eq('org_id', callerOrgId)
-                .ilike('email', recipientLower)
+                .ilike('email', patronExacto)
                 .limit(1),
               supabase
                 .from('contacts')
                 .select('id')
                 .eq('org_id', callerOrgId)
-                .ilike('email', recipientLower)
+                .ilike('email', patronExacto)
                 .limit(1),
               supabase
                 .from('campaign_requests')
                 .select('id')
                 .eq('org_id', callerOrgId)
-                .ilike('requestor_email', recipientLower)
+                .ilike('requestor_email', patronExacto)
                 .limit(1),
             ])
             allowed =
