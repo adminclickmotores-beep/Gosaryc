@@ -2,7 +2,6 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { brokeredPreviewStorage } from './previewAuthStorage';
-import { piezaDemo } from '@/lib/demo-sandbox';
 
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
@@ -92,14 +91,6 @@ let _supabase: ReturnType<typeof createSupabaseClient> | undefined;
 // import { supabase } from "@/integrations/supabase/client";
 export const supabase = new Proxy({} as ReturnType<typeof createSupabaseClient>, {
   get(_, prop, receiver) {
-    // Demo en vivo (sandbox local en memoria): no toca la base de datos ni la autenticación.
-    if (typeof window !== 'undefined') {
-      const falsa = piezaDemo(prop, () => {
-        if (!_supabase) _supabase = createSupabaseClient();
-        return _supabase.auth;
-      });
-      if (falsa !== undefined) return falsa;
-    }
     if (!_supabase) _supabase = createSupabaseClient();
     return Reflect.get(_supabase, prop, receiver);
   },

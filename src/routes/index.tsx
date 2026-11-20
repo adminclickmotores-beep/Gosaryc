@@ -11,8 +11,6 @@ import {
 import { SECTORES, buscarSector } from "@/lib/sectores";
 import { useAuth } from "@/contexts/AuthContext";
 import { BRAND } from "@/lib/brand";
-import { BotonesDemo } from "@/components/app/BotonesDemo";
-import { esCuentaDemo } from "@/lib/demo-real";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -395,11 +393,7 @@ function MiniNomina() {
 }
 
 function LandingPage() {
-  const { loading, session, signOut } = useAuth();
-  // La portada no debe conservar una sesión demo anterior: el login real siempre empieza limpio.
-  useEffect(() => {
-    if (!loading && esCuentaDemo(session?.user?.email)) void signOut();
-  }, [loading, session, signOut]);
+  const { session } = useAuth();
   const [fichaModulo, setFichaModulo] = useState<Modulo | null>(null);
   const [oscuro, setOscuro] = useState<boolean>(false);
 
@@ -449,7 +443,7 @@ function LandingPage() {
               {oscuro ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
             <Link to="/instalar" className="gs-muted hidden rounded-full px-4 py-2 text-sm font-medium sm:inline-flex">Descargar app</Link>
-            {session && !esCuentaDemo(session.user?.email) ? (
+            {session ? (
               <Link to={"/restaurante" as "/dashboard"} className="gs-cta inline-flex rounded-full px-5 py-2.5 text-sm">Ir a mi panel</Link>
             ) : (
               <Link to="/login" search={{ mode: "signin" }} className="gs-cta inline-flex rounded-full px-5 py-2.5 text-sm">Iniciar sesión</Link>
@@ -480,7 +474,6 @@ function LandingPage() {
                 <Download className="h-4 w-4" /> Descargar App Android / PC
               </Link>
             </div>
-            <BotonesDemo className="mt-4 max-w-md" />
             <p className="gs-card mt-6 flex items-start gap-3 rounded-2xl px-4 py-3 text-sm font-medium">
               <Mic className="gs-verde mt-0.5 h-5 w-5 shrink-0" />
               <span className="min-w-0 break-words">Controla todo tu negocio por voz: factura, crea inventario, modifica precios y consulta reportes hablando</span>
@@ -579,7 +572,6 @@ function LandingPage() {
                 <p className="mt-5 font-semibold">Cómo funciona</p>
                 <p className="gs-muted mt-1 text-sm">{fichaModulo.como}</p>
                 <div className="mt-6 flex flex-col gap-3">
-                  <BotonesDemo />
                   <Link to="/login" search={{ mode: "signup" }} className="gs-cta inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
                     Crear cuenta y probar gratis <ArrowRight className="h-4 w-4" />
                   </Link>

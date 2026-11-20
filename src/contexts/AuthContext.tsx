@@ -2,8 +2,6 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { prefetchOrgId } from "@/hooks/use-org";
-import { esCuentaDemo } from "@/lib/demo-real";
-import { leerModoDemo, salirModoDemo, sesionDemo } from "@/lib/demo-sandbox";
 
 interface AuthCtx {
   session: Session | null;
@@ -37,8 +35,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Fragile: auth fires both the storage-restored session and the initial
       // auth event. Keep object identity stable and only flip loading once, or
       // the app shell remounts/paints twice during every fresh load.
-      // Si la demo se activó mientras la lectura de la sesión real seguía en curso, gana la demo.
-      if (leerModoDemo()) s = sesionDemo();
       sessionRef.current = s;
       setSession((prev) => (sessionsEqual(prev, s) ? prev : s));
       if (!initializedRef.current) {
@@ -56,34 +52,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-  const {
-    data: { subscription },
-  } = supabase.auth.onAuthStateChange((_event, s) => {
-    // La sesión inicial se valida contra Supabase antes de habilitar el panel.
-    if (!initializedRef.current) return;
-    if (leerModoDemo()) return;
-    apply(s);
-  });
-
-    // Demo en vivo: se entra y se sale del modo demo sin pasar por el servidor de autenticación.
-    const alCambiarDemo = () => {
-      if (leerModoDemo()) {
-        apply(sesionDemo());
-      } else {
-        void supabase.auth.getSession().then(({ data }) => apply(data.session)).catch(() => apply(null));
-      }
-    };
-    window.addEventListener("gosaryc:demo-cambio", alCambiarDemo);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, s) => {
+      // La sesión inicial se valida contra Supabase antes de habilitar el panel.
+      if (!initializedRef.current) return;
+      apply(s);
+    });
 
     (async () => {
-      if (leerModoDemo()) {
-        apply(sesionDemo());
-        return;
-      }
       // "Recordarme" desmarcado: al abrir el navegador de nuevo se cierra la sesión anterior.
       try {
         if (
-          !leerModoDemo() &&
           localStorage.getItem("gosaly:recordarme") === "0" &&
           !sessionStorage.getItem("gosaly:sesion_activa")
         ) {
@@ -97,19 +77,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // en vez de quedarse en "Iniciando" para siempre.
       try {
         const { data } = await supabase.auth.getSession();
-        if (leerModoDemo()) {
-          apply(sesionDemo());
-          return;
-        }
         if (data.session) {
           // Se valida la sesión contra el servidor: un token revocado, borrado o vencido no entra.
           const { error } = await supabase.auth.getUser();
           const rechazada =
             !!error && typeof error.status === "number" && error.status >= 400 && error.status < 500 && error.status !== 429;
-          if (leerModoDemo()) {
-            apply(sesionDemo());
-            return;
-          }
           if (rechazada) {
             await supabase.auth.signOut();
             apply(null);
@@ -124,21 +96,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       subscription.unsubscribe();
-      window.removeEventListener("gosaryc:demo-cambio", alCambiarDemo);
     };
   }, []);
 
   const signOut = useCallback(async () => {
-    if (leerModoDemo()) {
-      salirModoDemo();
-      sessionRef.current = null;
-      lastUserIdRef.current = null;
-      setSession(null);
-      return;
-    }
-    const demo = esCuentaDemo(sessionRef.current?.user?.email);
     try {
-      await supabase.auth.signOut(demo ? { scope: "local" } : undefined);
+      await supabase.auth.signOut();
     } catch {
       try {
         await supabase.auth.signOut({ scope: "local" });

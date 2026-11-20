@@ -6,8 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 import { useAuth } from "@/contexts/AuthContext";
-import { esCuentaDemo } from "@/lib/demo-real";
-import { DemoAgenteWhatsApp } from "@/components/restaurante/DemoAgenteWhatsApp";
 import { asegurarConfiguracionAutomaticaAgente, type AgenteAutoRow } from "@/lib/agente-autoconfig";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 
@@ -35,13 +33,7 @@ const ETIQUETA_ESTADO: Record<string, string> = {
   desconectado: "Desconectado",
 };
 
-/** En las cuentas demo muestra la demostración interactiva; el administrador puede pasar al puente local real. */
 export function AgenteWhatsApp() {
-  const { user } = useAuth();
-  const [realDemo, setRealDemo] = useState(false);
-  if (esCuentaDemo(user?.email) && !realDemo) {
-    return <DemoAgenteWhatsApp onConectarReal={() => setRealDemo(true)} />;
-  }
   return <AgenteWhatsAppReal />;
 }
 

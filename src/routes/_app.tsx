@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Lock, GraduationCap, LifeBuoy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { BarraDemo } from "@/components/app/BarraDemo";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
 import { ThemeToggle } from "@/components/ui-custom/ThemeToggle";
 import {
@@ -40,8 +39,6 @@ import { AutosaveStatus } from "@/components/app/AutosaveStatus";
 import { purgeExpiredDrafts } from "@/hooks/use-draft";
 import { getCachedOnboardedAt } from "@/hooks/use-onboarding-status";
 import { esCuentaMaestra } from "@/lib/cuenta-maestra";
-import { esCuentaDemo } from "@/lib/demo-real";
-import { leerModoDemo } from "@/lib/demo-sandbox";
 
 export const Route = createFileRoute("/_app")({
   component: AppShell,
@@ -55,8 +52,6 @@ type NavItem = {
 
 function AppShell() {
   const { session, loading, user } = useAuth();
-  const [iniciandoDemo, setIniciandoDemo] = useState(false);
-  const [reintentoDemo, setReintentoDemo] = useState(0);
   const loc = useLocation();
   const nav = useNavigate();
   const completa = (loc.search as Record<string, unknown> | undefined)?.ventana === "completa";
@@ -132,8 +127,6 @@ function AppShell() {
   useEffect(() => {
     const onClickModulo = (e: MouseEvent) => {
       if (e.defaultPrevented || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
-      // En la demo (sandbox en memoria) todo se abre en la misma pestaña: una pestaña nueva perdería la demo.
-      if (leerModoDemo()) return;
       if (!(e.target instanceof Element)) return;
       const enlace = e.target.closest("a[href]");
       if (!(enlace instanceof HTMLAnchorElement)) return;
@@ -184,8 +177,6 @@ function AppShell() {
     if (!user) return;
   // La cuenta maestra solo omite la configuración inicial si confirmó su correo.
   if (esCuentaMaestra(user.email) && user.email_confirmed_at) return;
-    // Las cuentas demo nunca pasan por la configuración inicial.
-    if (esCuentaDemo(user.email)) return;
     // En ventana completa (nueva pestaña) nunca redirigir a /welcome.
     if (new URLSearchParams(window.location.search).get("ventana") === "completa") return;
     // Se espera a que carguen los permisos para no mandar al personal a /welcome por error.
@@ -206,39 +197,14 @@ function AppShell() {
 
   useEffect(() => {
     if (loading) return;
-    // Demo en vivo activa: nunca se manda a /login (la sesión de demostración se aplica en memoria).
-    if (leerModoDemo()) return;
-    const CLAVE_DEMO = "gosaryc:demo_iniciando";
-    if (session) {
-      try {
-        sessionStorage.removeItem(CLAVE_DEMO);
-      } catch {
-        /* almacenamiento bloqueado */
-      }
-      setIniciandoDemo(false);
-      return;
-    }
-    // Si se está abriendo una demo en vivo, se espera a que se establezca la sesión antes de ir a /login.
-    let enCurso = false;
-    try {
-      const t = Number(sessionStorage.getItem(CLAVE_DEMO) ?? 0);
-      enCurso = t > 0 && Date.now() - t < 12000;
-    } catch {
-      enCurso = false;
-    }
-    if (enCurso) {
-      setIniciandoDemo(true);
-      const t = setTimeout(() => setReintentoDemo((n) => n + 1), 800);
-      return () => clearTimeout(t);
-    }
-    setIniciandoDemo(false);
+    if (session) return;
     nav({
       to: "/login",
       search: { redirect: pathnameRef.current, mode: "signin" },
       replace: true,
     });
     // Fragile: this guard must not depend on location.pathname.
-  }, [loading, session, nav, reintentoDemo]);
+  }, [loading, session, nav]);
 
   // Bloqueo por suspensión o vencimiento de la suscripción (validación en servidor; caché local solo si no hay internet).
   useEffect(() => {
@@ -302,7 +268,7 @@ function AppShell() {
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
             </span>
             <span className="font-display tracking-wide">
-              {iniciandoDemo ? "Iniciando demo en vivo..." : loading ? `Iniciando ${BRAND.name}` : "Redirigiendo al inicio de sesión"}
+              {loading ? `Iniciando ${BRAND.name}` : "Redirigiendo al inicio de sesión"}
             </span>
           </div>
         </motion.div>
@@ -440,7 +406,6 @@ function AppShell() {
         <CommandPalette />
 
         <main className="flex-1 min-w-0 overflow-x-hidden pb-[calc(env(safe-area-inset-bottom)+5rem)] md:pb-0">
-          <BarraDemo />
           {/* Mobile top bar */}
           <header className={`sticky top-0 z-30 ${completaFinal ? "hidden" : "flex"} items-center justify-between border-b border-glass-border bg-background/80 px-4 py-3 backdrop-blur-xl md:hidden`}>
             <Link to="/" className="flex items-center gap-2 text-foreground">
@@ -481,12 +446,9 @@ function AppShell() {
             <div className="pointer-events-auto">
               <ThemeToggle />
             </div>
-            {/* En las cuentas demo no se muestran los primeros pasos: el negocio luce 100 % operativo. */}
-            {!esCuentaDemo(user?.email) && (
-              <div className="pointer-events-auto">
-                <OnboardingChecklist variant="pill" />
-              </div>
-            )}
+            <div className="pointer-events-auto">
+              <OnboardingChecklist variant="pill" />
+            </div>
             <div className="pointer-events-auto">
               <UserMenu />
             </div>

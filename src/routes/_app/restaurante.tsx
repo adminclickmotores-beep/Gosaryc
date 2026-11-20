@@ -27,8 +27,6 @@ import { IndicadoresNegocio } from "@/components/app/IndicadoresNegocio";
 import { DashboardConcesionario } from "@/components/vehiculos/DashboardConcesionario";
 import { escaparHtml } from "@/lib/exportes";
 import { evitarSubmitConEnter, generarEAN13 } from "@/lib/escaner-barras";
-import { useAuth } from "@/contexts/AuthContext";
-import { CORREO_DEMO } from "@/lib/demo-real";
 
 const VISTAS_VALIDAS = ["venta", "pedidos", "menu", "qr", "mesas", "caja", "reportes", "recetario", "agente", "negocio"] as const;
 type VistaClave = (typeof VISTAS_VALIDAS)[number];
@@ -133,10 +131,7 @@ const campo =
 
 export function RestaurantePage() {
   const { negocio } = useNegocio();
-  const { user } = useAuth();
-  // La demo de restaurante siempre muestra el panel de restaurante, sin mezclarse con el concesionario.
-  const demoRestaurante = user?.email?.toLowerCase() === CORREO_DEMO.restaurante;
-  const tipo = resolverTipoNegocio(demoRestaurante ? "restaurante" : negocio?.tipo_negocio);
+  const tipo = resolverTipoNegocio(negocio?.tipo_negocio);
   const busqueda = useSearch({ strict: false }) as { vista?: string; ventana?: string };
   const navegar = useNavigate();
   const { pathname } = useLocation();
@@ -215,9 +210,9 @@ export function RestaurantePage() {
     cargar();
     const t = setInterval(() => {
       if (document.visibilityState === "visible") void cargar();
-    }, demoRestaurante ? 45000 : 15000);
+    }, 15000);
     return () => clearInterval(t);
-  }, [cargar, usaPedidos, demoRestaurante]);
+  }, [cargar, usaPedidos]);
 
   const mover = async (p: Pedido, estado: string) => {
     const { error } = await supabase

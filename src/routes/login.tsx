@@ -8,8 +8,6 @@ import { Button } from "@/components/ui/button";
 
 import { BRAND } from "@/lib/brand";
 import { BrandHexLogo } from "@/components/app/BrandHexLogo";
-import { BotonesDemo } from "@/components/app/BotonesDemo";
-import { esCuentaDemo } from "@/lib/demo-real";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 import { correoValido, limpiarCorreo } from "@/lib/validacion-publica";
@@ -30,8 +28,7 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const search = Route.useSearch();
   const nav = useNavigate();
-  const { session, loading, signOut } = useAuth();
-  const esDemo = esCuentaDemo(session?.user?.email);
+  const { session, loading } = useAuth();
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">(search.mode ?? "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -45,19 +42,11 @@ function LoginPage() {
   }, [search.mode]);
 
   useEffect(() => {
-    // Si quedó una sesión demo guardada en el navegador, se cierra al llegar a iniciar sesión:
-    // así "Iniciar sesión" nunca deja entrar solo a la cuenta demo.
-    if (!loading && esDemo) void signOut();
-  }, [loading, esDemo, signOut]);
-
-  useEffect(() => {
-    // Nunca redirigir de vuelta al panel si la sesión activa es una cuenta demo:
-    // si el usuario llegó a /login es porque quiere iniciar sesión o crear su propia cuenta.
-    if (!loading && session && !esDemo) {
+    if (!loading && session) {
       // Siempre se entra al panel principal (no a la última pantalla que quedó guardada).
       nav({ to: "/restaurante" as "/dashboard", replace: true });
     }
-  }, [session, loading, esDemo, nav, search.redirect]);
+  }, [session, loading, nav, search.redirect]);
 
   // "Recordarme": si no está marcado, la sesión se cierra al cerrar el navegador.
   const guardarPreferenciaSesion = () => {
@@ -95,7 +84,6 @@ function LoginPage() {
     setBusy(true);
     try {
       if (mode === "signup") {
-        if (esDemo) await signOut();
         guardarPreferenciaSesion();
         const { data, error } = await supabase.auth.signUp({
           email: correo,
@@ -110,10 +98,6 @@ function LoginPage() {
           toast.success("Cuenta creada. ¡Bienvenido!");
         }
       } else if (mode === "forgot") {
-        if (esCuentaDemo(correo)) {
-          toast.error("Las cuentas demo no permiten cambiar la contraseña.");
-          return;
-        }
         const { error } = await supabase.auth.resetPasswordForEmail(correo, {
           redirectTo: `${window.location.origin}/reset-password`,
         });
@@ -121,9 +105,8 @@ function LoginPage() {
         toast.success("Te enviamos un enlace para cambiar tu contraseña. Revisa tu correo y el spam.");
         setMode("signin");
       } else {
-        if (esDemo) await signOut();
         guardarPreferenciaSesion();
-        const { error } = await supabase.auth.signInWithPassword({ email: correo, password });
+        const { error } =await supabase.auth.signInWithPassword({ email: correo, password });
         if (error) throw error;
       }
     } catch (err) {
@@ -153,7 +136,6 @@ function LoginPage() {
 
   const google = async () => {
     setBusy(true);
-    if (esDemo) await signOut();
     guardarPreferenciaSesion();
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: `${window.location.origin}/restaurante`,
@@ -267,11 +249,6 @@ function LoginPage() {
                   {mode === "signup" && (
                     <div className="mb-4 rounded-xl border border-primary/30 bg-primary/10 px-3.5 py-2.5 text-center text-xs font-medium text-foreground">
                       Incluye 30 días de prueba sin compromiso para tu negocio.
-                    </div>
-                  )}
-                  {esDemo && (
-                    <div className="mb-5 rounded-xl border border-emerald-500/35 bg-emerald-500/10 px-3.5 py-2.5 text-center text-xs text-foreground">
-                      Estabas viendo una demo. Inicia sesión o crea tu cuenta para entrar a tu propio negocio.
                     </div>
                   )}
                   <button
@@ -439,16 +416,6 @@ function LoginPage() {
                 )}
               </div>
 
-              {mode !== "forgot" && (
-                <>
-                  <div className="my-6 flex items-center gap-3 text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">
-                    <span className="h-px flex-1 bg-gradient-to-r from-transparent via-glass-border to-glass-border" />
-                    o prueba una demo
-                    <span className="h-px flex-1 bg-gradient-to-l from-transparent via-glass-border to-glass-border" />
-                  </div>
-                  <BotonesDemo />
-                </>
-              )}
               </>
               )}
             </div>
