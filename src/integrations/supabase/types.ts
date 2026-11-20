@@ -4837,6 +4837,39 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_mensajes: {
+        Row: {
+          contenido: string
+          created_at: string
+          id: string
+          lead_id: string | null
+          negocio_id: string
+          owner_id: string
+          rol: string
+          telefono: string
+        }
+        Insert: {
+          contenido?: string
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          negocio_id: string
+          owner_id: string
+          rol?: string
+          telefono?: string
+        }
+        Update: {
+          contenido?: string
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          negocio_id?: string
+          owner_id?: string
+          rol?: string
+          telefono?: string
+        }
+        Relationships: []
+      }
       agente_leads: {
         Row: {
           atendido_por_humano: boolean
@@ -4999,6 +5032,7 @@ export type Database = {
           ica_municipio: string | null
           ica_ciuu: string | null
           pie_factura: string | null
+          crm_activo: boolean
         }
         Insert: {
           aviso_entrega?: string | null
@@ -5041,6 +5075,7 @@ export type Database = {
           ica_municipio?: string | null
           ica_ciuu?: string | null
           pie_factura?: string | null
+          crm_activo?: boolean
         }
         Update: {
           aviso_entrega?: string | null
@@ -5083,6 +5118,7 @@ export type Database = {
           ica_municipio?: string | null
           ica_ciuu?: string | null
           pie_factura?: string | null
+          crm_activo?: boolean
         }
         Relationships: []
       }

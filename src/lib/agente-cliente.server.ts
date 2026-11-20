@@ -8,7 +8,33 @@ const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai
 const GEMINI_MODEL = "gemini-2.5-flash";
 
 export type MensajeCliente = { role: "user" | "assistant"; content: string };
-export type LeadAgente = { temperatura: string; puntaje: number; interes: string; capacidad_pago: string; urgencia: string; datos_confirmados: string };
+export type LeadAgente = {
+  temperatura: string;
+  puntaje: number;
+  interes: string;
+  capacidad_pago: string;
+  urgencia: string;
+  datos_confirmados: string;
+  canal_origen?: string;
+  valor_estimado?: number;
+  datos_extra?: Record<string, unknown>;
+};
+
+/** Playbook de calificación profunda según el tipo de negocio: una pregunta filtro por turno, sin repetir datos ya dados. */
+export function obtenerPlaybookSector(tipoNegocio: string): string {
+  const t = tipoNegocio.toLowerCase();
+  let guion: string;
+  if (/concesion|vehic|auto|carro|moto|compraventa|usado/.test(t)) {
+    guion = "CONCESIONARIO / COMPRAVENTA: valida (1) vehículo o moto de interés, (2) plazo de compra, (3) forma de pago: contado, crédito o retoma, (4) monto de cuota inicial y (5) de forma sutil y respetuosa si está al día en centrales de riesgo o si necesita un crédito flexible.";
+  } else if (/constru|inmobil|propiedad|vivienda|arriendo/.test(t)) {
+    guion = "CONSTRUCTORA / INMOBILIARIA: valida (1) uso: vivienda propia o inversión, (2) proyecto o número de habitaciones, (3) plazo, (4) cuota inicial, cesantías o subsidio (VIS / No VIS) y (5) si ya tiene preaprobado bancario.";
+  } else if (/salud|clinic|medic|odont|estetic|belleza|salon|spa|veterin|taller|mecan|lavadero|servicio|oficio|gimnas/.test(t)) {
+    guion = "SALUD / ESTÉTICA / TALLERES / SERVICIOS: valida (1) servicio, procedimiento o falla que necesita, (2) urgencia y (3) ofrece agendar la cita proponiendo día y hora.";
+  } else {
+    guion = "COMERCIO / B2B / OTROS: valida (1) la necesidad concreta, (2) presupuesto o volumen y (3) fecha de compra.";
+  }
+  return `PLAYBOOK DE CALIFICACIÓN (${tipoNegocio || "general"}): ${guion} Haz MÁXIMO UNA pregunta filtro por turno, en el orden que falte. Revisa los últimos 20 mensajes y NUNCA repitas un dato que el cliente ya respondió.`;
+}
 export type PqrsAgente = { tipo: string; resumen: string; urgencia: string };
 export type RespuestaAgente = { texto: string; escalar: boolean; lead?: LeadAgente | null; pqrs?: PqrsAgente | null };
 
@@ -228,11 +254,13 @@ async function registrarLead(ag: DuenoMemoria, telefono: string, canal: string, 
 }
 
 /** Refleja el lead y la PQRS del agente en el CRM y Embudo IA (sin tocar la etapa que movió una persona). */
-async function sincronizarCrm(ag: DuenoMemoria, telefono: string, canal: string, lead: LeadAgente | null, pqrs: PqrsAgente | null, escalar: boolean): Promise<void> {
-  if (!telefono) return;
+async function sincronizarCrm(ag: DuenoMemoria, telefono: string, canalEntrada: string, lead: LeadAgente | null, pqrs: PqrsAgente | null, escalar: boolean): Promise<string> {
+  if (!telefono) return "";
+  // Si el cliente entró como WhatsApp Directo y luego cuenta cómo nos conoció, se actualiza el canal.
+  const canalDicho = lead?.canal_origen && CANALES.includes(lead.canal_origen) ? lead.canal_origen : "";
   const { data: previo } = await supabaseAdmin
     .from("crm_leads")
-    .select("id,etapa_embudo")
+    .select("id,etapa_embudo,canal_origen")
     .eq("negocio_id", ag.negocio_id)
     .eq("telefono", telefono)
     .maybeSingle();
@@ -243,15 +271,22 @@ async function sincronizarCrm(ag: DuenoMemoria, telefono: string, canal: string,
         interes: String(lead.interes ?? "").slice(0, 300) || null,
         capacidad_pago: String(lead.capacidad_pago ?? "").slice(0, 300) || null,
         urgencia: String(lead.urgencia ?? "").slice(0, 300) || null,
-        datos_extra: { datos_confirmados: String(lead.datos_confirmados ?? "").slice(0, 500) },
+        valor_estimado: Number.isFinite(Number(lead.valor_estimado)) ? Math.max(0, Math.min(1e12, Number(lead.valor_estimado))) : 0,
+        datos_extra: {
+          ...(lead.datos_extra && typeof lead.datos_extra === "object" && !Array.isArray(lead.datos_extra)
+            ? Object.fromEntries(Object.entries(lead.datos_extra).slice(0, 15).map(([k, v]) => [k.slice(0, 40), String(v).slice(0, 200)]))
+            : {}),
+          datos_confirmados: String(lead.datos_confirmados ?? "").slice(0, 500),
+        },
       }
     : {};
+  const canal = previo ? (previo.canal_origen === "WhatsApp Directo" && canalDicho && canalDicho !== "WhatsApp Directo" ? canalDicho : previo.canal_origen) : canalDicho || canalEntrada;
   const ahora = new Date().toISOString();
   let leadId = previo?.id ?? "";
   if (previo) {
     await supabaseAdmin
       .from("crm_leads")
-      .update({ ...calif, ultima_interaccion: ahora, ...(lead && previo.etapa_embudo === "nuevo" ? { etapa_embudo: "calificacion" } : {}) })
+      .update({ ...calif, canal_origen: canal, ultima_interaccion: ahora, ...(lead && previo.etapa_embudo === "nuevo" ? { etapa_embudo: "calificacion" } : {}) })
       .eq("id", previo.id)
       .eq("owner_id", ag.owner_id);
   } else {
@@ -274,6 +309,18 @@ async function sincronizarCrm(ag: DuenoMemoria, telefono: string, canal: string,
       urgencia: String(pqrs.urgencia ?? "Media").slice(0, 20),
     });
   }
+  return leadId;
+}
+
+/** Guarda el turno del chat (mensaje del cliente y respuesta del agente) para verlo en la ficha 360° del CRM. */
+async function guardarMensajesCrm(ag: DuenoMemoria, leadId: string, telefono: string, cliente: string, agente: string): Promise<void> {
+  const filas = [
+    { rol: "cliente", contenido: cliente },
+    { rol: "agente", contenido: agente },
+  ]
+    .filter((f) => f.contenido.trim().length > 0)
+    .map((f) => ({ negocio_id: ag.negocio_id, owner_id: ag.owner_id, lead_id: leadId || null, telefono: telefono.slice(0, 30), rol: f.rol, contenido: f.contenido.slice(0, 2000) }));
+  if (filas.length > 0) await supabaseAdmin.from("crm_mensajes").insert(filas);
 }
 
 export async function responderComoAgente(clave: string, mensajes: MensajeCliente[], telefono = "", canalOrigen = "", sectorPrueba = ""): Promise<RespuestaAgente> {
@@ -396,12 +443,15 @@ Objetivo de cierre del negocio: ${objetivo}. ${cierraSolo ? "Tienes AUTONOMÍA p
 
 Canal por el que llegó este cliente: ${canal}. En tu PRIMER mensaje adapta la bienvenida: si viene de Instagram o Facebook agradece que los siga o haya visto su publicación; si viene de la página web, agradece su visita; si es WhatsApp directo, saluda normal. No lo repitas después.
 
+${obtenerPlaybookSector(tipo)}
+${canal === "WhatsApp Directo" ? "Este cliente entró como WhatsApp Directo sin origen detectado: después de resolver su primera duda, pregúntale de forma casual si nos vio por Instagram, Facebook o la página web, y cuando responda incluye \"canal_origen\" (Instagram, Facebook, Página Web, Google / Otro) en la etiqueta LEAD." : ""}
+
 MEMORIA DEL HILO (regla estricta): antes de responder, revisa TODO el historial de esta conversación. NUNCA vuelvas a preguntar un dato que el cliente ya entregó (nombre, presupuesto, cuota inicial, modelo, dirección, fecha, cantidad, etc.). Reutilízalo y pregunta solo lo que falta, una cosa a la vez.
 
 Tres modos automáticos (elige según lo que escriba el cliente):
 A) COMERCIAL Y CIERRE: califica según el playbook del sector (concesionario: modelo, plazo, cuota inicial, reportes en centrales de riesgo; constructora/inmobiliaria: vivienda o inversión, cuota inicial, subsidio; restaurante: pedido completo y domicilio; otros: la necesidad, presupuesto y fecha) y cierra la operación.
 B) SERVICIO AL CLIENTE Y PQRS: si hay duda postventa, garantía, reclamo o solicitud, mantén la calma, pide los datos del caso (número de pedido/factura/placa y descripción), da solución inmediata según las políticas del negocio y añade al final la etiqueta oculta [[PQRS:{"tipo":"Peticion|Queja|Reclamo|Sugerencia","resumen":"...","urgencia":"Alta|Media|Baja"}]]. Solo escala con [[ASESOR]] si exigen hablar con un gerente, hay amenaza legal o estafa, o se requiere aprobación financiera especial.
-C) CLASIFICACIÓN DE LEAD: al final de CADA turno añade la etiqueta oculta [[LEAD:{"temperatura":"FRIO|TIBIO|CALIENTE","puntaje":0,"interes":"...","capacidad_pago":"...","urgencia":"...","datos_confirmados":"..."}]] (puntaje de 0 a 100). El cliente nunca ve las etiquetas.
+C) CLASIFICACIÓN DE LEAD: al final de CADA turno añade la etiqueta oculta [[LEAD:{"temperatura":"FRIO|TIBIO|CALIENTE","puntaje":0,"canal_origen":"...","interes":"...","capacidad_pago":"...","urgencia":"...","valor_estimado":0,"datos_extra":{},"datos_confirmados":"..."}]] (puntaje de 0 a 100). El cliente nunca ve las etiquetas.
 
 Cómo atender:
 1. Saluda por el nombre del negocio la primera vez y pregunta en qué puedes ayudar.
@@ -455,7 +505,8 @@ Reglas:
       console.error("Agente: no se pudo guardar lead/PQRS", e);
     }
     try {
-      await sincronizarCrm(ag, telefono, canal, lead, pqrs, escalar);
+      const leadId = await sincronizarCrm(ag, telefono, canal, lead, pqrs, escalar);
+      if (leadId) await guardarMensajesCrm(ag, leadId, telefono, historial[historial.length - 1].content, limpio);
     } catch (e) {
       console.error("Agente: no se pudo sincronizar el CRM", e);
     }

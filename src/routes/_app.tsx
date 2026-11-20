@@ -55,7 +55,7 @@ function AppShell() {
   const nav = useNavigate();
   const completa = (loc.search as Record<string, unknown> | undefined)?.ventana === "completa";
   const pathnameRef = useRef(loc.pathname);
-  const { negocio } = useNegocio();
+  const { negocio, recargar: recargarNegocio } = useNegocio();
   const tipoNegocio = resolverTipoNegocio(negocio?.tipo_negocio);
   const { esAdmin, puede, cargando: cargandoPermisos, error: errorPermisos, recargar: recargarPermisos } = usePermisos();
   useAnunciarPresencia(user?.id, negocio?.nombre ?? "Sin nombre", tipoNegocio.etiqueta);
@@ -74,13 +74,12 @@ function AppShell() {
   const completaFinal = completa || (!cargandoPermisos && !esAdmin && enRutaPanel);
   const anchoGrande = completaFinal || enRutaPanel;
   const verPanel = ["pedidos", "cocina", "mesas", "caja_diaria", "insumos"].some((id) => puede(id));
-  const [crmManual, setCrmManual] = useState(false);
+  const crmManual = negocio?.crm_activo === true;
   useEffect(() => {
-    const leer = () => setCrmManual(window.localStorage.getItem("crm:activo") === "1");
-    leer();
-    window.addEventListener("crm:cambio", leer);
-    return () => window.removeEventListener("crm:cambio", leer);
-  }, []);
+    const releer = () => void recargarNegocio();
+    window.addEventListener("crm:cambio", releer);
+    return () => window.removeEventListener("crm:cambio", releer);
+  }, [recargarNegocio]);
   const crmVisible = CRM_AUTOMATICO.includes(tipoNegocio.clave) || crmManual;
   const modulosVisibles = tipoNegocio.modulos.filter((m) => m.id !== MODULO_CRM.id || crmVisible);
   const navItems: NavItem[] = [

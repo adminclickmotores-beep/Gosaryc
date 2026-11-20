@@ -94,8 +94,8 @@ function AgenteWhatsAppReal() {
   const [probarVivo, setProbarVivo] = useState(false);
   const [crmActivo, setCrmActivo] = useState(false);
   useEffect(() => {
-    setCrmActivo(window.localStorage.getItem("crm:activo") === "1");
-  }, []);
+    setCrmActivo(negocio?.crm_activo === true);
+  }, [negocio?.crm_activo]);
   const [agente, setAgente] = useState<AgenteFila | null>(null);
   const [nombreAgente, setNombreAgente] = useState("Asistente");
   const [instrucciones, setInstrucciones] = useState("");
@@ -695,9 +695,22 @@ function AgenteWhatsAppReal() {
             className="h-4 w-4"
             checked={crmActivo}
             onChange={(e) => {
-              window.localStorage.setItem("crm:activo", e.target.checked ? "1" : "0");
-              setCrmActivo(e.target.checked);
-              window.dispatchEvent(new Event("crm:cambio"));
+              const valor = e.target.checked;
+              if (!negocio?.id) return;
+              setCrmActivo(valor);
+              void supabase
+                .from("negocio_config")
+                .update({ crm_activo: valor })
+                .eq("id", negocio.id)
+                .select("id")
+                .then(({ data, error }) => {
+                  if (error || !data || data.length === 0) {
+                    setCrmActivo(!valor);
+                    toast.error("No se pudo guardar el cambio del CRM.");
+                    return;
+                  }
+                  window.dispatchEvent(new Event("crm:cambio"));
+                });
             }}
           />
           Mostrar «CRM y Embudo IA» en el menú

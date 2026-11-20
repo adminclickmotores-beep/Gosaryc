@@ -397,7 +397,8 @@ function Panel360({ lead, etapas, tipoClave, rutaAgente, onCerrar, onCambio, onN
   lead: Lead; etapas: Etapa[]; tipoClave: string; rutaAgente: string; onCerrar: () => void; onCambio: (l: Lead) => void;
   onNavegar: (to: string, search?: Record<string, string>) => void;
 }) {
-  const [pestana, setPestana] = useState<"perfil" | "tiempo" | "pqrs">("perfil");
+  const [pestana, setPestana] = useState<"perfil" | "chat" | "tiempo" | "pqrs">("perfil");
+  const [chat, setChat] = useState<Array<{ id: string; rol: string; contenido: string; created_at: string }>>([]);
   const [pqrs, setPqrs] = useState<Pqrs[]>([]);
   const [mensajes, setMensajes] = useState<Evento[]>([]);
   const [valor, setValor] = useState(String(Number(lead.valor_estimado) || ""));
@@ -411,6 +412,14 @@ function Panel360({ lead, etapas, tipoClave, rutaAgente, onCerrar, onCambio, onN
       const q = supabase.from("crm_pqrs").select("*").eq("negocio_id", lead.negocio_id).order("created_at", { ascending: false }).limit(50);
       const { data } = await (lead.telefono ? q.or(`lead_id.eq.${lead.id},telefono.eq.${lead.telefono}`) : q.eq("lead_id", lead.id));
       setPqrs(data ?? []);
+      const { data: msgs } = await supabase
+        .from("crm_mensajes")
+        .select("id,rol,contenido,created_at")
+        .eq("negocio_id", lead.negocio_id)
+        .eq("lead_id", lead.id)
+        .order("created_at", { ascending: true })
+        .limit(500);
+      setChat(msgs ?? []);
       if (lead.telefono) {
         const { data: av } = await supabase.from("whatsapp_avisos").select("detalle,created_at,chat_id").order("created_at", { ascending: false }).limit(40);
         setMensajes(
@@ -494,7 +503,7 @@ function Panel360({ lead, etapas, tipoClave, rutaAgente, onCerrar, onCambio, onN
           <button type="button" onClick={onCerrar} aria-label="Cerrar"><X className="h-5 w-5" /></button>
         </div>
         <div className="flex gap-1 border-b border-glass-border px-3 pt-2 text-sm">
-          {([["perfil", "Perfil IA"], ["tiempo", "Línea de tiempo"], ["pqrs", `PQRS (${pqrs.length})`]] as const).map(([id, txt]) => (
+          {([["perfil", "Perfil IA"], ["chat", "Conversación"], ["tiempo", "Línea de tiempo"], ["pqrs", `PQRS (${pqrs.length})`]] as const).map(([id, txt]) => (
             <button key={id} type="button" onClick={() => setPestana(id)} className={`rounded-t-lg px-3 py-2 ${pestana === id ? "border-b-2 border-primary font-medium text-primary" : "text-muted-foreground"}`}>{txt}</button>
           ))}
         </div>
@@ -519,6 +528,14 @@ function Panel360({ lead, etapas, tipoClave, rutaAgente, onCerrar, onCambio, onN
               </label>
             </>
           )}
+          {pestana === "chat" && (chat.length === 0 ? <p className="text-muted-foreground">Todavía no hay mensajes guardados de esta conversación.</p> : chat.map((m) => (
+            <div key={m.id} className={`flex ${m.rol === "cliente" ? "justify-start" : "justify-end"}`}>
+              <div className={`max-w-[85%] rounded-2xl px-3 py-2 ${m.rol === "cliente" ? "bg-muted" : "bg-primary/15"}`}>
+                <p className="whitespace-pre-wrap break-words">{m.contenido}</p>
+                <p className="mt-1 text-[10px] text-muted-foreground">{m.rol === "cliente" ? "Cliente" : "Agente IA"} · {new Date(m.created_at).toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" })}</p>
+              </div>
+            </div>
+          )))}
           {pestana === "tiempo" && (linea.length === 0 ? <p className="text-muted-foreground">Sin actividad todavía.</p> : linea.map((e, i) => (
             <div key={i} className="border-l-2 border-primary/40 pl-3">
               <p className="text-xs text-muted-foreground">{e.quien} · {new Date(e.cuando).toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" })}</p>
