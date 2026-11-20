@@ -2779,6 +2779,7 @@ export type Database = {
           precio_mayorista: number | null
           sku: string | null
           stock: number
+          stock_actual: number
           stock_minimo: number
           tipo_impuesto: string
           tipo_negocio: string | null
@@ -2804,6 +2805,7 @@ export type Database = {
           precio_mayorista?: number | null
           sku?: string | null
           stock?: number
+          stock_actual?: number
           stock_minimo?: number
           tipo_impuesto?: string
           tipo_negocio?: string | null
@@ -2831,6 +2833,7 @@ export type Database = {
           precio_mayorista?: number | null
           sku?: string | null
           stock?: number
+          stock_actual?: number
           stock_minimo?: number
           tipo_impuesto?: string
           tipo_negocio?: string | null
@@ -5033,6 +5036,7 @@ export type Database = {
           ica_ciuu: string | null
           pie_factura: string | null
           crm_activo: boolean
+          permitir_inventario_negativo: boolean
         }
         Insert: {
           aviso_entrega?: string | null
@@ -5076,6 +5080,7 @@ export type Database = {
           ica_ciuu?: string | null
           pie_factura?: string | null
           crm_activo?: boolean
+          permitir_inventario_negativo?: boolean
         }
         Update: {
           aviso_entrega?: string | null
@@ -5119,6 +5124,7 @@ export type Database = {
           ica_ciuu?: string | null
           pie_factura?: string | null
           crm_activo?: boolean
+          permitir_inventario_negativo?: boolean
         }
         Relationships: []
       }
@@ -5702,6 +5708,7 @@ export type Database = {
         Row: {
           activo: boolean
           categoria_id: string | null
+          codigo_barras: string | null
           created_at: string
           descripcion: string | null
           destacado: boolean
@@ -5710,11 +5717,13 @@ export type Database = {
           nombre: string
           owner_id: string | null
           precio: number
+          stock_actual: number | null
           tipo_negocio: string | null
         }
         Insert: {
           activo?: boolean
           categoria_id?: string | null
+          codigo_barras?: string | null
           created_at?: string
           descripcion?: string | null
           destacado?: boolean
@@ -5723,11 +5732,13 @@ export type Database = {
           nombre: string
           owner_id?: string | null
           precio?: number
+          stock_actual?: number | null
           tipo_negocio?: string | null
         }
         Update: {
           activo?: boolean
           categoria_id?: string | null
+          codigo_barras?: string | null
           created_at?: string
           descripcion?: string | null
           destacado?: boolean
@@ -5736,6 +5747,7 @@ export type Database = {
           nombre?: string
           owner_id?: string | null
           precio?: number
+          stock_actual?: number | null
           tipo_negocio?: string | null
         }
         Relationships: [
@@ -5747,6 +5759,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      restaurante_productos_kardex: {
+        Row: {
+          created_at: string
+          delta: number
+          id: string
+          motivo: string | null
+          owner_id: string | null
+          pedido_id: string | null
+          producto_id: string
+          stock_resultante: number
+          tipo: string
+        }
+        Insert: {
+          created_at?: string
+          delta: number
+          id?: string
+          motivo?: string | null
+          owner_id?: string | null
+          pedido_id?: string | null
+          producto_id: string
+          stock_resultante?: number
+          tipo?: string
+        }
+        Update: {
+          created_at?: string
+          delta?: number
+          id?: string
+          motivo?: string | null
+          owner_id?: string | null
+          pedido_id?: string | null
+          producto_id?: string
+          stock_resultante?: number
+          tipo?: string
+        }
+        Relationships: []
       }
       restaurante_pedidos: {
         Row: {
@@ -8623,6 +8671,7 @@ export type Database = {
         Returns: boolean
       }
       descontar_insumos_pedido: { Args: { p_pedido: string }; Returns: number }
+      descontar_stock_productos_pedido: { Args: { p_pedido: string }; Returns: number }
       devolver_insumos_pedido: { Args: { p_pedido: string }; Returns: number }
       registrar_compra_insumo: {
         Args: {

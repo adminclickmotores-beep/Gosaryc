@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Armchair, Bike, ChefHat, ImageOff, LayoutGrid, List, MessageCircle, Minus, Plus, Printer, Search, ShoppingBag, Trash2, Wallet, X } from "lucide-react";
+import { Armchair, Bike, ChefHat, ImageOff, LayoutGrid, List, MessageCircle, Minus, Plus, Printer, ScanBarcode, ShoppingBag, Sparkles, Trash2, Wallet, X } from "lucide-react";
 import { VistaProducto, type SeleccionProducto } from "@/components/restaurante/VistaProducto";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,8 @@ import { TARIFAS_DOMICILIO, buscarTarifa } from "@/lib/tarifas-domicilio";
 import { escaparHtml } from "@/lib/exportes";
 import { LIMITES, limpiarTexto } from "@/lib/validacion-publica";
 import { useNegocio } from "@/hooks/use-negocio";
+import { useBarcodeScanner } from "@/hooks/use-barcode-scanner";
+import { descontarStockOffline, evitarSubmitConEnter, generarEAN13, reproducirBeep, stockEfectivoOffline } from "@/lib/escaner-barras";
 import { mismoTipoNegocio } from "@/lib/modulos-negocio";
 import { autoComandaActivada, estadoApiLocal, fijarImpresionDirecta, impresionDirectaActivada, imprimirComandaCocina, imprimirTirillaLocal, leerImpresoraCaja } from "@/lib/impresion-local";
 
@@ -196,6 +198,18 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
   };
   const [zonaManual, setZonaManual] = useState("");
   const [correo, setCorreo] = useState("");
+  const [crearCodigo, setCrearCodigo] = useState<string | null>(null);
+  const [tickOffline, setTickOffline] = useState(0);
+
+  const permitirNegativo = Boolean(negocio?.permitir_inventario_negativo);
+  const stockDisponible = useCallback(
+    (p: Producto): number | null => {
+      void tickOffline;
+      if (typeof p.stock_actual !== "number") return null;
+      return stockEfectivoOffline("restaurante_productos", p.id, p.stock_actual, permitirNegativo);
+    },
+    [permitirNegativo, tickOffline],
+  );
 
   const cargar = useCallback(async () => {
     const [c, p, m] = await Promise.all([
@@ -218,17 +232,21 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
     };
     window.addEventListener("focus", alVolver);
     window.addEventListener("menu:cambio", alVolver);
+    window.addEventListener("sin-conexion:sincronizado", alVolver);
     return () => {
       clearInterval(t);
       window.removeEventListener("focus", alVolver);
       window.removeEventListener("menu:cambio", alVolver);
+      window.removeEventListener("sin-conexion:sincronizado", alVolver);
     };
   }, [cargar]);
 
   const visibles = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
     return productos.filter(
-      (p) => (catActiva === "todas" || p.categoria_id === catActiva) && (!q || p.nombre.toLowerCase().includes(q)),
+      (p) =>
+        (catActiva === "todas" || p.categoria_id === catActiva) &&
+        (!q || p.nombre.toLowerCase().includes(q) || (p.codigo_barras ?? "").toLowerCase().includes(q)),
     );
   }, [productos, catActiva, busqueda]);
 
@@ -244,6 +262,13 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
   );
 
   const agregarDesdeVista = (p: Producto, sel: SeleccionProducto) => {
+    const disp = stockDisponible(p);
+    const actual = cuenta[p.id] ?? 0;
+    if (disp !== null && !permitirNegativo && actual + sel.cantidad > disp) {
+      reproducirBeep("error");
+      toast.error(`Sin existencias para ${p.nombre}`);
+      return;
+    }
     setDetalle((d) => ({ ...d, [p.id]: { extra: sel.extraUnidad, texto: sel.texto } }));
     setCuenta((c) => ({ ...c, [p.id]: Math.min(100, (c[p.id] ?? 0) + sel.cantidad) }));
     setAbierto(null);
@@ -264,14 +289,66 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
   const numPersonas = Math.min(50, Math.max(1, Math.floor(Number(personas) || 1)));
   const porPersona = Math.ceil(total / numPersonas);
 
-  const cambiarCant = (id: string, delta: number) =>
-    setCuenta((c) => {
-      const nuevo = Math.max(0, Math.min(100, (c[id] ?? 0) + delta));
-      const copia = { ...c };
-      if (nuevo === 0) delete copia[id];
-      else copia[id] = nuevo;
-      return copia;
-    });
+  const cambiarCant = useCallback(
+    (id: string, delta: number, conSonido = false): boolean => {
+      const prod = productos.find((x) => x.id === id);
+      if (prod && delta > 0) {
+        const disp = stockDisponible(prod);
+        const actual = cuenta[id] ?? 0;
+        if (disp !== null && !permitirNegativo && (disp <= 0 || actual + delta > disp)) {
+          if (conSonido) reproducirBeep("error");
+          toast.error(`Sin existencias para ${prod.nombre}`);
+          return false;
+        }
+      }
+      setCuenta((c) => {
+        const nuevo = Math.max(0, Math.min(100, (c[id] ?? 0) + delta));
+        const copia = { ...c };
+        if (nuevo === 0) delete copia[id];
+        else copia[id] = nuevo;
+        return copia;
+      });
+      if (conSonido && prod) {
+        reproducirBeep("ok");
+        toast.success(`${prod.nombre} (+1)`);
+      }
+      return true;
+    },
+    [cuenta, permitirNegativo, productos, stockDisponible],
+  );
+
+  const procesarCodigoEscaneado = useCallback(
+    (raw: string) => {
+      const q = raw.trim();
+      if (!q) return;
+      const ql = q.toLowerCase();
+      const exacto = productos.find((p) => (p.codigo_barras ?? "").trim() === q);
+      const porNombre = productos.filter((p) => p.nombre.toLowerCase().includes(ql));
+      const encontrado = exacto ?? (porNombre.length === 1 ? porNombre[0] : undefined);
+      if (encontrado) {
+        cambiarCant(encontrado.id, 1, true);
+        setBusqueda("");
+      } else if (porNombre.length > 1) {
+        toast.message("Hay varias coincidencias: elige una de la lista.");
+      } else {
+        reproducirBeep("error");
+        toast.error(`Código "${q}" no registrado`, {
+          duration: 6000,
+          action: {
+            label: "+ Crear producto con este código",
+            onClick: () => setCrearCodigo(q),
+          },
+        });
+        setBusqueda("");
+      }
+    },
+    [cambiarCant, productos],
+  );
+
+  useBarcodeScanner({
+    activo: !abierto && !crearCodigo,
+    onScan: (c) => procesarCodigoEscaneado(c),
+  });
 
   const limpiar = () => {
     setCuenta({});
@@ -346,8 +423,18 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
       setGuardando(false);
       return toast.error("El pedido se creó pero no se pudieron guardar los productos.");
     }
-    // Descuenta del inventario los insumos de las recetas de lo vendido (queda en el kardex).
+    // Descuenta del inventario los insumos de las recetas y el stock directo de los productos vendidos (queda en el kardex).
     const { data: bajos } = await supabase.rpc("descontar_insumos_pedido", { p_pedido: pedido.id });
+    await supabase.rpc("descontar_stock_productos_pedido", { p_pedido: pedido.id });
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      descontarStockOffline(
+        "restaurante_productos",
+        lineas
+          .filter((l) => typeof l.p.stock_actual === "number")
+          .map((l) => ({ productoId: l.p.id, cantidad: l.cant })),
+      );
+      setTickOffline((n) => n + 1);
+    }
     if (typeof bajos === "number" && bajos > 0) {
       toast.warning(`${bajos} ${bajos === 1 ? "insumo está" : "insumos están"} en o bajo el stock mínimo. Revisa el recetario.`);
     }
@@ -384,6 +471,7 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
     void imprimirComandaSinConfirmar(reciboNuevo);
     setRecibo(reciboNuevo);
     limpiar();
+    void cargar();
     onCambio?.();
   };
 
@@ -391,8 +479,20 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(380px,26rem)]">
       <div className="min-w-0 space-y-4">
         <div className="relative">
-          <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-          <input className={`${campo} rounded-2xl py-3.5 pl-12 shadow-sm`} placeholder="Buscar producto" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+          <ScanBarcode className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+          <input
+            className={`${campo} rounded-2xl py-3.5 pl-12 shadow-sm`}
+            placeholder="Escanea código de barras o busca producto..."
+            value={busqueda}
+            autoComplete="off"
+            onChange={(e) => setBusqueda(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                procesarCodigoEscaneado(busqueda);
+              }
+            }}
+          />
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1 text-sm">
           {[{ id: "todas", nombre: "Todos" }, ...categorias].map((c) => (
@@ -490,7 +590,13 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
                       <ImageOff className="h-10 w-10" />
                     </span>
                   )}
-                  <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-medium text-white">Disponible</span>
+                  <span className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[11px] font-medium ${stockDisponible(p) !== null && (stockDisponible(p) ?? 0) <= 0 ? "bg-destructive text-destructive-foreground" : "bg-black/60 text-white"}`}>
+                    {stockDisponible(p) === null
+                      ? "Disponible"
+                      : (stockDisponible(p) ?? 0) <= 0
+                        ? "Agotado"
+                        : `Stock: ${Math.round((stockDisponible(p) ?? 0) * 100) / 100}`}
+                  </span>
                   {cant > 0 && (
                     <span className="absolute right-2 top-2 rounded-full bg-primary px-2.5 py-0.5 text-sm font-semibold text-primary-foreground shadow">{cant}</span>
                   )}
@@ -519,6 +625,21 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
             producto={abierto}
             onCerrar={() => setAbierto(null)}
             onAgregar={(sel) => agregarDesdeVista(abierto, sel)}
+          />
+        )}
+        {crearCodigo !== null && (
+          <ModalCrearProductoRapidoPOS
+            codigoInicial={crearCodigo}
+            categorias={categorias}
+            onCerrar={() => setCrearCodigo(null)}
+            onCreado={async (nuevoProd) => {
+              setCrearCodigo(null);
+              await cargar();
+              window.dispatchEvent(new Event("menu:cambio"));
+              setCuenta((c) => ({ ...c, [nuevoProd.id]: (c[nuevoProd.id] ?? 0) + 1 }));
+              reproducirBeep("ok");
+              toast.success(`${nuevoProd.nombre} (+1)`);
+            }}
           />
         )}
       </div>
@@ -723,6 +844,119 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
           </button>
         </div>
       </GlassPanel>
+    </div>
+  );
+}
+
+function ModalCrearProductoRapidoPOS({
+  codigoInicial,
+  categorias,
+  onCerrar,
+  onCreado,
+}: {
+  codigoInicial: string;
+  categorias: Categoria[];
+  onCerrar: () => void;
+  onCreado: (producto: Producto) => Promise<void> | void;
+}) {
+  const [nombre, setNombre] = useState("");
+  const [barras, setBarras] = useState(codigoInicial);
+  const [precio, setPrecio] = useState("");
+  const [stock, setStock] = useState("10");
+  const [categoriaId, setCategoriaId] = useState("");
+  const [guardando, setGuardando] = useState(false);
+
+  const guardar = async () => {
+    const valor = Number(precio.replace(",", "."));
+    if (!nombre.trim() || !Number.isFinite(valor) || valor < 0) {
+      return toast.error("Escribe un nombre y precio válidos.");
+    }
+    setGuardando(true);
+    const stockVal = stock.trim() === "" ? null : Math.max(0, Number(stock.replace(",", ".")) || 0);
+    const { data, error } = await supabase
+      .from("restaurante_productos")
+      .insert({
+        nombre: nombre.trim(),
+        codigo_barras: barras.trim() || null,
+        precio: valor,
+        stock_actual: stockVal,
+        categoria_id: categoriaId || null,
+        activo: true,
+      })
+      .select("*")
+      .single();
+    setGuardando(false);
+    if (error || !data) {
+      return toast.error("No se pudo crear el producto.");
+    }
+    await onCreado(data);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onCerrar}>
+      <div className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+      <GlassPanel className="space-y-4 p-5">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="font-display text-lg text-foreground">Crear producto con este código</h3>
+          <button type="button" aria-label="Cerrar" onClick={onCerrar} className="text-muted-foreground">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="space-y-3">
+          <label className="block space-y-1 text-xs text-muted-foreground">
+            <span>Código de barras</span>
+            <div className="flex gap-2">
+              <input
+                className={campo}
+                value={barras}
+                onChange={(e) => setBarras(e.target.value)}
+                onKeyDown={evitarSubmitConEnter}
+              />
+              <button
+                type="button"
+                onClick={() => setBarras(generarEAN13())}
+                className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-glass-border px-3 py-2 text-xs text-foreground hover:bg-glass/40"
+              >
+                <Sparkles className="h-3.5 w-3.5" /> Generar EAN-13
+              </button>
+            </div>
+          </label>
+          <label className="block space-y-1 text-xs text-muted-foreground">
+            <span>Nombre *</span>
+            <input className={campo} autoFocus placeholder="Ej: Bebida 400ml" value={nombre} onChange={(e) => setNombre(e.target.value)} />
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block space-y-1 text-xs text-muted-foreground">
+              <span>Precio *</span>
+              <input className={campo} inputMode="decimal" placeholder="4000" value={precio} onChange={(e) => setPrecio(e.target.value)} />
+            </label>
+            <label className="block space-y-1 text-xs text-muted-foreground">
+              <span>Stock actual</span>
+              <input className={campo} inputMode="decimal" placeholder="10" value={stock} onChange={(e) => setStock(e.target.value)} />
+            </label>
+          </div>
+          {categorias.length > 0 && (
+            <label className="block space-y-1 text-xs text-muted-foreground">
+              <span>Categoría</span>
+              <select className={campo} value={categoriaId} onChange={(e) => setCategoriaId(e.target.value)}>
+                <option value="">Sin categoría</option>
+                {categorias.map((c) => (
+                  <option key={c.id} value={c.id}>{c.nombre}</option>
+                ))}
+              </select>
+            </label>
+          )}
+        </div>
+        <div className="flex justify-end gap-2">
+          <button type="button" onClick={onCerrar} className="rounded-lg border border-glass-border px-4 py-2 text-sm text-foreground">
+            Cancelar
+          </button>
+          <button type="button" disabled={guardando} onClick={guardar} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50">
+            <Plus className="h-4 w-4" /> {guardando ? "Guardando…" : "Crear y agregar"}
+          </button>
+        </div>
+      </GlassPanel>
+      </div>
     </div>
   );
 }

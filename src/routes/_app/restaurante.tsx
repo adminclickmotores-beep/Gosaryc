@@ -26,6 +26,7 @@ import { BotonVentanaCompleta } from "@/components/app/BotonVentanaCompleta";
 import { IndicadoresNegocio } from "@/components/app/IndicadoresNegocio";
 import { DashboardConcesionario } from "@/components/vehiculos/DashboardConcesionario";
 import { escaparHtml } from "@/lib/exportes";
+import { evitarSubmitConEnter, generarEAN13 } from "@/lib/escaner-barras";
 import { useAuth } from "@/contexts/AuthContext";
 import { CORREO_DEMO } from "@/lib/demo-real";
 
@@ -240,6 +241,7 @@ export function RestaurantePage() {
   const descontarInventario = async (p: Pedido) => {
     const lineasPedido = items.filter((i) => i.pedido_id === p.id && i.producto_id);
     const { data: bajos, error } = await supabase.rpc("descontar_insumos_pedido", { p_pedido: p.id });
+    await supabase.rpc("descontar_stock_productos_pedido", { p_pedido: p.id });
     if (error) return toast.error("El pedido avanzó, pero no se pudo descontar el inventario.");
     if (typeof bajos === "number" && bajos > 0) {
       toast.warning(`${bajos} ${bajos === 1 ? "insumo está" : "insumos están"} en o bajo el stock mínimo.`);
@@ -571,9 +573,14 @@ function GestionMenu() {
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [precio, setPrecio] = useState("");
+  const [codigoBarras, setCodigoBarras] = useState("");
+  const [stockActual, setStockActual] = useState("");
   const [categoriaId, setCategoriaId] = useState("");
   const [nuevaCategoria, setNuevaCategoria] = useState("");
   const [fotoNueva, setFotoNueva] = useState("");
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [editBarras, setEditBarras] = useState("");
+  const [editStock, setEditStock] = useState("");
 
   const cargar = useCallback(async () => {
     const [c, p] = await Promise.all([
@@ -612,10 +619,13 @@ function GestionMenu() {
   const agregar = async () => {
     const valor = Number(precio);
     if (!nombre.trim() || !Number.isFinite(valor) || valor < 0) return toast.error("Escribe nombre y precio válidos.");
+    const stockVal = stockActual.trim() === "" ? null : Math.max(0, Number(stockActual.replace(",", ".")) || 0);
     const { error } = await supabase.from("restaurante_productos").insert({
       nombre: nombre.trim(),
       descripcion: descripcion.trim() || null,
       precio: valor,
+      codigo_barras: codigoBarras.trim() || null,
+      stock_actual: stockVal,
       categoria_id: categoriaId || null,
       imagen_url: fotoNueva || null,
       activo: true,
@@ -625,6 +635,31 @@ function GestionMenu() {
     setNombre("");
     setDescripcion("");
     setPrecio("");
+    setCodigoBarras("");
+    setStockActual("");
+    window.dispatchEvent(new Event("menu:cambio"));
+    cargar();
+  };
+
+  const abrirEdicionInventario = (p: Producto) => {
+    setEditandoId(p.id);
+    setEditBarras(p.codigo_barras ?? "");
+    setEditStock(typeof p.stock_actual === "number" ? String(p.stock_actual) : "");
+  };
+
+  const guardarEdicionInventario = async (p: Producto) => {
+    const stockVal = editStock.trim() === "" ? null : Math.max(0, Number(editStock.replace(",", ".")) || 0);
+    const { error } = await supabase
+      .from("restaurante_productos")
+      .update({
+        codigo_barras: editBarras.trim() || null,
+        stock_actual: stockVal,
+      })
+      .eq("id", p.id);
+    if (error) return toast.error("No se pudo actualizar código o stock.");
+    toast.success("Código y stock actualizados.");
+    setEditandoId(null);
+    window.dispatchEvent(new Event("menu:cambio"));
     cargar();
   };
 
@@ -673,6 +708,36 @@ function GestionMenu() {
           <input className={campo} placeholder="Nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} />
           <input className={campo} placeholder="Descripción" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} />
           <input className={campo} placeholder="Precio" inputMode="decimal" value={precio} onChange={(e) => setPrecio(e.target.value)} />
+          <div className="space-y-1">
+            <span className="text-xs text-muted-foreground">Código de barras</span>
+            <div className="flex gap-2">
+              <input
+                className={campo}
+                placeholder="Escanea o escribe el código"
+                value={codigoBarras}
+                onChange={(e) => setCodigoBarras(e.target.value)}
+                onKeyDown={evitarSubmitConEnter}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const nuevo = generarEAN13();
+                  setCodigoBarras(nuevo);
+                  toast.success(`Código EAN-13 generado: ${nuevo}`);
+                }}
+                className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-glass-border px-3 py-2 text-xs text-foreground hover:bg-glass/40"
+              >
+                <Sparkles className="h-3.5 w-3.5" /> Generar EAN-13
+              </button>
+            </div>
+          </div>
+          <input
+            className={campo}
+            placeholder="Stock actual (opcional, vacío = sin límite)"
+            inputMode="decimal"
+            value={stockActual}
+            onChange={(e) => setStockActual(e.target.value)}
+          />
           <select className={campo} value={categoriaId} onChange={(e) => setCategoriaId(e.target.value)}>
             <option value="">Sin categoría</option>
             {categorias.map((c) => (
@@ -724,8 +789,17 @@ function GestionMenu() {
               <p className={`truncate text-sm font-medium ${p.activo ? "text-foreground" : "text-muted-foreground line-through"}`}>{p.nombre}</p>
               <p className="text-xs text-muted-foreground">
                 {categorias.find((c) => c.id === p.categoria_id)?.nombre ?? "Sin categoría"} · {dinero(p.precio)}
+                {p.codigo_barras ? ` · Código ${p.codigo_barras}` : ""}
+                {typeof p.stock_actual === "number" ? ` · Stock ${p.stock_actual}` : ""}
               </p>
             </div>
+            <button
+              type="button"
+              onClick={() => (editandoId === p.id ? setEditandoId(null) : abrirEdicionInventario(p))}
+              className="shrink-0 rounded-full border border-glass-border px-3 py-1.5 text-xs text-foreground"
+            >
+              {editandoId === p.id ? "Cerrar" : "Código / Stock"}
+            </button>
             <button onClick={() => alternar(p)} className="shrink-0 rounded-full border border-glass-border px-3 py-1.5 text-xs text-foreground">
               {p.activo ? "Ocultar" : "Mostrar"}
             </button>
@@ -733,6 +807,44 @@ function GestionMenu() {
               <Trash2 className="h-4 w-4" />
             </button>
           </GlassPanel>
+          {editandoId === p.id && (
+            <GlassPanel className="space-y-2 p-3">
+              <div className="flex flex-wrap gap-2">
+                <input
+                  className={`${campo} min-w-[160px] flex-1`}
+                  placeholder="Código de barras"
+                  value={editBarras}
+                  onChange={(e) => setEditBarras(e.target.value)}
+                  onKeyDown={evitarSubmitConEnter}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nuevo = generarEAN13();
+                    setEditBarras(nuevo);
+                    toast.success(`Código EAN-13 generado: ${nuevo}`);
+                  }}
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-glass-border px-3 py-2 text-xs text-foreground"
+                >
+                  <Sparkles className="h-3.5 w-3.5" /> Generar EAN-13
+                </button>
+                <input
+                  className={`${campo} w-32`}
+                  inputMode="decimal"
+                  placeholder="Stock actual"
+                  value={editStock}
+                  onChange={(e) => setEditStock(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => void guardarEdicionInventario(p)}
+                  className="rounded-lg bg-primary px-3 py-2 text-xs font-medium text-primary-foreground"
+                >
+                  Guardar
+                </button>
+              </div>
+            </GlassPanel>
+          )}
           <OpcionesProducto productoId={p.id} />
           </div>
         ))}

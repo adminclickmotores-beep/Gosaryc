@@ -4,6 +4,7 @@
  * siguen mostrando los últimos datos conocidos.
  */
 import { useSyncExternalStore } from "react";
+import { limpiarStockOffline } from "@/lib/escaner-barras";
 
 type ItemCola = {
   id: string;
@@ -110,6 +111,9 @@ async function sincronizar() {
     }
   }
   cambiarEstado({ sincronizando: false });
+  if (cola.length === 0 && subidos > 0) {
+    limpiarStockOffline();
+  }
   if (subidos > 0 || descartados > 0) {
     window.dispatchEvent(new CustomEvent("sin-conexion:sincronizado", { detail: { subidos, descartados } }));
   }
@@ -154,12 +158,29 @@ export function instalarSinConexion() {
       const h = new Headers(
         init?.headers ?? (typeof Request !== "undefined" && input instanceof Request ? input.headers : undefined),
       );
+      let bodyFinal: string | null = typeof cuerpo === "string" ? cuerpo : null;
+      // Si es un POST offline a una tabla que pide representación (ej. pedido), asegura un UUID consistente
+      // para que los ítems y el descuento de stock encolados detrás referencien el mismo ID al sincronizar.
+      if (method === "POST" && bodyFinal && !url.includes(`${REST}rpc/`) && (h.get("prefer") ?? "").includes("return=representation")) {
+        try {
+          const parsed: unknown = JSON.parse(bodyFinal);
+          if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+            const obj = parsed as Record<string, unknown>;
+            if (typeof obj.id !== "string" || !obj.id) {
+              obj.id = nuevoId();
+              bodyFinal = JSON.stringify(obj);
+            }
+          }
+        } catch {
+          // Conserva el cuerpo original si no es JSON de objeto simple.
+        }
+      }
       const item: ItemCola = {
         id: nuevoId(),
         url,
         method,
         headers: Array.from(h.entries()),
-        body: typeof cuerpo === "string" ? cuerpo : null,
+        body: bodyFinal,
       };
       guardarCola([...leerCola(), item]);
       return respuestaSimulada(item);

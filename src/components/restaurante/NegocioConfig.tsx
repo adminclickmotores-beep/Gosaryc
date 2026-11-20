@@ -44,6 +44,7 @@ type Form = {
   resolucion_vence: string;
   pie_factura: string;
   iva_defecto: string;
+  permitir_inventario_negativo: boolean;
 };
 
 const VACIO: Form = {
@@ -74,6 +75,7 @@ const VACIO: Form = {
   resolucion_vence: "",
   pie_factura: "",
   iva_defecto: "0",
+  permitir_inventario_negativo: false,
 };
 
 const CAMPOS: { clave: keyof Form; etiqueta: string; ejemplo: string; largo?: boolean }[] = [
@@ -169,6 +171,7 @@ export function NegocioConfig() {
       resolucion_vence: negocio.resolucion_vence ?? "",
       pie_factura: negocio.pie_factura ?? "",
       iva_defecto: String(negocio.iva_defecto ?? 0),
+      permitir_inventario_negativo: Boolean(negocio.permitir_inventario_negativo),
     });
   }, [negocio]);
 
@@ -218,6 +221,7 @@ export function NegocioConfig() {
       resolucion_vence: form.resolucion_vence || null,
       pie_factura: form.pie_factura.trim() || null,
       iva_defecto: Math.min(Math.max(Number(form.iva_defecto) || 0, 0), 100),
+      permitir_inventario_negativo: form.permitir_inventario_negativo,
       updated_at: new Date().toISOString(),
     };
     const { data: guardado, error } = negocio
@@ -391,14 +395,14 @@ export function NegocioConfig() {
                 className={campo}
                 rows={c.clave === "horarios" ? 7 : 2}
                 placeholder={c.ejemplo}
-                value={form[c.clave]}
+                value={String(form[c.clave] ?? "")}
                 onChange={(e) => setForm({ ...form, [c.clave]: e.target.value })}
               />
             ) : (
               <input
                 className={campo}
                 placeholder={c.ejemplo}
-                value={form[c.clave]}
+                value={String(form[c.clave] ?? "")}
                 onChange={(e) => setForm({ ...form, [c.clave]: e.target.value })}
               />
             )}
@@ -472,6 +476,22 @@ export function NegocioConfig() {
             <input className={campo} placeholder="Ej: Gracias por su compra. Garantía de 30 días presentando esta factura." value={form.pie_factura} onChange={(e) => setForm({ ...form, pie_factura: e.target.value })} />
           </label>
         </div>
+      </div>
+      <div className="rounded-xl border border-glass-border bg-glass/30 p-4">
+        <label className="flex cursor-pointer items-start gap-3 text-sm text-foreground">
+          <input
+            type="checkbox"
+            checked={form.permitir_inventario_negativo}
+            onChange={(e) => setForm({ ...form, permitir_inventario_negativo: e.target.checked })}
+            className="mt-0.5 h-4 w-4 accent-primary"
+          />
+          <span>
+            <span className="block font-medium">Permitir inventario negativo en ventas (POS)</span>
+            <span className="block text-xs text-muted-foreground">
+              Si está desactivado, el POS y el escáner de código de barras bloquean vender productos sin existencias.
+            </span>
+          </span>
+        </label>
       </div>
       <div className="rounded-xl border border-primary/30 bg-glass/40 p-4">
         <h3 className="font-medium text-foreground">Facturación Electrónica DIAN</h3>

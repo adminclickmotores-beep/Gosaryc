@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { ImageOff, LayoutGrid, List, Loader2, Minus, Plus, Printer, ScanBarcode, ShieldAlert, Trash2, Wallet, X } from "lucide-react";
+import { ImageOff, LayoutGrid, List, Loader2, Minus, Plus, Printer, ScanBarcode, ShieldAlert, Sparkles, Trash2, Wallet, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
+import { useBarcodeScanner } from "@/hooks/use-barcode-scanner";
+import { descontarStockOffline, evitarSubmitConEnter, generarEAN13, reproducirBeep, stockEfectivoOffline } from "@/lib/escaner-barras";
 import { CLASE_NIVEL, diasPara, nivelVence, textoVence, type NivelVence } from "@/lib/lotes-comercio";
 import { escaparHtml, exportarExcel, imprimirReporte } from "@/lib/exportes";
 import { ImportadorMasivo } from "@/components/comercio/ImportadorMasivo";
@@ -68,7 +70,7 @@ export function precioDe(p: Producto, tipo: string): number {
   return p.precio_detal;
 }
 
-function calcular(l: Linea, tipo: string): Calculo {
+function calcular(l: Linea, tipo: string, permitirNegativo = false, stockDisp?: number): Calculo {
   const cant = num(l.cantidad);
   const cb = convertir(cant, l.unidad, l.p.unidad_base, l.p.unidades_por_caja);
   if (cant <= 0 || cb === null) return { base: 0, impuesto: 0, total: 0, cantBase: 0, error: "Cantidad no válida." };
@@ -86,7 +88,8 @@ function calcular(l: Linea, tipo: string): Calculo {
     imp = Math.round(((base * pct) / 100) * 100) / 100;
     total = base + imp;
   }
-  const error = cb > l.p.stock ? `Solo quedan ${Math.round(l.p.stock * 1000) / 1000} ${l.p.unidad_base}.` : null;
+  const stockRef = stockDisp ?? l.p.stock;
+  const error = !permitirNegativo && cb > stockRef ? `Sin existencias suficientes: solo quedan ${Math.round(stockRef * 1000) / 1000} ${l.p.unidad_base}.` : null;
   return { base, impuesto: imp, total, cantBase: cb, error };
 }
 
@@ -126,6 +129,11 @@ export function usarProductos() {
   }, []);
   useEffect(() => {
     void cargar();
+    const alSincronizar = () => {
+      void cargar();
+    };
+    window.addEventListener("sin-conexion:sincronizado", alSincronizar);
+    return () => window.removeEventListener("sin-conexion:sincronizado", alSincronizar);
   }, [cargar]);
   return { productos, cargando, recargar: cargar };
 }
@@ -214,6 +222,7 @@ export function ProductosComercial() {
       impuesto_pct: impuesto === "exento" ? 0 : num(pct),
       precio_incluye_impuesto: incluye,
       stock: Math.max(num(stock), 0),
+      stock_actual: Math.max(num(stock), 0),
       stock_minimo: Math.max(num(minimo), 0),
       costo: Math.max(num(costo), 0),
       ubicacion_pasillo: pasillo.trim() || null,
@@ -284,7 +293,28 @@ export function ProductosComercial() {
         <h2 className="font-medium text-foreground">Nuevo producto</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Campo etiqueta="Nombre *"><input className={campo} value={nombre} onChange={(e) => setNombre(e.target.value)} /></Campo>
-          <Campo etiqueta="Código de barras"><input className={campo} value={barras} onChange={(e) => setBarras(e.target.value)} /></Campo>
+          <Campo etiqueta="Código de barras">
+            <div className="flex gap-2">
+              <input
+                className={campo}
+                placeholder="Escanea o escribe el código"
+                value={barras}
+                onChange={(e) => setBarras(e.target.value)}
+                onKeyDown={evitarSubmitConEnter}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const nuevo = generarEAN13();
+                  setBarras(nuevo);
+                  toast.success(`Código EAN-13 generado: ${nuevo}`);
+                }}
+                className={`${botonSec} shrink-0 whitespace-nowrap`}
+              >
+                <Sparkles className="h-4 w-4" /> Generar EAN-13
+              </button>
+            </div>
+          </Campo>
           <Campo etiqueta="SKU / referencia"><input className={campo} value={sku} onChange={(e) => setSku(e.target.value)} /></Campo>
           <Campo etiqueta="Unidad del inventario y de los precios">
             <select className={campo} value={unidad} onChange={(e) => setUnidad(e.target.value)}>
@@ -397,6 +427,7 @@ function FichaProductoInventario({
   onCerrar: () => void;
   onGuardado: () => Promise<void> | void;
 }) {
+  const [barras, setBarras] = useState(p.codigo_barras ?? "");
   const [detal, setDetal] = useState(String(p.precio_detal));
   const [mayorista, setMayorista] = useState(p.precio_mayorista !== null ? String(p.precio_mayorista) : "");
   const [especial, setEspecial] = useState(p.precio_especial !== null ? String(p.precio_especial) : "");
@@ -416,19 +447,22 @@ function FichaProductoInventario({
   const guardarRapido = async () => {
     if (num(detal) <= 0) return toast.error("El precio detal debe ser mayor a cero.");
     setGuardando(true);
+    const stockNuevo = Math.max(num(stock), 0);
     const { error } = await supabase
       .from("com_productos")
       .update({
+        codigo_barras: barras.trim() || null,
         precio_detal: num(detal),
         precio_mayorista: mayorista.trim() ? num(mayorista) : null,
         precio_especial: especial.trim() ? num(especial) : null,
-        stock: Math.max(num(stock), 0),
+        stock: stockNuevo,
+        stock_actual: stockNuevo,
         stock_minimo: Math.max(num(minimo), 0),
         imagen_url: imagen.trim() || null,
       })
       .eq("id", p.id);
     setGuardando(false);
-    if (error) return toast.error("No se pudo guardar el producto.");
+    if (error) return toast.error(/duplicate|unique/i.test(error.message) ? "Ya existe otro producto con ese código de barras." : "No se pudo guardar el producto.");
     toast.success("Producto actualizado.");
     await onGuardado();
     onCerrar();
@@ -471,6 +505,30 @@ function FichaProductoInventario({
             <p className="col-span-2 text-xs text-muted-foreground">El stock es el total del negocio; los movimientos entre sucursales se registran en traslados.</p>
           </div>
           <div className="grid grid-cols-2 gap-2">
+            <div className="col-span-2">
+              <Campo etiqueta="Código de barras">
+                <div className="flex gap-2">
+                  <input
+                    className={campo}
+                    placeholder="Escanea o escribe el código"
+                    value={barras}
+                    onChange={(e) => setBarras(e.target.value)}
+                    onKeyDown={evitarSubmitConEnter}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nuevo = generarEAN13();
+                      setBarras(nuevo);
+                      toast.success(`Código EAN-13 generado: ${nuevo}`);
+                    }}
+                    className={`${botonSec} shrink-0 whitespace-nowrap`}
+                  >
+                    <Sparkles className="h-4 w-4" /> Generar EAN-13
+                  </button>
+                </div>
+              </Campo>
+            </div>
             <Campo etiqueta="Precio detal"><input className={campo} inputMode="decimal" value={detal} onChange={(e) => setDetal(e.target.value)} /></Campo>
             <Campo etiqueta="Precio mayorista"><input className={campo} inputMode="decimal" value={mayorista} onChange={(e) => setMayorista(e.target.value)} /></Campo>
             <Campo etiqueta="Precio especial"><input className={campo} inputMode="decimal" value={especial} onChange={(e) => setEspecial(e.target.value)} /></Campo>
@@ -509,8 +567,19 @@ export function PosComercial() {
   const [guardando, setGuardando] = useState(false);
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [recibido, setRecibido] = useState("");
+  const [crearCodigo, setCrearCodigo] = useState<string | null>(null);
+  const [tickOffline, setTickOffline] = useState(0);
 
   const [vencen, setVencen] = useState<Record<string, { dias: number; lote: string; nivel: NivelVence }>>({});
+
+  const permitirNegativo = Boolean(negocio?.permitir_inventario_negativo);
+  const stockDisponible = useCallback(
+    (p: Producto) => {
+      void tickOffline;
+      return stockEfectivoOffline("com_productos", p.id, p.stock, permitirNegativo);
+    },
+    [permitirNegativo, tickOffline],
+  );
 
   const enfocar = () => window.setTimeout(() => lector.current?.focus(), 30);
   useEffect(() => {
@@ -546,49 +615,104 @@ export function PosComercial() {
 
   const activos = useMemo(() => productos.filter((p) => p.activo), [productos]);
 
-  const agregar = (p: Producto) => {
-    setLineas((ls) => {
-      const i = ls.findIndex((l) => l.p.id === p.id);
-      if (i >= 0) {
-        const copia = [...ls];
-        copia[i] = { ...copia[i], cantidad: String(num(copia[i].cantidad) + 1) };
-        return copia;
+  const agregar = useCallback(
+    (p: Producto, conSonido = false): boolean => {
+      const disp = stockDisponible(p);
+      const existente = lineas.find((l) => l.p.id === p.id);
+      const actualBase = existente
+        ? (convertir(num(existente.cantidad), existente.unidad, p.unidad_base, p.unidades_por_caja) ?? 0)
+        : 0;
+      const incrementoBase = convertir(1, existente?.unidad ?? p.unidad_base, p.unidad_base, p.unidades_por_caja) ?? 1;
+      if (!permitirNegativo && (disp <= 0 || actualBase + incrementoBase > disp)) {
+        if (conSonido) reproducirBeep("error");
+        toast.error(`Sin existencias para ${p.nombre}`);
+        return false;
       }
-      return [...ls, { p, cantidad: "1", unidad: p.unidad_base }];
-    });
-    setBloqueo(null);
-  };
+      setLineas((ls) => {
+        const i = ls.findIndex((l) => l.p.id === p.id);
+        if (i >= 0) {
+          const copia = [...ls];
+          copia[i] = { ...copia[i], cantidad: String(num(copia[i].cantidad) + 1) };
+          return copia;
+        }
+        return [...ls, { p, cantidad: "1", unidad: p.unidad_base }];
+      });
+      setBloqueo(null);
+      if (conSonido) {
+        reproducirBeep("ok");
+        toast.success(`${p.nombre} (+1)`);
+      }
+      return true;
+    },
+    [lineas, permitirNegativo, stockDisponible],
+  );
+
+  const procesarCodigoEscaneado = useCallback(
+    (raw: string) => {
+      const q = raw.trim();
+      if (!q) return;
+      const ql = q.toLowerCase();
+      const exacto = activos.find((p) => p.codigo_barras === q || (p.sku ?? "").toLowerCase() === ql);
+      const porNombre = activos.filter((p) => p.nombre.toLowerCase().includes(ql));
+      const p = exacto ?? (porNombre.length === 1 ? porNombre[0] : undefined);
+      if (p) {
+        agregar(p, true);
+        setCodigo("");
+      } else if (porNombre.length > 1) {
+        toast.message("Hay varias coincidencias: elige una de la lista.");
+      } else {
+        reproducirBeep("error");
+        toast.error(`Código "${q}" no registrado`, {
+          duration: 6000,
+          action: {
+            label: "+ Crear producto con este código",
+            onClick: () => setCrearCodigo(q),
+          },
+        });
+        setCodigo("");
+      }
+    },
+    [activos, agregar],
+  );
+
+  useBarcodeScanner({
+    activo: !crearCodigo,
+    onScan: (c) => procesarCodigoEscaneado(c),
+  });
 
   const escanear = () => {
-    const q = codigo.trim();
-    if (!q) return;
-    const ql = q.toLowerCase();
-    const exacto = activos.find((p) => p.codigo_barras === q || (p.sku ?? "").toLowerCase() === ql);
-    const porNombre = activos.filter((p) => p.nombre.toLowerCase().includes(ql));
-    const p = exacto ?? (porNombre.length === 1 ? porNombre[0] : undefined);
-    if (p) {
-      agregar(p);
-      setCodigo("");
-    } else if (porNombre.length > 1) {
-      toast.message("Hay varias coincidencias: elige una de la lista.");
-    } else {
-      toast.error("No encontré ese código ni producto.");
-      setCodigo("");
-    }
+    procesarCodigoEscaneado(codigo);
     enfocar();
   };
 
   const sugeridos = useMemo(() => {
     const q = codigo.trim().toLowerCase();
     if (q.length < 2) return [];
-    return activos.filter((p) => p.nombre.toLowerCase().includes(q) || (p.sku ?? "").toLowerCase().includes(q)).slice(0, 6);
+    return activos
+      .filter((p) => p.nombre.toLowerCase().includes(q) || (p.sku ?? "").toLowerCase().includes(q) || (p.codigo_barras ?? "").includes(q))
+      .slice(0, 6);
   }, [codigo, activos]);
 
   const cambiarLinea = (id: string, cambio: Partial<Pick<Linea, "cantidad" | "unidad">>) =>
-    setLineas((ls) => ls.map((l) => (l.p.id === id ? { ...l, ...cambio } : l)));
+    setLineas((ls) =>
+      ls.map((l) => {
+        if (l.p.id !== id) return l;
+        const next = { ...l, ...cambio };
+        if (!permitirNegativo) {
+          const disp = stockDisponible(l.p);
+          const cb = convertir(num(next.cantidad), next.unidad, l.p.unidad_base, l.p.unidades_por_caja);
+          if (cb !== null && cb > disp) {
+            reproducirBeep("error");
+            toast.error(`Sin existencias para ${l.p.nombre}`);
+            return l;
+          }
+        }
+        return next;
+      }),
+    );
   const quitar = (id: string) => setLineas((ls) => ls.filter((l) => l.p.id !== id));
 
-  const calculos = lineas.map((l) => ({ l, c: calcular(l, tipoPrecio) }));
+  const calculos = lineas.map((l) => ({ l, c: calcular(l, tipoPrecio, permitirNegativo, stockDisponible(l.p)) }));
   const base = calculos.reduce((s, x) => s + x.c.base, 0);
   const iva = calculos.filter((x) => x.l.p.tipo_impuesto === "iva").reduce((s, x) => s + x.c.impuesto, 0);
   const impo = calculos.filter((x) => x.l.p.tipo_impuesto === "impoconsumo").reduce((s, x) => s + x.c.impuesto, 0);
@@ -632,6 +756,14 @@ export function PosComercial() {
       return toast.error(m.length > 0 && m.length < 160 ? m : "No se pudo registrar la venta.");
     }
     const r = (data ?? {}) as { venta_id?: string; base?: number; iva?: number; impoconsumo?: number; total?: number };
+    // Si estamos en Modo Offline, refleja el descuento de stock al instante en local hasta sincronizar con Supabase.
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      descontarStockOffline(
+        "com_productos",
+        calculos.map((x) => ({ productoId: x.l.p.id, cantidad: x.c.cantBase })),
+      );
+      setTickOffline((n) => n + 1);
+    }
     setTicket({
       numero: (r.venta_id ?? "").slice(0, 6).toUpperCase(),
       cliente: cliente.trim(),
@@ -660,11 +792,16 @@ export function PosComercial() {
             <input
               ref={lector}
               className={`${campo} rounded-2xl py-3.5 pl-12`}
-              placeholder="Código de barras, SKU o nombre + Enter"
+              placeholder="Escanea código de barras o busca producto..."
               value={codigo}
               autoComplete="off"
               onChange={(e) => setCodigo(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && escanear()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  escanear();
+                }
+              }}
             />
           </div>
           {sugeridos.length > 0 && (
@@ -798,6 +935,118 @@ export function PosComercial() {
             <Wallet className="h-4 w-4" /> {metodo === "fiado" ? "Vender a crédito" : "Cobrar"} {dinero(total)}
           </button>
         </GlassPanel>
+      </div>
+      {crearCodigo !== null && (
+        <ModalCrearProductoRapidoComercial
+          codigoInicial={crearCodigo}
+          onCerrar={() => {
+            setCrearCodigo(null);
+            enfocar();
+          }}
+          onCreado={async (nuevoProd) => {
+            setCrearCodigo(null);
+            await recargar();
+            agregar(nuevoProd, true);
+            enfocar();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function ModalCrearProductoRapidoComercial({
+  codigoInicial,
+  onCerrar,
+  onCreado,
+}: {
+  codigoInicial: string;
+  onCerrar: () => void;
+  onCreado: (producto: Producto) => Promise<void> | void;
+}) {
+  const [nombre, setNombre] = useState("");
+  const [barras, setBarras] = useState(codigoInicial);
+  const [precio, setPrecio] = useState("");
+  const [stock, setStock] = useState("10");
+  const [guardando, setGuardando] = useState(false);
+
+  const guardar = async () => {
+    if (!nombre.trim()) return toast.error("Escribe el nombre del producto.");
+    if (num(precio) <= 0) return toast.error("El precio debe ser mayor a cero.");
+    setGuardando(true);
+    const stockNum = Math.max(num(stock), 0);
+    const { data, error } = await supabase
+      .from("com_productos")
+      .insert({
+        nombre: nombre.trim(),
+        codigo_barras: barras.trim() || null,
+        unidad_base: "und",
+        precio_detal: num(precio),
+        tipo_impuesto: "exento",
+        impuesto_pct: 0,
+        precio_incluye_impuesto: true,
+        stock: stockNum,
+        stock_actual: stockNum,
+        stock_minimo: 0,
+        costo: 0,
+      })
+      .select("*")
+      .single();
+    setGuardando(false);
+    if (error || !data) {
+      return toast.error(/duplicate|unique/i.test(error?.message ?? "") ? "Ya existe un producto con ese código." : "No se pudo crear el producto.");
+    }
+    toast.success("Producto creado y agregado al carrito.");
+    await onCreado(data);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onCerrar}>
+      <div className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+      <GlassPanel className="space-y-4 p-5">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="font-display text-lg text-foreground">Crear producto rápido</h3>
+          <button type="button" aria-label="Cerrar" onClick={onCerrar} className="text-muted-foreground">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="space-y-3">
+          <Campo etiqueta="Código de barras">
+            <div className="flex gap-2">
+              <input
+                className={campo}
+                value={barras}
+                onChange={(e) => setBarras(e.target.value)}
+                onKeyDown={evitarSubmitConEnter}
+              />
+              <button
+                type="button"
+                onClick={() => setBarras(generarEAN13())}
+                className={`${botonSec} shrink-0 whitespace-nowrap`}
+              >
+                <Sparkles className="h-4 w-4" /> Generar EAN-13
+              </button>
+            </div>
+          </Campo>
+          <Campo etiqueta="Nombre del producto *">
+            <input className={campo} autoFocus placeholder="Ej: Gaseosa 400ml" value={nombre} onChange={(e) => setNombre(e.target.value)} />
+          </Campo>
+          <div className="grid grid-cols-2 gap-3">
+            <Campo etiqueta="Precio detal *">
+              <input className={campo} inputMode="decimal" placeholder="3500" value={precio} onChange={(e) => setPrecio(e.target.value)} />
+            </Campo>
+            <Campo etiqueta="Stock actual">
+              <input className={campo} inputMode="decimal" value={stock} onChange={(e) => setStock(e.target.value)} />
+            </Campo>
+          </div>
+        </div>
+        <div className="flex justify-end gap-2">
+          <button type="button" onClick={onCerrar} className={botonSec}>Cancelar</button>
+          <button type="button" disabled={guardando} onClick={guardar} className={boton}>
+            <Plus className="h-4 w-4" /> {guardando ? "Guardando…" : "Crear y agregar"}
+          </button>
+        </div>
+      </GlassPanel>
       </div>
     </div>
   );
