@@ -308,6 +308,32 @@ function Simulador({ sector, onSalir }: { sector: Sector; onSalir: () => void })
   ]);
   const [pqrs, setPqrs] = useState(0);
 
+  // Las tarjetas del CRM de la demo se guardan en el navegador (no en la base de datos).
+  const claveCrm = "gosaryc_demo_crm_" + sector;
+  const primeraEscritura = useRef(true);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(claveCrm);
+      if (raw) {
+        const guardados: unknown = JSON.parse(raw);
+        if (Array.isArray(guardados)) setProspectos(guardados as Prospecto[]);
+      }
+    } catch {
+      /* sin acceso a almacenamiento: queda la lista inicial */
+    }
+  }, [claveCrm]);
+  useEffect(() => {
+    if (primeraEscritura.current) {
+      primeraEscritura.current = false;
+      return;
+    }
+    try {
+      localStorage.setItem(claveCrm, JSON.stringify(prospectos));
+    } catch {
+      /* almacenamiento lleno o bloqueado */
+    }
+  }, [prospectos, claveCrm]);
+
   const irRegistro = () => {
     sessionStorage.removeItem(CLAVE);
     void navigate({ to: "/login", search: { mode: "signup" } });
