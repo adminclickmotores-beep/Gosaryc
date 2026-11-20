@@ -45,6 +45,12 @@ function LoginPage() {
   }, [search.mode]);
 
   useEffect(() => {
+    // Si quedó una sesión demo guardada en el navegador, se cierra al llegar a iniciar sesión:
+    // así "Iniciar sesión" nunca deja entrar solo a la cuenta demo.
+    if (!loading && esDemo) void signOut();
+  }, [loading, esDemo, signOut]);
+
+  useEffect(() => {
     // Nunca redirigir de vuelta al panel si la sesión activa es una cuenta demo:
     // si el usuario llegó a /login es porque quiere iniciar sesión o crear su propia cuenta.
     if (!loading && session && !esDemo) {

@@ -12,6 +12,7 @@ import { SECTORES, buscarSector } from "@/lib/sectores";
 import { useAuth } from "@/contexts/AuthContext";
 import { BRAND } from "@/lib/brand";
 import { BotonesDemo } from "@/components/app/BotonesDemo";
+import { esCuentaDemo } from "@/lib/demo-real";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -393,7 +394,11 @@ function MiniNomina() {
 }
 
 function LandingPage() {
-  const { loading } = useAuth();
+  const { loading, session, signOut } = useAuth();
+  // La portada no debe conservar una sesión demo anterior: el login real siempre empieza limpio.
+  useEffect(() => {
+    if (!loading && esCuentaDemo(session?.user?.email)) void signOut();
+  }, [loading, session, signOut]);
   const [fichaModulo, setFichaModulo] = useState<Modulo | null>(null);
   const [oscuro, setOscuro] = useState<boolean>(false);
 
