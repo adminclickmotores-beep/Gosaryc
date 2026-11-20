@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { abrirArchivoPrivado } from "@/lib/archivo-privado";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
@@ -237,9 +238,7 @@ export function ContadorPro({ cuentas, filas }: { cuentas: Cuenta[]; filas: Asie
 
   const verSoporte = async (ruta: string | null) => {
     if (!ruta) return;
-    const { data, error } = await supabase.storage.from("soportes_tributarios").createSignedUrl(ruta, 300);
-    if (error || !data) return toast.error("No se pudo abrir el PDF.");
-    window.open(data.signedUrl, "_blank", "noopener");
+    if (!(await abrirArchivoPrivado("soportes_tributarios", ruta))) toast.error("No se pudo abrir el PDF.");
   };
 
   const pendientes = useMemo(() => obligs.filter((o) => o.estado !== "presentada"), [obligs]);

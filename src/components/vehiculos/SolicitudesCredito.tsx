@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft, FileText, Landmark, Paperclip, Pencil, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { abrirArchivoPrivado } from "@/lib/archivo-privado";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
@@ -96,9 +97,7 @@ export function SolicitudesCredito() {
 
   const abrirDoc = async (item: string) => {
     const ruta = item.split(sep)[1];
-    const { data, error } = await supabase.storage.from("creditos_docs").createSignedUrl(ruta, 300);
-    if (error || !data) return toast.error("No se pudo abrir el documento.");
-    window.open(data.signedUrl, "_blank", "noopener");
+    if (!(await abrirArchivoPrivado("creditos_docs", ruta))) toast.error("No se pudo abrir el documento.");
   };
 
   const subirDocs = async (archivos: FileList | null) => {

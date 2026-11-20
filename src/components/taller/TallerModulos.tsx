@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Camera, CheckCircle2, MessageCircle, Plus, Search, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { urlLocalPrivada } from "@/lib/archivo-privado";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { usePermisos } from "@/hooks/use-permisos";
@@ -62,11 +63,15 @@ function FotoMini({ ruta }: { ruta: string }) {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
     let vivo = true;
-    void supabase.storage.from(BUCKET).createSignedUrl(ruta, 300).then(({ data }) => {
-      if (vivo) setUrl(data?.signedUrl ?? null);
+    let local: string | null = null;
+    void urlLocalPrivada(BUCKET, ruta).then((u) => {
+      local = u;
+      if (vivo) setUrl(u);
+      else if (u) URL.revokeObjectURL(u);
     });
     return () => {
       vivo = false;
+      if (local) URL.revokeObjectURL(local);
     };
   }, [ruta]);
   if (!url) return null;

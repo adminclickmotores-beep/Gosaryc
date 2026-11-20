@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react
 import { Camera, ImageIcon, Loader2, MessageCircle, Paperclip, Plus, Printer, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { urlLocalPrivada } from "@/lib/archivo-privado";
 import type { Json, Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
@@ -117,10 +118,17 @@ function useUrlFirmada(ruta: string | null): string | null {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
     if (!ruta) return;
-    void (async () => {
-      const { data } = await supabase.storage.from(BUCKET).createSignedUrl(ruta, 120);
-      setUrl(data?.signedUrl ?? null);
-    })();
+    let vivo = true;
+    let local: string | null = null;
+    void urlLocalPrivada(BUCKET, ruta).then((u) => {
+      local = u;
+      if (vivo) setUrl(u);
+      else if (u) URL.revokeObjectURL(u);
+    });
+    return () => {
+      vivo = false;
+      if (local) URL.revokeObjectURL(local);
+    };
   }, [ruta]);
   return url;
 }

@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { abrirArchivoPrivado } from "@/lib/archivo-privado";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { usePermisosVehiculos } from "@/hooks/use-permisos-vehiculos";
@@ -241,9 +242,7 @@ export function RetomasVehiculos() {
   };
 
   const abrirPeritaje = async (ruta: string) => {
-    const { data, error } = await supabase.storage.from("creditos_docs").createSignedUrl(ruta, 300);
-    if (error || !data) return toast.error("No se pudo abrir el archivo.");
-    window.open(data.signedUrl, "_blank", "noopener");
+    if (!(await abrirArchivoPrivado("creditos_docs", ruta))) toast.error("No se pudo abrir el archivo.");
   };
 
   const quitarPeritaje = async (r: Retoma, ruta: string) => {

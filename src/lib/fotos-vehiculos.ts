@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { urlLocalPrivada } from "@/lib/archivo-privado";
 
 /** Las fotos de vehículos viven en un bucket privado; en la base solo se guarda la ruta. */
 export const BUCKET_FOTOS = "vehiculos_fotos";
@@ -12,11 +13,11 @@ export async function urlFirmada(valor: string): Promise<string | null> {
   if (!esRutaPrivada(valor)) return valor;
   const c = cache.get(valor);
   if (c && c.vence > Date.now()) return c.url;
-  const { data, error } = await supabase.storage.from(BUCKET_FOTOS).createSignedUrl(valor, 120);
-  if (error || !data) return null;
-  // Enlace corto: si una persona sale del equipo, deja de ver las fotos en pocos minutos.
-  cache.set(valor, { url: data.signedUrl, vence: Date.now() + 90 * 1000 });
-  return data.signedUrl;
+  // Descarga autenticada (sin enlaces firmados): quien sale del equipo pierde el acceso al instante.
+  const url = await urlLocalPrivada(BUCKET_FOTOS, valor);
+  if (!url) return null;
+  cache.set(valor, { url, vence: Date.now() + 30 * 1000 });
+  return url;
 }
 
 export async function urlsFirmadas(valores: string[]): Promise<(string | null)[]> {

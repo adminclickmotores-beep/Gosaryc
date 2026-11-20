@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react
 import { Camera, CheckCircle2, ImageIcon, Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { urlLocalPrivada } from "@/lib/archivo-privado";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 
@@ -481,10 +482,17 @@ const ESTADOS_ENCARGO: Record<string, string> = {
 function FotoEncargo({ ruta }: { ruta: string }) {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
-    void (async () => {
-      const { data } = await supabase.storage.from(BUCKET).createSignedUrl(ruta, 120);
-      setUrl(data?.signedUrl ?? null);
-    })();
+    let vivo = true;
+    let local: string | null = null;
+    void urlLocalPrivada(BUCKET, ruta).then((u) => {
+      local = u;
+      if (vivo) setUrl(u);
+      else if (u) URL.revokeObjectURL(u);
+    });
+    return () => {
+      vivo = false;
+      if (local) URL.revokeObjectURL(local);
+    };
   }, [ruta]);
   if (!url) return <ImageIcon className="h-5 w-5 text-muted-foreground" />;
   return (

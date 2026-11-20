@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ExternalLink, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { urlLocalPrivada } from "@/lib/archivo-privado";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { FotoPrivada } from "@/components/vehiculos/FotoPrivada";
@@ -118,9 +119,9 @@ export function FichaVehiculo({
   };
 
   const abrirDoc = async (d: Documento) => {
-    const { data, error } = await supabase.storage.from("creditos_docs").createSignedUrl(d.ruta, 300);
-    if (error || !data) return toast.error("No se pudo abrir el documento.");
-    setVista({ url: data.signedUrl, nombre: d.nombre, pdf: d.ruta.toLowerCase().endsWith(".pdf") });
+    const local = await urlLocalPrivada("creditos_docs", d.ruta);
+    if (!local) return toast.error("No se pudo abrir el documento.");
+    setVista({ url: local, nombre: d.nombre, pdf: d.ruta.toLowerCase().endsWith(".pdf") });
   };
 
   const subirFotos = async (archivos: FileList | null) => {

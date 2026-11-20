@@ -14,7 +14,9 @@ export const escaparCelda = (v: string | number): string => {
   let s = String(v ?? "");
   // Evita fórmulas en Excel/CSV: texto que empieza por = + - @ se guarda como texto.
   // También cuando antes del símbolo hay espacios o caracteres de control (Excel igualmente los interpreta).
-  if (typeof v === "string" && /^[\s\u0000-\u001f]*[=+\-@|%]/.test(s)) s = `'${s.replace(/^[\s\u0000-\u001f]+/, "")}`;
+  if (typeof v === "string" && (/^[\t\r]/.test(s) || /^[\s\u0000-\u001f ​-‏⁠﻿]*[=+\-@|%]/.test(s))) {
+    s = `'${s.replace(/^[\s\u0000-\u001f ​-‏⁠﻿]+/, "")}`;
+  }
   return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 

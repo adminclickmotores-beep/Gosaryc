@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { CheckCircle2, ChevronDown, ChevronUp, FileText, PackageCheck, ShoppingBag, Trash2, Upload, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { abrirArchivoPrivado } from "@/lib/archivo-privado";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { usePermisosVehiculos } from "@/hooks/use-permisos-vehiculos";
@@ -402,9 +403,7 @@ function DetalleCompra({ compra, onCambio }: { compra: Compra; onCambio: () => P
   };
 
   const abrirDoc = async (d: Documento) => {
-    const { data, error } = await supabase.storage.from(BUCKET_FOTOS).createSignedUrl(d.ruta, 120);
-    if (error || !data) return toast.error("No se pudo abrir el archivo.");
-    window.open(data.signedUrl, "_blank", "noopener");
+    if (!(await abrirArchivoPrivado(BUCKET_FOTOS, d.ruta))) toast.error("No se pudo abrir el archivo.");
   };
 
   const quitarDoc = async (d: Documento) => {

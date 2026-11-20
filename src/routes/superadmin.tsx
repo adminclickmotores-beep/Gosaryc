@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, CalendarPlus, KeyRound, Megaphone, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { abrirArchivoPrivado } from "@/lib/archivo-privado";
 import type { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
@@ -119,9 +120,7 @@ function SuperAdminPage() {
 
   const verComprobante = async (p: Pago) => {
     if (!p.comprobante_url) return;
-    const { data, error } = await supabase.storage.from("comprobantes_pago").createSignedUrl(p.comprobante_url, 300);
-    if (error || !data) return toast.error("No se pudo abrir el comprobante.");
-    window.open(data.signedUrl, "_blank", "noopener");
+    if (!(await abrirArchivoPrivado("comprobantes_pago", p.comprobante_url))) toast.error("No se pudo abrir el comprobante.");
   };
 
   const aprobarPago = async (p: Pago) => {

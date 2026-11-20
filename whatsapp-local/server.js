@@ -1,3 +1,8 @@
+// Los teléfonos de clientes nunca se escriben completos en los registros.
+function enmascararNumero(t) {
+  return String(t == null ? "" : t).replace(/\d{7,15}/g, "***");
+}
+
 /**
  * API local de WhatsApp para Gosaryc (agente multi-especialista 24/7).
  * Corre en TU computador (http://localhost:3001). Maneja VARIOS números (uno por negocio):
@@ -275,13 +280,13 @@ async function atender(linea, jid, chat) {
     const extracto = chat.historial.slice(-4).map((m) => `${m.role === "user" ? "Cliente" : "Agente"}: ${m.content}`).join("\n").slice(0, 800);
     if (molesto || escalar) {
       chat.pausadoHasta = Date.now() + PAUSA_HUMANO_MS;
-      console.log(`[${linea.nombre}] ${jid}: pasa a una persona del equipo (el agente se pausa ${PAUSA_HUMANO_MS / 3600000} h).`);
+      console.log(`[${linea.nombre}] ${enmascararNumero(jid)}: pasa a una persona del equipo (el agente se pausa ${PAUSA_HUMANO_MS / 3600000} h).`);
       registrarAviso(linea.id, linea.nombre, "espera_humano", `Cliente espera a una persona (${tel})`, extracto, tel);
     } else if (confirma) {
       registrarAviso(linea.id, linea.nombre, "nuevo_pedido", `Posible pedido o cita por confirmar (${tel})`, extracto, tel);
     } else if (escalar) {
       chat.pausadoHasta = Date.now() + PAUSA_HUMANO_MS;
-      console.log(`[${linea.nombre}] ${jid}: pasa a una persona del equipo (el agente se pausa ${PAUSA_HUMANO_MS / 3600000} h).`);
+      console.log(`[${linea.nombre}] ${enmascararNumero(jid)}: pasa a una persona del equipo (el agente se pausa ${PAUSA_HUMANO_MS / 3600000} h).`);
     }
   } catch (e) {
     console.log(`[${linea.nombre}] El agente no pudo responder: ${e.message}`);
@@ -733,7 +738,7 @@ const servidor = http.createServer(async (req, res) => {
 
 // Estabilidad: ningún error suelto tumba el servidor local.
 process.on("uncaughtException", (e) => {
-  console.log("[Error no controlado]", e && e.stack ? e.stack : e);
+  console.log("[Error no controlado]", enmascararNumero(e && e.stack ? e.stack : e));
 });
 process.on("unhandledRejection", (e) => {
   console.log("[Promesa rechazada]", e && e.stack ? e.stack : e);

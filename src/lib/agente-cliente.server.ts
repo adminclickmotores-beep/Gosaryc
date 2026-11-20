@@ -534,13 +534,13 @@ Reglas:
       await registrarLead(ag, telefono, canal, lead);
       if (pqrs) await guardarEtiquetaAgente(ag, "pqrs", telefono, pqrs);
     } catch (e) {
-      console.error("Agente: no se pudo guardar lead/PQRS", e);
+      console.error("Agente: no se pudo guardar lead/PQRS", String(e instanceof Error ? e.message : "error").replace(/\d{7,15}/g, "***"));
     }
     try {
       const leadId = await sincronizarCrm(ag, telefono, canal, lead, pqrs, escalar);
       if (leadId) await guardarMensajesCrm(ag, leadId, telefono, historial[historial.length - 1].content, limpio);
     } catch (e) {
-      console.error("Agente: no se pudo sincronizar el CRM", e);
+      console.error("Agente: no se pudo sincronizar el CRM", String(e instanceof Error ? e.message : "error").replace(/\d{7,15}/g, "***"));
     }
   }
 
@@ -549,7 +549,7 @@ Reglas:
     try {
       await aprenderPatrones(ag, [...historial, { role: "assistant", content: limpio }]);
     } catch (e) {
-      console.error("Agente: no se pudo aprender de la conversación", e);
+      console.error("Agente: no se pudo aprender de la conversación", String(e instanceof Error ? e.message : "error").replace(/\d{7,15}/g, "***"));
     }
   }
   return { texto: limpio || "Un momento, una persona del equipo te atiende enseguida.", escalar, lead, pqrs };

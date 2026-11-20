@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Bike, Car, FileText, FolderOpen, Paperclip, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { abrirArchivoPrivado } from "@/lib/archivo-privado";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 
@@ -79,9 +80,7 @@ export function DocumentosVehiculos() {
   };
 
   const abrir = async (d: Documento) => {
-    const { data, error } = await supabase.storage.from("creditos_docs").createSignedUrl(d.ruta, 300);
-    if (error || !data) return toast.error("No se pudo abrir el documento.");
-    window.open(data.signedUrl, "_blank", "noopener");
+    if (!(await abrirArchivoPrivado("creditos_docs", d.ruta))) toast.error("No se pudo abrir el documento.");
   };
 
   const borrar = async (d: Documento) => {

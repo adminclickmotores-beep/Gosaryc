@@ -12,6 +12,10 @@ import {
   Text,
 } from '@react-email/components'
 import { BRAND, styles } from './_brand'
+import { appUrlBase } from '@/lib/app-url'
+import { BRAND as MARCA } from '@/lib/brand'
+
+const BRAND_HOST = String(MARCA.domain).toLowerCase()
 
 interface InviteEmailProps {
   siteName?: string
@@ -19,15 +23,6 @@ interface InviteEmailProps {
   confirmationUrl?: string
   orgName?: string
   inviterName?: string
-}
-
-function originFromUrl(url: string | undefined): string | null {
-  if (!url) return null
-  try {
-    return new URL(url).origin
-  } catch {
-    return null
-  }
 }
 
 export const InviteEmail = ({
@@ -39,8 +34,24 @@ export const InviteEmail = ({
 }: InviteEmailProps) => {
   // Prefer an explicit siteUrl; otherwise fall back to the confirmation link's
   // origin so emails never link to placeholder/example.com domains.
-  const resolvedSiteUrl = siteUrl ?? originFromUrl(confirmationUrl) ?? '#'
-  const resolvedConfirmation = confirmationUrl ?? resolvedSiteUrl
+  // Seguridad: ningún enlace del cliente llega al correo salvo que apunte a nuestro dominio oficial o al
+  // servicio de autenticación del proyecto. Cualquier otro valor se reemplaza por la URL oficial.
+  const oficial = appUrlBase()
+  const permitido = (u: string | undefined): string | null => {
+    if (!u) return null
+    try {
+      const x = new URL(u)
+      if (x.protocol !== 'https:') return null
+      const host = x.hostname.toLowerCase()
+      const oficialHost = new URL(oficial).hostname.toLowerCase()
+      const ok = host === oficialHost || host.endsWith('.supabase.co') || host === BRAND_HOST
+      return ok ? x.toString() : null
+    } catch {
+      return null
+    }
+  }
+  const resolvedSiteUrl = permitido(siteUrl) ?? oficial
+  const resolvedConfirmation = permitido(confirmationUrl) ?? resolvedSiteUrl
   const workspaceLabel = orgName ?? siteName
   return (
     <Html lang="en" dir="ltr">
