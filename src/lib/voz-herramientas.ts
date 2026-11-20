@@ -24,7 +24,8 @@ export type VozPlan = {
 
 const norm = (t: string) =>
   t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
-const limpiarBusqueda = (t: string) => t.replace(/[%_,()\\]/g, " ").trim().slice(0, 80);
+const limpiarBusqueda = (t: string) => t.replace(/[%_,()\\"'*:<>;]/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
+const METODOS_POS = ["efectivo", "nequi", "daviplata", "tarjeta"];
 const dinero = (n: number) => `$${Math.round(n).toLocaleString("es-CO")}`;
 const numero = (v: unknown): number | null => {
   const n = typeof v === "number" ? v : Number(String(v ?? "").replace(/[^\d.,-]/g, "").replace(",", "."));
@@ -252,9 +253,14 @@ async function pos(args: Record<string, unknown>, ctx: VozContexto): Promise<Voz
     return {
       texto: "Preparando la cuenta.",
       ejecutar: async () => {
+        const metodoBruto = args.medio_pago === "datafono" ? "tarjeta" : args.medio_pago === "transferencia" ? "nequi" : String(args.medio_pago ?? "");
         window.sessionStorage.setItem(
           "gosaryc:voz-pos",
-          JSON.stringify({ items, cliente: args.cliente, metodo: args.medio_pago === "datafono" ? "tarjeta" : args.medio_pago === "transferencia" ? "nequi" : args.medio_pago }),
+          JSON.stringify({
+            items: items.slice(0, 30).map((i) => ({ nombre: i.nombre, cantidad: Math.min(Math.max(i.cantidad, 0), 1000) })),
+            cliente: limpiarTexto(String(args.cliente ?? ""), 120),
+            metodo: METODOS_POS.includes(metodoBruto) ? metodoBruto : undefined,
+          }),
         );
         ctx.irA(ctx.rutaPanel, "venta");
         window.setTimeout(() => window.dispatchEvent(new Event("gosaryc:voz-pos")), 400);

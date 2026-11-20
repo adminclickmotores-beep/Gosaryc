@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, Mic, MicOff, Send, Volume2, VolumeX, X } from "lucide-react";
 import { interpretarVoz, type VozModulo, type VozLlamada } from "@/lib/voz-copiloto.functions";
+import { limpiarTexto } from "@/lib/validacion-publica";
 import { interpretarLocal, prepararLlamada, type VozContexto, type VozPlan } from "@/lib/voz-herramientas";
 
 type ReconocedorWeb = {
@@ -108,7 +109,7 @@ export function VoiceCopilotProvider({ esAdmin, puede, modulos, tipoNegocio, rut
 
   const procesar = useCallback(
     async (crudo: string) => {
-      const t = crudo.trim();
+      const t = limpiarTexto(crudo, 600);
       const ctx = ctxRef.current;
       if (!t || !ctx) return;
       setError("");

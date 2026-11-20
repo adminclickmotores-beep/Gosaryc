@@ -12,6 +12,21 @@ type VozJson = string | number | boolean | null | VozJson[] | { [k: string]: Voz
 export type VozLlamada = { herramienta: string; args: { [k: string]: VozJson } };
 export type VozRespuesta = { respuesta: string; llamadas: VozLlamada[] };
 
+/** Limpia lo que devuelve la IA: sin etiquetas ni caracteres de control, textos acotados, sin anidar profundo. */
+function limpiarJson(v: VozJson, nivel: number): VozJson {
+  if (typeof v === "string") return v.replace(/[\u0000-\u001f\u007f<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, 400);
+  if (typeof v === "number") return Number.isFinite(v) ? v : 0;
+  if (typeof v === "boolean" || v === null) return v;
+  if (nivel >= 3) return null;
+  if (Array.isArray(v)) return v.slice(0, 30).map((x) => limpiarJson(x, nivel + 1));
+  const o: { [k: string]: VozJson } = {};
+  for (const [k, x] of Object.entries(v).slice(0, 30)) {
+    if (k === "__proto__" || k === "constructor" || k === "prototype") continue;
+    o[k.slice(0, 40)] = limpiarJson(x, nivel + 1);
+  }
+  return o;
+}
+
 const str = (descripcion: string) => ({ type: "string", description: descripcion });
 const num = (descripcion: string) => ({ type: "number", description: descripcion });
 
@@ -122,7 +137,16 @@ const HERRAMIENTAS = [
 /** Copiloto de voz: convierte lo dictado en llamadas a las 6 herramientas universales (se ejecutan en el navegador con los permisos del usuario). */
 export const interpretarVoz = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { texto: string; tipoNegocio: string; modulos: VozModulo[]; esAdmin: boolean }) => d)
+  .inputValidator((d: { texto: string; tipoNegocio: string; modulos: VozModulo[]; esAdmin: boolean }) => ({
+    texto: typeof d?.texto === "string" ? d.texto.replace(/[\u0000-\u001f\u007f<>]/g, " ").slice(0, 600) : "",
+    tipoNegocio: typeof d?.tipoNegocio === "string" ? d.tipoNegocio.replace(/[^\p{L}\p{N} _-]/gu, "").slice(0, 80) : "",
+    modulos: (Array.isArray(d?.modulos) ? d.modulos : [])
+      .filter((m) => m && typeof m.id === "string" && typeof m.titulo === "string")
+      .slice(0, 80)
+      .map((m) => ({ id: m.id.replace(/[^\w.-]/g, "").slice(0, 60), titulo: m.titulo.replace(/[\u0000-\u001f\u007f<>\n]/g, " ").slice(0, 80) })),
+    // Solo orienta a la IA: los permisos reales se aplican en el cliente y con las reglas de la base (RLS) por negocio.
+    esAdmin: d?.esAdmin === true,
+  }))
   .handler(async ({ data, context }): Promise<VozRespuesta> => {
     await assertAiQuota(context.supabase, "voz-copiloto");
 
@@ -191,7 +215,7 @@ Responde en español de México, en una frase corta. No uses emojis. El rol del 
       if (!nombres.has(nombre)) continue;
       try {
         const args = JSON.parse(tc.function?.arguments || "{}") as { [k: string]: VozJson };
-        llamadas.push({ herramienta: nombre, args: args && typeof args === "object" ? args : {} });
+        llamadas.push({ herramienta: nombre, args: args && typeof args === "object" && !Array.isArray(args) ? (limpiarJson(args, 0) as { [k: string]: VozJson }) : {} });
       } catch {
         /* argumentos inválidos: se descarta */
       }
