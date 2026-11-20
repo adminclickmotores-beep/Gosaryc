@@ -286,18 +286,26 @@ async function sembrar(tipo: TipoDemo, uid: string) {
  * Las cuentas demo compartidas no pueden utilizarse para autenticar visitantes.
  * La demostración debe ejecutarse con identidades aisladas por visitante.
  */
-const CLAVE_DEMO = "DemoGosaryc2026";
-
 export async function entrarDemo(tipo: TipoDemo): Promise<void> {
-  // Acceso libre de solo lectura: la base bloquea cualquier escritura de estas cuentas.
-  const email = CORREO_DEMO[tipo];
+  // Acceso libre de solo lectura sin contraseñas: el servidor emite un enlace de un solo uso.
+  const fallo = "No se pudo abrir la demo. Intenta de nuevo en un momento.";
   await supabase.auth.signOut({ scope: "local" });
-  const { error } = await supabase.auth.signInWithPassword({ email, password: CLAVE_DEMO });
-  if (!error) return;
-  const { error: errReg } = await supabase.auth.signUp({ email, password: CLAVE_DEMO });
-  if (errReg) throw new Error("No se pudo abrir la demo. Intenta de nuevo en un momento.");
-  const { error: errIn } = await supabase.auth.signInWithPassword({ email, password: CLAVE_DEMO });
-  if (errIn) throw new Error("No se pudo abrir la demo. Intenta de nuevo en un momento.");
+  let tokenHash = "";
+  try {
+    const res = await fetch("/api/public/demo-sesion", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tipo }),
+    });
+    if (!res.ok) throw new Error(fallo);
+    const datos = (await res.json()) as { token_hash?: string };
+    tokenHash = datos.token_hash ?? "";
+  } catch {
+    throw new Error(fallo);
+  }
+  if (!tokenHash) throw new Error(fallo);
+  const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: "magiclink" });
+  if (error) throw new Error(fallo);
 }
 
 /**
