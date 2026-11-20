@@ -291,7 +291,7 @@ const CLAVE_DEMO = "DemoGosaryc2026";
 export async function entrarDemo(tipo: TipoDemo): Promise<void> {
   // Acceso libre de solo lectura: la base bloquea cualquier escritura de estas cuentas.
   const email = CORREO_DEMO[tipo];
-  await supabase.auth.signOut();
+  await supabase.auth.signOut({ scope: "local" });
   const { error } = await supabase.auth.signInWithPassword({ email, password: CLAVE_DEMO });
   if (!error) return;
   const { error: errReg } = await supabase.auth.signUp({ email, password: CLAVE_DEMO });

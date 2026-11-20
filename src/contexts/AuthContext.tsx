@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { prefetchOrgId } from "@/hooks/use-org";
+import { esCuentaDemo } from "@/lib/demo-real";
 
 interface AuthCtx {
   session: Session | null;
@@ -26,6 +27,7 @@ function sessionsEqual(a: Session | null, b: Session | null) {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const sessionRef = useRef<Session | null>(null);
   const lastUserIdRef = useRef<string | null>(null);
   const initializedRef = useRef(false);
 
@@ -34,6 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Fragile: auth fires both the storage-restored session and the initial
       // auth event. Keep object identity stable and only flip loading once, or
       // the app shell remounts/paints twice during every fresh load.
+      sessionRef.current = s;
       setSession((prev) => (sessionsEqual(prev, s) ? prev : s));
       if (!initializedRef.current) {
         initializedRef.current = true;
@@ -96,7 +99,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    const demo = esCuentaDemo(sessionRef.current?.user?.email);
+    try {
+      await supabase.auth.signOut(demo ? { scope: "local" } : undefined);
+    } catch {
+      try {
+        await supabase.auth.signOut({ scope: "local" });
+      } catch {
+        /* ignorar si falla el almacenamiento o la red */
+      }
+    }
+    sessionRef.current = null;
+    lastUserIdRef.current = null;
+    setSession(null);
   }, []);
 
   const value = useMemo<AuthCtx>(

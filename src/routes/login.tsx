@@ -30,7 +30,8 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const search = Route.useSearch();
   const nav = useNavigate();
-  const { session, loading } = useAuth();
+  const { session, loading, signOut } = useAuth();
+  const esDemo = esCuentaDemo(session?.user?.email);
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">(search.mode ?? "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,10 +41,16 @@ function LoginPage() {
   const [recordar, setRecordar] = useState(true);
 
   useEffect(() => {
-    if (!loading && session) {
+    if (search.mode) setMode(search.mode);
+  }, [search.mode]);
+
+  useEffect(() => {
+    // Nunca redirigir de vuelta al panel si la sesión activa es una cuenta demo:
+    // si el usuario llegó a /login es porque quiere iniciar sesión o crear su propia cuenta.
+    if (!loading && session && !esDemo) {
       nav({ to: (search.redirect && search.redirect !== "/" ? search.redirect : "/restaurante") as "/dashboard", replace: true });
     }
-  }, [session, loading, nav, search.redirect]);
+  }, [session, loading, esDemo, nav, search.redirect]);
 
   // "Recordarme": si no está marcado, la sesión se cierra al cerrar el navegador.
   const guardarPreferenciaSesion = () => {
@@ -81,6 +88,7 @@ function LoginPage() {
     setBusy(true);
     try {
       if (mode === "signup") {
+        if (esDemo) await signOut();
         guardarPreferenciaSesion();
         const { data, error } = await supabase.auth.signUp({
           email: correo,
@@ -106,6 +114,7 @@ function LoginPage() {
         toast.success("Te enviamos un enlace para cambiar tu contraseña. Revisa tu correo y el spam.");
         setMode("signin");
       } else {
+        if (esDemo) await signOut();
         guardarPreferenciaSesion();
         const { error } = await supabase.auth.signInWithPassword({ email: correo, password });
         if (error) throw error;
@@ -137,6 +146,7 @@ function LoginPage() {
 
   const google = async () => {
     setBusy(true);
+    if (esDemo) await signOut();
     guardarPreferenciaSesion();
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: `${window.location.origin}${search.redirect ?? "/restaurante"}`,
@@ -148,7 +158,7 @@ function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden px-4">
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden px-4 py-6">
       <GradientMesh />
 
       {/* Floating refractive orbs */}
@@ -247,13 +257,16 @@ function LoginPage() {
               <>
               {mode !== "forgot" && (
                 <>
-                  <BotonesDemo className="mt-7" />
-                  <div className="my-5 h-px bg-glass-border" />
+                  {esDemo && (
+                    <div className="mb-5 rounded-xl border border-emerald-500/35 bg-emerald-500/10 px-3.5 py-2.5 text-center text-xs text-foreground">
+                      Estabas viendo una demo. Inicia sesión o crea tu cuenta para entrar a tu propio negocio.
+                    </div>
+                  )}
                   <button
                     type="button"
                     onClick={google}
                     disabled={busy}
-                    className="group relative mt-7 flex w-full items-center justify-center gap-2.5 overflow-hidden rounded-2xl px-4 py-3 text-sm font-medium transition disabled:opacity-50"
+                    className="group relative mt-4 flex w-full items-center justify-center gap-2.5 overflow-hidden rounded-2xl px-4 py-3 text-sm font-medium transition disabled:opacity-50"
                     style={{
                       background:
                         "linear-gradient(160deg, oklch(1 0 0 / 0.08), oklch(1 0 0 / 0.03))",
@@ -413,6 +426,17 @@ function LoginPage() {
                   </button>
                 )}
               </div>
+
+              {mode !== "forgot" && (
+                <>
+                  <div className="my-6 flex items-center gap-3 text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">
+                    <span className="h-px flex-1 bg-gradient-to-r from-transparent via-glass-border to-glass-border" />
+                    o prueba una demo
+                    <span className="h-px flex-1 bg-gradient-to-l from-transparent via-glass-border to-glass-border" />
+                  </div>
+                  <BotonesDemo />
+                </>
+              )}
               </>
               )}
             </div>

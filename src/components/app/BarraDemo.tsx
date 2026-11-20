@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { CheckCircle2, ChevronLeft, ChevronRight, Pause, Play, Radio, Rocket, Minimize2, Maximize2, X } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { CheckCircle2, ChevronLeft, ChevronRight, LogIn, Pause, Play, Radio, Rocket, Minimize2, Maximize2, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { CORREO_DEMO, esCuentaDemo } from "@/lib/demo-real";
@@ -208,19 +208,27 @@ const enRutaDelPaso = (p: Paso, ruta: string, busqueda: string): boolean =>
 
 /** Barra del recorrido guiado: solo en cuentas demo. Cambia de ventana sola cada 4,5 segundos. */
 export function BarraDemo() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const nav = useNavigate();
   const [paso, setPaso] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [avisos, setAvisos] = useState<Aviso[]>([]);
   const [minimizada, setMinimizada] = useState(false);
   const [cerrada, setCerrada] = useState(false);
+  const [saliendo, setSaliendo] = useState(false);
   const contador = useRef(0);
   const cifrasListas = useRef(false);
   const demo = esCuentaDemo(user?.email);
   const tipo = user?.email?.toLowerCase() === CORREO_DEMO.vehiculos ? "vehiculos" : "restaurante";
   const PASOS = tipo === "vehiculos" ? PASOS_VEHICULOS : PASOS_RESTAURANTE;
   const indice = Math.min(paso, PASOS.length - 1);
+
+  const salirDeDemo = async (modo: "signin" | "signup") => {
+    setSaliendo(true);
+    setIsPlaying(false);
+    await signOut();
+    nav({ to: "/login", search: { mode: modo }, replace: true });
+  };
 
   // Abre la ventana real del paso (y la pestaña exacta del panel cuando la tiene).
   const abrir = (p: Paso) => {
@@ -492,13 +500,22 @@ export function BarraDemo() {
               <button type="button" className={btn} onClick={() => ir(indice + 1)} disabled={indice === PASOS.length - 1}>
                 Siguiente <ChevronRight className="h-3.5 w-3.5" />
               </button>
-              <Link
-                to="/login"
-                search={{ mode: "signup" }}
-                className="inline-flex min-h-8 items-center gap-1 rounded-full bg-[#2563EB] px-3 py-1 text-xs font-bold text-white transition hover:bg-[#1D4ED8]"
+              <button
+                type="button"
+                disabled={saliendo}
+                onClick={() => void salirDeDemo("signin")}
+                className={btn}
+              >
+                <LogIn className="h-3.5 w-3.5" /> Iniciar sesión
+              </button>
+              <button
+                type="button"
+                disabled={saliendo}
+                onClick={() => void salirDeDemo("signup")}
+                className="inline-flex min-h-8 items-center gap-1 rounded-full bg-[#2563EB] px-3 py-1 text-xs font-bold text-white transition hover:bg-[#1D4ED8] disabled:opacity-50"
               >
                 <Rocket className="h-3.5 w-3.5" /> Crear cuenta
-              </Link>
+              </button>
             </div>
           </div>
         )}
