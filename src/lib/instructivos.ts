@@ -12,7 +12,7 @@ export type Instructivo = {
 const POR_RUTA: Record<string, Instructivo> = {
   "/": {
     titulo: "Portada y fichas por negocio",
-    paraQue: "Conocer el programa y empezar gratis con tu rubro ya elegido.",
+    paraQue: "Conocer el programa (30 días gratis sin compromiso, POS con escáner y tirillas 58/80mm, Agente WhatsApp IA + CRM y PQRS, DIAN y Nómina Colombia) y empezar con tu rubro ya elegido.",
     pasos: [
       "Baja a «El programa se adapta a tu negocio, no al revés» y toca tu tipo de negocio para ver su ficha.",
       "Lee qué problema resuelve y sus funciones reales incluidas.",

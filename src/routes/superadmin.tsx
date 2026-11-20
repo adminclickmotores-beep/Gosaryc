@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, CalendarPlus, KeyRound, ShieldCheck } from "lucide-react";
+import { ArrowLeft, CalendarPlus, KeyRound, Megaphone, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { DianAdmin } from "@/components/app/DianAdmin";
+import { EstudioMarketing } from "@/components/superadmin/EstudioMarketing";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 import { useUsuariosEnLinea } from "@/hooks/use-presencia";
 import { esCuentaMaestra } from "@/lib/cuenta-maestra";
@@ -54,6 +55,7 @@ function SuperAdminPage() {
   const [pagos, setPagos] = useState<Pago[]>([]);
   const [envio, setEnvio] = useState<EnvioLicencia | null>(null);
   const [busca, setBusca] = useState("");
+  const [seccion, setSeccion] = useState<"empresas" | "marketing">("empresas");
   const enLinea = useUsuariosEnLinea(permitido === true);
 
   useEffect(() => {
@@ -201,10 +203,41 @@ function SuperAdminPage() {
           <ShieldCheck className="h-7 w-7 text-primary" /> Panel del dueño
         </h1>
         <p className="text-sm text-muted-foreground">Todas las empresas registradas, su plan y su estado de pago.</p>
-        <Link to="/licencias" className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
-          <ShieldCheck className="h-4 w-4" /> Licencias de instalaciones locales
-        </Link>
+        <div className="flex flex-wrap items-center gap-3 pt-1">
+          <Link to="/licencias" className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
+            <ShieldCheck className="h-4 w-4" /> Licencias de instalaciones locales
+          </Link>
+        </div>
+        <div className="flex flex-wrap gap-2 pt-3">
+          <button
+            type="button"
+            onClick={() => setSeccion("empresas")}
+            className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-medium transition ${
+              seccion === "empresas"
+                ? "bg-primary text-primary-foreground"
+                : "border border-glass-border bg-glass/30 text-foreground hover:bg-glass/60"
+            }`}
+          >
+            <ShieldCheck className="h-4 w-4" /> Empresas y Licencias
+          </button>
+          <button
+            type="button"
+            onClick={() => setSeccion("marketing")}
+            className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-medium transition ${
+              seccion === "marketing"
+                ? "bg-primary text-primary-foreground"
+                : "border border-glass-border bg-glass/30 text-foreground hover:bg-glass/60"
+            }`}
+          >
+            <Megaphone className="h-4 w-4" /> Estudio de Marketing y Campañas
+          </button>
+        </div>
       </div>
+
+      {seccion === "marketing" ? (
+        <EstudioMarketing />
+      ) : (
+        <>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {tarjetas.map((c) => (
@@ -440,6 +473,8 @@ function SuperAdminPage() {
           );
         })}
       </div>
+        </>
+      )}
     </div>
   );
 }

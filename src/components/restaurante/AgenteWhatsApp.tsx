@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Bot, CheckCircle2, Copy, Eye, EyeOff, Link2, RefreshCw, Wifi, WifiOff, Zap } from "lucide-react";
+import { Bot, CheckCircle2, Cloud, Copy, Eye, EyeOff, Link2, RefreshCw, Wifi, WifiOff, Zap } from "lucide-react";
 import { ProbadorAgenteVivo } from "@/components/restaurante/ProbadorAgenteVivo";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
@@ -20,7 +20,14 @@ const ENLACES_CANAL = [
 
 type LineaLocal = { id: string; nombre: string; estado: string; agente: boolean; conClave: boolean; qr: string; aviso: string };
 
-const API_LOCAL = "http://localhost:3001";
+const API_LOCAL_DEFECTO = "http://localhost:3001";
+const CLAVE_URL_API = "gosaryc:agente-api-url";
+
+function normalizarUrlApi(raw: string): string {
+  const limpio = raw.trim().replace(/\/+$/, "");
+  if (!limpio) return API_LOCAL_DEFECTO;
+  return /^https?:\/\//i.test(limpio) ? limpio : `http://${limpio}`;
+}
 const ETIQUETA_ESTADO: Record<string, string> = {
   iniciando: "Iniciando…",
   esperando_qr: "Esperando que escanees el código QR",
@@ -51,9 +58,26 @@ function AgenteWhatsAppReal() {
   const [agente, setAgente] = useState<AgenteAutoRow | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [claveLocal, setClaveLocal] = useState("");
+  const [urlApiLocal, setUrlApiLocal] = useState(() => {
+    try {
+      return window.localStorage.getItem(CLAVE_URL_API) || API_LOCAL_DEFECTO;
+    } catch {
+      return API_LOCAL_DEFECTO;
+    }
+  });
   const [verClave, setVerClave] = useState(false);
   const [linea, setLinea] = useState<LineaLocal | null>(null);
   const [apiCaida, setApiCaida] = useState(false);
+
+  const apiBase = normalizarUrlApi(urlApiLocal);
+  const guardarUrlApi = (valor: string) => {
+    setUrlApiLocal(valor);
+    try {
+      window.localStorage.setItem(CLAVE_URL_API, valor.trim() || API_LOCAL_DEFECTO);
+    } catch {
+      /* modo privado */
+    }
+  };
 
   const idLinea = (negocio?.id ?? "").slice(0, 8) || "negocio";
   const tipoNegocio = ((negocio as unknown as { tipo_negocio?: string | null } | null)?.tipo_negocio ?? "").slice(0, 80);
@@ -82,7 +106,7 @@ function AgenteWhatsAppReal() {
   const consultarLinea = useCallback(async () => {
     if (!claveLocal.trim()) return;
     try {
-      const r = await fetch(`${API_LOCAL}/lineas`, { headers: { Authorization: `Bearer ${claveLocal.trim()}` } });
+      const r = await fetch(`${apiBase}/lineas`, { headers: { Authorization: `Bearer ${claveLocal.trim()}` } });
       if (!r.ok) {
         setApiCaida(r.status !== 401);
         return;
@@ -93,7 +117,7 @@ function AgenteWhatsAppReal() {
     } catch {
       setApiCaida(true);
     }
-  }, [claveLocal, idLinea]);
+  }, [apiBase, claveLocal, idLinea]);
 
   useEffect(() => {
     void consultarLinea();
@@ -134,7 +158,7 @@ function AgenteWhatsAppReal() {
     setAgente(actualizado);
     if (claveLocal.trim() && linea) {
       try {
-        await fetch(`${API_LOCAL}/lineas`, {
+        await fetch(`${apiBase}/lineas`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${claveLocal.trim()}` },
           body: JSON.stringify({
@@ -158,7 +182,7 @@ function AgenteWhatsAppReal() {
       return;
     }
     try {
-      const r = await fetch(`${API_LOCAL}/lineas`, {
+      const r = await fetch(`${apiBase}/lineas`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -191,7 +215,7 @@ function AgenteWhatsAppReal() {
       return;
     }
     try {
-      const r = await fetch(`${API_LOCAL}/lineas/revincular`, {
+      const r = await fetch(`${apiBase}/lineas/revincular`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${claveLocal.trim()}` },
         body: JSON.stringify({ id: idLinea }),
@@ -253,11 +277,19 @@ function AgenteWhatsAppReal() {
                 ? "bg-emerald-500/15 text-emerald-500"
                 : linea
                   ? "bg-amber-500/15 text-amber-500"
-                  : "bg-muted text-muted-foreground"
+                  : activo
+                    ? "bg-sky-500/15 text-sky-400"
+                    : "bg-muted text-muted-foreground"
             }`}
           >
-            {conectado ? <Wifi className="h-3.5 w-3.5" /> : <WifiOff className="h-3.5 w-3.5" />}
-            {linea ? ETIQUETA_ESTADO[linea.estado] ?? linea.estado : "Sin vincular"}
+            {conectado ? <Wifi className="h-3.5 w-3.5" /> : activo && !linea ? <Cloud className="h-3.5 w-3.5" /> : <WifiOff className="h-3.5 w-3.5" />}
+            {conectado
+              ? "Conectado 24/7 (API Local)"
+              : linea
+                ? ETIQUETA_ESTADO[linea.estado] ?? linea.estado
+                : activo
+                  ? "Modo Web/Nube activo"
+                  : "Pausado"}
           </span>
         </div>
 
@@ -316,12 +348,22 @@ function AgenteWhatsAppReal() {
           </button>
         </div>
 
-        {/* 2. Vinculación / QR 24/7 */}
+        {/* 2. Vinculación / QR 24/7 (Modo Dual: API Local / Túnel + Respaldo Web/Nube) */}
         <div className="space-y-3 border-t border-glass-border/60 pt-4">
-          <h4 className="text-sm font-medium">Vinculación de WhatsApp y código QR</h4>
+          <h4 className="text-sm font-medium">Vinculación Dual (API Local / Túnel + Respaldo Web/Nube)</h4>
           <p className="text-xs text-muted-foreground">
-            Abre la API local en este computador (<span className="font-mono">iniciar-whatsapp</span>), pega su clave de acceso y escanea el código QR con el WhatsApp de este negocio. Funciona con WhatsApp normal y WhatsApp Business.
+            Conecta la API local (<span className="font-mono">http://localhost:3001</span>) o la URL de tu túnel seguro (<span className="font-mono">https://...</span>). Si el computador local está apagado, el <strong>Modo Web/Nube</strong> mantiene activo tu agente IA, los enlaces de rastreo y la sincronización de leads y PQRS en el <strong>CRM y Embudo IA</strong>.
           </p>
+          <label className="block space-y-1">
+            <span className="text-xs text-muted-foreground">URL de la API Local o Túnel</span>
+            <input
+              type="url"
+              className="w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base"
+              placeholder="http://localhost:3001 o https://tu-tunel.trycloudflare.com"
+              value={urlApiLocal}
+              onChange={(e) => guardarUrlApi(e.target.value)}
+            />
+          </label>
           <div className="flex gap-2">
             <input
               type={verClave ? "text" : "password"}
@@ -367,9 +409,12 @@ function AgenteWhatsAppReal() {
           </div>
 
           {apiCaida && (
-            <p className="text-sm text-muted-foreground">
-              No encuentro la API local. Ábrela con <span className="font-mono">iniciar-whatsapp</span> en este computador.
-            </p>
+            <div className="flex items-start gap-2.5 rounded-xl border border-sky-500/35 bg-sky-500/10 p-3 text-xs text-foreground">
+              <Cloud className="mt-0.5 h-4 w-4 shrink-0 text-sky-400" />
+              <p>
+                <strong>Modo Web/Nube activo (respaldo automático):</strong> no se detectó la API local en <span className="font-mono">{apiBase}</span>. Tu agente IA en la nube, la prueba en vivo, los enlaces de rastreo y el registro de leads/PQRS en el CRM siguen operando con normalidad. Cuando abras <span className="font-mono">iniciar-whatsapp</span> en el PC, se reconectará solo.
+              </p>
+            </div>
           )}
           {linea && (
             <div className="space-y-2 rounded-xl border border-glass-border bg-background/40 p-3">

@@ -41,7 +41,7 @@ const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = 
       { titulo: "Crea tu catálogo", texto: "En “Catálogo de productos” agrega lo que vendes con su precio." },
       { titulo: "Vigila el inventario", texto: "En “Inventario y reposición” registra existencias y mira qué se está acabando." },
       { titulo: "Controla cuentas por cobrar y caja", texto: "Registra los saldos pendientes de tus clientes y realiza el cierre diario de caja en sus módulos." },
-      { titulo: "Vende con el POS", texto: "En “Punto de venta (POS)” escanea el código de barras, vende por peso o caja y elige precio detal, mayorista o especial." },
+      { titulo: "Vende con el POS y escáner", texto: "En “Punto de venta (POS)” escanea el código de barras con la cámara móvil o pistola USB/Bluetooth, imprime tirillas térmicas 58mm/80mm, vende por peso o caja y elige precio detal, mayorista o especial." },
       { titulo: "Cuida los vencimientos", texto: "En “Lotes y vencimientos” registra el lote y la fecha al recibir mercancía: el POS vende primero lo que vence antes y avisa a 7, 15 y 30 días." },
       { titulo: "Imprime tus etiquetas", texto: "En “Productos y precios” usa “Etiquetas de código de barras”: elige productos, escribe cuántas de cada uno e imprime en carta o rollo térmico." },
       { titulo: "Maneja tus sedes", texto: "En “Sucursales y puntos de venta” crea cada sede, traslada mercancía con acta y filtra reportes por sede o consolidados." },

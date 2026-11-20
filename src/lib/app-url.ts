@@ -9,10 +9,16 @@ import { BRAND } from "@/lib/brand";
  * servidor o sin entorno, el dominio publicado de respaldo.
  */
 export function appUrlBase(): string {
+  try {
+    const envUrl = (import.meta as unknown as { env?: Record<string, string | undefined> }).env?.VITE_APP_URL;
+    if (envUrl && /^https?:\/\//i.test(envUrl.trim())) {
+      return envUrl.trim().replace(/\/+$/, "");
+    }
+  } catch {
+    /* sin entorno disponible */
+  }
   if (typeof window !== "undefined" && window.location?.origin) {
-    const o = window.location.origin;
-    if (!/localhost|lovableproject|id-preview|lovable\.dev/i.test(o)) return o.replace(/\/+$/, "");
-    return o.replace(/\/+$/, "");
+    return window.location.origin.replace(/\/+$/, "");
   }
   return `https://${BRAND.domain}`;
 }

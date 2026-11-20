@@ -44,8 +44,8 @@ const FAMILIA: Record<Modulo["familia"], { fondo: string; texto: string }> = {
 };
 
 const MODULOS: Modulo[] = [
-  { Icon: UtensilsCrossed, familia: "ventas", label: "Ventas y catálogo digital", desc: "Presenta tus productos o servicios con tu marca, recibe pedidos desde el celular y cobra sin errores. Incluye código QR para mesas y vitrina.", detalle: "Publicas tus productos o servicios con tu marca y recibes pedidos desde el celular, el computador o un código QR, y cobras sin errores.", beneficios: ["Catálogo con fotos, precios y tu logo", "Pedidos de mesa, para llevar y a domicilio", "Cobro con todos los medios de pago y comprobante"], como: "Armas tu menú una vez y compartes el enlace: cada pedido llega solo a tu panel." },
-  { Icon: ChefHat, familia: "operacion", label: "Operación y producción en vivo", desc: "Tablero en tiempo real: cada pedido avanza de principio a fin, con comanda automática a cocina y control de tiempos.", detalle: "Un tablero en tiempo real donde cada pedido avanza de principio a fin, con comanda automática a cocina y control de tiempos.", beneficios: ["Tablero: nuevos, en cocina, listos y entregados", "Comanda impresa automática al registrar el pedido", "Control de mesas y tiempos de preparación"], como: "El pedido entra y aparece en cocina al instante; marcas cada avance con un toque." },
+  { Icon: UtensilsCrossed, familia: "ventas", label: "Ventas, POS y escáner de barras", desc: "Cobra en segundos con escáner de códigos de barras (cámara móvil o pistola USB/Bluetooth), imprime tirillas térmicas 58mm/80mm y genera etiquetas de barras.", detalle: "Publicas tu catálogo digital con tu marca, cobras rápido con lector de códigos de barras (cámara del celular o pistola) e imprimes tirillas térmicas 58mm/80mm y etiquetas.", beneficios: ["Escáner con cámara móvil o pistola + impresión de etiquetas", "Impresión térmica 58mm/80mm y catálogo QR con tu logo", "Cobro con todos los medios de pago y descarga al inventario"], como: "Escaneas o tocas el producto, cobras y el inventario y la tirilla salen al instante." },
+  { Icon: ChefHat, familia: "operacion", label: "Operación y comandas en vivo", desc: "Tablero en tiempo real: cada pedido avanza de principio a fin, con comanda automática en impresora de cocina 58mm/80mm y control de tiempos.", detalle: "Un tablero en tiempo real donde cada pedido avanza de principio a fin, con comanda automática a cocina y control de tiempos.", beneficios: ["Tablero: nuevos, en cocina, listos y entregados", "Comanda térmica automática 58mm/80mm al registrar el pedido", "Control de mesas y tiempos de preparación"], como: "El pedido entra y se imprime en cocina al instante; marcas cada avance con un toque." },
   { Icon: Receipt, familia: "cumplimiento", ancho: "dian", label: "Facturación electrónica DIAN", desc: "Registra ingresos y egresos, gestiona saldos pendientes por cliente y emite facturas electrónicas con CUFE y código QR.", detalle: "Registras ingresos y egresos, gestionas los saldos pendientes por cliente y emites facturas electrónicas con CUFE y código QR.", beneficios: ["Factura electrónica DIAN con CUFE y QR", "Cuentas por cobrar con abonos y saldos", "Resolución, prefijo y rangos configurables"], como: "Vendes, eliges facturar y el documento sale con todos los requisitos." },
   { Icon: Bike, familia: "operacion", label: "Domicilios y clientes", desc: "Rutas, tarifas por barrio, repartidores y base de clientes con historial de compras y direcciones.", detalle: "Organizas entregas con rutas, tarifas por barrio y repartidores, y guardas a cada cliente con su historial y direcciones.", beneficios: ["Tarifas de domicilio por barrio o zona", "Repartidores con liquidación de cada entrega", "Historial de cada cliente: qué pide y dónde vive"], como: "Registras el pedido con su dirección y se lo asignas al repartidor de turno." },
   { Icon: Boxes, familia: "operacion", label: "Inventario, recetas y costos", desc: "Existencias, costo real por plato o producto, alertas de faltantes, lotes y vencimientos. Sin hojas de cálculo.", detalle: "Controlas existencias, costo real por plato o producto, alertas de faltantes, lotes y vencimientos, sin hojas de cálculo.", beneficios: ["Costo real de cada plato con su receta", "Descuento automático al vender", "Alertas de stock bajo y productos por vencer"], como: "Cargas tus insumos una vez con su receta; cada venta descuenta sola." },
@@ -54,7 +54,7 @@ const MODULOS: Modulo[] = [
   { Icon: ShieldCheck, familia: "cumplimiento", label: "Diseñado para tu tipo de negocio", desc: "Restaurante con Rappi y sanidad, salud con RIPS y habilitación, concesionario con traspasos, tienda con código de barras, taller con órdenes: cada negocio con sus propios formularios.", detalle: "Cada negocio recibe sus propios módulos, textos y color: restaurante, salud, concesionario, tienda, taller y más de 50 tipos.", beneficios: ["Módulos exactos según tu tipo de negocio", "Textos y vocabulario de tu actividad, sin tecnicismos", "Tu color y tu logo en todo el programa"], como: "Eliges tu tipo al crear la cuenta y el programa se adapta solo." },
   { Icon: BarChart3, familia: "finanzas", label: "Reportes, metas e indicadores", desc: "Ventas por producto, por medio de pago, por sede y por periodo. Define metas semanales y mide el avance de cada equipo.", detalle: "Ves tus ventas por producto, medio de pago, sede y periodo, defines metas semanales y mides el avance de cada equipo.", beneficios: ["Ventas por producto, pago, sede y periodo", "Metas semanales con avance por equipo", "Exporta a Excel o imprime en PDF"], como: "Cada venta alimenta los reportes; consultas el periodo que quieras." },
   { Icon: FileText, familia: "ventas", label: "Cotizaciones y documentos", desc: "Cotizaciones profesionales enviadas por WhatsApp, control de vencimientos y archivo digital de tus documentos.", detalle: "Envías cotizaciones profesionales por WhatsApp, controlas sus vencimientos y archivas tus documentos por cliente.", beneficios: ["Cotización clara con tu logo, enviada por WhatsApp", "Control de vencimientos y seguimiento", "Documentos archivados por cliente"], como: "Armas la cotización con tus productos y la envías con un toque." },
-  { Icon: TrendingUp, familia: "ventas", label: "CRM y Embudo IA", desc: "Cada cliente que escribe por WhatsApp entra a un tablero Kanban y a una cola por orden de llegada, calificado por la IA como frío, tibio o caliente.", detalle: "Ves todos tus prospectos en un tablero visual, arrastras cada uno por las etapas hasta cerrar y atiendes primero a los más calientes, sin saltarte a nadie.", beneficios: ["Tablero Kanban y cola por orden de llegada", "Calificación IA con puntaje, canal de origen y PQRS", "Cotiza, agenda y factura desde la ficha del cliente"], como: "El agente de WhatsApp registra y califica cada contacto; tú solo arrastras y cierras." },
+  { Icon: TrendingUp, familia: "ventas", label: "CRM, Embudo IA y Bandeja PQRS", desc: "El Agente de WhatsApp IA autoconfigurado por sector registra cada contacto en tu Kanban y cola por llegada, calificado como frío, tibio o caliente, con bandeja PQRS.", detalle: "Ves todos tus prospectos en un tablero visual, atiendes PQRS desde la misma bandeja y priorizas a los clientes más calientes calificados automáticamente por la IA.", beneficios: ["Tablero Kanban, cola por llegada y bandeja PQRS integrada", "Agente WhatsApp IA autoconfigurado por sector (Local + Nube)", "Cotiza, agenda y factura desde la ficha 360° del cliente"], como: "El agente de WhatsApp registra, califica y radica PQRS solo; tú solo arrastras y cierras." },
   { Icon: Gift, familia: "ventas", label: "Combos, puntos y fidelización", desc: "Promociones por horario, combos, puntos por compra y recompensas para que tus clientes regresen.", detalle: "Creas promociones por horario, combos, puntos por compra y recompensas para que tus clientes regresen.", beneficios: ["Combos y 2x1 por horario o día", "Puntos por cada compra", "Recompensas para clientes frecuentes"], como: "Defines el combo o los puntos una vez y se aplican solos al vender." },
   { Icon: CalendarDays, familia: "equipo", label: "Agenda, reservas y pedidos recurrentes", desc: "Citas por profesional y recurso, reservas de mesas o espacios, y pedidos que se repiten cada semana sin olvidar ninguno.", detalle: "Atiendes citas por profesional, reservas de mesas o espacios, y pedidos que se repiten cada semana sin olvidar ninguno.", beneficios: ["Agenda por profesional, sin cruces", "Reservas de mesas o espacios con anticipo", "Pedidos semanales automáticos"], como: "Agendas la cita o el pedido recurrente y el programa te avisa." },
 ];
@@ -64,10 +64,10 @@ type Pestana = {
 };
 
 const PESTANAS: Pestana[] = [
-  { id: "rest", Icon: UtensilsCrossed, corto: "Restaurantes y comidas", titular: "Vende más en horas pico sin que se pierda una sola comanda.", beneficios: ["Menú QR en mesa", "Comanda automática a cocina", "Escandallo que descuenta ingredientes por plato", "Operación sin internet"] },
-  { id: "veh", Icon: Car, corto: "Vehículos y talleres", titular: "Controla cada vehículo desde que entra hasta el traspaso final.", beneficios: ["Hoja de vida y utilidad neta por placa (compra + arreglos vs venta)", "Alertas de SOAT y Tecnomecánica", "Órdenes de taller"] },
-  { id: "dian", Icon: Receipt, corto: "Contabilidad y DIAN", titular: "Tus cuentas claras, tus impuestos al día y tu contador feliz.", beneficios: ["Facturación electrónica DIAN ilimitada con CUFE y QR", "Arqueo de caja por turnos", "Recordatorios de cobro por WhatsApp"] },
-  { id: "nom", Icon: Calculator, corto: "Nómina ley colombiana", titular: "Liquida tu nómina en minutos cumpliendo al 100% con la ley.", beneficios: ["Cálculo automático de SMMLV, auxilio y recargos", "Salud, pensión, primas y cesantías", "Archivo PILA listo"] },
+  { id: "rest", Icon: UtensilsCrossed, corto: "Restaurantes y comidas", titular: "Vende más en horas pico sin que se pierda una sola comanda.", beneficios: ["Menú QR en mesa y tirillas térmicas 58mm/80mm", "Comanda automática a cocina al registrar el pedido", "Escandallo que descuenta ingredientes por plato", "Agente WhatsApp IA + operación sin internet"] },
+  { id: "veh", Icon: Car, corto: "Vehículos y talleres", titular: "Controla cada vehículo desde que entra hasta el traspaso final.", beneficios: ["Hoja de vida y utilidad neta por placa (compra + arreglos vs venta)", "Alertas de SOAT, Tecnomecánica y órdenes de taller con fotos", "Agente WhatsApp IA + CRM y Embudo con PQRS"] },
+  { id: "dian", Icon: Receipt, corto: "Comercio, Escáner y DIAN", titular: "Cobra en segundos, imprime etiquetas y factura con la DIAN.", beneficios: ["Escáner de códigos de barras con cámara móvil o pistola + etiquetas", "Impresión térmica 58mm/80mm y Facturación electrónica DIAN con CUFE y QR", "Arqueo de caja por turnos y recordatorios por WhatsApp"] },
+  { id: "nom", Icon: Calculator, corto: "Nómina ley colombiana", titular: "Liquida tu nómina en minutos cumpliendo al 100% con la ley.", beneficios: ["Cálculo automático de SMMLV, auxilio y recargos", "Salud, pensión, primas y cesantías", "Desprendible por WhatsApp y archivo PILA listo"] },
 ];
 
 const CHAT: { de: "cliente" | "agente"; texto: string; hora: string }[] = [
@@ -470,11 +470,11 @@ function LandingPage() {
               Controla cada peso, cada venta y cada turno de tu negocio.
             </h1>
             <p className="gs-muted mt-6 max-w-xl text-base sm:text-lg">
-              El sistema POS y administrativo todo-en-uno para restaurantes, compraventas de vehículos, tiendas y empresas en Colombia. Factura con la DIAN, liquida nómina legal y vende por WhatsApp 24/7, incluso sin internet.
+              El sistema POS y administrativo todo-en-uno para restaurantes, compraventas, talleres, tiendas y +50 sectores en Colombia. Escanea códigos de barras con tu celular o pistola, imprime tirillas térmicas 58mm/80mm y comandas, factura con la DIAN, liquida nómina legal y vende 24/7 con Agente WhatsApp IA + CRM y bandeja PQRS, incluso sin internet.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link to="/login" search={{ mode: "signup" }} className="gs-cta inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
-                Empieza 30 días gratis <ArrowRight className="h-4 w-4" />
+                Empieza 30 días gratis sin compromiso <ArrowRight className="h-4 w-4" />
               </Link>
               <Link to="/instalar" className="gs-sec inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
                 <Download className="h-4 w-4" /> Descargar App Android / PC
@@ -482,7 +482,7 @@ function LandingPage() {
             </div>
             <BotonesDemo className="mt-4 max-w-md" />
             <ul className="gs-muted mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium">
-              {["30 días de prueba sin compromiso", "Funciona sin internet", "Facturación DIAN", "Nómina ley colombiana", "+50 sectores"].map((t) => (
+              {["30 días de prueba gratis sin compromiso", "Agente WhatsApp IA + CRM y PQRS", "Escáner cámara/pistola + etiquetas", "Tirillas 58mm/80mm y comandas", "Facturación DIAN y Nómina Colombia"].map((t) => (
                 <li key={t} className="inline-flex items-center gap-1.5"><Check className="gs-verde h-4 w-4" /> {t}</li>
               ))}
             </ul>
@@ -529,7 +529,7 @@ function LandingPage() {
         {/* C. ECOSISTEMA */}
         <section id="conocer" className="mt-24 scroll-mt-24" aria-labelledby="modulos">
           <Aparece>
-            <Encabezado ojo="Qué incluye" titulo="Un ecosistema completo, explicado en lenguaje claro" texto="12 módulos reales. Toca cualquier tarjeta para ver el detalle sin iniciar sesión." />
+            <Encabezado ojo="Qué incluye" titulo="Un ecosistema completo, explicado en lenguaje claro" texto="13 módulos reales. Toca cualquier tarjeta para ver el detalle sin iniciar sesión." />
           </Aparece>
           <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-3">
             {MODULOS.map((m, i) => {
@@ -591,7 +591,7 @@ function LandingPage() {
         {/* D. AGENTE WHATSAPP */}
         <section className="mt-24" aria-labelledby="agente-ia">
           <Aparece>
-            <Encabezado ojo="Atención automática" titulo="Un agente de WhatsApp que atiende y vende por ti, las 24 horas" texto="Se conecta al número de tu negocio, responde al instante y cierra ventas mientras duermes. Tú intervienes cuando quieras." />
+            <Encabezado ojo="Atención automática + CRM y PQRS" titulo="Un agente de WhatsApp IA autoconfigurado por sector que atiende y vende 24/7" texto="Funciona en modo dual (API Local en tu PC o respaldo Web/Nube), califica cada prospecto y sincroniza leads y PQRS directo a tu CRM y Embudo IA." />
           </Aparece>
           <div className="mt-10 grid gap-5 lg:grid-cols-12">
             <Aparece className="lg:col-span-7"><ChatWhatsApp /></Aparece>
