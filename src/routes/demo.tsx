@@ -344,6 +344,16 @@ function Simulador({ sector, onSalir }: { sector: Sector; onSalir: () => void })
   };
   const upsertProspecto = (p: Prospecto) => setProspectos((a) => (a.some((x) => x.id === p.id) ? a.map((x) => (x.id === p.id ? { ...x, ...p, etapa: x.etapa } : x)) : [p, ...a]));
   const nuevoPedido = (p: Pedido) => setPedidos((a) => [p, ...a]);
+  const avanzarProspecto = (nombre: string, interes: string, etapa: Prospecto["etapa"], valor: number) => {
+    const clave = nombre.trim().toLowerCase();
+    if (!clave) return;
+    setProspectos((a) => {
+      const i = a.findIndex((p) => p.nombre.toLowerCase() === clave);
+      if (i < 0) return [{ id: "f" + Date.now(), nombre: nombre.trim().slice(0, 40), interes, nivel: "CALIENTE", etapa, telefono: "", origen: "Vitrina", valor, proximo: "Seguimiento del asesor", notas: "" }, ...a];
+      if (ETAPAS.indexOf(a[i].etapa) >= ETAPAS.indexOf(etapa)) return a;
+      return a.map((p, j) => (j === i ? { ...p, etapa, interes } : p));
+    });
+  };
 
   const actual = tabs.find((t) => t.id === tab) ?? tabs[0];
 
@@ -373,8 +383,8 @@ function Simulador({ sector, onSalir }: { sector: Sector; onSalir: () => void })
         {tab === "pos" && <Pos sector={sector} productos={productos} setProductos={setProductos} tarifas={tarifas} registrarVenta={registrarVenta} nuevoPedido={nuevoPedido} />}
         {tab === "inv" && sector === "auto" && <InventarioAuto productos={productos} onCotizar={(id) => { setVehSel(id); setTab("cot"); }} onSeparar={(id) => { setVehSel(id); setTab("cierre"); }} />}
         {tab === "inv" && sector === "comercio" && <InventarioComercio productos={productos} setProductos={setProductos} setGastos={setGastos} />}
-        {tab === "cot" && <CotizadorAuto productos={productos.filter((p) => p.cat === "Vehículo")} vehSel={vehSel} setVehSel={setVehSel} onSeparar={(id) => { setVehSel(id); setTab("cierre"); }} />}
-        {tab === "cierre" && <CierreAuto productos={productos} setProductos={setProductos} vehSel={vehSel} registrarVenta={registrarVenta} />}
+        {tab === "cot" && <CotizadorAuto productos={productos.filter((p) => p.cat === "Vehículo")} vehSel={vehSel} setVehSel={setVehSel} onSeparar={(id) => { setVehSel(id); setTab("cierre"); }} onEtapa={avanzarProspecto} />}
+        {tab === "cierre" && <CierreAuto productos={productos} setProductos={setProductos} vehSel={vehSel} registrarVenta={registrarVenta} onEtapa={avanzarProspecto} />}
         {tab === "taller" && <Taller registrarVenta={registrarVenta} />}
         {tab === "ped" && <Domicilios pedidos={pedidos} setPedidos={setPedidos} tarifas={tarifas} setTarifas={setTarifas} registrarVenta={registrarVenta} />}
         {tab === "caja" && <Caja ventas={ventas} gastos={gastos} setGastos={setGastos} />}
@@ -927,8 +937,12 @@ function InventarioAuto({ productos, onCotizar, onSeparar }: { productos: Prod[]
   );
 }
 
-function CotizadorAuto({ productos, vehSel, setVehSel, onSeparar }: { productos: Prod[]; vehSel: string; setVehSel: (id: string) => void; onSeparar: (id: string) => void }) {
+type OnEtapa = (nombre: string, interes: string, etapa: Prospecto["etapa"], valor: number) => void;
+
+function CotizadorAuto({ productos, vehSel, setVehSel, onSeparar, onEtapa }: { productos: Prod[]; vehSel: string; setVehSel: (id: string) => void; onSeparar: (id: string) => void; onEtapa: OnEtapa }) {
   const v = productos.find((p) => p.id === vehSel) ?? productos[0];
+  const [retoma, setRetoma] = useState("0");
+  const [accesorios, setAccesorios] = useState("0");
   const [inicialPct, setInicialPct] = useState(30);
   const [plazo, setPlazo] = useState(60);
   const [tasa, setTasa] = useState(1.6);
@@ -937,9 +951,14 @@ function CotizadorAuto({ productos, vehSel, setVehSel, onSeparar }: { productos:
   if (!v) return null;
   const tramites = Math.round(v.precio * 0.02);
   const inicial = Math.round((v.precio * inicialPct) / 100);
-  const financiado = v.precio - inicial;
+  const valRetoma = Math.min(Number(retoma) || 0, v.precio);
+  const valAccesorios = Number(accesorios) || 0;
+  const financiado = Math.max(0, v.precio + tramites + valAccesorios - valRetoma - inicial);
   const cuota = cuotaMensual(financiado, tasa, plazo);
-  const guardar = () => setGuardadas((a) => [{ id: "c" + Date.now(), cliente: cliente.trim() || "Cliente sin nombre", veh: v.nombre, cuota, plazo, enviada: false }, ...a]);
+  const guardar = () => {
+    setGuardadas((a) => [{ id: "c" + Date.now(), cliente: cliente.trim() || "Cliente sin nombre", veh: v.nombre, cuota, plazo, enviada: false }, ...a]);
+    onEtapa(cliente, v.nombre, "Cotizado", v.precio);
+  };
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <section className="space-y-4 rounded-2xl border border-border bg-card p-4">
@@ -954,17 +973,27 @@ function CotizadorAuto({ productos, vehSel, setVehSel, onSeparar }: { productos:
         <div className="grid grid-cols-2 gap-3">
           <label className="block text-sm font-semibold">Plazo
             <select value={plazo} onChange={(e) => setPlazo(Number(e.target.value))} className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-base">
-              {[24, 36, 48, 60, 72].map((m) => <option key={m} value={m}>{m} meses</option>)}
+              {[12, 24, 36, 48, 60, 72].map((m) => <option key={m} value={m}>{m} meses</option>)}
             </select>
           </label>
           <label className="block text-sm font-semibold">Tasa mensual %
             <input value={tasa} onChange={(e) => setTasa(Math.min(5, Math.max(0, Number(e.target.value) || 0)))} inputMode="decimal" className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-base" />
           </label>
         </div>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block text-sm font-semibold">Retoma (vehículo recibido)
+            <input value={retoma} onChange={(e) => setRetoma(e.target.value.replace(/\D/g, ""))} inputMode="numeric" className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-base" />
+          </label>
+          <label className="block text-sm font-semibold">Accesorios
+            <input value={accesorios} onChange={(e) => setAccesorios(e.target.value.replace(/\D/g, ""))} inputMode="numeric" className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-base" />
+          </label>
+        </div>
         <input value={cliente} onChange={(e) => setCliente(e.target.value)} placeholder="Nombre del cliente" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-base" />
       </section>
       <section className="space-y-3 rounded-2xl border border-border bg-card p-4">
         <h3 className="font-bold">Resumen de la cotización</h3>
+        {valAccesorios > 0 && <p className="flex justify-between text-sm"><span>Accesorios</span><b>{cop(valAccesorios)}</b></p>}
+        {valRetoma > 0 && <p className="flex justify-between text-sm"><span>Retoma (resta)</span><b>-{cop(valRetoma)}</b></p>}
         <p className="flex justify-between text-sm"><span>Precio del vehículo</span><b>{cop(v.precio)}</b></p>
         <p className="flex justify-between text-sm"><span>Cuota inicial</span><b>{cop(inicial)}</b></p>
         <p className="flex justify-between text-sm"><span>Valor a financiar</span><b>{cop(financiado)}</b></p>
@@ -994,8 +1023,8 @@ const ETAPAS_VENTA = ["Separado", "Crédito aprobado", "Documentos", "Facturado"
 const DOCS = ["Cédula", "Certificado laboral", "Contrato de venta", "Seguro SOAT"];
 type Negocio = { id: string; cliente: string; vehId: string; abono: number; etapa: number; docs: boolean[] };
 
-function CierreAuto({ productos, setProductos, vehSel, registrarVenta }: {
-  productos: Prod[]; setProductos: React.Dispatch<React.SetStateAction<Prod[]>>; vehSel: string; registrarVenta: (v: NuevaVenta) => void;
+function CierreAuto({ productos, setProductos, vehSel, registrarVenta, onEtapa }: {
+  productos: Prod[]; setProductos: React.Dispatch<React.SetStateAction<Prod[]>>; vehSel: string; registrarVenta: (v: NuevaVenta) => void; onEtapa: OnEtapa;
 }) {
   const veh = productos.filter((p) => p.cat === "Vehículo");
   const [lista, setLista] = useState<Negocio[]>([{ id: "n0", cliente: "Marcela Torres", vehId: "a1", abono: 1500000, etapa: 0, docs: [false, false, false, false] }]);
@@ -1012,6 +1041,7 @@ function CierreAuto({ productos, setProductos, vehSel, registrarVenta }: {
     setError("");
     setLista((a) => [{ id: "n" + Date.now(), cliente: cliente.trim().slice(0, 40), vehId: v.id, abono: Number(abono), etapa: 0, docs: [false, false, false, false] }, ...a]);
     setProductos((ps) => ps.map((p) => (p.id === v.id ? { ...p, stock: p.stock - 1 } : p)));
+    onEtapa(cliente, v.nombre, "Negociando", v.precio);
     setCliente("");
   };
   const avanzar = (n: Negocio) => {
@@ -1021,7 +1051,10 @@ function CierreAuto({ productos, setProductos, vehSel, registrarVenta }: {
     setError("");
     if (ETAPAS_VENTA[sig] === "Entregado") {
       const v = productos.find((p) => p.id === n.vehId);
-      if (v) registrarVenta({ detalle: `${v.nombre} · entrega a ${n.cliente}`, total: v.precio, pago: "Transferencia", tipo: "Vehículo", envio: 0 });
+      if (v) {
+        registrarVenta({ detalle: `${v.nombre} · entrega a ${n.cliente}`, total: v.precio, pago: "Transferencia", tipo: "Vehículo", envio: 0 });
+        onEtapa(n.cliente, v.nombre, "Cerrado", v.precio);
+      }
     }
     setLista((a) => a.map((x) => (x.id === n.id ? { ...x, etapa: sig } : x)));
   };
@@ -1057,7 +1090,7 @@ function CierreAuto({ productos, setProductos, vehSel, registrarVenta }: {
             <div className="mt-3">
               {n.etapa < ETAPAS_VENTA.length - 1
                 ? <button onClick={() => avanzar(n)} className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-accent-foreground">Avanzar a «{ETAPAS_VENTA[n.etapa + 1]}»</button>
-                : <span className="inline-flex items-center gap-1 text-sm font-bold"><CheckCircle2 className="h-4 w-4" /> Vehículo entregado: la venta ya está en Finanzas</span>}
+                : <span className="inline-flex items-center gap-1 text-sm font-bold"><CheckCircle2 className="h-4 w-4" /> Vehículo entregado: venta en Finanzas · comisión {cop((productos.find((p) => p.id === n.vehId)?.precio ?? 0) * 0.015)} · utilidad estimada {cop((productos.find((p) => p.id === n.vehId)?.precio ?? 0) * 0.1)} · pasa a Taller para revisión de 1.000 km y SOAT</span>}
             </div>
           </div>
         ))}
