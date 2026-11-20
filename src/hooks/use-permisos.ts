@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { esCuentaMaestra, esSuperadminServidor } from "@/lib/cuenta-maestra";
 
 export type Acceso = { admin: boolean; modulos: string[] };
 
@@ -24,7 +25,9 @@ export function usePermisos() {
         const { data, error: errRpc } = await supabase.rpc("mi_acceso");
         if (!errRpc) {
           const d = (data ?? {}) as { admin?: boolean; modulos?: string[] };
-          setAcceso({ admin: !!d.admin, modulos: Array.isArray(d.modulos) ? d.modulos : [] });
+          // La cuenta maestra siempre tiene acceso total (el servidor decide el acceso real a los datos).
+          const maestra = esCuentaMaestra(user.email) || (!d.admin && (await esSuperadminServidor()));
+          setAcceso({ admin: !!d.admin || maestra, modulos: Array.isArray(d.modulos) ? d.modulos : [] });
           setError(false);
           return;
         }
