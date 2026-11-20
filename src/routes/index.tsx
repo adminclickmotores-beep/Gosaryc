@@ -6,7 +6,7 @@ import {
   UtensilsCrossed, ChefHat, Bike, Boxes, Wallet, Download, ArrowRight, Check, Users, Receipt, BarChart3,
   TrendingUp, FileText, Gift, CalendarDays, Bot, MessageCircle, Brain, Headphones, X, Search, Sun, Moon,
   Car, Calculator, ChevronDown, ShieldCheck, Smartphone, WifiOff, CheckCheck, QrCode, Wrench, BadgeCheck,
-  Banknote, Radio,
+  Banknote, Radio, Mic,
 } from "lucide-react";
 import { SECTORES, buscarSector } from "@/lib/sectores";
 import { useAuth } from "@/contexts/AuthContext";
@@ -481,6 +481,10 @@ function LandingPage() {
               </Link>
             </div>
             <BotonesDemo className="mt-4 max-w-md" />
+            <p className="gs-card mt-6 flex items-start gap-3 rounded-2xl px-4 py-3 text-sm font-medium">
+              <Mic className="gs-verde mt-0.5 h-5 w-5 shrink-0" />
+              <span className="min-w-0 break-words">Controla todo tu negocio por voz: factura, crea inventario, modifica precios y consulta reportes hablando</span>
+            </p>
             <ul className="gs-muted mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium">
               {["30 días de prueba gratis sin compromiso", "Agente WhatsApp IA + CRM y PQRS", "Escáner cámara/pistola + etiquetas", "Tirillas 58mm/80mm y comandas", "Facturación DIAN y Nómina Colombia"].map((t) => (
                 <li key={t} className="inline-flex items-center gap-1.5"><Check className="gs-verde h-4 w-4" /> {t}</li>

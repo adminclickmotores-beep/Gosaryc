@@ -23,6 +23,7 @@ import { UserMenu } from "@/components/app/UserMenu";
 import { InstructivoPagina } from "@/components/app/InstructivoPagina";
 import { OnboardingChecklist } from "@/components/app/OnboardingChecklist";
 import { GuidedTour } from "@/components/tour/GuidedTour";
+import { VoiceCopilotProvider } from "@/components/app/VoiceCopilotProvider";
 import { RouteProgressBar } from "@/components/app/RouteProgressBar";
 import { BrandHexLogo } from "@/components/app/BrandHexLogo";
 import { EstadoSinConexion } from "@/components/app/EstadoSinConexion";
@@ -519,6 +520,20 @@ function AppShell() {
       <RouteProgressBar />
       <EstadoSinConexion />
       <GuidedTour />
+      {!bloqueo && !cargandoPermisos && (
+        <VoiceCopilotProvider
+          esAdmin={esAdmin}
+          puede={puede}
+          tipoNegocio={tipoNegocio.etiqueta}
+          rutaPanel={rutaPanel}
+          modulos={modulosVisibles
+            .filter((m) => esAdmin || puede(m.id))
+            .map((m) => ({ id: m.id, titulo: m.titulo, ruta: m.ruta }))}
+          irA={(ruta, vista) =>
+            nav({ to: ruta as never, search: (vista ? { vista } : undefined) as never })
+          }
+        />
+      )}
     </div>
   );
 }

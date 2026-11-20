@@ -104,8 +104,8 @@ const SECTORES_MARKETING: Record<SectorClave, ConfigSector> = {
     subtitulo: "POS, Agente WhatsApp IA 24/7, CRM, escáner, impresión térmica, DIAN y Nómina Colombia.",
     beneficios: [
       "30 días de prueba gratis sin compromiso",
+      "Controla todo tu negocio por voz: factura, crea inventario, modifica precios y consulta reportes hablando",
       "Agente WhatsApp IA autoconfigurado + CRM y PQRS",
-      "Escáner cámara/pistola + etiquetas + tirillas 58/80mm",
       "Facturación DIAN, Nómina ley colombiana y modo offline",
     ],
     dolor: "llevas cuentas en cuadernos o Excel, pierdes ventas por WhatsApp y no ves tu ganancia real",

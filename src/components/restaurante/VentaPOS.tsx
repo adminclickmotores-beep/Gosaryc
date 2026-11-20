@@ -159,6 +159,39 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
   const [anchoTirilla, setAnchoTirilla] = useState<"58mm" | "80mm">("80mm");
   const [apiMsg, setApiMsg] = useState("");
 
+  // Copiloto de voz: agrega ítems, cliente y medio de pago dictados (solo prepara la cuenta; el cobro lo confirma la persona).
+  useEffect(() => {
+    const norm = (t: string) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+    const procesar = () => {
+      if (productos.length === 0) return;
+      const crudo = window.sessionStorage.getItem("gosaryc:voz-pos");
+      if (!crudo) return;
+      window.sessionStorage.removeItem("gosaryc:voz-pos");
+      try {
+        const d = JSON.parse(crudo) as { items?: Array<{ nombre?: string; cantidad?: number }>; cliente?: string; metodo?: string };
+        const faltan: string[] = [];
+        for (const it of Array.isArray(d.items) ? d.items.slice(0, 30) : []) {
+          const buscado = norm(String(it.nombre ?? ""));
+          if (!buscado) continue;
+          const p = productos.find((x) => norm(x.nombre) === buscado) ?? productos.find((x) => norm(x.nombre).includes(buscado));
+          if (!p) { faltan.push(String(it.nombre)); continue; }
+          const cant = Math.min(100, Math.max(1, Math.floor(Number(it.cantidad) || 1)));
+          setCuenta((c) => ({ ...c, [p.id]: Math.min(100, (c[p.id] ?? 0) + cant) }));
+        }
+        if (typeof d.cliente === "string" && d.cliente.trim()) setCliente(limpiarTexto(d.cliente, 120));
+        const m = typeof d.metodo === "string" ? norm(d.metodo) : "";
+        const clave = METODOS.find((x) => norm(x.clave) === m || norm(x.texto) === m)?.clave;
+        if (clave) setMetodo(clave);
+        if (faltan.length > 0) toast.error(`No encontré en el catálogo: ${faltan.join(", ")}`);
+      } catch {
+        /* dato inválido: se ignora */
+      }
+    };
+    procesar();
+    window.addEventListener("gosaryc:voz-pos", procesar);
+    return () => window.removeEventListener("gosaryc:voz-pos", procesar);
+  }, [productos]);
+
   const imprimirDirectoOSilencioso = async (r: Recibo) => {
     const nitFmt = negocio?.nit ? `${negocio.nit}${negocio.digito_verificacion ? `-${negocio.digito_verificacion}` : ""}` : "Sin NIT";
     if (directa) {
