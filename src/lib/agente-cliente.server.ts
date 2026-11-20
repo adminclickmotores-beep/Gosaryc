@@ -507,8 +507,12 @@ Reglas:
   const historial = (Array.isArray(mensajes) ? mensajes : [])
     .slice(-20)
     .map((m) => ({
-      role: (m?.role === "assistant" ? "assistant" : "user") as "user" | "assistant",
-      content: typeof m?.content === "string" ? m.content.slice(0, 3000) : "",
+      // El navegador no puede inventar respuestas del agente: todo lo que llega se trata como texto no verificado del cliente.
+      role: "user" as "user" | "assistant",
+      content:
+        typeof m?.content === "string"
+          ? (m?.role === "assistant" ? "[Respuesta anterior mostrada en pantalla, no verificada] " : "") + m.content.slice(0, 3000)
+          : "",
     }))
     .filter((m) => m.content.trim().length > 0);
   if (historial.length === 0 || historial[historial.length - 1].role !== "user") {
