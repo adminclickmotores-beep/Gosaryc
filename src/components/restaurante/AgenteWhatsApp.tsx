@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import type { Tables } from "@/integrations/supabase/types";
 import { esCuentaDemo } from "@/lib/demo-real";
 import { DemoAgenteWhatsApp } from "@/components/restaurante/DemoAgenteWhatsApp";
+import { entrenarSectorAgente } from "@/lib/agente-entrenamiento.functions";
 
 type AgenteFila = Pick<
   Tables<"agente_whatsapp">,
@@ -19,7 +20,22 @@ type AgenteFila = Pick<
   | "nombre_agente"
   | "instrucciones"
   | "ia_activa"
+  | "personalidad"
+  | "objetivo_cierre"
+  | "cierre_autonomo"
 >;
+type MemoriaFila = { id: string; tipo: string; contenido: string; created_at: string };
+const PERSONALIDADES = ["Persuasivo Vendedor", "Amable y Cercano", "Ejecutivo Formal", "Técnico Experto"];
+const OBJETIVOS_CIERRE = ["Cerrar pedido directo", "Agendar cita", "Enviar link de pago"];
+const COLUMNAS_AGENTE = "id,negocio_id,owner_id,activo,nombre_agente,instrucciones,ia_activa,personalidad,objetivo_cierre,cierre_autonomo";
+function leerJsonSeguro(t: string): Record<string, unknown> {
+  try {
+    const o = JSON.parse(t) as unknown;
+    return o && typeof o === "object" ? (o as Record<string, unknown>) : {};
+  } catch {
+    return {};
+  }
+}
 type Conocimiento = Tables<"whatsapp_conocimiento_negocio">;
 type AvisoDB = Tables<"whatsapp_avisos">;
 type LineaLocal = { id: string; nombre: string; estado: string; agente: boolean; conClave: boolean; qr: string; aviso: string };
@@ -41,6 +57,7 @@ const ETIQUETA_ESTADO: Record<string, string> = {
 const ETIQUETA_AVISO: Record<string, string> = {
   nuevo_pedido: "Posible pedido o cita",
   espera_humano: "Cliente espera a una persona",
+  pqrs: "PQRS radicada por el bot",
   stock_critico: "Stock crítico",
   cierre_turno: "Cierre de turno",
   otro: "Aviso",
@@ -81,6 +98,12 @@ function AgenteWhatsAppReal() {
   const [pendientes, setPendientes] = useState<PendAprend[]>([]);
   const [nuevaPregunta, setNuevaPregunta] = useState("");
   const [nuevaRespuesta, setNuevaRespuesta] = useState("");
+  const [personalidad, setPersonalidad] = useState("Amable y Cercano");
+  const [objetivoCierre, setObjetivoCierre] = useState("Cerrar pedido directo");
+  const [cierreAutonomo, setCierreAutonomo] = useState(true);
+  const [memoria, setMemoria] = useState<MemoriaFila[]>([]);
+  const [entrenando, setEntrenando] = useState(false);
+  const [nuevaRegla, setNuevaRegla] = useState("");
 
   const idLinea = (negocio?.id ?? "").slice(0, 8) || "negocio";
   const tipoNegocio = ((negocio as unknown as { tipo_negocio?: string | null } | null)?.tipo_negocio ?? "").slice(0, 80);
@@ -91,7 +114,7 @@ function AgenteWhatsAppReal() {
     if (!negocio) return;
     const { data } = await supabase
       .from("agente_whatsapp")
-      .select("id,negocio_id,owner_id,activo,nombre_agente,instrucciones,ia_activa")
+      .select(COLUMNAS_AGENTE)
       .eq("negocio_id", negocio.id)
       .maybeSingle();
     setAgente(data);
@@ -99,8 +122,58 @@ function AgenteWhatsAppReal() {
       setNombreAgente(data.nombre_agente);
       setInstrucciones(data.instrucciones ?? "");
       setIaActiva(data.ia_activa);
+      setPersonalidad(data.personalidad || "Amable y Cercano");
+      setObjetivoCierre(data.objetivo_cierre || "Cerrar pedido directo");
+      setCierreAutonomo(data.cierre_autonomo !== false);
     }
   }, [negocio]);
+
+  const cargarMemoria = useCallback(async () => {
+    if (!negocio) return;
+    const { data } = await supabase
+      .from("agente_memoria")
+      .select("id,tipo,contenido,created_at")
+      .eq("negocio_id", negocio.id)
+      .in("tipo", ["sector", "regla_dueno", "lead", "pqrs"])
+      .order("created_at", { ascending: false })
+      .limit(120);
+    setMemoria((data ?? []) as MemoriaFila[]);
+  }, [negocio]);
+
+  useEffect(() => {
+    void cargarMemoria();
+  }, [cargarMemoria]);
+
+  const entrenar = async (silencioso = false) => {
+    if (!negocio) return;
+    setEntrenando(true);
+    try {
+      await entrenarSectorAgente({ data: { negocioId: negocio.id, tipoNegocio, ciudad: (negocio as unknown as { ciudad?: string | null }).ciudad ?? "" } });
+      await cargarMemoria();
+      if (!silencioso) toast.success("Inteligencia del sector actualizada");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se pudo actualizar la inteligencia del sector");
+    } finally {
+      setEntrenando(false);
+    }
+  };
+
+  const agregarRegla = async () => {
+    const t = nuevaRegla.trim().slice(0, 400);
+    if (!negocio || !user || t.length < 5) return;
+    const { error } = await supabase.from("agente_memoria").insert({ negocio_id: negocio.id, owner_id: user.id, tipo: "regla_dueno", contenido: t });
+    if (error) {
+      toast.error("No se pudo guardar la regla");
+      return;
+    }
+    setNuevaRegla("");
+    void cargarMemoria();
+  };
+
+  const quitarMemoria = async (id: string) => {
+    await supabase.from("agente_memoria").delete().eq("id", id);
+    void cargarMemoria();
+  };
 
   useEffect(() => {
     void cargar();
@@ -266,11 +339,11 @@ function AgenteWhatsAppReal() {
   const cambiarRegla = (i: number, cambios: Partial<ReglaEditable>) =>
     setRespuestas((r) => (r ? { ...r, reglas: r.reglas.map((x, j) => (j === i ? { ...x, ...cambios } : x)) } : r));
 
-  const guardar = async (cambios: Partial<Pick<AgenteFila, "activo" | "nombre_agente" | "instrucciones" | "ia_activa">>) => {
+  const guardar = async (cambios: Partial<Pick<AgenteFila, "activo" | "nombre_agente" | "instrucciones" | "ia_activa" | "personalidad" | "objetivo_cierre" | "cierre_autonomo">>) => {
     if (!negocio || !user) return;
     setGuardando(true);
-  const columnasAgente =
-    "id,negocio_id,owner_id,activo,nombre_agente,instrucciones,ia_activa";
+  const columnasAgente = COLUMNAS_AGENTE;
+  const eraNuevo = !agente;
 
   const { data, error } = agente
     ? await supabase
@@ -307,6 +380,8 @@ function AgenteWhatsAppReal() {
       }
     }
     toast.success("Agente guardado");
+    // Primera activación: descarga sola el conocimiento del sector.
+    if (eraNuevo) void entrenar(true);
   };
 
   const cambiarIA = async (v: boolean) => {
@@ -568,11 +643,117 @@ function AgenteWhatsAppReal() {
       </label>
       <button
         disabled={guardando}
-        onClick={() => void guardar({ nombre_agente: nombreAgente.trim() || "Asistente", instrucciones: instrucciones.trim() || null })}
+        onClick={() =>
+          void guardar({
+            nombre_agente: nombreAgente.trim() || "Asistente",
+            instrucciones: instrucciones.trim() || null,
+            personalidad,
+            objetivo_cierre: objetivoCierre,
+            cierre_autonomo: cierreAutonomo,
+          })
+        }
         className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-60"
       >
         {guardando ? "Guardando…" : agente ? "Guardar agente" : "Crear agente"}
       </button>
+
+      <div className="space-y-3 border-t border-glass-border/60 pt-4">
+        <h4 className="text-sm font-medium">Personalidad y Entrenamiento</h4>
+        <p className="text-xs text-muted-foreground">
+          Define cómo se llama y habla tu asistente, si cierra ventas solo, y revisa el conocimiento de tu sector. Pulsa «Guardar agente» para aplicar los cambios.
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="block text-sm">
+            <span className="mb-1 block text-muted-foreground">Nombre del asistente (ej. Laura - Asesora Comercial)</span>
+            <input className="w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base" value={nombreAgente} maxLength={40} onChange={(e) => setNombreAgente(e.target.value)} />
+          </label>
+          <label className="block text-sm">
+            <span className="mb-1 block text-muted-foreground">Tono / personalidad</span>
+            <select className="w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base" value={personalidad} onChange={(e) => setPersonalidad(e.target.value)}>
+              {PERSONALIDADES.map((p) => <option key={p} value={p}>{p}</option>)}
+            </select>
+          </label>
+          <label className="block text-sm">
+            <span className="mb-1 block text-muted-foreground">Objetivo de cierre</span>
+            <select className="w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base" value={objetivoCierre} onChange={(e) => setObjetivoCierre(e.target.value)}>
+              {OBJETIVOS_CIERRE.map((p) => <option key={p} value={p}>{p}</option>)}
+            </select>
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 self-end rounded-lg border border-glass-border bg-background/40 px-3 py-2.5 text-sm">
+            <input type="checkbox" className="h-4 w-4" checked={cierreAutonomo} onChange={(e) => setCierreAutonomo(e.target.checked)} />
+            Cierre autónomo de ventas
+          </label>
+        </div>
+
+        <button
+          disabled={entrenando || !agente}
+          onClick={() => void entrenar()}
+          className="inline-flex items-center gap-2 rounded-lg border border-glass-border bg-background/60 px-4 py-2 text-sm font-medium hover:bg-background/80 disabled:opacity-60"
+        >
+          <RefreshCw className={`h-4 w-4 ${entrenando ? "animate-spin" : ""}`} />
+          {entrenando ? "Descargando conocimiento…" : "Actualizar Inteligencia del Sector"}
+        </button>
+        {!agente && <p className="text-xs text-muted-foreground">Crea el agente primero; el conocimiento del sector se descarga solo la primera vez.</p>}
+
+        {memoria.filter((m) => m.tipo === "sector").map((m) => (
+          <details key={m.id} className="rounded-lg border border-glass-border/60 bg-background/40 px-3 py-2 text-sm">
+            <summary className="cursor-pointer font-medium">{m.contenido.split(":")[0]}</summary>
+            <p className="mt-2 whitespace-pre-wrap text-xs text-muted-foreground">{m.contenido.slice(m.contenido.indexOf(":") + 1).trim()}</p>
+            <button onClick={() => void quitarMemoria(m.id)} className="mt-2 inline-flex items-center gap-1 text-xs text-destructive"><Trash2 className="h-3 w-3" /> Quitar</button>
+          </details>
+        ))}
+
+        <div className="space-y-2">
+          <span className="block text-sm text-muted-foreground">Reglas propias del negocio</span>
+          {memoria.filter((m) => m.tipo === "regla_dueno").map((m) => (
+            <div key={m.id} className="flex items-start justify-between gap-2 rounded-lg border border-glass-border/60 bg-background/40 px-3 py-2 text-sm">
+              <span className="min-w-0 break-words">{m.contenido}</span>
+              <button onClick={() => void quitarMemoria(m.id)} aria-label="Quitar regla" className="shrink-0 text-destructive"><Trash2 className="h-4 w-4" /></button>
+            </div>
+          ))}
+          <div className="flex gap-2">
+            <input className="min-w-0 flex-1 rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base" placeholder="Ej: Nunca ofrezcas descuentos mayores al 5 %" maxLength={400} value={nuevaRegla} onChange={(e) => setNuevaRegla(e.target.value)} />
+            <button onClick={() => void agregarRegla()} disabled={nuevaRegla.trim().length < 5 || !agente} className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground disabled:opacity-60"><Plus className="h-4 w-4" /> Agregar</button>
+          </div>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-2">
+            <span className="block text-sm font-medium">Leads calificados</span>
+            {memoria.filter((m) => m.tipo === "lead").length === 0 && <p className="text-xs text-muted-foreground">Aún no hay leads calificados por el bot.</p>}
+            {memoria.filter((m) => m.tipo === "lead").slice(0, 12).map((m) => {
+              const d = leerJsonSeguro(m.contenido);
+              const temp = String(d.temperatura ?? "").toUpperCase();
+              const color = temp === "CALIENTE" ? "bg-red-500/15 text-red-600" : temp === "TIBIO" ? "bg-amber-500/15 text-amber-600" : "bg-sky-500/15 text-sky-600";
+              return (
+                <div key={m.id} className="rounded-lg border border-glass-border/60 bg-background/40 px-3 py-2 text-xs">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={`rounded-full px-2 py-0.5 font-medium ${color}`}>{temp === "CALIENTE" ? "Caliente" : temp === "TIBIO" ? "Tibio" : "Frío"} · {String(d.puntaje ?? 0)}</span>
+                    <span className="text-muted-foreground">{String(d.telefono ?? "")}</span>
+                  </div>
+                  <p className="mt-1 break-words">{String(d.interes ?? "")} {d.datos_confirmados ? `· ${String(d.datos_confirmados)}` : ""}</p>
+                </div>
+              );
+            })}
+          </div>
+          <div className="space-y-2">
+            <span className="block text-sm font-medium">PQRS radicadas por el bot</span>
+            {memoria.filter((m) => m.tipo === "pqrs").length === 0 && <p className="text-xs text-muted-foreground">Aún no hay PQRS radicadas.</p>}
+            {memoria.filter((m) => m.tipo === "pqrs").slice(0, 12).map((m) => {
+              const d = leerJsonSeguro(m.contenido);
+              return (
+                <div key={m.id} className="rounded-lg border border-glass-border/60 bg-background/40 px-3 py-2 text-xs">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="rounded-full bg-primary/15 px-2 py-0.5 font-medium">{String(d.tipo ?? "PQRS")} · {String(d.urgencia ?? "")}</span>
+                    <span className="text-muted-foreground">{String(d.telefono ?? "")}</span>
+                  </div>
+                  <p className="mt-1 break-words">{String(d.resumen ?? "")}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
 
       <div className="space-y-3 border-t border-glass-border/60 pt-4">
         <h4 className="text-sm font-medium">Conectar el número de este negocio</h4>

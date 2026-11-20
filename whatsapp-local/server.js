@@ -213,14 +213,54 @@ function responderLocal(linea, chat) {
   return { texto: conCierre(poner(cfg.sinRespuesta || RESPUESTAS_BASE.sinRespuesta)), escalar: true };
 }
 
+// ---------- Cerebro en la nube con respaldo inmortal local ----------
+const URL_AGENTE_NUBE = process.env.AGENTE_URL || "https://gosaryc.lovable.app/api/public/agente-cliente";
+const TIMEOUT_NUBE_MS = 12000;
+
+async function consultarNube(linea, jid, chat) {
+  if (!linea.clave || typeof fetch !== "function") return null;
+  const control = new AbortController();
+  const corte = setTimeout(() => control.abort(), TIMEOUT_NUBE_MS);
+  try {
+    const r = await fetch(URL_AGENTE_NUBE, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${linea.clave}` },
+      body: JSON.stringify({ mensajes: chat.historial.slice(-20), telefono: String(jid || "").replace(/@c\.us$/, "") }),
+      signal: control.signal,
+    });
+    if (r.status === 401 || r.status === 403) {
+      const j = await r.json().catch(() => ({}));
+      linea.avisoClave = (j && j.error) || "La clave del agente no es válida.";
+      return null;
+    }
+    if (!r.ok) return null;
+    const j = await r.json();
+    if (!j || typeof j.texto !== "string" || !j.texto.trim()) return null;
+    linea.avisoClave = "";
+    return j;
+  } catch (e) {
+    console.log(`[${linea.nombre}] La nube no respondió (${e && e.name === "AbortError" ? "tiempo agotado" : e.message}); responde el agente local.`);
+    return null;
+  } finally {
+    clearTimeout(corte);
+  }
+}
+
 async function atender(linea, jid, chat) {
-  if (chat.ocupado) return;
+  // Nunca dos respuestas en paralelo para el mismo número: lo que llegue mientras se responde queda en cola.
+  if (chat.ocupado) { chat.pendiente = true; return; }
   chat.ocupado = true;
+  chat.pendiente = false;
   try {
     const wa = await linea.cliente.getChatById(jid);
     try { await wa.sendSeen(); } catch (_) {}
     try { await wa.sendStateTyping(); } catch (_) {}
-    const { texto, escalar } = responderLocal(linea, chat);
+    let decision = null;
+    try { decision = await consultarNube(linea, jid, chat); } catch (_) { decision = null; }
+    if (!decision) decision = responderLocal(linea, chat);
+    const texto = decision.texto;
+    const escalar = !!decision.escalar;
+    if (decision.pqrs) registrarAviso(linea.id, linea.nombre, "pqrs", `PQRS ${decision.pqrs.tipo || ""} (${String(jid).replace(/@c\.us$/, "")})`, decision.pqrs.resumen, String(jid).replace(/@c\.us$/, ""));
     await esperar(Math.min(4000, 800 + texto.length * 15)); // se ve natural, como si escribiera una persona
     const enviado = await linea.cliente.sendMessage(jid, texto);
     if (enviado?.id?._serialized) linea.propios.add(enviado.id._serialized);
@@ -249,12 +289,30 @@ async function atender(linea, jid, chat) {
   } finally {
     chat.ocupado = false;
     try { const wa = await linea.cliente.getChatById(jid); await wa.clearState(); } catch (_) {}
+    // Si llegaron mensajes mientras respondía, se atienden en un único turno nuevo.
+    if (chat.pendiente && Date.now() >= chat.pausadoHasta) {
+      chat.pendiente = false;
+      clearTimeout(chat.timer);
+      chat.timer = setTimeout(() => atender(linea, jid, chat), DEBOUNCE_MS);
+    }
   }
 }
+
+// Idempotencia: últimos 500 mensajes procesados.
+const IDS_PROCESADOS = new Set();
+function yaProcesado(id) {
+  if (!id) return false;
+  if (IDS_PROCESADOS.has(id)) return true;
+  IDS_PROCESADOS.add(id);
+  if (IDS_PROCESADOS.size > 500) IDS_PROCESADOS.delete(IDS_PROCESADOS.values().next().value);
+  return false;
+}
+const DEBOUNCE_MS = 3500;
 
 function alMensaje(linea, msg) {
   if (!linea.agente) return;
   if (msg.fromMe || msg.isStatus || msg.from === "status@broadcast" || msg.from.endsWith("@g.us")) return;
+  if (yaProcesado(msg.id && msg.id._serialized)) return;
   const jid = msg.from;
   const chat = linea.chats.get(jid) || { historial: [], pausadoHasta: 0, ocupado: false, timer: null, avisoMedia: 0, nombre: String(jid).replace(/@c\.us$/, ""), noLeidos: 0, visto: "" };
   linea.chats.set(jid, chat);
@@ -274,10 +332,10 @@ function alMensaje(linea, msg) {
   }
   if (chat.historial.length > 40) chat.historial.splice(0, chat.historial.length - 40);
 
-  // Espera 3 segundos por si el cliente escribe varios mensajes seguidos: se agrupan
+  // Espera 3,5 segundos de inactividad por si el cliente escribe varios mensajes seguidos: se agrupan
   // y se responde una sola vez, de forma completa (cero respuestas pendientes).
   clearTimeout(chat.timer);
-  chat.timer = setTimeout(() => atender(linea, jid, chat), 3000);
+  chat.timer = setTimeout(() => atender(linea, jid, chat), DEBOUNCE_MS);
 }
 
 function alEscribirYo(linea, msg) {
@@ -381,6 +439,12 @@ function crearLinea({ id, nombre, clave, agente, perfil, instrucciones }) {
   linea.cliente.initialize().catch((e) => {
     linea.estado = "desconectado";
     console.log(`[${linea.nombre}] No se pudo iniciar:`, e.message);
+    // Reintenta solo, sin tumbar el servidor.
+    setTimeout(() => {
+      if (linea.estado === "desconectado" && lineas.get(linea.id) === linea) {
+        linea.cliente.initialize().catch((e2) => console.log(`[${linea.nombre}] Reintento falló:`, e2.message));
+      }
+    }, 15000);
   });
   return linea;
 }
@@ -645,6 +709,14 @@ const servidor = http.createServer(async (req, res) => {
   } catch (e) {
     return responder(500, { error: String(e.message || e) });
   }
+});
+
+// Estabilidad: ningún error suelto tumba el servidor local.
+process.on("uncaughtException", (e) => {
+  console.log("[Error no controlado]", e && e.stack ? e.stack : e);
+});
+process.on("unhandledRejection", (e) => {
+  console.log("[Promesa rechazada]", e && e.stack ? e.stack : e);
 });
 
 cargarLineas();

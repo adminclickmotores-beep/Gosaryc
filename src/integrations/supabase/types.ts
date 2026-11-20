@@ -4698,6 +4698,9 @@ export type Database = {
           negocio_id: string
           nombre_agente: string
           owner_id: string
+          personalidad: string
+          objetivo_cierre: string
+          cierre_autonomo: boolean
         }
         Insert: {
           activo?: boolean
@@ -4709,6 +4712,9 @@ export type Database = {
           negocio_id: string
           nombre_agente?: string
           owner_id: string
+          personalidad?: string
+          objetivo_cierre?: string
+          cierre_autonomo?: boolean
         }
         Update: {
           activo?: boolean
@@ -4720,6 +4726,9 @@ export type Database = {
           negocio_id?: string
           nombre_agente?: string
           owner_id?: string
+          personalidad?: string
+          objetivo_cierre?: string
+          cierre_autonomo?: boolean
         }
         Relationships: []
       }

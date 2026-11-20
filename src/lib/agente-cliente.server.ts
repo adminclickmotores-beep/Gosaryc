@@ -8,7 +8,41 @@ const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai
 const GEMINI_MODEL = "gemini-2.5-flash";
 
 export type MensajeCliente = { role: "user" | "assistant"; content: string };
-export type RespuestaAgente = { texto: string; escalar: boolean };
+export type LeadAgente = { temperatura: string; puntaje: number; interes: string; capacidad_pago: string; urgencia: string; datos_confirmados: string };
+export type PqrsAgente = { tipo: string; resumen: string; urgencia: string };
+export type RespuestaAgente = { texto: string; escalar: boolean; lead?: LeadAgente | null; pqrs?: PqrsAgente | null };
+
+/** Extrae una etiqueta oculta [[NOMBRE:{json}]] del texto del modelo. */
+function sacarEtiqueta<T>(texto: string, nombre: string): { limpio: string; valor: T | null } {
+  const re = new RegExp(`\\[\\[${nombre}:([\\s\\S]*?)\\]\\]`, "i");
+  const m = texto.match(re);
+  let valor: T | null = null;
+  if (m) {
+    try {
+      valor = JSON.parse(m[1].trim()) as T;
+    } catch {
+      valor = null;
+    }
+  }
+  return { limpio: texto.replace(new RegExp(`\\[\\[${nombre}:[\\s\\S]*?\\]\\]`, "gi"), "").trim(), valor };
+}
+
+/** Guarda (sin duplicar por teléfono) el lead o la PQRS radicada por el agente. */
+async function guardarEtiquetaAgente(ag: DuenoMemoria, tipo: "lead" | "pqrs", telefono: string, datos: object): Promise<void> {
+  const contenido = JSON.stringify({ telefono: telefono.slice(0, 30), fecha: new Date().toISOString(), ...datos }).slice(0, 1500);
+  if (tipo === "lead" && telefono) {
+    const { data: previos } = await supabaseAdmin
+      .from("agente_memoria")
+      .select("id,contenido")
+      .eq("negocio_id", ag.negocio_id)
+      .eq("owner_id", ag.owner_id)
+      .eq("tipo", "lead")
+      .like("contenido", `%"telefono":"${telefono.slice(0, 30).replace(/[^0-9a-z@.]/gi, "")}"%`);
+    const ids = (previos ?? []).map((p) => p.id);
+    if (ids.length > 0) await supabaseAdmin.from("agente_memoria").delete().in("id", ids).eq("negocio_id", ag.negocio_id).eq("owner_id", ag.owner_id);
+  }
+  await supabaseAdmin.from("agente_memoria").insert({ negocio_id: ag.negocio_id, owner_id: ag.owner_id, tipo, contenido });
+}
 
 export class ErrorAgente extends Error {
   estado: number;
@@ -37,7 +71,7 @@ async function buscarAgente(clave: string) {
   if (!dentroDelLimite(clave)) throw new ErrorAgente(429, "Demasiados mensajes, intenta en un minuto");
   const { data: ag } = await supabaseAdmin
     .from("agente_whatsapp")
-    .select("negocio_id,owner_id,activo,instrucciones,nombre_agente")
+    .select("negocio_id,owner_id,activo,instrucciones,nombre_agente,personalidad,objetivo_cierre,cierre_autonomo")
     .eq("clave", clave)
     .maybeSingle();
   if (!ag) throw new ErrorAgente(401, "Clave del agente inválida");
@@ -167,7 +201,7 @@ async function aprenderPatrones(ag: DuenoMemoria, historial: MensajeCliente[]): 
 }
 
 /** Responde a un cliente final de WhatsApp como agente de ventas, atención y asesoría del negocio. */
-export async function responderComoAgente(clave: string, mensajes: MensajeCliente[]): Promise<RespuestaAgente> {
+export async function responderComoAgente(clave: string, mensajes: MensajeCliente[], telefono = ""): Promise<RespuestaAgente> {
   const ag = await buscarAgente(clave);
 
   const { data: cfg } = await supabaseAdmin
@@ -247,9 +281,23 @@ export async function responderComoAgente(clave: string, mensajes: MensajeClient
     .select("tipo,contenido,veces")
     .eq("negocio_id", ag.negocio_id)
     .eq("owner_id", ag.owner_id)
+    .in("tipo", ["respuesta_dueno", "patron"])
     .order("veces", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(40);
+  const { data: conoc } = await supabaseAdmin
+    .from("agente_memoria")
+    .select("tipo,contenido")
+    .eq("negocio_id", ag.negocio_id)
+    .eq("owner_id", ag.owner_id)
+    .in("tipo", ["sector", "regla_dueno"])
+    .order("created_at", { ascending: true })
+    .limit(30);
+  const sector = (conoc ?? []).filter((x) => x.tipo === "sector").map((x) => x.contenido.slice(0, 2500)).join("\n\n").slice(0, 9000);
+  const reglasDueno = (conoc ?? []).filter((x) => x.tipo === "regla_dueno").map((x) => `- ${x.contenido.slice(0, 400)}`).join("\n");
+  const conocimientoSector =
+    (sector ? `\nConocimiento del sector (preguntas frecuentes, objeciones, preguntas filtro y protocolo de garantías/PQRS; úsalo como guía, los datos reales del negocio mandan):\n${sector}\n` : "") +
+    (reglasDueno ? `\nReglas propias del dueño (obligatorias):\n${reglasDueno}\n` : "");
   const delDueno = (memoria ?? []).filter((x) => x.tipo === "respuesta_dueno").slice(0, 20).map((x) => `- ${x.contenido}`);
   const patrones = (memoria ?? []).filter((x) => x.tipo === "patron").slice(0, 15).map((x) => `- ${x.contenido}`);
   const aprendido =
@@ -260,8 +308,20 @@ export async function responderComoAgente(clave: string, mensajes: MensajeClient
       ? `\nPatrones observados en conversaciones anteriores (son solo pistas para atender mejor; NO son datos del negocio ni sustituyen precios, horarios o políticas):\n${patrones.join("\n")}\n`
       : "");
 
+  const personalidad = (ag.personalidad || "Amable y Cercano").slice(0, 60);
+  const objetivo = (ag.objetivo_cierre || "Cerrar pedido directo").slice(0, 80);
+  const cierraSolo = ag.cierre_autonomo !== false;
+
   const system = `Eres ${nombreAgente}, la persona que atiende por WhatsApp a los CLIENTES de "${cfg?.nombre || "este negocio"}" (tipo de negocio: ${giro.panel}). Eres a la vez agente de servicio al cliente, asesor comercial y vendedor.
-Escribes en español, con tono cálido, humano y profesional, mensajes cortos propios de WhatsApp (máximo 4 o 5 líneas, sin tablas ni títulos). Habla con el vocabulario profesional del tipo de negocio "${giro.panel}". Áreas del negocio: ${modulos || "atención general"}.
+Personalidad: ${personalidad}. Escribes en español, con ese tono, mensajes cortos propios de WhatsApp (máximo 4 o 5 líneas, sin tablas ni títulos). Habla con el vocabulario profesional del tipo de negocio "${giro.panel}". Áreas del negocio: ${modulos || "atención general"}.
+Objetivo de cierre del negocio: ${objetivo}. ${cierraSolo ? "Tienes AUTONOMÍA para cerrar: lleva la conversación hasta ese cierre (confirma pedido con total calculado, agenda cita con fecha y hora exactas o entrega los datos de pago configurados) sin esperar a una persona." : "NO cierres tú la operación: reúne los datos y avisa que una persona del equipo la confirma (usa [[ASESOR]])."}
+
+MEMORIA DEL HILO (regla estricta): antes de responder, revisa TODO el historial de esta conversación. NUNCA vuelvas a preguntar un dato que el cliente ya entregó (nombre, presupuesto, cuota inicial, modelo, dirección, fecha, cantidad, etc.). Reutilízalo y pregunta solo lo que falta, una cosa a la vez.
+
+Tres modos automáticos (elige según lo que escriba el cliente):
+A) COMERCIAL Y CIERRE: califica según el playbook del sector (concesionario: modelo, plazo, cuota inicial, reportes en centrales de riesgo; constructora/inmobiliaria: vivienda o inversión, cuota inicial, subsidio; restaurante: pedido completo y domicilio; otros: la necesidad, presupuesto y fecha) y cierra la operación.
+B) SERVICIO AL CLIENTE Y PQRS: si hay duda postventa, garantía, reclamo o solicitud, mantén la calma, pide los datos del caso (número de pedido/factura/placa y descripción), da solución inmediata según las políticas del negocio y añade al final la etiqueta oculta [[PQRS:{"tipo":"Peticion|Queja|Reclamo|Sugerencia","resumen":"...","urgencia":"Alta|Media|Baja"}]]. Solo escala con [[ASESOR]] si exigen hablar con un gerente, hay amenaza legal o estafa, o se requiere aprobación financiera especial.
+C) CLASIFICACIÓN DE LEAD: al final de CADA turno añade la etiqueta oculta [[LEAD:{"temperatura":"FRIO|TIBIO|CALIENTE","puntaje":0,"interes":"...","capacidad_pago":"...","urgencia":"...","datos_confirmados":"..."}]] (puntaje de 0 a 100). El cliente nunca ve las etiquetas.
 
 Cómo atender:
 1. Saluda por el nombre del negocio la primera vez y pregunta en qué puedes ayudar.
@@ -277,7 +337,7 @@ ${perfil}
 
 Catálogo de productos y servicios con precios:
 ${catalogo}
-${domicilio ? `\n${domicilio}\n` : ""}${aprendido}${extra ? `\nInstrucciones propias del dueño (tienen prioridad en el estilo y las políticas):\n${extra}\n` : ""}
+${domicilio ? `\n${domicilio}\n` : ""}${conocimientoSector}${aprendido}${extra ? `\nInstrucciones propias del dueño (tienen prioridad en el estilo y las políticas):\n${extra}\n` : ""}
 Reglas:
 - No inventes precios, horarios, direcciones, productos, promociones, descuentos ni disponibilidad. Si un dato dice NO CONFIGURADO o no está arriba, di que lo confirma una persona del equipo y usa [[ASESOR]] si es necesario para cerrar.
 - No prometas lo que no puedas cumplir (tiempos exactos, garantías, descuentos) si no está en los datos.
@@ -287,7 +347,7 @@ Reglas:
 - Usa pocos emojis, solo si el cliente los usa.`;
 
   const historial = (Array.isArray(mensajes) ? mensajes : [])
-    .slice(-24)
+    .slice(-20)
     .map((m) => ({
       role: (m?.role === "assistant" ? "assistant" : "user") as "user" | "assistant",
       content: typeof m?.content === "string" ? m.content.slice(0, 3000) : "",
@@ -301,7 +361,18 @@ Reglas:
   if (!texto) throw new ErrorAgente(502, "El agente no pudo responder en este momento");
 
   const escalar = /\[\[ASESOR\]\]/i.test(texto);
-  const limpio = texto.replace(/\[\[ASESOR\]\]/gi, "").trim();
+  const sinAsesor = texto.replace(/\[\[ASESOR\]\]/gi, "").trim();
+  const conLead = sacarEtiqueta<LeadAgente>(sinAsesor, "LEAD");
+  const conPqrs = sacarEtiqueta<PqrsAgente>(conLead.limpio, "PQRS");
+  const limpio = conPqrs.limpio;
+  const lead = conLead.valor && typeof conLead.valor === "object" ? conLead.valor : null;
+  const pqrs = conPqrs.valor && typeof conPqrs.valor === "object" ? conPqrs.valor : null;
+  try {
+    if (lead) await guardarEtiquetaAgente(ag, "lead", telefono, lead);
+    if (pqrs) await guardarEtiquetaAgente(ag, "pqrs", telefono, pqrs);
+  } catch (e) {
+    console.error("Agente: no se pudo guardar lead/PQRS", e);
+  }
 
   // Aprende de la conversación al terminar (pasa a una persona) o cada cierto número de mensajes.
   if (escalar || (historial.length >= 8 && historial.length % 8 < 2)) {
@@ -311,5 +382,5 @@ Reglas:
       console.error("Agente: no se pudo aprender de la conversación", e);
     }
   }
-  return { texto: limpio || "Un momento, una persona del equipo te atiende enseguida.", escalar };
+  return { texto: limpio || "Un momento, una persona del equipo te atiende enseguida.", escalar, lead, pqrs };
 }
