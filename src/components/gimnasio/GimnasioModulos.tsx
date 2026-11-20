@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { usePermisos } from "@/hooks/use-permisos";
 import { Campo, Cargando, Encabezado, boton, botonSec, campo, dinero, num } from "@/components/comercio/ComercioModulos";
 
 type Socio = Tables<"gim_socios">;
@@ -149,6 +150,7 @@ export function CheckinGimnasio() {
 const DIAS_TIPO: Record<string, number> = { tiquetera: 60, mensual: 30, trimestral: 90, semestral: 180, anual: 365 };
 
 export function PlanesGimnasio() {
+  const { esAdmin, cargando: cargPermisos } = usePermisos();
   const { planes, cargando, recargar } = usarGimnasio();
   const [nombre, setNombre] = useState("");
   const [tipo, setTipo] = useState("mensual");
@@ -157,6 +159,7 @@ export function PlanesGimnasio() {
   const [precio, setPrecio] = useState("");
 
   const guardar = async () => {
+    if (!esAdmin) return toast.error("Solo el dueño o administrador puede crear planes.");
     if (nombre.trim().length < 2) return toast.error("Escribe el nombre del plan.");
     if (num(dias) <= 0) return toast.error("Los días de vigencia deben ser mayores a cero.");
     if (tipo === "tiquetera" && num(sesiones) <= 0) return toast.error("Escribe cuántas sesiones trae la tiquetera.");
@@ -170,36 +173,47 @@ export function PlanesGimnasio() {
     void recargar();
   };
   const alternar = async (p: Plan) => {
-    await supabase.from("gim_planes").update({ activo: !p.activo }).eq("id", p.id);
+    if (!esAdmin) return toast.error("Solo el dueño o administrador puede editar planes.");
+    const { error } = await supabase.from("gim_planes").update({ activo: !p.activo }).eq("id", p.id);
+    if (error) return toast.error(msg(error.message, "No se pudo actualizar el plan."));
     void recargar();
   };
 
-  if (cargando) return <Cargando />;
+  if (cargando || cargPermisos) return <Cargando />;
   return (
     <div className="space-y-6">
       <Encabezado titulo="Planes y tiqueteras" texto="Mensualidades, trimestres, anualidades y tiqueteras por sesiones, con su precio y vigencia." />
-      <GlassPanel className="space-y-3 p-5">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <Campo etiqueta="Nombre *"><input className={campo} value={nombre} onChange={(e) => setNombre(e.target.value)} /></Campo>
-          <Campo etiqueta="Tipo">
-            <select className={campo} value={tipo} onChange={(e) => { setTipo(e.target.value); setDias(String(DIAS_TIPO[e.target.value] ?? 30)); }}>
-              <option value="tiquetera">Tiquetera (por sesiones)</option>
-              <option value="mensual">Mensualidad</option>
-              <option value="trimestral">Trimestre</option>
-              <option value="semestral">Semestre</option>
-              <option value="anual">Anualidad</option>
-            </select>
-          </Campo>
-          <Campo etiqueta="Vigencia (días)"><input className={campo} inputMode="numeric" value={dias} onChange={(e) => setDias(e.target.value)} /></Campo>
-          {tipo === "tiquetera" && <Campo etiqueta="Sesiones"><input className={campo} inputMode="numeric" value={sesiones} onChange={(e) => setSesiones(e.target.value)} /></Campo>}
-          <Campo etiqueta="Precio"><input className={campo} inputMode="decimal" value={precio} onChange={(e) => setPrecio(e.target.value)} /></Campo>
-        </div>
-        <button className={boton} onClick={guardar}><Plus className="h-4 w-4" /> Guardar plan</button>
-      </GlassPanel>
+      {!esAdmin && (
+        <GlassPanel className="p-4 text-sm text-muted-foreground">
+          Vista de solo lectura. Solo el dueño o administrador del negocio puede crear o editar planes y tarifas.
+        </GlassPanel>
+      )}
+      {esAdmin && (
+        <GlassPanel className="space-y-3 p-5">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <Campo etiqueta="Nombre *"><input className={campo} value={nombre} onChange={(e) => setNombre(e.target.value)} /></Campo>
+            <Campo etiqueta="Tipo">
+              <select className={campo} value={tipo} onChange={(e) => { setTipo(e.target.value); setDias(String(DIAS_TIPO[e.target.value] ?? 30)); }}>
+                <option value="tiquetera">Tiquetera (por sesiones)</option>
+                <option value="mensual">Mensualidad</option>
+                <option value="trimestral">Trimestre</option>
+                <option value="semestral">Semestre</option>
+                <option value="anual">Anualidad</option>
+              </select>
+            </Campo>
+            <Campo etiqueta="Vigencia (días)"><input className={campo} inputMode="numeric" value={dias} onChange={(e) => setDias(e.target.value)} /></Campo>
+            {tipo === "tiquetera" && <Campo etiqueta="Sesiones"><input className={campo} inputMode="numeric" value={sesiones} onChange={(e) => setSesiones(e.target.value)} /></Campo>}
+            <Campo etiqueta="Precio"><input className={campo} inputMode="decimal" value={precio} onChange={(e) => setPrecio(e.target.value)} /></Campo>
+          </div>
+          <button className={boton} onClick={guardar}><Plus className="h-4 w-4" /> Guardar plan</button>
+        </GlassPanel>
+      )}
       {planes.map((p) => (
         <GlassPanel key={p.id} className={`flex flex-wrap items-center justify-between gap-2 p-3 text-sm ${p.activo ? "" : "opacity-60"}`}>
           <span className="min-w-0 break-words text-foreground">{p.nombre} · {p.tipo}{p.sesiones ? ` · ${p.sesiones} sesiones` : ""} · {p.duracion_dias} días · {dinero(p.precio)}</span>
-          <button className={botonSec} onClick={() => alternar(p)}>{p.activo ? "Desactivar" : "Activar"}</button>
+          {esAdmin && (
+            <button className={botonSec} onClick={() => alternar(p)}>{p.activo ? "Desactivar" : "Activar"}</button>
+          )}
         </GlassPanel>
       ))}
     </div>

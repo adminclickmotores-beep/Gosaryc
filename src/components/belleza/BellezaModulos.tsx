@@ -464,6 +464,7 @@ export function FichasBelleza() {
 // Servicios, duración, comisión e insumos que consumen
 // ============================================================
 export function ServiciosBelleza() {
+  const { esAdmin, cargando: cargPermisos } = usePermisos();
   const { servicios, cargando, recargar } = usarServicios();
   const [insumos, setInsumos] = useState<Insumo[]>([]);
   const [recetas, setRecetas] = useState<ServicioInsumo[]>([]);
@@ -480,18 +481,24 @@ export function ServiciosBelleza() {
   const [sumar, setSumar] = useState<Record<string, string>>({});
 
   const cargarInsumos = useCallback(async () => {
+    if (!esAdmin) {
+      setInsumos([]);
+      setRecetas([]);
+      return;
+    }
     const [i, r] = await Promise.all([
       supabase.from("bel_insumos").select("*").order("nombre"),
       supabase.from("bel_servicio_insumos").select("*"),
     ]);
     setInsumos(i.data ?? []);
     setRecetas(r.data ?? []);
-  }, []);
+  }, [esAdmin]);
   useEffect(() => {
-    void cargarInsumos();
-  }, [cargarInsumos]);
+    if (!cargPermisos) void cargarInsumos();
+  }, [cargPermisos, cargarInsumos]);
 
   const crearServicio = async () => {
+    if (!esAdmin) return toast.error("Solo el dueño o administrador puede crear servicios.");
     if (nombre.trim().length < 2) return toast.error("Escribe el nombre del servicio.");
     if (num(duracion) <= 0) return toast.error("La duración debe ser mayor a cero.");
     const { error } = await supabase.from("bel_servicios").insert({
@@ -505,6 +512,7 @@ export function ServiciosBelleza() {
   };
 
   const crearInsumo = async () => {
+    if (!esAdmin) return toast.error("Solo el dueño o administrador puede crear insumos.");
     if (iNombre.trim().length < 2) return toast.error("Escribe el nombre del insumo.");
     const { error } = await supabase.from("bel_insumos").insert({
       nombre: iNombre.trim(), unidad: iUnidad.trim() || "und", stock: Math.max(num(iStock), 0), costo_unitario: Math.max(num(iCosto), 0),
@@ -516,6 +524,7 @@ export function ServiciosBelleza() {
   };
 
   const sumarStock = async (i: Insumo) => {
+    if (!esAdmin) return toast.error("Solo el dueño o administrador puede editar el inventario.");
     const n = num(sumar[i.id] ?? "");
     if (n <= 0) return toast.error("Escribe cuánto entra.");
     const { error } = await supabase.from("bel_insumos").update({ stock: i.stock + n }).eq("id", i.id);
@@ -525,6 +534,7 @@ export function ServiciosBelleza() {
   };
 
   const asociar = async (servicioId: string) => {
+    if (!esAdmin) return toast.error("Solo el dueño o administrador puede configurar recetas.");
     const a = agregar[servicioId];
     if (!a?.insumo || num(a.cantidad) <= 0) return toast.error("Elige el insumo y la cantidad por servicio.");
     const { error } = await supabase.from("bel_servicio_insumos").insert({ servicio_id: servicioId, insumo_id: a.insumo, cantidad: num(a.cantidad) });
@@ -534,6 +544,7 @@ export function ServiciosBelleza() {
   };
 
   const cambiarCantidad = async (r: ServicioInsumo) => {
+    if (!esAdmin) return toast.error("Solo el dueño o administrador puede editar recetas.");
     const nueva = window.prompt("Nueva cantidad que gasta cada servicio:", String(r.cantidad));
     if (nueva === null) return;
     if (num(nueva) <= 0) return toast.error("La cantidad debe ser mayor a cero.");
@@ -543,28 +554,38 @@ export function ServiciosBelleza() {
   };
 
   const activar = async (s: Servicio) => {
-    await supabase.from("bel_servicios").update({ activo: !s.activo }).eq("id", s.id);
+    if (!esAdmin) return toast.error("Solo el dueño o administrador puede editar servicios.");
+    const { error } = await supabase.from("bel_servicios").update({ activo: !s.activo }).eq("id", s.id);
+    if (error) return toast.error(msg(error.message, "No se pudo actualizar el servicio."));
     void recargar();
   };
 
-  if (cargando) return <Cargando />;
+  if (cargando || cargPermisos) return <Cargando />;
   return (
     <div className="space-y-6">
       <Encabezado titulo="Servicios, comisiones e insumos" texto="Cada servicio lleva duración, precio, porcentaje de comisión y los insumos que gasta; al cobrar, los insumos se descuentan solos." />
 
-      <GlassPanel className="space-y-3 p-5">
-        <h2 className="font-medium text-foreground">Nuevo servicio</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Campo etiqueta="Nombre *"><input className={campo} value={nombre} onChange={(e) => setNombre(e.target.value)} /></Campo>
-          <Campo etiqueta="Duración (min)"><input className={campo} inputMode="numeric" value={duracion} onChange={(e) => setDuracion(e.target.value)} /></Campo>
-          <Campo etiqueta="Precio"><input className={campo} inputMode="decimal" value={precio} onChange={(e) => setPrecio(e.target.value)} /></Campo>
-          <Campo etiqueta="Comisión del estilista (%)"><input className={campo} inputMode="decimal" value={pct} onChange={(e) => setPct(e.target.value)} /></Campo>
-        </div>
-        <label className="flex items-center gap-2 text-sm text-foreground">
-          <input type="checkbox" checked={descontar} onChange={(e) => setDescontar(e.target.checked)} /> Descontar el costo de los insumos antes de calcular la comisión
-        </label>
-        <button className={boton} onClick={crearServicio}><Plus className="h-4 w-4" /> Guardar servicio</button>
-      </GlassPanel>
+      {!esAdmin && (
+        <GlassPanel className="p-4 text-sm text-muted-foreground">
+          Vista de solo lectura. Solo el dueño o administrador del negocio puede crear o editar servicios, porcentajes de comisión, insumos y recetas.
+        </GlassPanel>
+      )}
+
+      {esAdmin && (
+        <GlassPanel className="space-y-3 p-5">
+          <h2 className="font-medium text-foreground">Nuevo servicio</h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Campo etiqueta="Nombre *"><input className={campo} value={nombre} onChange={(e) => setNombre(e.target.value)} /></Campo>
+            <Campo etiqueta="Duración (min)"><input className={campo} inputMode="numeric" value={duracion} onChange={(e) => setDuracion(e.target.value)} /></Campo>
+            <Campo etiqueta="Precio"><input className={campo} inputMode="decimal" value={precio} onChange={(e) => setPrecio(e.target.value)} /></Campo>
+            <Campo etiqueta="Comisión del estilista (%)"><input className={campo} inputMode="decimal" value={pct} onChange={(e) => setPct(e.target.value)} /></Campo>
+          </div>
+          <label className="flex items-center gap-2 text-sm text-foreground">
+            <input type="checkbox" checked={descontar} onChange={(e) => setDescontar(e.target.checked)} /> Descontar el costo de los insumos antes de calcular la comisión
+          </label>
+          <button className={boton} onClick={crearServicio}><Plus className="h-4 w-4" /> Guardar servicio</button>
+        </GlassPanel>
+      )}
 
       <div className="space-y-3">
         {servicios.map((s) => {
@@ -574,9 +595,11 @@ export function ServiciosBelleza() {
             <GlassPanel key={s.id} className={`space-y-2 p-4 ${s.activo ? "" : "opacity-60"}`}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="min-w-0 break-words font-medium text-foreground">{s.nombre} · {s.duracion_min} min · {dinero(s.precio)} · {s.comision_pct}%</p>
-                <button className={botonSec} onClick={() => activar(s)}>{s.activo ? "Desactivar" : "Activar"}</button>
+                {esAdmin && (
+                  <button className={botonSec} onClick={() => activar(s)}>{s.activo ? "Desactivar" : "Activar"}</button>
+                )}
               </div>
-              {mias.map((r) => {
+              {esAdmin && mias.map((r) => {
                 const ins = insumos.find((i) => i.id === r.insumo_id);
                 return (
                   <div key={r.id} className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
@@ -585,41 +608,45 @@ export function ServiciosBelleza() {
                   </div>
                 );
               })}
-              <div className="flex flex-wrap items-end gap-2">
-                <select className={`${campo} sm:max-w-xs`} value={a.insumo} onChange={(e) => setAgregar((x) => ({ ...x, [s.id]: { ...a, insumo: e.target.value } }))}>
-                  <option value="">Agregar insumo…</option>
-                  {insumos.filter((i) => i.activo).map((i) => <option key={i.id} value={i.id}>{i.nombre} ({i.unidad})</option>)}
-                </select>
-                <input className={`${campo} sm:max-w-[8rem]`} inputMode="decimal" placeholder="Cantidad" value={a.cantidad} onChange={(e) => setAgregar((x) => ({ ...x, [s.id]: { ...a, cantidad: e.target.value } }))} />
-                <button className={botonSec} onClick={() => asociar(s.id)}>Agregar</button>
-              </div>
+              {esAdmin && (
+                <div className="flex flex-wrap items-end gap-2">
+                  <select className={`${campo} sm:max-w-xs`} value={a.insumo} onChange={(e) => setAgregar((x) => ({ ...x, [s.id]: { ...a, insumo: e.target.value } }))}>
+                    <option value="">Agregar insumo…</option>
+                    {insumos.filter((i) => i.activo).map((i) => <option key={i.id} value={i.id}>{i.nombre} ({i.unidad})</option>)}
+                  </select>
+                  <input className={`${campo} sm:max-w-[8rem]`} inputMode="decimal" placeholder="Cantidad" value={a.cantidad} onChange={(e) => setAgregar((x) => ({ ...x, [s.id]: { ...a, cantidad: e.target.value } }))} />
+                  <button className={botonSec} onClick={() => asociar(s.id)}>Agregar</button>
+                </div>
+              )}
             </GlassPanel>
           );
         })}
-        {servicios.length === 0 && <p className="text-sm text-muted-foreground">Aún no hay servicios. Crea el primero arriba.</p>}
+        {servicios.length === 0 && <p className="text-sm text-muted-foreground">{esAdmin ? "Aún no hay servicios. Crea el primero arriba." : "Aún no hay servicios registrados."}</p>}
       </div>
 
-      <GlassPanel className="space-y-3 p-5">
-        <h2 className="font-medium text-foreground">Insumos (tintes, ampolletas, cera…)</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Campo etiqueta="Nombre *"><input className={campo} value={iNombre} onChange={(e) => setINombre(e.target.value)} /></Campo>
-          <Campo etiqueta="Unidad (g, ml, und)"><input className={campo} value={iUnidad} onChange={(e) => setIUnidad(e.target.value)} /></Campo>
-          <Campo etiqueta="Existencia inicial"><input className={campo} inputMode="decimal" value={iStock} onChange={(e) => setIStock(e.target.value)} /></Campo>
-          <Campo etiqueta="Costo por unidad"><input className={campo} inputMode="decimal" value={iCosto} onChange={(e) => setICosto(e.target.value)} /></Campo>
-        </div>
-        <button className={boton} onClick={crearInsumo}><Plus className="h-4 w-4" /> Guardar insumo</button>
-        <div className="space-y-2 pt-2">
-          {insumos.map((i) => (
-            <div key={i.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-glass-border p-2 text-sm">
-              <span className="min-w-0 break-words text-foreground">{i.nombre}: {Math.round(i.stock * 1000) / 1000} {i.unidad} · {dinero(i.costo_unitario)}/{i.unidad}</span>
-              <span className="flex items-center gap-2">
-                <input className={`${campo} w-28`} inputMode="decimal" placeholder="Entra…" value={sumar[i.id] ?? ""} onChange={(e) => setSumar((x) => ({ ...x, [i.id]: e.target.value }))} />
-                <button className={botonSec} onClick={() => sumarStock(i)}>Sumar</button>
-              </span>
-            </div>
-          ))}
-        </div>
-      </GlassPanel>
+      {esAdmin && (
+        <GlassPanel className="space-y-3 p-5">
+          <h2 className="font-medium text-foreground">Insumos (tintes, ampolletas, cera…)</h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Campo etiqueta="Nombre *"><input className={campo} value={iNombre} onChange={(e) => setINombre(e.target.value)} /></Campo>
+            <Campo etiqueta="Unidad (g, ml, und)"><input className={campo} value={iUnidad} onChange={(e) => setIUnidad(e.target.value)} /></Campo>
+            <Campo etiqueta="Existencia inicial"><input className={campo} inputMode="decimal" value={iStock} onChange={(e) => setIStock(e.target.value)} /></Campo>
+            <Campo etiqueta="Costo por unidad"><input className={campo} inputMode="decimal" value={iCosto} onChange={(e) => setICosto(e.target.value)} /></Campo>
+          </div>
+          <button className={boton} onClick={crearInsumo}><Plus className="h-4 w-4" /> Guardar insumo</button>
+          <div className="space-y-2 pt-2">
+            {insumos.map((i) => (
+              <div key={i.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-glass-border p-2 text-sm">
+                <span className="min-w-0 break-words text-foreground">{i.nombre}: {Math.round(i.stock * 1000) / 1000} {i.unidad} · {dinero(i.costo_unitario)}/{i.unidad}</span>
+                <span className="flex items-center gap-2">
+                  <input className={`${campo} w-28`} inputMode="decimal" placeholder="Entra…" value={sumar[i.id] ?? ""} onChange={(e) => setSumar((x) => ({ ...x, [i.id]: e.target.value }))} />
+                  <button className={botonSec} onClick={() => sumarStock(i)}>Sumar</button>
+                </span>
+              </div>
+            ))}
+          </div>
+        </GlassPanel>
+      )}
     </div>
   );
 }
@@ -670,6 +697,7 @@ export function ComisionesBelleza() {
   }, [pendientes]);
 
   const vender = async () => {
+    if (!esAdmin) return toast.error("Solo el dueño o administrador puede registrar ventas con reglas personalizadas.");
     if (!prof.trim()) return toast.error("Escribe quién atendió o vendió.");
     if (tipo === "servicio" && !servicioId) return toast.error("Elige el servicio.");
     if (tipo === "producto" && !concepto.trim()) return toast.error("Escribe qué producto se vendió.");
@@ -692,6 +720,7 @@ export function ComisionesBelleza() {
   };
 
   const liquidar = async (profesional: string) => {
+    if (!esAdmin) return toast.error("Solo el dueño o administrador puede liquidar comisiones.");
     const { data, error } = await supabase.rpc("bel_liquidar_comisiones", { p_profesional: profesional, p_hasta: new Date().toISOString().slice(0, 10), p_metodo: metodoPago });
     if (error) return toast.error(msg(error.message, "No se pudo liquidar."));
     toast.success(`Liquidación pagada: ${dinero(Number(data ?? 0))}. Salió de Caja y quedó en Contabilidad.`);
@@ -702,6 +731,12 @@ export function ComisionesBelleza() {
   return (
     <div className="space-y-6">
       <Encabezado titulo="Comisiones y liquidación" texto="Cada servicio o producto vendido calcula la comisión del estilista (descontando el costo de insumos si aplica). Liquidar paga lo pendiente desde Caja y lo registra en Contabilidad." />
+
+      {!esAdmin && (
+        <GlassPanel className="p-4 text-sm text-muted-foreground">
+          Vista de solo lectura: aquí ves únicamente tus propios servicios registrados y tus comisiones ganadas. Solo el dueño o administrador puede modificar porcentajes, registrar ventas rápidas o liquidar comisiones.
+        </GlassPanel>
+      )}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {porProfesional.length === 0 && <p className="text-sm text-muted-foreground">No hay comisiones pendientes.</p>}
@@ -725,38 +760,40 @@ export function ComisionesBelleza() {
         ))}
       </div>
 
-      <GlassPanel className="space-y-3 p-5">
-        <h2 className="font-medium text-foreground">Venta rápida (sin cita)</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <Campo etiqueta="Atendió o vendió *"><input className={campo} value={prof} onChange={(e) => setProf(e.target.value)} /></Campo>
-          <Campo etiqueta="Qué se vende">
-            <select className={campo} value={tipo} onChange={(e) => setTipo(e.target.value as "servicio" | "producto")}>
-              <option value="servicio">Servicio</option>
-              <option value="producto">Producto</option>
-            </select>
-          </Campo>
-          {tipo === "servicio" ? (
-            <Campo etiqueta="Servicio *">
-              <select className={campo} value={servicioId} onChange={(e) => setServicioId(e.target.value)}>
-                <option value="">Elige un servicio</option>
-                {servicios.filter((s) => s.activo).map((s) => <option key={s.id} value={s.id}>{s.nombre} · {dinero(s.precio)}</option>)}
+      {esAdmin && (
+        <GlassPanel className="space-y-3 p-5">
+          <h2 className="font-medium text-foreground">Venta rápida (sin cita)</h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <Campo etiqueta="Atendió o vendió *"><input className={campo} value={prof} onChange={(e) => setProf(e.target.value)} /></Campo>
+            <Campo etiqueta="Qué se vende">
+              <select className={campo} value={tipo} onChange={(e) => setTipo(e.target.value as "servicio" | "producto")}>
+                <option value="servicio">Servicio</option>
+                <option value="producto">Producto</option>
               </select>
             </Campo>
-          ) : (
-            <Campo etiqueta="Producto *"><input className={campo} value={concepto} onChange={(e) => setConcepto(e.target.value)} /></Campo>
-          )}
-          <Campo etiqueta={tipo === "servicio" ? "Precio (vacío = el del servicio)" : "Precio *"}><input className={campo} inputMode="decimal" value={precio} onChange={(e) => setPrecio(e.target.value)} /></Campo>
-          {tipo === "producto" && <Campo etiqueta="Costo del producto"><input className={campo} inputMode="decimal" value={costo} onChange={(e) => setCosto(e.target.value)} /></Campo>}
-          <Campo etiqueta={tipo === "servicio" ? "Comisión % (vacío = la del servicio)" : "Comisión %"}><input className={campo} inputMode="decimal" value={pct} onChange={(e) => setPct(e.target.value)} /></Campo>
-          <Campo etiqueta="Método de pago">
-            <select className={campo} value={metodo} onChange={(e) => setMetodo(e.target.value)}>
-              <option value="efectivo">Efectivo</option>
-              <option value="transferencia">Transferencia / tarjeta</option>
-            </select>
-          </Campo>
-        </div>
-        <button className={boton} disabled={guardando} onClick={vender}>Registrar venta</button>
-      </GlassPanel>
+            {tipo === "servicio" ? (
+              <Campo etiqueta="Servicio *">
+                <select className={campo} value={servicioId} onChange={(e) => setServicioId(e.target.value)}>
+                  <option value="">Elige un servicio</option>
+                  {servicios.filter((s) => s.activo).map((s) => <option key={s.id} value={s.id}>{s.nombre} · {dinero(s.precio)}</option>)}
+                </select>
+              </Campo>
+            ) : (
+              <Campo etiqueta="Producto *"><input className={campo} value={concepto} onChange={(e) => setConcepto(e.target.value)} /></Campo>
+            )}
+            <Campo etiqueta={tipo === "servicio" ? "Precio (vacío = el del servicio)" : "Precio *"}><input className={campo} inputMode="decimal" value={precio} onChange={(e) => setPrecio(e.target.value)} /></Campo>
+            {tipo === "producto" && <Campo etiqueta="Costo del producto"><input className={campo} inputMode="decimal" value={costo} onChange={(e) => setCosto(e.target.value)} /></Campo>}
+            <Campo etiqueta={tipo === "servicio" ? "Comisión % (vacío = la del servicio)" : "Comisión %"}><input className={campo} inputMode="decimal" value={pct} onChange={(e) => setPct(e.target.value)} /></Campo>
+            <Campo etiqueta="Método de pago">
+              <select className={campo} value={metodo} onChange={(e) => setMetodo(e.target.value)}>
+                <option value="efectivo">Efectivo</option>
+                <option value="transferencia">Transferencia / tarjeta</option>
+              </select>
+            </Campo>
+          </div>
+          <button className={boton} disabled={guardando} onClick={vender}>Registrar venta</button>
+        </GlassPanel>
+      )}
 
       <div className="space-y-2">
         <h2 className="font-medium text-foreground">Últimos servicios y ventas</h2>

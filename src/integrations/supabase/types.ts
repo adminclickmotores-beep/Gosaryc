@@ -3053,9 +3053,9 @@ export type Database = {
         Relationships: []
       }
       bel_citas: {
-        Row: { atencion_id: string | null; cliente_id: string; created_at: string; duracion_min: number; estado: string; id: string; inicio: string; notas: string | null; owner_id: string | null; profesional: string; recordatorio_enviado: boolean; recurso: string | null; servicio_id: string | null; tipo_negocio: string | null }
-        Insert: { atencion_id?: string | null; cliente_id: string; created_at?: string; duracion_min?: number; estado?: string; id?: string; inicio: string; notas?: string | null; owner_id?: string | null; profesional: string; recordatorio_enviado?: boolean; recurso?: string | null; servicio_id?: string | null; tipo_negocio?: string | null }
-        Update: { atencion_id?: string | null; cliente_id?: string; created_at?: string; duracion_min?: number; estado?: string; id?: string; inicio?: string; notas?: string | null; owner_id?: string | null; profesional?: string; recordatorio_enviado?: boolean; recurso?: string | null; servicio_id?: string | null; tipo_negocio?: string | null }
+        Row: { atencion_id: string | null; cliente_id: string; created_at: string; duracion_min: number; estado: string; id: string; inicio: string; notas: string | null; owner_id: string | null; profesional: string; recordatorio_enviado: boolean; recurso: string | null; servicio_id: string | null; staff_id: string | null; tipo_negocio: string | null }
+        Insert: { atencion_id?: string | null; cliente_id: string; created_at?: string; duracion_min?: number; estado?: string; id?: string; inicio: string; notas?: string | null; owner_id?: string | null; profesional: string; recordatorio_enviado?: boolean; recurso?: string | null; servicio_id?: string | null; staff_id?: string | null; tipo_negocio?: string | null }
+        Update: { atencion_id?: string | null; cliente_id?: string; created_at?: string; duracion_min?: number; estado?: string; id?: string; inicio?: string; notas?: string | null; owner_id?: string | null; profesional?: string; recordatorio_enviado?: boolean; recurso?: string | null; servicio_id?: string | null; staff_id?: string | null; tipo_negocio?: string | null }
         Relationships: []
       }
       bel_fichas: {
@@ -3065,9 +3065,9 @@ export type Database = {
         Relationships: []
       }
       bel_atenciones: {
-        Row: { base_comision: number; cita_id: string | null; cliente_id: string | null; comision: number; comision_pct: number; concepto: string; costo_insumos: number; created_at: string; estado: string; fecha: string; id: string; liquidacion_id: string | null; metodo: string; owner_id: string | null; precio: number; profesional: string; registrado_por: string | null; servicio_id: string | null; tipo: string; tipo_negocio: string | null }
-        Insert: { base_comision?: number; cita_id?: string | null; cliente_id?: string | null; comision?: number; comision_pct?: number; concepto: string; costo_insumos?: number; created_at?: string; estado?: string; fecha?: string; id?: string; liquidacion_id?: string | null; metodo?: string; owner_id?: string | null; precio: number; profesional: string; registrado_por?: string | null; servicio_id?: string | null; tipo?: string; tipo_negocio?: string | null }
-        Update: { base_comision?: number; cita_id?: string | null; cliente_id?: string | null; comision?: number; comision_pct?: number; concepto?: string; costo_insumos?: number; created_at?: string; estado?: string; fecha?: string; id?: string; liquidacion_id?: string | null; metodo?: string; owner_id?: string | null; precio?: number; profesional?: string; registrado_por?: string | null; servicio_id?: string | null; tipo?: string; tipo_negocio?: string | null }
+        Row: { base_comision: number; cita_id: string | null; cliente_id: string | null; comision: number; comision_pct: number; concepto: string; costo_insumos: number; created_at: string; estado: string; fecha: string; id: string; liquidacion_id: string | null; metodo: string; owner_id: string | null; precio: number; profesional: string; registrado_por: string | null; servicio_id: string | null; staff_id: string | null; tipo: string; tipo_negocio: string | null }
+        Insert: { base_comision?: number; cita_id?: string | null; cliente_id?: string | null; comision?: number; comision_pct?: number; concepto: string; costo_insumos?: number; created_at?: string; estado?: string; fecha?: string; id?: string; liquidacion_id?: string | null; metodo?: string; owner_id?: string | null; precio: number; profesional: string; registrado_por?: string | null; servicio_id?: string | null; staff_id?: string | null; tipo?: string; tipo_negocio?: string | null }
+        Update: { base_comision?: number; cita_id?: string | null; cliente_id?: string | null; comision?: number; comision_pct?: number; concepto?: string; costo_insumos?: number; created_at?: string; estado?: string; fecha?: string; id?: string; liquidacion_id?: string | null; metodo?: string; owner_id?: string | null; precio?: number; profesional?: string; registrado_por?: string | null; servicio_id?: string | null; staff_id?: string | null; tipo?: string; tipo_negocio?: string | null }
         Relationships: []
       }
       bel_consumos: {
@@ -8624,6 +8624,8 @@ export type Database = {
         Returns: Json
       }
       bel_liquidar_comisiones: { Args: { p_profesional: string; p_hasta: string; p_metodo: string }; Returns: number }
+      es_dueno_o_admin_negocio: { Args: { p_owner_id: string }; Returns: boolean }
+      es_mi_registro_staff: { Args: { p_owner_id: string; p_staff_id: string | null; p_profesional: string | null; p_registrado_por?: string | null }; Returns: boolean }
       gim_vender_membresia: { Args: { p_socio: string; p_plan: string; p_inicio: string | null; p_metodo: string }; Returns: Json }
       gim_congelar_membresia: { Args: { p_membresia: string; p_motivo: string }; Returns: undefined }
       gim_descongelar_membresia: { Args: { p_membresia: string }; Returns: number }
