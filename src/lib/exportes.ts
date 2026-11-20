@@ -10,7 +10,7 @@ const fechaHoy = (): string => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 
-const escaparCelda = (v: string | number): string => {
+export const escaparCelda = (v: string | number): string => {
   let s = String(v ?? "");
   // Evita fórmulas en Excel/CSV: texto que empieza por = + - @ se guarda como texto.
   // También cuando antes del símbolo hay espacios o caracteres de control (Excel igualmente los interpreta).
