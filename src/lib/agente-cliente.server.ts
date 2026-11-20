@@ -227,7 +227,9 @@ async function registrarLead(ag: DuenoMemoria, telefono: string, canal: string, 
   await supabaseAdmin.from("agente_leads").insert({ negocio_id: ag.negocio_id, owner_id: ag.owner_id, telefono, canal_origen: canal, ...calif });
 }
 
-export async function responderComoAgente(clave: string, mensajes: MensajeCliente[], telefono = "", canalOrigen = ""): Promise<RespuestaAgente> {
+export async function responderComoAgente(clave: string, mensajes: MensajeCliente[], telefono = "", canalOrigen = "", sectorPrueba = ""): Promise<RespuestaAgente> {
+  // Modo prueba: la ventana "Probar en vivo" simula otro sector y no guarda leads, PQRS ni aprendizaje.
+  const esPrueba = sectorPrueba.trim().length > 0;
   const canal = CANALES.includes(canalOrigen) ? canalOrigen : "WhatsApp Directo";
   const ag = await buscarAgente(clave);
 
@@ -238,8 +240,8 @@ export async function responderComoAgente(clave: string, mensajes: MensajeClient
     .eq("owner_id", ag.owner_id)
     .maybeSingle();
 
-  const giro = resolverTipoNegocio(cfg?.tipo_negocio ?? null);
-  const tipo = (cfg?.tipo_negocio || "general").trim().slice(0, 80);
+  const giro = resolverTipoNegocio(esPrueba ? sectorPrueba.slice(0, 80) : (cfg?.tipo_negocio ?? null));
+  const tipo = (esPrueba ? sectorPrueba : cfg?.tipo_negocio || "general").trim().slice(0, 80);
 
   const { data: prods } = await supabaseAdmin
     .from("restaurante_productos")
@@ -396,15 +398,17 @@ Reglas:
   const limpio = conPqrs.limpio;
   const lead = conLead.valor && typeof conLead.valor === "object" ? conLead.valor : null;
   const pqrs = conPqrs.valor && typeof conPqrs.valor === "object" ? conPqrs.valor : null;
-  try {
-    await registrarLead(ag, telefono, canal, lead);
-    if (pqrs) await guardarEtiquetaAgente(ag, "pqrs", telefono, pqrs);
-  } catch (e) {
-    console.error("Agente: no se pudo guardar lead/PQRS", e);
+  if (!esPrueba) {
+    try {
+      await registrarLead(ag, telefono, canal, lead);
+      if (pqrs) await guardarEtiquetaAgente(ag, "pqrs", telefono, pqrs);
+    } catch (e) {
+      console.error("Agente: no se pudo guardar lead/PQRS", e);
+    }
   }
 
   // Aprende de la conversación al terminar (pasa a una persona) o cada cierto número de mensajes.
-  if (escalar || (historial.length >= 8 && historial.length % 8 < 2)) {
+  if (!esPrueba && (escalar || (historial.length >= 8 && historial.length % 8 < 2))) {
     try {
       await aprenderPatrones(ag, [...historial, { role: "assistant", content: limpio }]);
     } catch (e) {

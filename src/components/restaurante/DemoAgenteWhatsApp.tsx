@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Bot, Check, CheckCheck, Phone, QrCode, Send, Smartphone } from "lucide-react";
+import { Bot, Check, CheckCheck, Phone, QrCode, Send, Smartphone, Zap } from "lucide-react";
+import { ProbadorAgenteVivo } from "@/components/restaurante/ProbadorAgenteVivo";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useAuth } from "@/contexts/AuthContext";
@@ -44,6 +45,7 @@ export function DemoAgenteWhatsApp({ onConectarReal }: { onConectarReal: () => v
   const [texto, setTexto] = useState("");
   const [escribiendo, setEscribiendo] = useState(false);
   const [esperaCita, setEsperaCita] = useState(false);
+  const [vivo, setVivo] = useState(false);
   const fin = useRef<HTMLDivElement | null>(null);
 
   const cargar = useCallback(async () => {
@@ -193,6 +195,14 @@ export function DemoAgenteWhatsApp({ onConectarReal }: { onConectarReal: () => v
     return () => window.removeEventListener("gosaryc:demo-agente", alPedir);
   }, [tipo]);
 
+  if (vivo) {
+    return (
+      <div id="agente-whatsapp-demo" className="scroll-mt-20">
+        <ProbadorAgenteVivo onCerrar={() => setVivo(false)} />
+      </div>
+    );
+  }
+
   return (
     <div id="agente-whatsapp-demo" className="grid scroll-mt-20 gap-4 lg:grid-cols-2">
       <GlassPanel className="space-y-4 p-5">
@@ -220,6 +230,13 @@ export function DemoAgenteWhatsApp({ onConectarReal }: { onConectarReal: () => v
         <p className="text-xs text-muted-foreground">
           Esta cuenta es compartida: por seguridad, aquí no se pueden vincular números reales. Prueba el simulador de la derecha para ver cómo atiende el agente.
         </p>
+        <button
+          type="button"
+          onClick={() => setVivo(true)}
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground"
+        >
+          <Zap className="h-4 w-4" /> Probar Agente IA en Vivo
+        </button>
         <button type="button" onClick={onConectarReal} className="text-xs text-muted-foreground underline hover:text-foreground">
           Conectar mi puente local real (localhost:3001)
         </button>

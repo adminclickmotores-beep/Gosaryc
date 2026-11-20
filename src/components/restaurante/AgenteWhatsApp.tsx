@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Bot, Eye, EyeOff, Facebook, Globe, Instagram, Link2, MessageCircle, Plus, RefreshCw, Search, Send, Trash2, UserCheck } from "lucide-react";
+import { Bot, Eye, EyeOff, Facebook, Globe, Instagram, Link2, MessageCircle, Plus, RefreshCw, Search, Send, Trash2, UserCheck, Zap } from "lucide-react";
+import { ProbadorAgenteVivo } from "@/components/restaurante/ProbadorAgenteVivo";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { ResumenCierreWhatsApp } from "@/components/restaurante/Reportes";
@@ -90,6 +91,7 @@ export function AgenteWhatsApp() {
 function AgenteWhatsAppReal() {
   const { negocio } = useNegocio();
   const { user } = useAuth();
+  const [probarVivo, setProbarVivo] = useState(false);
   const [agente, setAgente] = useState<AgenteFila | null>(null);
   const [nombreAgente, setNombreAgente] = useState("Asistente");
   const [instrucciones, setInstrucciones] = useState("");
@@ -654,6 +656,7 @@ function AgenteWhatsAppReal() {
 
   return (
     <>
+    {probarVivo && <div className="mb-4"><ProbadorAgenteVivo onCerrar={() => setProbarVivo(false)} /></div>}
     <GlassPanel className="space-y-4 p-5">
       <div className="flex items-start gap-3">
         <span className="icon-chip h-10 w-10 shrink-0 rounded-xl"><Bot className="h-5 w-5" /></span>
@@ -664,6 +667,14 @@ function AgenteWhatsAppReal() {
           </p>
         </div>
       </div>
+
+      <button
+        type="button"
+        onClick={() => setProbarVivo((v) => !v)}
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground sm:w-auto"
+      >
+        <Zap className="h-4 w-4" /> {probarVivo ? "Ocultar prueba en vivo" : "Probar Agente IA en Vivo"}
+      </button>
 
       <div className="flex flex-wrap items-center gap-4 rounded-xl border border-glass-border bg-background/40 px-3 py-2.5">
         <label className="flex cursor-pointer items-center gap-2 text-sm">
