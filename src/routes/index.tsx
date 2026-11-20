@@ -474,7 +474,7 @@ function LandingPage() {
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link to="/login" search={{ mode: "signup" }} className="gs-cta inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
-                Crear mi cuenta gratis <ArrowRight className="h-4 w-4" />
+                Empieza 30 días gratis <ArrowRight className="h-4 w-4" />
               </Link>
               <Link to="/instalar" className="gs-sec inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
                 <Download className="h-4 w-4" /> Descargar App Android / PC
@@ -482,7 +482,7 @@ function LandingPage() {
             </div>
             <BotonesDemo className="mt-4 max-w-md" />
             <ul className="gs-muted mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium">
-              {["Funciona sin internet", "Facturación DIAN", "Nómina ley colombiana", "+50 sectores"].map((t) => (
+              {["30 días de prueba sin compromiso", "Funciona sin internet", "Facturación DIAN", "Nómina ley colombiana", "+50 sectores"].map((t) => (
                 <li key={t} className="inline-flex items-center gap-1.5"><Check className="gs-verde h-4 w-4" /> {t}</li>
               ))}
             </ul>
@@ -630,16 +630,16 @@ function LandingPage() {
             <div className="pointer-events-none absolute -top-24 left-1/2 h-48 w-96 -translate-x-1/2 rounded-full bg-blue-500/30 blur-3xl" />
             <h2 className="gs-titulo relative text-3xl sm:text-5xl">Lleva tu negocio al siguiente nivel</h2>
             <p className="relative mx-auto mt-4 max-w-xl text-sm text-slate-300 sm:text-base">
-              Crea tu cuenta gratis y activa los módulos de tu tipo de negocio, con tus colores y tu logo. Tus datos se conservan siempre, incluso al actualizar.
+              Crea tu cuenta con 30 días de prueba sin compromiso y activa los módulos de tu tipo de negocio, con tus colores y tu logo. Tus datos se conservan siempre, incluso al actualizar.
             </p>
             <ul className="relative mx-auto mt-6 flex max-w-md flex-col gap-2 text-left text-sm text-slate-200">
-              {["Web, app Android y PC en una sola cuenta", "Funciona sin internet y sincroniza después", "Módulos y textos según tu tipo de negocio"].map((t) => (
+              {["30 días gratis con todas las funciones", "Web, app Android y PC en una sola cuenta", "Funciona sin internet y sincroniza después", "Módulos y textos según tu tipo de negocio"].map((t) => (
                 <li key={t} className="flex items-center gap-2"><Check className="h-4 w-4 shrink-0 text-emerald-400" /> {t}</li>
               ))}
             </ul>
             <div className="relative mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Link to="/login" search={{ mode: "signup" }} className="inline-flex items-center justify-center gap-2 rounded-full bg-[#10B981] px-10 py-4 text-base font-bold text-white transition hover:brightness-110">
-                Empezar gratis ahora <ArrowRight className="h-5 w-5" />
+                Empezar 30 días gratis <ArrowRight className="h-5 w-5" />
               </Link>
               <Link to="/login" search={{ mode: "signin" }} className="inline-flex items-center justify-center gap-2 rounded-full border border-white/25 px-8 py-4 text-sm font-semibold text-white transition hover:bg-white/10">
                 Ya tengo cuenta: iniciar sesión

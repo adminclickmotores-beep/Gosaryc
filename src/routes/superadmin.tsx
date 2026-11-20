@@ -20,7 +20,7 @@ type Empresa = Tables<"negocio_config">;
 type Suscripcion = Tables<"suscripciones_negocio">;
 
 const PLANES: { clave: string; texto: string }[] = [
-  { clave: "prueba", texto: "Prueba (14 días)" },
+  { clave: "prueba", texto: "Prueba (30 días)" },
   { clave: "diario", texto: "Pase por días (temporal)" },
   { clave: "emprendedor", texto: "Emprendedor" },
   { clave: "pro", texto: "Pro" },

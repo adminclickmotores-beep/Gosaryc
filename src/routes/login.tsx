@@ -264,6 +264,11 @@ function LoginPage() {
               <>
               {mode !== "forgot" && (
                 <>
+                  {mode === "signup" && (
+                    <div className="mb-4 rounded-xl border border-primary/30 bg-primary/10 px-3.5 py-2.5 text-center text-xs font-medium text-foreground">
+                      Incluye 30 días de prueba sin compromiso para tu negocio.
+                    </div>
+                  )}
                   {esDemo && (
                     <div className="mb-5 rounded-xl border border-emerald-500/35 bg-emerald-500/10 px-3.5 py-2.5 text-center text-xs text-foreground">
                       Estabas viendo una demo. Inicia sesión o crea tu cuenta para entrar a tu propio negocio.

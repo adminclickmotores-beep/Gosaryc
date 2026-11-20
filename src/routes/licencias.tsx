@@ -47,7 +47,7 @@ function LicenciasPage() {
   const [telefono, setTelefono] = useState("");
   const [ciudad, setCiudad] = useState("");
   const [tipoNueva, setTipoNueva] = useState<"prueba" | "diario" | "anual">("prueba");
-  const [diasPrueba, setDiasPrueba] = useState("14");
+  const [diasPrueba, setDiasPrueba] = useState("30");
   const [diasPase, setDiasPase] = useState("1");
   const [diasLibres, setDiasLibres] = useState<Record<string, string>>({});
   const [abierta, setAbierta] = useState<string | null>(null);
@@ -149,7 +149,7 @@ function LicenciasPage() {
       cargar();
       return;
     }
-    const prueba = Math.min(Math.max(parseInt(diasPrueba, 10) || 14, 1), 365);
+    const prueba = Math.min(Math.max(parseInt(diasPrueba, 10) || 30, 1), 365);
     const dias = tipoNueva === "prueba" ? prueba : 365;
     const { error } = await supabase.rpc("admin_crear_licencia", {
       p_cliente: cliente.trim(),
@@ -263,7 +263,7 @@ function LicenciasPage() {
         <h1 className="flex items-center gap-2 font-display text-2xl text-foreground sm:text-3xl">
           <ShieldCheck className="h-6 w-6 shrink-0 text-primary" /> Licencias
         </h1>
-        <p className="text-sm text-muted-foreground">Administra pruebas (14 días), pases por días (temporales), cortesías de 15 días y licencias anuales ($100.000 COP).</p>
+        <p className="text-sm text-muted-foreground">Administra pruebas (30 días), pases por días (temporales), cortesías de 15 días y licencias anuales ($100.000 COP).</p>
       </div>
 
       <GlassPanel className="space-y-3 p-4">
@@ -310,7 +310,7 @@ function LicenciasPage() {
                   Pase 1 día
                 </button>
                 <button onClick={() => aprobar(s, "prueba")} className="rounded-lg bg-primary px-3 py-2.5 text-xs font-medium text-primary-foreground">
-                  Prueba
+                  Prueba 30 días
                 </button>
                 <button onClick={() => aprobar(s, "anual")} className="rounded-lg bg-primary px-3 py-2.5 text-xs font-medium text-primary-foreground">
                   Licencia 1 año
@@ -362,8 +362,8 @@ function LicenciasPage() {
         </div>
         {tipoNueva === "prueba" ? (
           <label className="block space-y-1">
-            <span className="text-xs text-muted-foreground">Días exactos de prueba (1 a 365; estándar 14 días)</span>
-            <input className={campo} inputMode="numeric" value={diasPrueba} onChange={(e) => setDiasPrueba(e.target.value)} placeholder="Ej. 14, 15, 30" />
+            <span className="text-xs text-muted-foreground">Días exactos de prueba (1 a 365; estándar 30 días)</span>
+            <input className={campo} inputMode="numeric" value={diasPrueba} onChange={(e) => setDiasPrueba(e.target.value)} placeholder="Ej. 30, 45, 60" />
           </label>
         ) : tipoNueva === "diario" ? (
           <div className="space-y-2">

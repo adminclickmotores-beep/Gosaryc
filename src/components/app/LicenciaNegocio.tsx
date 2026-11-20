@@ -115,7 +115,7 @@ export function LicenciaNegocio({ modo }: { modo: "bloqueo" | "aviso" }) {
     : vig.enGracia
       ? `Periodo de gracia: ${vig.diasGraciaRestantes} ${vig.diasGraciaRestantes === 1 ? "día restante" : "días restantes"}`
       : planActual === "prueba"
-        ? `Periodo de prueba (14 días) · ${vig.diasRestantes} ${vig.diasRestantes === 1 ? "día restante" : "días restantes"}`
+        ? `Periodo de prueba (30 días) · ${vig.diasRestantes} ${vig.diasRestantes === 1 ? "día restante" : "días restantes"}`
         : planActual === "diario"
           ? `Pase temporal activo · ${vig.diasRestantes} ${vig.diasRestantes === 1 ? "día restante" : "días restantes"}`
           : `Licencia activa · ${vig.diasRestantes} ${vig.diasRestantes === 1 ? "día restante" : "días restantes"}`;
@@ -230,7 +230,7 @@ export function LicenciaNegocio({ modo }: { modo: "bloqueo" | "aviso" }) {
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Tu cuenta incluye 14 días de prueba gratis al registrarte. La licencia anual cuesta $100.000 COP e incluye soporte,
+              Tu cuenta incluye 30 días de prueba sin compromiso al registrarte. La licencia anual cuesta $100.000 COP e incluye soporte,
               instalación local y web: 1) Envía tu soporte de pago. 2) Recibes tu clave de activación. 3) Pégala aquí y pulsa Activar.
             </p>
           )}
