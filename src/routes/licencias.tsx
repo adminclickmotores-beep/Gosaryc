@@ -7,7 +7,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { DianAdmin } from "@/components/app/DianAdmin";
-import { esCuentaMaestra } from "@/lib/cuenta-maestra";
+import { esSuperadminServidor } from "@/lib/cuenta-maestra";
 
 export const Route = createFileRoute("/licencias")({
   head: () => ({ meta: [{ title: "Licencias" }] }),
@@ -79,11 +79,7 @@ function LicenciasPage() {
       nav({ to: "/login", search: { redirect: "/licencias", mode: "signin" }, replace: true });
       return;
     }
-    if (!esCuentaMaestra(session.user?.email)) {
-      setPermitido(false);
-      return;
-    }
-    supabase.rpc("es_superadmin").then(({ data }) => setPermitido(data === true));
+    void esSuperadminServidor().then((ok) => setPermitido(ok));
   }, [loading, session, nav]);
 
   const cargar = useCallback(async () => {
