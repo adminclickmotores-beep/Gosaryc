@@ -323,6 +323,14 @@ export async function entrarDemo(tipo: TipoDemo): Promise<void> {
     if (error) throw new Error(`Demo: no se pudo iniciar la sesión (${error.message})`);
     const uid = data.user?.id ?? data.session?.user?.id;
     if (!data.session || !uid) throw new Error("Demo: la sesión no se estableció.");
+    // La demo debe sobrevivir a las pestañas nuevas (cada módulo se abre en una): se quita la marca
+    // "no recordarme" de un inicio de sesión anterior, que cerraba la sesión y mandaba a /login.
+    try {
+      localStorage.setItem("gosaly:recordarme", "1");
+      sessionStorage.setItem("gosaly:sesion_activa", "1");
+    } catch {
+      /* almacenamiento bloqueado */
+    }
     // Primera vez: si el negocio demo aún no existe, se prepara con sus datos de ejemplo (sin borrar nada).
     try {
       const { data: cfg } = await supabase.from("negocio_config").select("id").eq("owner_id", uid).limit(1).maybeSingle();
