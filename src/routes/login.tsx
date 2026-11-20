@@ -54,7 +54,8 @@ function LoginPage() {
     // Nunca redirigir de vuelta al panel si la sesión activa es una cuenta demo:
     // si el usuario llegó a /login es porque quiere iniciar sesión o crear su propia cuenta.
     if (!loading && session && !esDemo) {
-      nav({ to: (search.redirect && search.redirect !== "/" ? search.redirect : "/restaurante") as "/dashboard", replace: true });
+      // Siempre se entra al panel principal (no a la última pantalla que quedó guardada).
+      nav({ to: "/restaurante" as "/dashboard", replace: true });
     }
   }, [session, loading, esDemo, nav, search.redirect]);
 
@@ -155,7 +156,7 @@ function LoginPage() {
     if (esDemo) await signOut();
     guardarPreferenciaSesion();
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}${search.redirect ?? "/restaurante"}`,
+      redirect_uri: `${window.location.origin}/restaurante`,
     });
     if (result.error) {
       toast.error(result.error.message);
