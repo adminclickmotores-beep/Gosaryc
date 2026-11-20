@@ -25,7 +25,11 @@ type Prod = {
   cat: string; costo: number; ficha?: [string, string][];
 };
 type Empleado = { id: string; nombre: string; cargo: string; salario: number; horasExtra: number; comisiones: number };
-type Prospecto = { id: string; nombre: string; interes: string; nivel: "FRIO" | "TIBIO" | "CALIENTE"; etapa: "Nuevo" | "Contactado" | "Negociando" | "Cerrado" };
+type Prospecto = {
+  id: string; nombre: string; interes: string; nivel: "FRIO" | "TIBIO" | "CALIENTE";
+  etapa: "Nuevo" | "Contactado" | "Prueba de manejo" | "Cotizado" | "Negociando" | "Cerrado";
+  telefono?: string; origen?: string; valor?: number; proximo?: string; notas?: string;
+};
 type Venta = { id: string; hora: string; detalle: string; total: number; pago: string; tipo: string; envio: number };
 type Gasto = { id: string; concepto: string; valor: number };
 type Pedido = {
@@ -297,7 +301,10 @@ function Simulador({ sector, onSalir }: { sector: Sector; onSalir: () => void })
   const [tarifas, setTarifas] = useState<Tarifas>(TARIFAS_INICIALES);
   const [vehSel, setVehSel] = useState<string>(esc.productos[0].id);
   const [prospectos, setProspectos] = useState<Prospecto[]>([
-    { id: "p0", nombre: "Julián Vega", interes: esc.productos[0].nombre, nivel: "TIBIO", etapa: "Contactado" },
+    { id: "p0", nombre: "Julián Vega", interes: esc.productos[0].nombre, nivel: "TIBIO", etapa: "Contactado", telefono: "310 555 0142", origen: "Facebook", valor: esc.productos[0].precio, proximo: "Llamar mañana 10:00 a. m.", notas: "Quiere financiar a 60 meses." },
+    { id: "p1", nombre: "Marcela Torres", interes: esc.productos[1].nombre, nivel: "CALIENTE", etapa: "Negociando", telefono: "300 555 0177", origen: "Referido", valor: esc.productos[1].precio, proximo: "Enviar cotización final", notas: "Ofrece su Spark 2019 en retoma." },
+    { id: "p2", nombre: "Andrea Cano", interes: esc.productos[2].nombre, nivel: "CALIENTE", etapa: "Prueba de manejo", telefono: "315 555 0108", origen: "WhatsApp", valor: esc.productos[2].precio, proximo: "Prueba el sábado 9:00 a. m.", notas: "" },
+    { id: "p3", nombre: "Felipe Duque", interes: esc.productos[3].nombre, nivel: "FRIO", etapa: "Nuevo", telefono: "320 555 0166", origen: "Vitrina", valor: esc.productos[3].precio, proximo: "Primer contacto", notas: "" },
   ]);
   const [pqrs, setPqrs] = useState(0);
 
@@ -348,7 +355,7 @@ function Simulador({ sector, onSalir }: { sector: Sector; onSalir: () => void })
         {tab === "ventas" && <Ventas ventas={ventas} />}
         {tab === "fin" && <Finanzas sector={sector} ventas={ventas} gastos={gastos} setGastos={setGastos} />}
         {tab === "wa" && <WhatsApp sector={sector} productos={productos} tarifas={tarifas} onLead={upsertProspecto} onPedido={nuevoPedido} onPqrs={() => setPqrs((n) => n + 1)} />}
-        {tab === "crm" && <Crm prospectos={prospectos} setProspectos={setProspectos} pqrs={pqrs} />}
+        {tab === "crm" && <Crm prospectos={prospectos} setProspectos={setProspectos} pqrs={pqrs} vehiculos={productos.filter((p) => p.cat === "Vehículo")} />}
         {tab === "nomina" && <Nomina empleados={esc.empleados} negocio={esc.negocio} />}
       </main>
     </div>
@@ -1265,34 +1272,82 @@ function WhatsApp({ sector, productos, tarifas, onLead, onPedido, onPqrs }: {
 
 /* ───────────── CRM y nómina ───────────── */
 
-const ETAPAS: Prospecto["etapa"][] = ["Nuevo", "Contactado", "Negociando", "Cerrado"];
+const ETAPAS: Prospecto["etapa"][] = ["Nuevo", "Contactado", "Prueba de manejo", "Cotizado", "Negociando", "Cerrado"];
+const ORIGENES = ["WhatsApp", "Facebook", "Instagram", "Referido", "Vitrina", "Página web"];
 
-function Crm({ prospectos, setProspectos, pqrs }: { prospectos: Prospecto[]; setProspectos: React.Dispatch<React.SetStateAction<Prospecto[]>>; pqrs: number }) {
+function Crm({ prospectos, setProspectos, pqrs, vehiculos }: {
+  prospectos: Prospecto[]; setProspectos: React.Dispatch<React.SetStateAction<Prospecto[]>>; pqrs: number; vehiculos: Prod[];
+}) {
   const [arrastrando, setArrastrando] = useState<string | null>(null);
+  const [filtro, setFiltro] = useState("Todos");
+  const [f, setF] = useState({ nombre: "", telefono: "", veh: vehiculos[0]?.id ?? "", origen: ORIGENES[0] });
   const mover = (id: string, etapa: Prospecto["etapa"]) => setProspectos((a) => a.map((p) => (p.id === id ? { ...p, etapa } : p)));
+  const editar = (id: string, cambio: Partial<Prospecto>) => setProspectos((a) => a.map((p) => (p.id === id ? { ...p, ...cambio } : p)));
+  const crear = () => {
+    const v = vehiculos.find((x) => x.id === f.veh);
+    if (!f.nombre.trim() || !v) return;
+    setProspectos((a) => [{ id: "m" + Date.now(), nombre: f.nombre.trim().slice(0, 40), interes: v.nombre, nivel: "TIBIO", etapa: "Nuevo", telefono: f.telefono.trim().slice(0, 20), origen: f.origen, valor: v.precio, proximo: "Primer contacto", notas: "" }, ...a]);
+    setF({ ...f, nombre: "", telefono: "" });
+  };
+  const visibles = prospectos.filter((p) => filtro === "Todos" || p.nivel === filtro);
+  const abiertos = prospectos.filter((p) => p.etapa !== "Cerrado");
+  const cerrados = prospectos.filter((p) => p.etapa === "Cerrado").length;
+  const enJuego = abiertos.reduce((s, p) => s + (p.valor ?? 0), 0);
   return (
-    <div>
-      <p className="mb-3 text-sm text-muted-foreground">Arrastra las tarjetas (o usa los botones). Los interesados de WhatsApp IA aparecen aquí al instante. PQRS radicadas: <b>{pqrs}</b></p>
-      <div className="grid gap-3 md:grid-cols-4">
-        {ETAPAS.map((e) => (
-          <div key={e} onDragOver={(ev) => ev.preventDefault()} onDrop={() => { if (arrastrando) mover(arrastrando, e); setArrastrando(null); }} className="min-h-40 rounded-xl border border-border bg-muted/40 p-2">
-            <p className="mb-2 text-xs font-bold uppercase">{e}</p>
-            <div className="space-y-2">
-              {prospectos.filter((p) => p.etapa === e).map((p) => (
-                <div key={p.id} draggable onDragStart={() => setArrastrando(p.id)} className="cursor-grab rounded-lg border border-border bg-card p-2 text-sm">
-                  <p className="font-semibold">{p.nombre}</p>
-                  <p className="break-words text-xs text-muted-foreground">{p.interes}</p>
-                  <span className={"mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold " + (p.nivel === "CALIENTE" ? "bg-destructive text-destructive-foreground" : "bg-secondary text-secondary-foreground")}>{p.nivel}</span>
-                  <div className="mt-1 flex flex-wrap gap-1">
-                    {ETAPAS.filter((x) => x !== e).map((x) => (
-                      <button key={x} onClick={() => mover(p.id, x)} className="rounded bg-muted px-1.5 py-0.5 text-[10px]">{x}</button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+    <div className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Tarjeta titulo="Prospectos activos" valor={String(abiertos.length)} sub={`${prospectos.filter((p) => p.nivel === "CALIENTE").length} calientes`} />
+        <Tarjeta titulo="Valor en negociación" valor={cop(enJuego)} />
+        <Tarjeta titulo="Ventas cerradas" valor={String(cerrados)} sub={`${prospectos.length ? Math.round((cerrados / prospectos.length) * 100) : 0} % de conversión`} />
+        <Tarjeta titulo="PQRS radicadas" valor={String(pqrs)} />
+      </div>
+      <div className="flex flex-col gap-2 rounded-xl border border-dashed border-border p-3 lg:flex-row">
+        <input value={f.nombre} onChange={(e) => setF({ ...f, nombre: e.target.value })} placeholder="Nombre del prospecto" className="min-w-0 flex-1 rounded-lg border border-border bg-card px-3 py-2 text-base" />
+        <input value={f.telefono} onChange={(e) => setF({ ...f, telefono: e.target.value.replace(/[^\d ]/g, "") })} inputMode="tel" placeholder="Teléfono" className="rounded-lg border border-border bg-card px-3 py-2 text-base lg:w-36" />
+        <select value={f.veh} onChange={(e) => setF({ ...f, veh: e.target.value })} className="rounded-lg border border-border bg-card px-3 py-2 text-base">
+          {vehiculos.map((v) => <option key={v.id} value={v.id}>{v.nombre}</option>)}
+        </select>
+        <select value={f.origen} onChange={(e) => setF({ ...f, origen: e.target.value })} className="rounded-lg border border-border bg-card px-3 py-2 text-base">
+          {ORIGENES.map((o) => <option key={o} value={o}>{o}</option>)}
+        </select>
+        <button onClick={crear} className="inline-flex items-center justify-center gap-1 rounded-lg bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground"><Plus className="h-4 w-4" /> Agregar prospecto</button>
+      </div>
+      <div className="flex flex-wrap items-center gap-1">
+        {["Todos", "CALIENTE", "TIBIO", "FRIO"].map((n) => (
+          <button key={n} onClick={() => setFiltro(n)} className={"rounded-full px-3 py-1 text-xs font-semibold " + (filtro === n ? "bg-primary text-primary-foreground" : "bg-muted")}>{n === "Todos" ? "Todos" : n.charAt(0) + n.slice(1).toLowerCase()}</button>
         ))}
+        <span className="ml-2 text-xs text-muted-foreground">Arrastra las tarjetas entre etapas o usa el selector.</span>
+      </div>
+      <div className="overflow-x-auto pb-2">
+        <div className="grid min-w-[1100px] grid-cols-6 gap-3">
+          {ETAPAS.map((e) => (
+            <div key={e} onDragOver={(ev) => ev.preventDefault()} onDrop={() => { if (arrastrando) mover(arrastrando, e); setArrastrando(null); }} className="min-h-40 rounded-xl border border-border bg-muted/40 p-2">
+              <p className="mb-2 flex justify-between text-xs font-bold uppercase"><span>{e}</span><span>{visibles.filter((p) => p.etapa === e).length}</span></p>
+              <div className="space-y-2">
+                {visibles.filter((p) => p.etapa === e).map((p) => (
+                  <div key={p.id} draggable onDragStart={() => setArrastrando(p.id)} className="cursor-grab space-y-1 rounded-lg border border-border bg-card p-2 text-sm">
+                    <div className="flex items-start justify-between gap-1">
+                      <p className="font-semibold">{p.nombre}</p>
+                      <span className={"shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold " + (p.nivel === "CALIENTE" ? "bg-destructive text-destructive-foreground" : "bg-secondary text-secondary-foreground")}>{p.nivel}</span>
+                    </div>
+                    <p className="break-words text-xs">{p.interes}{p.valor ? ` · ${cop(p.valor)}` : ""}</p>
+                    <p className="text-[11px] text-muted-foreground">{p.telefono || "Sin teléfono"} · {p.origen ?? "Sin origen"}</p>
+                    <input value={p.proximo ?? ""} onChange={(ev) => editar(p.id, { proximo: ev.target.value.slice(0, 60) })} placeholder="Próxima acción" className="w-full rounded border border-border bg-background px-2 py-1 text-base" />
+                    <input value={p.notas ?? ""} onChange={(ev) => editar(p.id, { notas: ev.target.value.slice(0, 120) })} placeholder="Notas" className="w-full rounded border border-border bg-background px-2 py-1 text-base" />
+                    <div className="flex gap-1">
+                      <select value={p.nivel} onChange={(ev) => editar(p.id, { nivel: ev.target.value as Prospecto["nivel"] })} className="min-w-0 flex-1 rounded border border-border bg-background px-1 py-1 text-base">
+                        <option value="CALIENTE">Caliente</option><option value="TIBIO">Tibio</option><option value="FRIO">Frío</option>
+                      </select>
+                      <select value={p.etapa} onChange={(ev) => mover(p.id, ev.target.value as Prospecto["etapa"])} className="min-w-0 flex-1 rounded border border-border bg-background px-1 py-1 text-base">
+                        {ETAPAS.map((x) => <option key={x} value={x}>{x}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
