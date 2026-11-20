@@ -29,5 +29,19 @@ if (!xml.includes("android.hardware.camera")) {
     `    <uses-feature android:name="android.hardware.camera" android:required="false" />\n    <application`,
   );
 }
+// Almacenamiento (Android 12 o menor) para guardar PDF y Excel.
+if (!xml.includes("READ_EXTERNAL_STORAGE")) {
+  xml = xml.replace(
+    "<application",
+    `    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />\n    <application`,
+  );
+}
 fs.writeFileSync(manifest, xml);
+// Android 14+: minSdk 24, targetSdk 34 (compileSdk 35 lo exige Capacitor 7; sigue siendo compatible con Android 14).
+const variables = path.join(__dirname, "..", "android", "variables.gradle");
+if (fs.existsSync(variables)) {
+  let g = fs.readFileSync(variables, "utf8");
+  g = g.replace(/minSdkVersion\s*=\s*\d+/, "minSdkVersion = 24").replace(/targetSdkVersion\s*=\s*\d+/, "targetSdkVersion = 34");
+  fs.writeFileSync(variables, g);
+}
 console.log("Permisos activados: internet, cámara, notificaciones e imágenes.");

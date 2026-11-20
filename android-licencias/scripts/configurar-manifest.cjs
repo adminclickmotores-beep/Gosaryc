@@ -21,4 +21,11 @@ for (const p of permisos) {
   if (!xml.includes(p)) xml = xml.replace("<application", `${linea}\n    <application`);
 }
 fs.writeFileSync(manifest, xml);
+// Android 14+: minSdk 24, targetSdk 34 (compileSdk 35 lo exige Capacitor 7; sigue siendo compatible con Android 14).
+const variables = path.join(__dirname, "..", "android", "variables.gradle");
+if (fs.existsSync(variables)) {
+  let g = fs.readFileSync(variables, "utf8");
+  g = g.replace(/minSdkVersion\s*=\s*\d+/, "minSdkVersion = 24").replace(/targetSdkVersion\s*=\s*\d+/, "targetSdkVersion = 34");
+  fs.writeFileSync(variables, g);
+}
 console.log("Permisos activados: internet, notificaciones e imágenes.");

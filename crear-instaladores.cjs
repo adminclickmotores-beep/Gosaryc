@@ -6,6 +6,8 @@
 //   node crear-instaladores.cjs linux         -> Gosaryc AppImage + .deb
 //   node crear-instaladores.cjs apk           -> Gosaryc.apk (Android clientes)
 //   node crear-instaladores.cjs apk-licencias -> Gosaryc-Licencias-Admin.apk
+//   node crear-instaladores.cjs android-studio           -> abre Gosaryc POS en Android Studio
+//   node crear-instaladores.cjs android-studio-licencias -> abre Licencias Admin en Android Studio
 const { spawnSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
@@ -67,14 +69,25 @@ function verificarAndroid() {
   }
 }
 
-function apk(carpetaNombre, salida) {
-  verificarAndroid();
-  const dir = path.join(raiz, carpetaNombre);
+function prepararAndroid(dir) {
   correr("npm install", dir);
   if (!fs.existsSync(path.join(dir, "android"))) correr("npx cap add android", dir);
   correr('npx capacitor-assets generate --iconBackgroundColor "#0b0b14" --splashBackgroundColor "#0b0b14"', dir);
   correr("node scripts/configurar-manifest.cjs", dir);
   correr("npx cap sync android", dir);
+}
+
+// Prepara el proyecto y lo abre en Android Studio (Gosaryc POS o Licencias Admin).
+function abrirAndroidStudio(carpetaNombre) {
+  const dir = path.join(raiz, carpetaNombre);
+  prepararAndroid(dir);
+  correr("npx cap open android", dir);
+}
+
+function apk(carpetaNombre, salida) {
+  verificarAndroid();
+  const dir = path.join(raiz, carpetaNombre);
+  prepararAndroid(dir);
   const android = path.join(dir, "android");
   // Escribe android/local.properties con la ruta del SDK (ANDROID_HOME o carpeta por defecto)
   const rutaSdk = process.env.ANDROID_HOME || process.env.ANDROID_SDK_ROOT ||
@@ -118,7 +131,11 @@ if (modo === "windows") {
   apk("android-app", "Gosaryc.apk");
 } else if (modo === "apk-licencias") {
   apk("android-licencias", "Gosaryc-Licencias-Admin.apk");
+} else if (modo === "android-studio") {
+  abrirAndroidStudio("android-app");
+} else if (modo === "android-studio-licencias") {
+  abrirAndroidStudio("android-licencias");
 } else {
-  console.log("Modos: windows | tienda | licencias | linux | apk | apk-licencias");
+  console.log("Modos: windows | tienda | licencias | linux | apk | apk-licencias | android-studio | android-studio-licencias");
   process.exit(1);
 }

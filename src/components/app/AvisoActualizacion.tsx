@@ -11,6 +11,8 @@ export function AvisoActualizacion() {
   const [visible, setVisible] = useState(false);
   const [origen, setOrigen] = useState<"web" | "escritorio">("web");
   const [cerrado, setCerrado] = useState(false);
+  const [versionNueva, setVersionNueva] = useState("");
+  const [apkUrl, setApkUrl] = useState("");
 
   useEffect(() => {
     let registro: ServiceWorkerRegistration | null = null;
@@ -31,8 +33,53 @@ export function AvisoActualizacion() {
     } catch {
       /* navegador normal */
     }
+    // 1b) Detector de versión (Web, escritorio y APK): compara /version.json con la última versión vista.
+    const mayor = (a: string, b: string): boolean => {
+      const pa = a.split(".").map((n) => parseInt(n, 10) || 0);
+      const pb = b.split(".").map((n) => parseInt(n, 10) || 0);
+      for (let i = 0; i < 3; i++) {
+        if ((pa[i] ?? 0) !== (pb[i] ?? 0)) return (pa[i] ?? 0) > (pb[i] ?? 0);
+      }
+      return false;
+    };
+    const buscarVersion = async () => {
+      try {
+        const r = await fetch(`/version.json?t=${Date.now()}`, { cache: "no-store" });
+        if (!r.ok) return;
+        const d = (await r.json()) as { version?: string; apk_url?: string };
+        const nueva = typeof d.version === "string" ? d.version.slice(0, 20) : "";
+        if (!nueva) return;
+        const clave = "gosaryc:version_vista";
+        const vista = localStorage.getItem(clave);
+        if (!vista) {
+          localStorage.setItem(clave, nueva);
+          return;
+        }
+        if (mayor(nueva, vista)) {
+          setVersionNueva(nueva);
+          setApkUrl(typeof d.apk_url === "string" && /^https:\/\//.test(d.apk_url) ? d.apk_url : "");
+          setCerrado(false);
+          setVisible(true);
+        }
+      } catch {
+        /* sin conexión */
+      }
+    };
+    void buscarVersion();
+    const tVersion = window.setInterval(() => {
+      if (navigator.onLine) void buscarVersion();
+    }, 30 * 60 * 1000);
+    const alVolver = () => {
+      if (document.visibilityState === "visible" && navigator.onLine) void buscarVersion();
+    };
+    document.addEventListener("visibilitychange", alVolver);
     // 2) Web/PWA: el service worker avisa con "version-nueva" al traer archivos nuevos.
-    if (!("serviceWorker" in navigator)) return;
+    if (!("serviceWorker" in navigator)) {
+      return () => {
+        window.clearInterval(tVersion);
+        document.removeEventListener("visibilitychange", alVolver);
+      };
+    }
     const alMensaje = (e: Event) => {
       const d = (e as MessageEvent).data;
       if (d === "version-nueva" || (d && typeof d === "object" && (d as { tipo?: string }).tipo === "version-nueva")) {
@@ -62,6 +109,8 @@ export function AvisoActualizacion() {
       document.removeEventListener("visibilitychange", alVer);
       window.removeEventListener("online", alVer);
       window.clearInterval(t);
+      window.clearInterval(tVersion);
+      document.removeEventListener("visibilitychange", alVolver);
     };
   }, []);
 
@@ -79,7 +128,25 @@ export function AvisoActualizacion() {
     } catch {
       /* sigue con recarga web */
     }
+    // Guarda la versión nueva como vista para no repetir el aviso.
     try {
+      const r = await fetch(`/version.json?t=${Date.now()}`, { cache: "no-store" });
+      const d = (await r.json()) as { version?: string };
+      if (typeof d.version === "string") localStorage.setItem("gosaryc:version_vista", d.version.slice(0, 20));
+    } catch {
+      /* sin conexión */
+    }
+    // Android (APK): si hay enlace de descarga directa del APK nuevo, se abre.
+    const nativo = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.();
+    if (nativo && apkUrl) {
+      window.open(apkUrl, "_blank", "noopener");
+    }
+    try {
+      // Recarga limpia: borra la caché de la app y el service worker.
+      if ("caches" in window) {
+        const nombres = await caches.keys();
+        await Promise.all(nombres.filter((n) => !n.startsWith("gosaryc-lecturas")).map((n) => caches.delete(n)));
+      }
       const reg = await navigator.serviceWorker.getRegistration();
       await reg?.update();
       // Pide al service worker que active lo nuevo ya y recarga.
@@ -101,7 +168,9 @@ export function AvisoActualizacion() {
         </span>
         <button type="button" onClick={() => void actualizar()} className="min-w-0 flex-1 text-left">
           <span className="block text-sm font-semibold text-foreground">
-            ¡Nueva versión disponible! Haz clic aquí para actualizar ahora
+            {versionNueva
+              ? `Nueva actualización disponible de Gosaryc (v${versionNueva}) con mejoras. Haz clic aquí para instalar`
+              : "¡Nueva versión disponible! Haz clic aquí para actualizar ahora"}
           </span>
           <span className="block truncate text-xs text-muted-foreground">
             {origen === "escritorio"
