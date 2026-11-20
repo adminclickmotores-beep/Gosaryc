@@ -46,8 +46,9 @@ function LicenciasPage() {
   const [cliente, setCliente] = useState("");
   const [telefono, setTelefono] = useState("");
   const [ciudad, setCiudad] = useState("");
-  const [tipoNueva, setTipoNueva] = useState<"prueba" | "anual">("prueba");
-  const [diasPrueba, setDiasPrueba] = useState("30");
+  const [tipoNueva, setTipoNueva] = useState<"prueba" | "diario" | "anual">("prueba");
+  const [diasPrueba, setDiasPrueba] = useState("14");
+  const [diasPase, setDiasPase] = useState("1");
   const [diasLibres, setDiasLibres] = useState<Record<string, string>>({});
   const [abierta, setAbierta] = useState<string | null>(null);
   const [instalador, setInstalador] = useState<EventoInstalar | null>(null);
@@ -97,11 +98,18 @@ function LicenciasPage() {
     setSolicitudes(sol ?? []);
   }, []);
 
-  // Aprueba la solicitud de un equipo: crea su licencia de prueba (30 días) o de 1 año.
-  const aprobar = async (s: Solicitud, tipo: "prueba" | "anual") => {
+  // Aprueba la solicitud de un equipo: crea pase diario, licencia de prueba o licencia anual.
+  const aprobar = async (s: Solicitud, tipo: "prueba" | "diario" | "anual") => {
+    if (tipo === "diario") {
+      const { error } = await supabase.rpc("aprobar_solicitud_pase_dias", { p_id: s.id, p_dias: 1 });
+      if (error) return toast.error(error.message || "No se pudo aprobar el pase diario.");
+      toast.success("Pase temporal de 1 día aprobado.");
+      cargar();
+      return;
+    }
     const { error } = await supabase.rpc("aprobar_solicitud_licencia", { p_id: s.id, p_tipo: tipo });
     if (error) return toast.error(error.message || "No se pudo aprobar la solicitud.");
-    toast.success(tipo === "prueba" ? "Prueba de 30 días aprobada." : "Licencia de 1 año aprobada.");
+    toast.success(tipo === "prueba" ? "Prueba aprobada." : "Licencia de 1 año aprobada.");
     cargar();
   };
 
@@ -125,7 +133,23 @@ function LicenciasPage() {
 
   const crear = async () => {
     if (!cliente.trim()) return toast.error("Escribe el nombre del cliente.");
-    const prueba = Math.min(Math.max(parseInt(diasPrueba) || 30, 1), 365);
+    if (tipoNueva === "diario") {
+      const dias = Math.min(Math.max(parseInt(diasPase, 10) || 1, 1), 365);
+      const { error } = await supabase.rpc("admin_crear_pase_dias", {
+        p_cliente: cliente.trim(),
+        p_telefono: telefono.trim(),
+        p_ciudad: ciudad.trim(),
+        p_dias: dias,
+      });
+      if (error) return toast.error("No se pudo crear el pase temporal.");
+      setCliente("");
+      setTelefono("");
+      setCiudad("");
+      toast.success(`Pase temporal de ${dias} ${dias === 1 ? "día" : "días"} creado.`);
+      cargar();
+      return;
+    }
+    const prueba = Math.min(Math.max(parseInt(diasPrueba, 10) || 14, 1), 365);
     const dias = tipoNueva === "prueba" ? prueba : 365;
     const { error } = await supabase.rpc("admin_crear_licencia", {
       p_cliente: cliente.trim(),
@@ -219,12 +243,14 @@ function LicenciasPage() {
   const visibles = lista.filter((l) => !q || [l.cliente, l.codigo, l.ciudad, l.telefono].some((x) => (x ?? "").toLowerCase().includes(q)));
   const vigentes = lista.filter((l) => l.estado === "activa" && l.vence_el >= hoy);
   const pruebas = vigentes.filter((l) => l.tipo === "prueba").length;
+  const diarios = vigentes.filter((l) => l.tipo === "diario").length;
   const anuales = vigentes.filter((l) => l.tipo === "anual").length;
   const porVencer = vigentes.filter((l) => diasEntre(l.vence_el, hoy) <= 7).length;
   const vencidas = lista.filter((l) => l.vence_el < hoy).length;
 
   const tarjetas = [
     { t: "En prueba", v: pruebas },
+    { t: "Pase por días", v: diarios },
     { t: "Licencia anual", v: anuales },
     { t: "Vencen en 7 días", v: porVencer },
     { t: "Vencidas", v: vencidas },
@@ -237,7 +263,7 @@ function LicenciasPage() {
         <h1 className="flex items-center gap-2 font-display text-2xl text-foreground sm:text-3xl">
           <ShieldCheck className="h-6 w-6 shrink-0 text-primary" /> Licencias
         </h1>
-        <p className="text-sm text-muted-foreground">Da 30 días de prueba, extiéndelos y vende licencias de 1 año.</p>
+        <p className="text-sm text-muted-foreground">Administra pruebas (14 días), pases por días (temporales), cortesías de 15 días y licencias anuales ($100.000 COP).</p>
       </div>
 
       <GlassPanel className="space-y-3 p-4">
@@ -280,8 +306,11 @@ function LicenciasPage() {
                 {new Date(s.created_at).toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" })}
               </p>
               <div className="flex flex-wrap gap-2">
+                <button onClick={() => aprobar(s, "diario")} className="rounded-lg border border-primary/50 bg-primary/15 px-3 py-2.5 text-xs font-medium text-foreground">
+                  Pase 1 día
+                </button>
                 <button onClick={() => aprobar(s, "prueba")} className="rounded-lg bg-primary px-3 py-2.5 text-xs font-medium text-primary-foreground">
-                  Prueba 30 días
+                  Prueba
                 </button>
                 <button onClick={() => aprobar(s, "anual")} className="rounded-lg bg-primary px-3 py-2.5 text-xs font-medium text-primary-foreground">
                   Licencia 1 año
@@ -311,27 +340,56 @@ function LicenciasPage() {
             <input className={campo} value={ciudad} onChange={(e) => setCiudad(e.target.value)} placeholder="Ciudad" />
           </label>
         </div>
-        <div className="grid grid-cols-2 gap-2 text-sm">
+        <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
           <button
             onClick={() => setTipoNueva("prueba")}
             className={`rounded-lg px-3 py-2.5 ${tipoNueva === "prueba" ? "bg-primary text-primary-foreground" : "border border-glass-border text-muted-foreground"}`}
           >
-            Prueba de 30 días
+            Prueba gratis
+          </button>
+          <button
+            onClick={() => setTipoNueva("diario")}
+            className={`rounded-lg px-3 py-2.5 ${tipoNueva === "diario" ? "bg-primary text-primary-foreground" : "border border-glass-border text-muted-foreground"}`}
+          >
+            Pase por días
           </button>
           <button
             onClick={() => setTipoNueva("anual")}
             className={`rounded-lg px-3 py-2.5 ${tipoNueva === "anual" ? "bg-primary text-primary-foreground" : "border border-glass-border text-muted-foreground"}`}
           >
-            Licencia de 1 año
+            Licencia anual ($100.000)
           </button>
         </div>
         {tipoNueva === "prueba" ? (
           <label className="block space-y-1">
-            <span className="text-xs text-muted-foreground">Días exactos de prueba (1 a 365)</span>
-            <input className={campo} inputMode="numeric" value={diasPrueba} onChange={(e) => setDiasPrueba(e.target.value)} placeholder="Ej. 3, 7, 15, 30, 60, 90" />
+            <span className="text-xs text-muted-foreground">Días exactos de prueba (1 a 365; estándar 14 días)</span>
+            <input className={campo} inputMode="numeric" value={diasPrueba} onChange={(e) => setDiasPrueba(e.target.value)} placeholder="Ej. 14, 15, 30" />
           </label>
+        ) : tipoNueva === "diario" ? (
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-1.5">
+              {[1, 3, 7, 15, 30].map((d) => (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => setDiasPase(String(d))}
+                  className={`rounded-lg px-3 py-1.5 text-xs ${
+                    (parseInt(diasPase, 10) || 1) === d
+                      ? "bg-primary text-primary-foreground"
+                      : "border border-glass-border text-foreground"
+                  }`}
+                >
+                  {d} {d === 1 ? "día" : "días"}
+                </button>
+              ))}
+            </div>
+            <label className="block space-y-1">
+              <span className="text-xs text-muted-foreground">Días del pase temporal (1 a 365)</span>
+              <input className={campo} inputMode="numeric" value={diasPase} onChange={(e) => setDiasPase(e.target.value)} placeholder="Ej. 1, 3, 7, 15, 30" />
+            </label>
+          </div>
         ) : (
-          <p className="text-xs text-muted-foreground">La licencia de 1 año (365 días) solo la puede crear el Superadmin y la base de datos lo verifica.</p>
+          <p className="text-xs text-muted-foreground">La licencia anual de $100.000 COP (365 días) solo la puede crear el Superadmin y la base de datos lo verifica.</p>
         )}
         <button onClick={crear} className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:opacity-90">
           Crear y obtener código
@@ -359,7 +417,7 @@ function LicenciasPage() {
                   {l.equipo_id && <p className="break-all font-mono text-[11px] text-muted-foreground">Equipo: {l.equipo_id}</p>}
                 </div>
                 <span className="shrink-0 rounded-full border border-glass-border px-2.5 py-0.5 text-xs text-muted-foreground">
-                  {l.tipo === "anual" ? "Anual" : "Prueba"}
+                  {l.tipo === "anual" ? "Anual" : l.tipo === "diario" ? "Pase por días" : "Prueba"}
                 </span>
               </div>
               <button onClick={() => copiar(l.codigo)} className="flex w-full items-center justify-between gap-2 rounded-lg border border-glass-border bg-glass/30 px-3 py-2.5 text-left">
@@ -396,9 +454,9 @@ function LicenciasPage() {
               </div>
               {abierta === l.id && (
                 <div className="flex flex-wrap gap-2 rounded-lg border border-glass-border bg-glass/30 p-3">
-                  {[7, 15, 30, 60].map((d) => (
+                  {[1, 7, 15, 30, 60].map((d) => (
                     <button key={d} onClick={() => extender(l, d)} className={botonSec}>
-                      + {d} días
+                      + {d} {d === 1 ? "día" : "días"}
                     </button>
                   ))}
                   <div className="flex w-full items-center gap-2">

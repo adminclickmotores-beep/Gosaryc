@@ -7703,6 +7703,7 @@ export type Database = {
           comprobante_url: string | null
           correo: string | null
           created_at: string
+          dias: number | null
           estado: string
           id: string
           monto: number
@@ -7714,6 +7715,7 @@ export type Database = {
           comprobante_url?: string | null
           correo?: string | null
           created_at?: string
+          dias?: number | null
           estado?: string
           id?: string
           monto?: number
@@ -7725,6 +7727,7 @@ export type Database = {
           comprobante_url?: string | null
           correo?: string | null
           created_at?: string
+          dias?: number | null
           estado?: string
           id?: string
           monto?: number
@@ -8551,11 +8554,14 @@ export type Database = {
         Returns: Json
       }
       aprobar_solicitud_licencia: { Args: { p_id: string; p_tipo: string }; Returns: string }
+      aprobar_solicitud_pase_dias: { Args: { p_id: string; p_dias?: number }; Returns: string }
       aprobar_pago_licencia: { Args: { p_id: string }; Returns: Json }
+      aprobar_pase_dias_licencia: { Args: { p_id: string }; Returns: Json }
       admin_actualizar_suscripcion: { Args: { p_owner: string; p_plan?: string; p_estado?: string; p_vence_el?: string }; Returns: undefined }
       admin_rechazar_pago_licencia: { Args: { p_id: string }; Returns: undefined }
       admin_rechazar_solicitud_licencia: { Args: { p_id: string }; Returns: undefined }
       admin_crear_licencia: { Args: { p_cliente: string; p_telefono: string; p_ciudad: string; p_tipo: string; p_dias: number }; Returns: undefined }
+      admin_crear_pase_dias: { Args: { p_cliente: string; p_telefono?: string; p_ciudad?: string; p_dias?: number }; Returns: string }
       admin_actualizar_licencia: { Args: { p_id: string; p_tipo?: string; p_estado?: string; p_vence_el?: string }; Returns: undefined }
       generar_clave_activacion: { Args: { p_owner: string }; Returns: string }
       activar_licencia: { Args: { p_clave: string }; Returns: Json }

@@ -20,7 +20,8 @@ type Empresa = Tables<"negocio_config">;
 type Suscripcion = Tables<"suscripciones_negocio">;
 
 const PLANES: { clave: string; texto: string }[] = [
-  { clave: "prueba", texto: "Prueba" },
+  { clave: "prueba", texto: "Prueba (14 días)" },
+  { clave: "diario", texto: "Pase por días (temporal)" },
   { clave: "emprendedor", texto: "Emprendedor" },
   { clave: "pro", texto: "Pro" },
   { clave: "anual", texto: "Licencia anual ($100.000)" },
@@ -122,21 +123,24 @@ function SuperAdminPage() {
   };
 
   const aprobarPago = async (p: Pago) => {
-    const { data, error } = await supabase.rpc("aprobar_pago_licencia", { p_id: p.id });
+    const rpcNombre = p.tipo === "diario" ? "aprobar_pase_dias_licencia" : "aprobar_pago_licencia";
+    const { data, error } = await supabase.rpc(rpcNombre, { p_id: p.id });
     if (error) return toast.error(error.message || "No se pudo aprobar el pago.");
-    const r = (data ?? {}) as { correo?: string; vence_el?: string; tipo?: string };
+    const r = (data ?? {}) as { correo?: string; vence_el?: string; tipo?: string; dias?: number };
     const emp = empresas.find((e) => e.owner_id === p.owner_id);
     const tel = emp?.whatsapp_cocina || emp?.telefono_pedidos || "";
     const detalle =
       r.tipo === "dias_extra"
-        ? `Aprobamos tus días adicionales. Tu licencia vence el ${r.vence_el}.`
-        : `Recibimos tu pago. Tu licencia anual de Gosaryc está activa desde hoy y vence el ${r.vence_el}.`;
+        ? `Aprobamos tus 15 días adicionales de cortesía. Tu licencia vence el ${r.vence_el}.`
+        : r.tipo === "diario"
+          ? `Aprobamos tu pase temporal de ${r.dias ?? p.dias ?? 1} ${(r.dias ?? p.dias ?? 1) === 1 ? "día" : "días"}. Tu licencia vence el ${r.vence_el}.`
+          : `Recibimos tu pago. Tu licencia anual de Gosaryc está activa desde hoy y vence el ${r.vence_el}.`;
     setEnvio({
       correo: r.correo ?? p.correo ?? "",
       telefono: tel,
       mensaje: `Hola${emp?.nombre ? ` ${emp.nombre}` : ""}, ${detalle}`,
     });
-    toast.success("Pago aprobado. Envía la licencia al cliente.");
+    toast.success("Solicitud aprobada. Envía la confirmación al cliente.");
     cargar();
   };
 
@@ -243,8 +247,12 @@ function SuperAdminPage() {
                 <p className="break-words font-medium text-foreground">{emp?.nombre ?? "Negocio"}</p>
                 <p className="break-all text-sm text-foreground">{p.correo}</p>
                 <p className="text-xs text-muted-foreground">
-                  {p.tipo === "anual" ? "Licencia anual · $100.000" : "Solicita días adicionales (única vez)"} ·{" "}
-                  {new Date(p.created_at).toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" })}
+                  {p.tipo === "anual"
+                    ? "Licencia anual · $100.000"
+                    : p.tipo === "diario"
+                      ? `Pase temporal · ${p.dias ?? 1} ${(p.dias ?? 1) === 1 ? "día" : "días"}`
+                      : "Solicita 15 días adicionales de cortesía (única vez)"}{" "}
+                  · {new Date(p.created_at).toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" })}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {p.comprobante_url && (
