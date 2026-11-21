@@ -247,6 +247,8 @@ const TABS: Record<Sector, TabDef[]> = {
   ],
   rest: [
     { id: "pos", label: "Tomar pedido", icon: ShoppingCart, ayuda: "Toca un plato, elige acompañantes, escoge mesa, recoger o domicilio y cobra." },
+    { id: "mesas", label: "Mesas y cuenta", icon: UtensilsCrossed, ayuda: "Toca una mesa: agrega platos, envía a cocina, pide la cuenta, divide, suma propina y cobra con pago mixto." },
+    { id: "cocina", label: "Cocina", icon: Flame, ayuda: "Comandas con cronómetro y observaciones. Marca cada una como lista cuando salga del pase." },
     { id: "ped", label: "Domicilios", icon: Truck, ayuda: "Avanza cada pedido: preparación, repartidor, en camino y entregado. Ajusta la tarifa por zona." },
     { id: "caja", label: "Caja", icon: Wallet, ayuda: "Abre el turno, registra gastos, cuenta el efectivo y revisa la diferencia." },
     { id: "ventas", label: "Ventas", icon: Receipt, ayuda: "Todas las ventas del día, por mesa, mostrador y domicilio." },
@@ -312,6 +314,10 @@ function Simulador({ sector, onSalir }: { sector: Sector; onSalir: () => void })
     { id: "p3", nombre: "Julián Ospina", interes: "Yamaha MT-03", nivel: "CALIENTE", etapa: "Negociando", telefono: "312 604 8877", origen: "WhatsApp IA", valor: 29500000, proximo: "Completar trámites de la moto", notas: "Abono de separación: $2.000.000." },
   ]);
   const [pqrs, setPqrs] = useState(0);
+  const [tickets, setTickets] = useState<Ticket[]>(() => [
+    { id: "k1", mesa: "Mesa 1", detalle: "2 x Churrasco Angus 350g (papa criolla, tres cuartos)", nota: "Una sin sal, salsa aparte", inicio: Date.now() - 9 * 60000, listo: false },
+    { id: "k2", mesa: "Domicilio · WhatsApp IA", detalle: "2 x Churrasco Angus 350g (papas a la francesa, medio)", nota: "", inicio: Date.now() - 4 * 60000, listo: false },
+  ]);
 
   // Las tarjetas del CRM de la demo se guardan en el navegador (no en la base de datos).
   const claveCrm = "gosaryc_demo_crm_v2_" + sector;
@@ -389,7 +395,9 @@ function Simulador({ sector, onSalir }: { sector: Sector; onSalir: () => void })
         {tab === "inv" && sector === "auto" && <InventarioAuto productos={productos} onCotizar={(id) => { setVehSel(id); setTab("cot"); }} onSeparar={(id) => { setVehSel(id); setTab("cierre"); }} />}
         {tab === "inv" && sector === "comercio" && <InventarioComercio productos={productos} setProductos={setProductos} setGastos={setGastos} />}
         {tab === "cot" && <CotizadorAuto productos={productos.filter((p) => p.cat === "Vehículo")} vehSel={vehSel} setVehSel={setVehSel} onSeparar={(id) => { setVehSel(id); setTab("cierre"); }} onEtapa={avanzarProspecto} />}
-        {tab === "retomas" && <RetomasAuto setProductos={setProductos} />}
+        {tab === "mesas" && <MesasDemo productos={productos} registrarVenta={registrarVenta} onComanda={(t) => setTickets((a) => [t, ...a])} />}
+        {tab === "cocina" && <CocinaDemo tickets={tickets} setTickets={setTickets} />}
+        {tab === "retomas" &&<RetomasAuto setProductos={setProductos} />}
         {tab === "cierre" && <CierreAuto productos={productos} setProductos={setProductos} vehSel={vehSel} registrarVenta={registrarVenta} onEtapa={avanzarProspecto} />}
         {tab === "taller" && <Taller registrarVenta={registrarVenta} />}
         {tab === "ped" && <Domicilios pedidos={pedidos} setPedidos={setPedidos} tarifas={tarifas} setTarifas={setTarifas} registrarVenta={registrarVenta} />}
@@ -1056,6 +1064,130 @@ function CotizadorAuto({ productos, vehSel, setVehSel, onSeparar, onEtapa }: { p
           </ul>
         )}
       </section>
+    </div>
+  );
+}
+
+type Ticket = { id: string; mesa: string; detalle: string; nota: string; inicio: number; listo: boolean };
+type ItemMesa = { nombre: string; precio: number; c: number };
+type MesaEstado = { n: number; estado: "Libre" | "Ocupada" | "Cuenta pedida"; items: ItemMesa[] };
+
+function CocinaDemo({ tickets, setTickets }: { tickets: Ticket[]; setTickets: React.Dispatch<React.SetStateAction<Ticket[]>> }) {
+  const [ahora, setAhora] = useState(() => Date.now());
+  useEffect(() => { const t = setInterval(() => setAhora(Date.now()), 15000); return () => clearInterval(t); }, []);
+  const pendientes = tickets.filter((t) => !t.listo);
+  return (
+    <div className="space-y-4">
+      <p className="text-sm font-semibold">{pendientes.length} comanda(s) en preparación · {tickets.length - pendientes.length} lista(s)</p>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {tickets.map((t) => {
+          const min = Math.max(0, Math.floor((ahora - t.inicio) / 60000));
+          const tarde = !t.listo && min >= 8;
+          return (
+            <div key={t.id} className={"rounded-xl border-2 bg-card p-4 " + (t.listo ? "border-border opacity-60" : tarde ? "border-destructive" : "border-primary")}>
+              <p className="flex items-center justify-between font-bold"><span>{t.mesa}</span><span className={"text-sm " + (tarde ? "text-destructive" : "")}>{min} min</span></p>
+              <p className="mt-2 text-sm">{t.detalle}</p>
+              {t.nota && <p className="mt-1 rounded bg-muted px-2 py-1 text-xs font-semibold">Nota: {t.nota}</p>}
+              {!t.listo
+                ? <button onClick={() => setTickets((a) => a.map((x) => (x.id === t.id ? { ...x, listo: true } : x)))} className="mt-3 rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-accent-foreground">Marcar lista</button>
+                : <p className="mt-3 inline-flex items-center gap-1 text-xs font-bold"><CheckCircle2 className="h-4 w-4" /> Lista para despacho</p>}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function MesasDemo({ productos, registrarVenta, onComanda }: { productos: Prod[]; registrarVenta: (v: NuevaVenta) => void; onComanda: (t: Ticket) => void }) {
+  const [mesas, setMesas] = useState<MesaEstado[]>([
+    { n: 1, estado: "Ocupada", items: [{ nombre: "Churrasco Angus 350g", precio: 48000, c: 2 }, { nombre: "Limonada de Coco Natural", precio: 11000, c: 1 }] },
+    { n: 2, estado: "Libre", items: [] },
+    { n: 3, estado: "Cuenta pedida", items: [{ nombre: "Churrasco Angus 350g", precio: 48000, c: 1 }, { nombre: "Costillas BBQ Ahumadas", precio: 44000, c: 1 }] },
+    { n: 4, estado: "Libre", items: [] }, { n: 5, estado: "Libre", items: [] }, { n: 6, estado: "Libre", items: [] },
+  ]);
+  const [sel, setSel] = useState<number | null>(null);
+  const [plato, setPlato] = useState(productos[0]?.id ?? "");
+  const [nota, setNota] = useState("");
+  const [personas, setPersonas] = useState(1);
+  const [propina, setPropina] = useState(true);
+  const [efectivo, setEfectivo] = useState("0");
+  const [otro, setOtro] = useState("Nequi");
+  const [msg, setMsg] = useState("");
+  const m = mesas.find((x) => x.n === sel) ?? null;
+  const cambiar = (n: number, f: (x: MesaEstado) => MesaEstado) => setMesas((a) => a.map((x) => (x.n === n ? f(x) : x)));
+  const subtotal = m ? m.items.reduce((s, i) => s + i.precio * i.c, 0) : 0;
+  const valorPropina = propina ? Math.round(subtotal * 0.1) : 0;
+  const total = subtotal + valorPropina;
+  const ef = Math.min(Number(efectivo) || 0, total);
+  const color = (e: MesaEstado["estado"]) => (e === "Libre" ? "border-border bg-card" : e === "Ocupada" ? "border-primary bg-primary/10" : "border-accent bg-accent/20");
+  const agregar = () => {
+    const p = productos.find((x) => x.id === plato);
+    if (!m || !p) return;
+    cambiar(m.n, (x) => ({ ...x, estado: "Ocupada", items: x.items.some((i) => i.nombre === p.nombre) ? x.items.map((i) => (i.nombre === p.nombre ? { ...i, c: i.c + 1 } : i)) : [...x.items, { nombre: p.nombre, precio: p.precio, c: 1 }] }));
+  };
+  const enviar = () => {
+    if (!m || !m.items.length) return;
+    onComanda({ id: "k" + Date.now(), mesa: `Mesa ${m.n}`, detalle: m.items.map((i) => `${i.c} x ${i.nombre}`).join(", "), nota: nota.trim().slice(0, 60), inicio: Date.now(), listo: false });
+    setNota(""); setMsg("Comanda enviada a cocina.");
+  };
+  const cobrar = () => {
+    if (!m || !m.items.length) return;
+    registrarVenta({ detalle: m.items.map((i) => `${i.c} x ${i.nombre}`).join(", ") + (propina ? " (+ propina 10 %)" : ""), total, pago: ef > 0 && ef < total ? "Mixto" : ef >= total ? "Efectivo" : otro, tipo: `Mesa ${m.n}`, envio: 0 });
+    cambiar(m.n, (x) => ({ ...x, estado: "Libre", items: [] }));
+    setMsg(`Mesa ${m.n} cobrada y liberada.`); setSel(null); setEfectivo("0");
+  };
+  return (
+    <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+      <section>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {mesas.map((x) => (
+            <button key={x.n} onClick={() => { setSel(x.n); setMsg(""); }} className={"rounded-xl border-2 p-4 text-left " + color(x.estado) + (sel === x.n ? " ring-2 ring-primary" : "")}>
+              <p className="font-bold">Mesa {x.n}</p>
+              <p className="text-xs font-semibold">{x.estado}</p>
+              {x.items.length > 0 && <p className="mt-1 text-sm">{cop(x.items.reduce((s, i) => s + i.precio * i.c, 0))}</p>}
+            </button>
+          ))}
+        </div>
+        {msg && <p className="mt-3 text-sm font-semibold">{msg}</p>}
+      </section>
+      <aside className="rounded-2xl border border-border bg-card p-4">
+        {!m ? <p className="text-sm text-muted-foreground">Selecciona una mesa para ver su cuenta.</p> : (
+          <div className="space-y-3">
+            <h3 className="font-bold">Mesa {m.n} · {m.estado}</h3>
+            <div className="flex gap-2">
+              <select value={plato} onChange={(e) => setPlato(e.target.value)} className="min-w-0 flex-1 rounded-lg border border-border bg-background px-2 py-2 text-base">
+                {productos.map((p) => <option key={p.id} value={p.id}>{p.nombre} · {cop(p.precio)}</option>)}
+              </select>
+              <button onClick={agregar} className="rounded-lg bg-primary px-3 text-primary-foreground" aria-label="Agregar plato"><Plus className="h-4 w-4" /></button>
+            </div>
+            <ul className="divide-y divide-border text-sm">
+              {m.items.map((i) => <li key={i.nombre} className="flex justify-between py-1"><span>{i.c} x {i.nombre}</span><b>{cop(i.precio * i.c)}</b></li>)}
+            </ul>
+            <input value={nota} onChange={(e) => setNota(e.target.value)} placeholder="Nota para cocina (sin cebolla, salsa aparte)" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-base" />
+            <div className="flex gap-2">
+              <button onClick={enviar} disabled={!m.items.length} className="flex-1 rounded-lg bg-secondary px-3 py-2 text-xs font-bold text-secondary-foreground disabled:opacity-50">Enviar a cocina</button>
+              <button onClick={() => cambiar(m.n, (x) => ({ ...x, estado: "Cuenta pedida" }))} disabled={!m.items.length} className="flex-1 rounded-lg bg-secondary px-3 py-2 text-xs font-bold text-secondary-foreground disabled:opacity-50">Pedir cuenta</button>
+            </div>
+            {m.items.length > 0 && (
+              <div className="space-y-2 border-t border-border pt-3 text-sm">
+                <label className="flex items-center gap-2"><input type="checkbox" checked={propina} onChange={(e) => setPropina(e.target.checked)} className="h-4 w-4" /> Propina voluntaria 10 % ({cop(valorPropina)})</label>
+                <p className="flex justify-between text-lg font-extrabold"><span>Total</span><span>{cop(total)}</span></p>
+                <label className="flex items-center justify-between gap-2">Dividir entre
+                  <select value={personas} onChange={(e) => setPersonas(Number(e.target.value))} className="rounded-lg border border-border bg-background px-2 py-1 text-base">{[1, 2, 3, 4, 5, 6].map((p) => <option key={p} value={p}>{p}</option>)}</select>
+                </label>
+                {personas > 1 && <p className="text-xs text-muted-foreground">Cada persona paga {cop(Math.ceil(total / personas))}</p>}
+                <div className="grid grid-cols-2 gap-2">
+                  <input value={efectivo} onChange={(e) => setEfectivo(e.target.value.replace(/\D/g, ""))} inputMode="numeric" placeholder="Efectivo" className="rounded-lg border border-border bg-background px-3 py-2 text-base" />
+                  <select value={otro} onChange={(e) => setOtro(e.target.value)} className="rounded-lg border border-border bg-background px-2 py-2 text-base">{["Nequi", "Daviplata", "Datáfono", "Transferencia"].map((o) => <option key={o}>{o}</option>)}</select>
+                </div>
+                <p className="text-xs text-muted-foreground">Resto por {otro}: {cop(total - ef)}</p>
+                <button onClick={cobrar} className="w-full rounded-lg bg-accent px-3 py-2 text-sm font-bold text-accent-foreground">Cobrar y emitir comprobante</button>
+              </div>
+            )}
+          </div>
+        )}
+      </aside>
     </div>
   );
 }
