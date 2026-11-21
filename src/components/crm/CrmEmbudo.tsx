@@ -745,6 +745,7 @@ export function CrmEmbudo() {
           }}
           negocioId={negocio.id}
           ownerId={negocio.owner_id ?? user.id}
+          etapas={etapas}
         />
       )}
       {abierto && (
@@ -1467,20 +1468,40 @@ function NuevoProspecto({
   onCreado,
   negocioId,
   ownerId,
+  etapas,
 }: {
   onCerrar: () => void;
   onCreado: () => void;
   negocioId: string;
   ownerId: string;
+  etapas: Etapa[];
 }) {
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
   const [interes, setInteres] = useState("");
   const [valor, setValor] = useState("");
+  const [correo, setCorreo] = useState("");
+  const [ciudad, setCiudad] = useState("");
+  const [documento, setDocumento] = useState("");
+  const [canal, setCanal] = useState("WhatsApp Directo");
+  const [temperatura, setTemperatura] = useState("TIBIO");
+  const [etapa, setEtapa] = useState("nuevo");
+  const [urgencia, setUrgencia] = useState("Media");
+  const [capacidad, setCapacidad] = useState("");
+  const [proxAccion, setProxAccion] = useState("");
+  const [proxFecha, setProxFecha] = useState("");
+  const [notas, setNotas] = useState("");
   const [guardando, setGuardando] = useState(false);
   const guardar = async () => {
     if (!nombre.trim()) return toast.error("Escribe el nombre del prospecto.");
     setGuardando(true);
+    const extra: Record<string, string> = {};
+    if (correo.trim()) extra.correo = limpiarTexto(correo, 120);
+    if (ciudad.trim()) extra.ciudad = limpiarTexto(ciudad, 80);
+    if (documento.trim()) extra.documento = limpiarTexto(documento, 30);
+    if (notas.trim()) extra.notas = limpiarTexto(notas, 600);
+    if (proxAccion.trim()) extra.proxima_accion = limpiarTexto(proxAccion, 160);
+    if (proxFecha) extra.proxima_fecha = proxFecha;
     const { error } = await supabase.from("crm_leads").insert({
       negocio_id: negocioId,
       owner_id: ownerId,
@@ -1488,6 +1509,12 @@ function NuevoProspecto({
       telefono: limpiarTelefono(telefono),
       interes: limpiarTexto(interes, 300) || null,
       valor_estimado: Math.max(0, Number(valor) || 0),
+      canal_origen: canal,
+      temperatura,
+      etapa_embudo: etapa,
+      urgencia,
+      capacidad_pago: limpiarTexto(capacidad, 120) || null,
+      datos_extra: extra as Json,
       atendido_por_humano: true,
     });
     setGuardando(false);
@@ -1515,6 +1542,11 @@ function NuevoProspecto({
             ["Teléfono / WhatsApp", telefono, setTelefono, 20],
             ["Interés", interes, setInteres, 300],
             ["Valor estimado (COP)", valor, setValor, 12],
+            ["Correo electrónico", correo, setCorreo, 120],
+            ["Ciudad", ciudad, setCiudad, 80],
+            ["Documento / NIT", documento, setDocumento, 30],
+            ["Capacidad de pago / presupuesto", capacidad, setCapacidad, 120],
+            ["Próxima acción (ej. llamar, enviar cotización)", proxAccion, setProxAccion, 160],
           ].map(([et, v, set, max]) => (
             <label key={et as string} className="block text-sm">
               <span className="mb-1 block text-muted-foreground">{et as string}</span>
@@ -1527,6 +1559,48 @@ function NuevoProspecto({
               />
             </label>
           ))}
+          <label className="block text-sm">
+            <span className="mb-1 block text-muted-foreground">Fecha de la próxima acción</span>
+            <input type="date" className="w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base" value={proxFecha} onChange={(e) => setProxFecha(e.target.value)} />
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block text-sm">
+              <span className="mb-1 block text-muted-foreground">Canal de origen</span>
+              <select className="w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base" value={canal} onChange={(e) => setCanal(e.target.value)}>
+                {["WhatsApp Directo", "Facebook", "Instagram", "Página Web", "Google / Otro"].map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </label>
+            <label className="block text-sm">
+              <span className="mb-1 block text-muted-foreground">Temperatura</span>
+              <select className="w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base" value={temperatura} onChange={(e) => setTemperatura(e.target.value)}>
+                <option value="CALIENTE">Caliente</option>
+                <option value="TIBIO">Tibio</option>
+                <option value="FRIO">Frío</option>
+              </select>
+            </label>
+            <label className="block text-sm">
+              <span className="mb-1 block text-muted-foreground">Etapa</span>
+              <select className="w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base" value={etapa} onChange={(e) => setEtapa(e.target.value)}>
+                {etapas.filter((x) => x.id !== "ganado" && x.id !== "perdido").map((x) => (
+                  <option key={x.id} value={x.id}>{x.titulo}</option>
+                ))}
+              </select>
+            </label>
+            <label className="block text-sm">
+              <span className="mb-1 block text-muted-foreground">Urgencia</span>
+              <select className="w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base" value={urgencia} onChange={(e) => setUrgencia(e.target.value)}>
+                <option value="Alta">Alta</option>
+                <option value="Media">Media</option>
+                <option value="Baja">Baja</option>
+              </select>
+            </label>
+          </div>
+          <label className="block text-sm">
+            <span className="mb-1 block text-muted-foreground">Notas</span>
+            <textarea className="min-h-20 w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base" value={notas} maxLength={600} onChange={(e) => setNotas(e.target.value)} />
+          </label>
           <button
             type="button"
             disabled={guardando}
