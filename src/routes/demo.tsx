@@ -5,7 +5,7 @@ import {
   Car, UtensilsCrossed, ShoppingCart, ArrowRight, ScanBarcode, Search, Printer, X, MessageCircle,
   Kanban, Calculator, Send, Plus, Minus, Trash2, Sparkles, Package, AlertTriangle, Bike, Wrench,
   Coffee, Hammer, Paintbrush, Droplet, Wheat, Flame, Beef, Sandwich, Wallet, Receipt, TrendingUp,
-  Truck, FileText, Handshake, CheckCircle2, Bot, UserRound, Boxes, Landmark, Pizza,
+  Truck, FileText, Handshake, CheckCircle2, Bot, UserRound, Boxes, Landmark, Pizza, LogOut,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { imprimirFactura } from "@/lib/exportes";
@@ -221,7 +221,16 @@ function Selector({ onElegir }: { onElegir: (s: Sector) => void }) {
   return (
     <div className="min-h-screen bg-background px-4 py-10 text-foreground">
       <div className="mx-auto max-w-5xl">
-        <Link to="/" className="text-sm text-muted-foreground hover:underline">← Volver a la portada</Link>
+        <Link
+          to="/"
+          onClick={() => {
+            sessionStorage.removeItem(CLAVE);
+            sessionStorage.removeItem("gosaryc_demo_tab");
+          }}
+          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-1.5 text-sm font-semibold text-foreground transition hover:border-primary hover:bg-muted"
+        >
+          <LogOut className="h-4 w-4" /> Salir de la demo
+        </Link>
         <h1 className="mt-4 text-3xl font-extrabold sm:text-4xl">Demo interactiva en vivo</h1>
         <p className="mt-2 text-muted-foreground">Elige un tipo de negocio y juega con el sistema sin registrarte. Nada se guarda: al recargar todo vuelve limpio.</p>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
@@ -372,6 +381,12 @@ function Simulador({ sector, onSalir }: { sector: Sector; onSalir: () => void })
     void navigate({ to: "/login", search: { mode: "signup" } });
   };
 
+  const salirAlInicio = () => {
+    sessionStorage.removeItem(CLAVE);
+    sessionStorage.removeItem("gosaryc_demo_tab");
+    void navigate({ to: "/" });
+  };
+
   const registrarVenta = (v: NuevaVenta) => {
     setVentas((a) => [{ ...v, id: "v" + Date.now() + Math.floor(Math.random() * 100), hora: horaAhora() }, ...a]);
   };
@@ -397,8 +412,11 @@ function Simulador({ sector, onSalir }: { sector: Sector; onSalir: () => void })
           <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
             <p className="flex items-center gap-2 text-sm font-semibold"><Sparkles className="h-4 w-4 shrink-0" /> Modo Demostración Interactivo · Estás probando {esc.negocio}</p>
             <div className="flex flex-wrap items-center gap-2">
-              <button onClick={irRegistro} className="rounded-full bg-accent px-3 py-1.5 text-xs font-bold text-accent-foreground">Crear mi cuenta gratis (30 días)</button>
-              <button onClick={onSalir} className="text-xs underline">Cambiar negocio</button>
+              <button type="button" onClick={irRegistro} className="rounded-full bg-accent px-3 py-1.5 text-xs font-bold text-accent-foreground">Crear mi cuenta gratis (30 días)</button>
+              <button type="button" onClick={onSalir} className="rounded-full border border-primary-foreground/30 px-3 py-1.5 text-xs font-semibold hover:bg-primary-foreground/10">Cambiar negocio</button>
+              <button type="button" onClick={salirAlInicio} className="inline-flex items-center gap-1.5 rounded-full bg-primary-foreground/15 px-3 py-1.5 text-xs font-bold hover:bg-primary-foreground/25">
+                <LogOut className="h-3.5 w-3.5" /> Salir de la demo
+              </button>
             </div>
           </div>
           <div className="mt-2 flex gap-2 overflow-x-auto pb-1">

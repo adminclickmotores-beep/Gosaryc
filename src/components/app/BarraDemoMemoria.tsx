@@ -18,7 +18,16 @@ export function BarraDemoMemoria() {
       </button>
       <button
         type="button"
-        onClick={() => { salirDemoMemoria(); window.location.href = "/demo"; }}
+        onClick={() => {
+          salirDemoMemoria();
+          try {
+            sessionStorage.removeItem("gosaryc_demo_sector");
+            sessionStorage.removeItem("gosaryc_demo_tab");
+          } catch {
+            /* sin acceso a sessionStorage */
+          }
+          window.location.href = "/";
+        }}
         className="inline-flex items-center gap-1 rounded-md border border-background/40 px-2.5 py-1"
       >
         <LogOut className="h-3.5 w-3.5" /> Salir de la demo
