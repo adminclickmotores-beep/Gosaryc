@@ -11,6 +11,7 @@ import { SolicitudesCredito } from "@/components/vehiculos/SolicitudesCredito";
 import { CotizacionesVehiculos } from "@/components/vehiculos/CotizacionesVehiculos";
 import { DocumentosVehiculos } from "@/components/vehiculos/DocumentosVehiculos";
 import { VencimientosVehiculos } from "@/components/vehiculos/VencimientosVehiculos";
+import { SimuladorFinanciacion } from "@/components/financiacion/SimuladorFinanciacion";
 import { EncargosPan, MermasPan, ProduccionPan, RecetasPan, TurnosPan } from "@/components/panaderia/PanaderiaModulos";
 import {
   AgendaClinica,
@@ -184,6 +185,8 @@ function ModuloPage() {
   if (id === "vencimientos_veh") return <VencimientosVehiculos />;
   if (id === "documentos_veh") return <DocumentosVehiculos />;
   if (id === "cotizaciones_veh") return <CotizacionesVehiculos />;
+  if (id === "financiacion_veh") return <SimuladorFinanciacion tipo="vehiculo" />;
+  if (id === "financiacion_agro") return <SimuladorFinanciacion tipo="ganado" />;
   if (id === "facturas" || id.startsWith("facturas_")) return (<Suspense fallback={<CargaModulo texto="Cargando facturación…" />}><FacturaFiscalLazy /></Suspense>);
   return <ModuloOperativo id={id} />;
   })();

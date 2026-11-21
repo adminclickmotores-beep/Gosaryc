@@ -1,4 +1,5 @@
 import {
+  Calculator,
   ChefHat,
   Bike,
   Boxes,
@@ -451,6 +452,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("separaciones_veh", "Separaciones de vehículos", "Anticipos y reservas de un vehículo para un cliente.", Tag),
       m("ventas_veh", "Ventas y entregas", "Ventas cerradas, fecha y acta de entrega al cliente.", PackageCheck),
       m("creditos_veh", "Créditos y entidades financieras", "Solicitudes de crédito con bancos y financieras, y su estado.", Landmark),
+      m("financiacion_veh", "Simulador de financiación", "Cuota, tabla de amortización mes a mes, PDF y envío por WhatsApp al cliente.", Calculator),
       m("alistamiento", "Alistamiento", "Lavado, revisión y papeles para dejar el vehículo listo para la venta.", ShieldCheck),      m("documentos_veh", "Documentos del vehículo", "Tarjeta de propiedad, tecnomecánica, seguros y contratos.", FolderOpen),
       m("vencimientos_veh", "Alertas de vencimientos", "SOAT, tecnomecánica y seguros próximos a vencer.", CalendarClock),
       m("taller", "Taller y mantenimientos", "Órdenes de servicio y repuestos.", Wrench),      m("costos_veh", "Costos y rentabilidad por vehículo", "Compra, reparaciones y utilidad de cada vehículo.", TrendingUp),
@@ -583,6 +585,7 @@ export const TIPOS_NEGOCIO: TipoNegocio[] = [
       m("cosechas", "Cosechas y ventas", "Producción recogida y a quién se vendió.", PackageCheck),
       m("insumos_agro", "Insumos y fertilizantes", "Compras y consumo por lote.", Boxes),
       m("animales", "Animales y sanidad", "Control de ganado, vacunas y tratamientos.", Shield),
+      m("financiacion_agro", "Financiación de ganado", "Vende ganado a cuotas: cuota, tabla de amortización, PDF y WhatsApp al cliente.", Calculator),
       CLIENTES_AGRO, FACTURAS, PAGOS_AGRO, ...propios("agro", "cuentas", "agenda", "caja", "proveedores"), PERSONAL_AGRO, METAS_AGRO, ...propios("agro", "finanzas"),
     ],
   },
