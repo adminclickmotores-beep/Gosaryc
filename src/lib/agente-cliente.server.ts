@@ -385,6 +385,37 @@ async function guardarMensajesCrm(ag: DuenoMemoria, leadId: string, telefono: st
   if (filas.length > 0) await supabaseAdmin.from("crm_mensajes").insert(filas);
 }
 
+/** Resumen automático de la conversación para la ficha 360° (se guarda en datos_extra.resumen_ia). */
+async function resumirConversacion(ag: DuenoMemoria, leadId: string, historial: MensajeCliente[]): Promise<void> {
+  const texto = historial
+    .slice(-30)
+    .map((m) => `${m.role === "assistant" ? "Agente" : "Cliente"}: ${m.content}`)
+    .join("\n")
+    .slice(0, 6000);
+  const resumen = await llamarIA([
+    {
+      role: "system",
+      content:
+        "Resume en español, máximo 6 líneas, la conversación de ventas por WhatsApp: qué busca el cliente, presupuesto o forma de pago, objeciones, qué respondió el agente y el próximo paso sugerido. No inventes datos que no aparezcan en el chat.",
+    },
+    { role: "user", content: texto },
+  ]);
+  if (!resumen) return;
+  const { data: previo } = await supabaseAdmin
+    .from("crm_leads")
+    .select("datos_extra")
+    .eq("id", leadId)
+    .eq("owner_id", ag.owner_id)
+    .maybeSingle();
+  const extra: Record<string, unknown> =
+    previo?.datos_extra && typeof previo.datos_extra === "object" && !Array.isArray(previo.datos_extra) ? (previo.datos_extra as Record<string, unknown>) : {};
+  await supabaseAdmin
+    .from("crm_leads")
+    .update({ datos_extra: { ...extra, resumen_ia: resumen.slice(0, 1200), resumen_ia_fecha: new Date().toISOString() } as Json })
+    .eq("id", leadId)
+    .eq("owner_id", ag.owner_id);
+}
+
 export async function responderComoAgente(clave: string, mensajes: MensajeCliente[], telefono = "", canalOrigen = "", sectorPrueba = ""): Promise<RespuestaAgente> {
   // Modo prueba: la ventana "Probar en vivo" simula otro sector y no guarda leads, PQRS ni aprendizaje.
   const esPrueba = sectorPrueba.trim().length > 0;
@@ -634,6 +665,9 @@ Reglas:
     try {
       const leadId = await sincronizarCrm(ag, telefono, canal, lead, pqrs, escalar);
       if (leadId) await guardarMensajesCrm(ag, leadId, telefono, historial[historial.length - 1].content, limpio);
+      if (leadId && !esPrueba && (escalar || (historial.length >= 8 && historial.length % 8 < 2))) {
+        await resumirConversacion(ag, leadId, [...historial, { role: "assistant", content: limpio }]);
+      }
     } catch (e) {
       console.error("Agente: no se pudo sincronizar el CRM", String(e instanceof Error ? e.message : "error").replace(/\d{7,15}/g, "***"));
     }

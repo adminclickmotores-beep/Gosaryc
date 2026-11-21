@@ -1885,6 +1885,14 @@ function Panel360({
                   </div>
                 </div>
               )}
+              {typeof extra.resumen_ia === "string" && extra.resumen_ia && (
+                <div className="space-y-1 rounded-xl border border-primary/30 bg-primary/5 p-3">
+                  <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
+                    <Sparkles className="h-3.5 w-3.5" /> Resumen de la conversación
+                  </p>
+                  <p className="whitespace-pre-line text-sm">{extra.resumen_ia}</p>
+                </div>
+              )}
               <Dato k="Interés" v={lead.interes} />
               <Dato k="Capacidad de pago / cuota inicial" v={lead.capacidad_pago} />
               <Dato k="Urgencia" v={lead.urgencia} />
