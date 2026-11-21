@@ -28,6 +28,7 @@ import { Route as SuperadminRouteImport } from './routes/superadmin'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as AppAcademiaRouteImport } from './routes/_app/academia'
 import { Route as AppAsistenteVirtualRouteImport } from './routes/_app/asistente-virtual'
+import { Route as AppAuditoriaNegociosRouteImport } from './routes/_app/auditoria-negocios'
 import { Route as AppCalendarRouteImport } from './routes/_app/calendar'
 import { Route as AppCarteraFiadosRouteImport } from './routes/_app/cartera-fiados'
 import { Route as AppCombosRouteImport } from './routes/_app/combos'
@@ -160,6 +161,11 @@ const AppAcademiaRoute = AppAcademiaRouteImport.update({
 const AppAsistenteVirtualRoute = AppAsistenteVirtualRouteImport.update({
   id: '/asistente-virtual',
   path: '/asistente-virtual',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAuditoriaNegociosRoute = AppAuditoriaNegociosRouteImport.update({
+  id: '/auditoria-negocios',
+  path: '/auditoria-negocios',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCalendarRoute = AppCalendarRouteImport.update({
@@ -380,6 +386,7 @@ export interface FileRoutesByFullPath {
   '/unsubscribe': typeof UnsubscribeRoute
   '/academia': typeof AppAcademiaRoute
   '/asistente-virtual': typeof AppAsistenteVirtualRoute
+  '/auditoria-negocios': typeof AppAuditoriaNegociosRoute
   '/calendar': typeof AppCalendarRoute
   '/cartera-fiados': typeof AppCarteraFiadosRoute
   '/combos': typeof AppCombosRoute
@@ -439,6 +446,7 @@ export interface FileRoutesByTo {
   '/unsubscribe': typeof UnsubscribeRoute
   '/academia': typeof AppAcademiaRoute
   '/asistente-virtual': typeof AppAsistenteVirtualRoute
+  '/auditoria-negocios': typeof AppAuditoriaNegociosRoute
   '/calendar': typeof AppCalendarRoute
   '/cartera-fiados': typeof AppCarteraFiadosRoute
   '/combos': typeof AppCombosRoute
@@ -500,6 +508,7 @@ export interface FileRoutesById {
   '/unsubscribe': typeof UnsubscribeRoute
   '/_app/academia': typeof AppAcademiaRoute
   '/_app/asistente-virtual': typeof AppAsistenteVirtualRoute
+  '/_app/auditoria-negocios': typeof AppAuditoriaNegociosRoute
   '/_app/calendar': typeof AppCalendarRoute
   '/_app/cartera-fiados': typeof AppCarteraFiadosRoute
   '/_app/combos': typeof AppCombosRoute
@@ -561,6 +570,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/academia'
     | '/asistente-virtual'
+    | '/auditoria-negocios'
     | '/calendar'
     | '/cartera-fiados'
     | '/combos'
@@ -620,6 +630,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/academia'
     | '/asistente-virtual'
+    | '/auditoria-negocios'
     | '/calendar'
     | '/cartera-fiados'
     | '/combos'
@@ -680,6 +691,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/_app/academia'
     | '/_app/asistente-virtual'
+    | '/_app/auditoria-negocios'
     | '/_app/calendar'
     | '/_app/cartera-fiados'
     | '/_app/combos'
@@ -888,6 +900,13 @@ declare module '@tanstack/react-router' {
       path: '/asistente-virtual'
       fullPath: '/asistente-virtual'
       preLoaderRoute: typeof AppAsistenteVirtualRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/auditoria-negocios': {
+      id: '/_app/auditoria-negocios'
+      path: '/auditoria-negocios'
+      fullPath: '/auditoria-negocios'
+      preLoaderRoute: typeof AppAuditoriaNegociosRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/calendar': {
@@ -1169,6 +1188,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppAcademiaRoute: typeof AppAcademiaRoute
   AppAsistenteVirtualRoute: typeof AppAsistenteVirtualRoute
+  AppAuditoriaNegociosRoute: typeof AppAuditoriaNegociosRoute
   AppCalendarRoute: typeof AppCalendarRoute
   AppCarteraFiadosRoute: typeof AppCarteraFiadosRoute
   AppCombosRoute: typeof AppCombosRoute
@@ -1199,6 +1219,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppAcademiaRoute: AppAcademiaRoute,
   AppAsistenteVirtualRoute: AppAsistenteVirtualRoute,
+  AppAuditoriaNegociosRoute: AppAuditoriaNegociosRoute,
   AppCalendarRoute: AppCalendarRoute,
   AppCarteraFiadosRoute: AppCarteraFiadosRoute,
   AppCombosRoute: AppCombosRoute,
