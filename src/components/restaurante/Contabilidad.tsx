@@ -169,6 +169,22 @@ export function Contabilidad() {
   const sumaHaber = lineas.reduce((s, l) => s + num(l.haber), 0);
   const cuadra = sumaDebe > 0 && Math.abs(sumaDebe - sumaHaber) < 0.005;
 
+  // Asientos históricos donde SUM(débito) ≠ SUM(crédito)
+  const descuadrados = useMemo(() => {
+    const m = new Map<string, { d: number; h: number }>();
+    for (const f of filas) {
+      const x = m.get(f.asiento_id) ?? { d: 0, h: 0 };
+      x.d += Number(f.debe) || 0;
+      x.h += Number(f.haber) || 0;
+      m.set(f.asiento_id, x);
+    }
+    const malos = new Map<string, number>();
+    m.forEach((x, id) => {
+      if (Math.abs(x.d - x.h) >= 0.005) malos.set(id, x.d - x.h);
+    });
+    return malos;
+  }, [filas]);
+
   const cambiarLinea = (i: number, parche: Partial<Linea>) =>
     setLineas((ls) => ls.map((l, k) => (k === i ? { ...l, ...parche } : l)));
 
@@ -180,7 +196,10 @@ export function Contabilidad() {
     if (validas.some((l) => num(l.debe) > 0 && num(l.haber) > 0))
       return toast.error("Cada línea va en el debe o en el haber, no en ambos.");
     if (validas.some((l) => !num(l.debe) && !num(l.haber))) return toast.error("Cada línea necesita un valor.");
-    if (!cuadra) return toast.error("El asiento no cuadra: el debe y el haber deben sumar lo mismo.");
+    if (!cuadra)
+      return toast.error(
+        `Asiento descuadrado: Débito ${dinero(sumaDebe)} ≠ Crédito ${dinero(sumaHaber)} (diferencia ${dinero(Math.abs(sumaDebe - sumaHaber))}). No se guardó.`,
+      );
     setGuardando(true);
     const asientoId = crypto.randomUUID();
     const { error } = await supabase.from("asientos_contables").insert(
@@ -458,6 +477,11 @@ export function Contabilidad() {
               <div className="flex flex-wrap items-center justify-between gap-2 border-t border-glass-border pt-3 text-sm">
                 <span className={cuadra ? "text-primary" : "text-destructive"}>
                   Debe {dinero(sumaDebe)} · Haber {dinero(sumaHaber)} {cuadra ? "· Cuadra" : "· No cuadra"}
+                  {!cuadra && sumaDebe + sumaHaber > 0 && (
+                    <span className="block font-medium">
+                      Asiento descuadrado: diferencia de {dinero(Math.abs(sumaDebe - sumaHaber))}. No se puede guardar hasta que débito y crédito sean iguales.
+                    </span>
+                  )}
                 </span>
                 <button
                   onClick={guardarAsiento}
@@ -470,6 +494,11 @@ export function Contabilidad() {
             </GlassPanel>
           )}
 
+          {descuadrados.size > 0 && (
+            <div role="alert" className="rounded-xl border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+              Alerta: {descuadrados.size} asiento(s) histórico(s) tienen el débito distinto del crédito. Están marcados con «Descuadrado» en el libro diario; revísalos con tu contador.
+            </div>
+          )}
           <GlassPanel className="overflow-x-auto p-0">
             <table className="w-full min-w-[720px] text-sm">
               <thead className="text-left text-xs text-muted-foreground">
@@ -496,7 +525,17 @@ export function Contabilidad() {
                   <tr key={fila.id} className="border-t border-glass-border text-foreground">
                     <td className="whitespace-nowrap p-3">{fila.fecha}</td>
                     <td className="p-3">{nombreCuenta(cuenta)}</td>
-                    <td className="p-3">{fila.concepto}</td>
+                    <td className="p-3">
+                      {fila.concepto}
+                      {descuadrados.has(fila.asiento_id) && (
+                        <span
+                          title={`Diferencia débito − crédito: ${dinero(descuadrados.get(fila.asiento_id) ?? 0)}`}
+                          className="ml-2 rounded-full bg-destructive px-2 py-0.5 text-xs text-destructive-foreground"
+                        >
+                          Descuadrado
+                        </span>
+                      )}
+                    </td>
                     <td className="p-3 capitalize text-muted-foreground">{cuenta?.tipo ?? "—"}</td>
                     <td className="p-3 text-right">{fila.debe ? dinero(fila.debe) : ""}</td>
                     <td className="p-3 text-right">{fila.haber ? dinero(fila.haber) : ""}</td>
