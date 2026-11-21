@@ -8632,6 +8632,7 @@ export type Database = {
       eve_abonar: { Args: { p_evento: string; p_valor: number; p_metodo: string }; Returns: Json }
       accept_org_invite: { Args: { _token: string }; Returns: string }
       es_superadmin: { Args: never; Returns: boolean }
+      es_soporte_plataforma: { Args: never; Returns: boolean }
       licencia_activa_para: { Args: { p_owner: string }; Returns: boolean }
       generar_codigo_alta_entropia: { Args: { p_prefijo?: string }; Returns: string }
       verificar_licencia: { Args: { p_codigo: string }; Returns: Json }

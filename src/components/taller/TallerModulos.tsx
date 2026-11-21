@@ -82,6 +82,7 @@ function FotoMini({ ruta }: { ruta: string }) {
 // Órdenes de trabajo + inventario de recepción con fotos
 // ============================================================
 export function OrdenesTaller({ rubroFijo }: { rubroFijo?: string }) {
+  const { esAdmin } = usePermisos();
   const [ordenes, setOrdenes] = useState<Orden[]>([]);
   const [fotos, setFotos] = useState<Foto[]>([]);
   const [usos, setUsos] = useState<OrdenRep[]>([]);
@@ -255,7 +256,9 @@ export function OrdenesTaller({ rubroFijo }: { rubroFijo?: string }) {
           </Campo>
           <Campo etiqueta="Técnico / lavador"><input className={campo} value={tecnico} onChange={(e) => setTecnico(e.target.value)} /></Campo>
           <Campo etiqueta="Mano de obra"><input className={campo} inputMode="decimal" value={mano} onChange={(e) => setMano(e.target.value)} /></Campo>
-          <Campo etiqueta="Comisión del técnico (%)"><input className={campo} inputMode="decimal" value={pct} onChange={(e) => setPct(e.target.value)} /></Campo>
+          {esAdmin && (
+            <Campo etiqueta="Comisión del técnico (%)"><input className={campo} inputMode="decimal" value={pct} onChange={(e) => setPct(e.target.value)} /></Campo>
+          )}
           <Campo etiqueta="Garantía (días)"><input className={campo} inputMode="numeric" value={garantia} onChange={(e) => setGarantia(e.target.value)} /></Campo>
         </div>
         <div className="flex flex-wrap gap-2">

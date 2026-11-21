@@ -41,14 +41,32 @@ const campo =
 function SoportePage() {
   const { user } = useAuth();
   const { negocio } = useNegocio();
-  const esSoporte = (user?.email ?? "").trim().toLowerCase() === CORREO_SOPORTE;
+  const [esSoporte, setEsSoporte] = useState(false);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [cargando, setCargando] = useState(true);
-  const [verTodos, setVerTodos] = useState(esSoporte);
+  const [verTodos, setVerTodos] = useState(false);
   const [categoria, setCategoria] = useState("falla");
   const [asunto, setAsunto] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [enviando, setEnviando] = useState(false);
+
+  useEffect(() => {
+    let vivo = true;
+    if (!user) {
+      setEsSoporte(false);
+      setVerTodos(false);
+      return;
+    }
+    void supabase.rpc("es_soporte_plataforma").then(({ data, error }) => {
+      if (!vivo) return;
+      const autorizado = !error && data === true;
+      setEsSoporte(autorizado);
+      setVerTodos(autorizado);
+    });
+    return () => {
+      vivo = false;
+    };
+  }, [user]);
 
   const cargar = useCallback(async () => {
     const { data, error } = await supabase

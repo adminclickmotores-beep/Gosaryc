@@ -24,6 +24,7 @@ const MENSAJES: Record<string, string> = {
   suspendida: "Esta licencia está suspendida. Comunícate con el creador de Gosaryc.",
   vencida: "Tu prueba o licencia ya venció. La licencia anual cuesta $100.000 COP e incluye soporte, instalación local y web. Paga la renovación y avísale al creador de Gosaryc: la activará en este mismo equipo.",
   otro_equipo: "Este código pertenece a otro equipo. Solicita la licencia de este equipo.",
+  demasiados_intentos: "Demasiados intentos fallidos. Espera 15 minutos antes de intentar de nuevo.",
   sin_conexion: "No hay conexión con el servidor. Conéctate a internet e intenta de nuevo.",
 };
 
