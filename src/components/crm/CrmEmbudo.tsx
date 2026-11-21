@@ -136,7 +136,7 @@ const ETAPAS_BASE: Etapa[] = [
 function etapasPara(clave: string): Etapa[] {
   const renombrar = (cambios: Record<string, string>): Etapa[] => ETAPAS_BASE.map((e) => ({ ...e, titulo: cambios[e.id] ?? e.titulo }));
   if (clave === "concesionario") {
-    const base = renombrar({ nuevo: "Nuevo Lead", calificacion: "Calificación IA", cotizado: "Cotizado / Crédito", cita: "Test-Drive / Visita" });
+    const base = renombrar({ nuevo: "Nuevo Lead", calificacion: "Calificación IA", cotizado: "Cotizado / Crédito", cita: "Test-Drive / Visita", ganado: "Vendido / Entregado" });
     const i = base.findIndex((e) => e.id === "ganado");
     return [...base.slice(0, i), { id: "separado", titulo: "Separado / Traspaso", color: "#14b8a6" }, ...base.slice(i)];
   }
@@ -147,6 +147,13 @@ function etapasPara(clave: string): Etapa[] {
 }
 
 const dinero = (n: number) => `$${Math.round(n).toLocaleString("es-CO")}`;
+
+/** Pide el motivo al pasar un prospecto a «Perdido». Devuelve null si el asesor cancela. */
+function pedirMotivoPerdida(): string | null {
+  const m = window.prompt("¿Por qué se perdió este prospecto? (precio, crédito, se fue con la competencia, etc.)");
+  if (m === null) return null;
+  return limpiarTexto(m, 200) || "Sin motivo";
+}
 
 function tiempo(desde: string, ahora: number): string {
   const min = Math.max(0, Math.floor((ahora - new Date(desde).getTime()) / 60000));
@@ -324,9 +331,15 @@ export function CrmEmbudo() {
     const previo = leads.find((l) => l.id === id);
     if (!previo || previo.etapa_embudo === etapa) return;
     const titulo = etapas.find((e) => e.id === etapa)?.titulo ?? etapa;
+    const motivo = etapa === "perdido" ? pedirMotivoPerdida() : undefined;
+    if (etapa === "perdido" && motivo === null) return;
     await parchar(previo, {
       etapa_embudo: etapa,
-      datos_extra: nuevoExtra(previo, {}, { tipo: "Etapa", texto: `Pasó a ${titulo}`, cuando: new Date().toISOString() }),
+      datos_extra: nuevoExtra(
+        previo,
+        motivo ? { motivo_perdida: motivo } : {},
+        { tipo: "Etapa", texto: `Pasó a ${titulo}${motivo ? `: ${motivo}` : ""}`, cuando: new Date().toISOString() },
+      ),
     });
   };
 
@@ -1540,6 +1553,40 @@ function Panel360({
     })();
   }, [lead.id, lead.negocio_id, lead.telefono]);
 
+  const [vehiculosCrm, setVehiculosCrm] = useState<Array<{ id: string; marca: string; modelo: string; anio: number | null; tipo: string; condicion: string; precio: number }>>([]);
+  const [asesor, setAsesor] = useState(String(extraDe(lead).asesor ?? ""));
+  useEffect(() => {
+    if (tipoClave !== "concesionario") return;
+    void (async () => {
+      const { data } = await supabase
+        .from("vehiculos_inventario")
+        .select("id,marca,modelo,anio,tipo,condicion,precio")
+        .neq("estado", "vendido")
+        .order("created_at", { ascending: false })
+        .limit(300);
+      setVehiculosCrm(data ?? []);
+    })();
+  }, [tipoClave]);
+
+  const guardarVehiculo = (id: string) => {
+    const v = vehiculosCrm.find((x) => x.id === id);
+    const texto = v ? `${v.tipo} ${v.condicion}: ${v.marca} ${v.modelo}${v.anio ? ` ${v.anio}` : ""}` : "";
+    void onParchar(lead, {
+      datos_extra: nuevoExtra(
+        lead,
+        { vehiculo_id: id, vehiculo_texto: texto },
+        texto ? { tipo: "Vehículo", texto: `Interés: ${texto}`, cuando: new Date().toISOString() } : undefined,
+      ),
+    });
+  };
+  const guardarAsesor = () => {
+    const txt = limpiarTexto(asesor, 80);
+    void onParchar(lead, {
+      datos_extra: nuevoExtra(lead, { asesor: txt }, txt ? { tipo: "Asesor", texto: `Asignado a ${txt}`, cuando: new Date().toISOString() } : undefined),
+    });
+    toast.success("Asesor guardado");
+  };
+
   const guardarCampo = async (cambios: Partial<Lead>) => {
     const { error } = await supabase.from("crm_leads").update(cambios).eq("id", lead.id);
     if (error) return toast.error("No se pudo guardar.");
@@ -1675,12 +1722,18 @@ function Panel360({
                 <button
                   key={e.id}
                   type="button"
-                  onClick={() =>
+                  onClick={() => {
+                    const motivo = e.id === "perdido" ? pedirMotivoPerdida() : undefined;
+                    if (e.id === "perdido" && motivo === null) return;
                     void onParchar(lead, {
                       etapa_embudo: e.id,
-                      datos_extra: nuevoExtra(lead, {}, { tipo: "Etapa", texto: `Pasó a ${e.titulo}`, cuando: new Date().toISOString() }),
-                    })
-                  }
+                      datos_extra: nuevoExtra(
+                        lead,
+                        motivo ? { motivo_perdida: motivo } : {},
+                        { tipo: "Etapa", texto: `Pasó a ${e.titulo}${motivo ? `: ${motivo}` : ""}`, cuando: new Date().toISOString() },
+                      ),
+                    });
+                  }}
                   className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${
                     esActual
                       ? "border-transparent text-white shadow-sm"
@@ -1774,6 +1827,39 @@ function Panel360({
           })()}
           {pestana === "perfil" && (
             <>
+              {tipoClave === "concesionario" && (
+                <div className="space-y-2 rounded-xl border border-glass-border p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Vehículo de interés y asesor</p>
+                  <select
+                    aria-label="Vehículo de interés"
+                    className="w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base"
+                    value={String(extra.vehiculo_id ?? "")}
+                    onChange={(e) => guardarVehiculo(e.target.value)}
+                  >
+                    <option value="">Sin vehículo asignado</option>
+                    {Boolean(extra.vehiculo_id) && !vehiculosCrm.some((v) => v.id === extra.vehiculo_id) && (
+                      <option value={String(extra.vehiculo_id)}>{String(extra.vehiculo_texto ?? "Vehículo asignado")}</option>
+                    )}
+                    {vehiculosCrm.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        {`${v.tipo} ${v.condicion}: ${v.marca} ${v.modelo}${v.anio ? ` ${v.anio}` : ""} · ${dinero(Number(v.precio))}`}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="flex gap-2">
+                    <input
+                      className="min-w-0 flex-1 rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base"
+                      placeholder="Asesor responsable"
+                      maxLength={80}
+                      value={asesor}
+                      onChange={(e) => setAsesor(e.target.value)}
+                    />
+                    <button type="button" onClick={guardarAsesor} className="rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground">
+                      Guardar
+                    </button>
+                  </div>
+                </div>
+              )}
               <Dato k="Interés" v={lead.interes} />
               <Dato k="Capacidad de pago / cuota inicial" v={lead.capacidad_pago} />
               <Dato k="Urgencia" v={lead.urgencia} />
