@@ -1108,6 +1108,23 @@ html.light .nav-tarjeta {
   border-color: oklch(0.6 0.14 var(--tono) / 0.3);
 }
 
+/* CRM estilo SaaS: superficies claras, tarjetas blancas y sombra suave */
+.crm-card {
+  border-radius: 1rem;
+  border: 1px solid oklch(1 0 0 / 0.1);
+  background: var(--card);
+  box-shadow: 0 1px 2px oklch(0 0 0 / 0.25);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.crm-card:hover { box-shadow: 0 8px 22px -10px oklch(0 0 0 / 0.5); }
+.crm-columna { background: oklch(1 0 0 / 0.03); }
+.crm-segmentado { border: 1px solid var(--glass-border); background: oklch(1 0 0 / 0.04); }
+html.light .crm-raiz { background: rgb(248 250 252 / 0.9); }
+html.light .crm-card { background: #fff; border-color: rgb(226 232 240 / 0.8); box-shadow: 0 1px 2px rgb(15 23 42 / 0.06); }
+html.light .crm-card:hover { box-shadow: 0 10px 24px -12px rgb(15 23 42 / 0.25); }
+html.light .crm-columna { background: rgb(241 245 249 / 0.8); border-color: rgb(226 232 240 / 0.9); }
+html.light .crm-segmentado { background: #fff; border-color: rgb(226 232 240 / 0.8); }
+
 /* GoIDE: oculta la insignia "Edit with Lovable" (v2) */
 #lovable-badge, [id^="lovable-badge"], [id*="lovable-badge"], [class*="lovable-badge"], aside[id*="lovable" i], a[href*="utm_source=lovable-badge"], a[href*="lovable.dev"][href*="utm_campaign=lovable-badge"] { display:none !important; visibility:hidden !important; opacity:0 !important; pointer-events:none !important }
 /* /GoIDE */

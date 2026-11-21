@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import {
   AlertTriangle, Bot, CalendarPlus, CheckCircle2, ChevronDown, ChevronUp, FileText, Flame, Globe, Instagram,
   Facebook, LayoutGrid, ListOrdered, MessageCircle, Plus, RefreshCw, RotateCcw, Search, Settings2, Snowflake,
-  Sparkles, Sun, Target, Trash2, TrendingUp, UserRound, X,
+  Sparkles, Sun, Target, Trash2, TrendingUp, UserRound, X, Check, CalendarDays, Clock, Handshake,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -24,7 +24,30 @@ type Lead = Tables<"crm_leads">;
 type Pqrs = Tables<"crm_pqrs">;
 type MemoriaFila = { id: string; tipo: string; contenido: string; created_at: string };
 type Etapa = { id: string; titulo: string; color: string };
-type VistaCrm = "kanban" | "fifo" | "pqrs" | "ia";
+type VistaCrm = "kanban" | "fifo" | "agenda" | "pqrs" | "ia";
+const RAPIDOS = ["Todos", "Calientes", "Hoy", "Vencidos"] as const;
+type Rapido = (typeof RAPIDOS)[number];
+
+function esVencido(l: Lead): boolean {
+  if (l.etapa_embudo === "ganado" || l.etapa_embudo === "perdido") return false;
+  return Date.now() - new Date(l.ultima_interaccion).getTime() > 2 * 86400000;
+}
+
+function Tendencia({ pct }: { pct: number | null }) {
+  if (pct === null) return null;
+  const sube = pct >= 0;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums ${
+        sube ? "bg-emerald-500/15 text-emerald-600" : "bg-rose-500/15 text-rose-600"
+      }`}
+    >
+      <TrendingUp className={`h-3 w-3 ${sube ? "" : "rotate-180"}`} />
+      {sube ? "+" : ""}
+      {pct}% este mes
+    </span>
+  );
+}
 
 const ETAPAS_BASE: Etapa[] = [
   { id: "nuevo", titulo: "Nuevo Ingreso", color: "#3b82f6" },
@@ -67,9 +90,9 @@ function tempDe(l: Lead): "CALIENTE" | "TIBIO" | "FRIO" | "" {
 }
 
 const TEMP_UI = {
-  CALIENTE: { texto: "Caliente", borde: "#f97316", clase: "bg-orange-500/15 text-orange-500", Icono: Flame },
-  TIBIO: { texto: "Tibio", borde: "#f59e0b", clase: "bg-amber-500/15 text-amber-500", Icono: Sun },
-  FRIO: { texto: "Frío", borde: "#3b82f6", clase: "bg-blue-500/15 text-blue-500", Icono: Snowflake },
+  CALIENTE: { texto: "Caliente", borde: "#f43f5e", clase: "bg-rose-500/10 text-rose-600", Icono: Flame },
+  TIBIO: { texto: "Tibio", borde: "#f59e0b", clase: "bg-amber-500/10 text-amber-600", Icono: Sun },
+  FRIO: { texto: "Frío", borde: "#0ea5e9", clase: "bg-sky-500/10 text-sky-600", Icono: Snowflake },
   "": { texto: "Sin calificar", borde: "#94a3b8", clase: "bg-muted text-muted-foreground", Icono: Snowflake },
 } as const;
 
@@ -113,6 +136,7 @@ export function CrmEmbudo() {
   const [canal, setCanal] = useState("Todos");
   const [temp, setTemp] = useState("Todas");
   const [estado, setEstado] = useState("Todos");
+  const [rapido, setRapido] = useState<Rapido>("Todos");
   const [filtroPqrs, setFiltroPqrs] = useState<"Todas" | "Abierta" | "En gestión" | "Resuelta">("Todas");
   const [abierto, setAbierto] = useState<Lead | null>(null);
   const [nuevo, setNuevo] = useState(false);
@@ -161,9 +185,12 @@ export function CrmEmbudo() {
       if (temp !== "Todas" && tempDe(l) !== temp) return false;
       if (estado === "Sin atender" && l.atendido_por_humano) return false;
       if (estado === "En gestión" && !l.atendido_por_humano) return false;
+      if (rapido === "Calientes" && tempDe(l) !== "CALIENTE") return false;
+      if (rapido === "Hoy" && new Date(l.fecha_llegada).toDateString() !== new Date().toDateString()) return false;
+      if (rapido === "Vencidos" && !esVencido(l)) return false;
       return true;
     });
-  }, [leads, busca, canal, temp, estado]);
+  }, [leads, busca, canal, temp, estado, rapido]);
 
   const pqrsFiltradas = useMemo(() => {
     if (filtroPqrs === "Todas") return pqrsLista;
@@ -182,6 +209,19 @@ export function CrmEmbudo() {
   const cerrados = ganados + leads.filter((l) => l.etapa_embudo === "perdido").length;
   const tasa = cerrados > 0 ? Math.round((ganados / cerrados) * 100) : 0;
   const contar = (f: (l: Lead) => boolean) => leads.filter(f).length;
+  const claveMes = (iso: string): number => {
+    const f = new Date(iso);
+    return f.getFullYear() * 12 + f.getMonth();
+  };
+  const mesActual = ahora ? claveMes(new Date(ahora).toISOString()) : -1;
+  const tendencia = (valor: (l: Lead) => number): number | null => {
+    if (!ahora) return null;
+    const suma = (m: number) => leads.filter((l) => claveMes(l.fecha_llegada) === m).reduce((s, l) => s + valor(l), 0);
+    const a = suma(mesActual);
+    const p = suma(mesActual - 1);
+    if (p === 0) return a > 0 ? 100 : null;
+    return Math.round(((a - p) / p) * 100);
+  };
 
   const mover = async (id: string, etapa: string) => {
     const previo = leads.find((l) => l.id === id);
@@ -240,25 +280,26 @@ export function CrmEmbudo() {
 
   const pestanas: Array<{ id: VistaCrm; titulo: string; Icono: typeof LayoutGrid; badge?: number }> = [
     { id: "kanban", titulo: "Tablero Kanban", Icono: LayoutGrid },
-    { id: "fifo", titulo: "Cola de Llegada", Icono: ListOrdered },
+    { id: "fifo", titulo: "Lista", Icono: ListOrdered },
+    { id: "agenda", titulo: "Agenda", Icono: CalendarDays },
     { id: "pqrs", titulo: "Bandeja PQRS", Icono: AlertTriangle, badge: pqrsAbiertas },
     { id: "ia", titulo: "Inteligencia IA", Icono: Sparkles },
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="crm-raiz space-y-4 rounded-2xl p-1 sm:p-3">
       <div className="flex flex-wrap items-center gap-3">
         <div className="min-w-0 flex-1">
-          <h1 className="font-display text-2xl">CRM y Embudo IA</h1>
+          <h1 className="font-display text-2xl font-extrabold tracking-tight">CRM y Embudo IA</h1>
           <p className="text-sm text-muted-foreground">
             Prospectos, PQRS e inteligencia comercial de {negocio?.nombre ?? "tu negocio"} ({tipo.panel}).
           </p>
         </div>
-        {(vista === "kanban" || vista === "fifo") && (
+        {(vista === "kanban" || vista === "fifo" || vista === "agenda") && (
           <button
             type="button"
             onClick={() => setNuevo(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-all duration-200 hover:shadow-md"
           >
             <Plus className="h-4 w-4" /> Nuevo Prospecto
           </button>
@@ -266,14 +307,14 @@ export function CrmEmbudo() {
       </div>
 
       {/* Navegación de 4 pestañas */}
-      <div className="flex flex-wrap gap-1.5 rounded-xl border border-glass-border bg-background/50 p-1.5 text-sm">
+      <div className="crm-segmentado flex flex-wrap gap-1 rounded-2xl p-1.5 text-sm">
         {pestanas.map(({ id, titulo, Icono, badge }) => (
           <button
             key={id}
             type="button"
             onClick={() => setVista(id)}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors sm:text-sm ${
-              vista === id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-primary/10 hover:text-foreground"
+            className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-200 sm:text-sm ${
+              vista === id ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-primary/10 hover:text-foreground"
             }`}
           >
             <Icono className="h-4 w-4 shrink-0" />
@@ -292,53 +333,71 @@ export function CrmEmbudo() {
       </div>
 
       {/* Pestañas Kanban y Cola de Llegada */}
-      {(vista === "kanban" || vista === "fifo") && (
+      {(vista === "kanban" || vista === "fifo" || vista === "agenda") && (
         <>
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <GlassPanel className="p-4">
-              <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/15 text-blue-500">
-                  <TrendingUp className="h-4 w-4" />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="crm-card p-4">
+              <div className="flex items-center justify-between gap-2">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/25 to-blue-500/5 text-blue-600">
+                  <TrendingUp className="h-5 w-5" />
                 </span>
-                Leads activos
-              </p>
-              <p className="mt-2 text-2xl font-bold tabular-nums">{activos.length}</p>
-            </GlassPanel>
-            <GlassPanel className="p-4">
-              <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="relative flex h-7 w-7 items-center justify-center rounded-lg bg-orange-500/15 text-orange-500">
-                  <Flame className="h-4 w-4" />
+                <Tendencia pct={tendencia(() => 1)} />
+              </div>
+              <p className="mt-3 text-xs font-medium text-muted-foreground">Leads activos</p>
+              <p className="text-3xl font-extrabold tracking-tight tabular-nums">{activos.length}</p>
+            </div>
+            <div className="crm-card p-4">
+              <div className="flex items-center justify-between gap-2">
+                <span className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500/25 to-orange-500/5 text-orange-600">
+                  <Flame className="h-5 w-5" />
                   {calientes.length > 0 && <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 animate-pulse rounded-full bg-orange-500" />}
                 </span>
-                Leads calientes
-              </p>
-              <p className="mt-2 text-2xl font-bold tabular-nums text-orange-500">{calientes.length}</p>
-            </GlassPanel>
-            <GlassPanel className="p-4">
-              <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-green-500/15 text-green-500">
-                  <Target className="h-4 w-4" />
-                </span>
-                Valor en embudo (COP)
-              </p>
-              <p className="mt-2 break-words text-xl font-bold tabular-nums sm:text-2xl">{dinero(valorEmbudo)}</p>
-            </GlassPanel>
-            <GlassPanel className="p-4">
-              <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-500">
-                  <CheckCircle2 className="h-4 w-4" />
-                </span>
-                Tasa de cierre
-              </p>
-              <p className="mt-2 text-2xl font-bold tabular-nums">{tasa}%</p>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-glass-strong">
-                <div className="h-full rounded-full bg-emerald-500" style={{ width: `${tasa}%` }} />
+                <Tendencia pct={tendencia((l) => (tempDe(l) === "CALIENTE" ? 1 : 0))} />
               </div>
-            </GlassPanel>
+              <p className="mt-3 text-xs font-medium text-muted-foreground">Leads calientes</p>
+              <p className="text-3xl font-extrabold tracking-tight tabular-nums text-orange-600">{calientes.length}</p>
+            </div>
+            <div className="crm-card p-4">
+              <div className="flex items-center justify-between gap-2">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-green-500/25 to-green-500/5 text-green-600">
+                  <Target className="h-5 w-5" />
+                </span>
+                <Tendencia pct={tendencia((l) => Number(l.valor_estimado || 0))} />
+              </div>
+              <p className="mt-3 text-xs font-medium text-muted-foreground">Valor en embudo (COP)</p>
+              <p className="break-words text-2xl font-extrabold tracking-tight tabular-nums">{dinero(valorEmbudo)}</p>
+            </div>
+            <div className="crm-card p-4">
+              <div className="flex items-center justify-between gap-2">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500/25 to-emerald-500/5 text-emerald-600">
+                  <CheckCircle2 className="h-5 w-5" />
+                </span>
+                <Tendencia pct={tendencia((l) => (l.etapa_embudo === "ganado" ? 1 : 0))} />
+              </div>
+              <p className="mt-3 text-xs font-medium text-muted-foreground">Tasa de cierre</p>
+              <p className="text-3xl font-extrabold tracking-tight tabular-nums">{tasa}%</p>
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-glass-strong">
+                <div className="h-full rounded-full bg-emerald-500 transition-all duration-500" style={{ width: `${tasa}%` }} />
+              </div>
+            </div>
           </div>
 
-          <GlassPanel className="space-y-3 p-3">
-            <label className="flex items-center gap-2 rounded-lg border border-glass-border bg-background/60 px-3">
+          <div className="crm-card space-y-3 p-3">
+            <div className="flex flex-wrap gap-2">
+              {RAPIDOS.map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => setRapido(r)}
+                  className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 ${
+                    rapido === r ? "border-primary bg-primary text-primary-foreground shadow-sm" : "border-glass-border text-muted-foreground hover:bg-primary/10"
+                  }`}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+            <label className="flex items-center gap-2 rounded-full border border-glass-border bg-background/60 px-4">
               <Search className="h-4 w-4 text-muted-foreground" />
               <input
                 className="min-w-0 flex-1 bg-transparent py-2 text-base outline-none"
@@ -372,7 +431,7 @@ export function CrmEmbudo() {
                 </Pildora>
               ))}
             </div>
-          </GlassPanel>
+          </div>
 
           {cargando ? (
             <p className="py-10 text-center text-sm text-muted-foreground">Cargando prospectos…</p>
@@ -383,7 +442,7 @@ export function CrmEmbudo() {
                 return (
                   <div
                     key={e.id}
-                    className="flex w-72 shrink-0 flex-col rounded-xl border border-glass-border bg-background/40"
+                    className="crm-columna flex w-72 shrink-0 flex-col overflow-hidden rounded-2xl border border-glass-border"
                     style={{ borderTop: `3px solid ${e.color}` }}
                     onDragOver={(ev) => ev.preventDefault()}
                     onDrop={() => {
@@ -392,11 +451,16 @@ export function CrmEmbudo() {
                     }}
                   >
                     <div className="p-3">
-                      <div className="flex items-center justify-between gap-2 text-sm font-medium">
+                      <div className="flex items-center justify-between gap-2 text-sm font-bold">
                         <span className="truncate">{e.titulo}</span>
-                        <span className="rounded-full bg-glass-strong px-2 text-xs tabular-nums">{items.length}</span>
+                        <span
+                          className="flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-xs font-bold tabular-nums text-white"
+                          style={{ backgroundColor: e.color }}
+                        >
+                          {items.length}
+                        </span>
                       </div>
-                      <p className="text-xs tabular-nums text-muted-foreground">
+                      <p className="mt-0.5 text-sm font-extrabold tracking-tight tabular-nums text-foreground">
                         {dinero(items.reduce((s, l) => s + Number(l.valor_estimado || 0), 0))}
                       </p>
                     </div>
@@ -408,6 +472,38 @@ export function CrmEmbudo() {
                   </div>
                 );
               })}
+            </div>
+          ) : vista === "agenda" ? (
+            <div className="space-y-2.5">
+              {[...filtrados]
+                .filter((l) => l.etapa_embudo === "cita" || esVencido(l))
+                .sort((a, b) => a.ultima_interaccion.localeCompare(b.ultima_interaccion))
+                .map((l) => {
+                  const t = TEMP_UI[tempDe(l)];
+                  return (
+                    <button
+                      key={l.id}
+                      type="button"
+                      onClick={() => setAbierto(l)}
+                      className="crm-card flex w-full items-center gap-3 p-3.5 text-left"
+                    >
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/30 to-primary/10 text-xs font-bold text-primary">
+                        {iniciales(l)}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold">{l.nombre || "Sin nombre"}</span>
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          {etapas.find((e) => e.id === l.etapa_embudo)?.titulo ?? l.etapa_embudo} · {ahora ? tiempo(l.ultima_interaccion, ahora) : ""}
+                        </span>
+                      </span>
+                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${t.clase}`}>{t.texto}</span>
+                    </button>
+                  );
+                })}
+              {filtrados.filter((l) => l.etapa_embudo === "cita" || esVencido(l)).length === 0 && (
+                <p className="crm-card p-6 text-center text-sm text-muted-foreground">No hay citas ni seguimientos pendientes.</p>
+              )}
             </div>
           ) : (
             <GlassPanel className="overflow-x-auto p-0">
@@ -990,11 +1086,10 @@ function Tarjeta({ l, ahora, onAbrir, onArrastrar }: { l: Lead; ahora: number; o
       draggable
       onDragStart={onArrastrar}
       onClick={onAbrir}
-      className="cursor-grab rounded-lg border border-glass-border bg-card p-3 shadow-sm transition-all hover:shadow-md active:cursor-grabbing"
-      style={{ borderLeft: `4px solid ${t.borde}` }}
+      className="crm-card cursor-grab p-3 active:cursor-grabbing"
     >
       <div className="flex items-center gap-2">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-semibold text-primary">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/30 to-primary/5 text-xs font-bold text-primary">
           {iniciales(l)}
         </span>
         <div className="min-w-0 flex-1">
@@ -1004,7 +1099,8 @@ function Tarjeta({ l, ahora, onAbrir, onArrastrar }: { l: Lead; ahora: number; o
         <span className="font-mono text-xs text-muted-foreground">#{String(l.numero_turno).padStart(2, "0")}</span>
       </div>
       <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]">
-        <span className={`rounded-full px-2 py-0.5 ${t.clase}`}>
+        <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-semibold ${t.clase}`}>
+          {tempDe(l) === "CALIENTE" && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-rose-500" />}
           {t.texto}
           {l.puntaje != null ? ` ${l.puntaje}%` : ""}
         </span>
@@ -1014,11 +1110,25 @@ function Tarjeta({ l, ahora, onAbrir, onArrastrar }: { l: Lead; ahora: number; o
         </span>
       </div>
       {l.interes && <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">{l.interes}</p>}
-      <div className="mt-2 flex items-center justify-between text-xs">
-        <span className="font-semibold tabular-nums text-green-500">
+      <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-dashed border-glass-border pt-2.5 text-xs">
+        <span className="text-sm font-extrabold tracking-tight tabular-nums">
           {Number(l.valor_estimado) > 0 ? dinero(Number(l.valor_estimado)) : "—"}
         </span>
-        <span className="text-muted-foreground">{ahora ? tiempo(l.fecha_llegada, ahora) : ""}</span>
+        <span className="flex items-center gap-2">
+          <span className="text-muted-foreground">{ahora ? tiempo(l.fecha_llegada, ahora) : ""}</span>
+          {l.telefono && (
+            <a
+              href={`https://wa.me/${l.telefono.replace(/\D/g, "")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              aria-label="Escribir por WhatsApp"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 transition-colors hover:bg-emerald-500/25"
+            >
+              <MessageCircle className="h-3.5 w-3.5" />
+            </a>
+          )}
+        </span>
       </div>
     </div>
   );
@@ -1215,7 +1325,7 @@ function Panel360({
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm" onClick={onCerrar}>
-      <aside className="flex h-full w-full max-w-md flex-col border-l border-glass-border bg-background/95 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      <aside className="flex h-full w-full max-w-xl flex-col border-l border-glass-border bg-background shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-3 border-b border-glass-border p-4">
           <div className="relative h-14 w-14 shrink-0">
             <svg viewBox="0 0 36 36" className="h-14 w-14 -rotate-90">
@@ -1236,7 +1346,35 @@ function Panel360({
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="flex gap-1 border-b border-glass-border px-3 pt-2 text-sm">
+        <div className="border-b border-glass-border px-4 py-3">
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Etapa del embudo</p>
+          <div className="flex gap-1.5 overflow-x-auto pb-1">
+            {etapas.map((e, i) => {
+              const actual = etapas.findIndex((x) => x.id === lead.etapa_embudo);
+              const hecha = i < actual;
+              const esActual = i === actual;
+              return (
+                <button
+                  key={e.id}
+                  type="button"
+                  onClick={() => void guardarCampo({ etapa_embudo: e.id, atendido_por_humano: true })}
+                  className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${
+                    esActual
+                      ? "border-transparent text-white shadow-sm"
+                      : hecha
+                        ? "border-primary/30 bg-primary/10 text-primary"
+                        : "border-glass-border text-muted-foreground hover:bg-primary/5"
+                  }`}
+                  style={esActual ? { backgroundColor: e.color } : undefined}
+                >
+                  {hecha && <Check className="h-3 w-3" />}
+                  {e.titulo}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <div className="flex gap-1 overflow-x-auto border-b border-glass-border px-3 pt-2 text-sm">
           {([["perfil", "Perfil IA"], ["chat", "Conversación"], ["tiempo", "Línea de tiempo"], ["pqrs", `PQRS (${pqrs.length})`]] as const).map(([id, txt]) => (
             <button
               key={id}
@@ -1305,14 +1443,26 @@ function Panel360({
             (linea.length === 0 ? (
               <p className="text-muted-foreground">Sin actividad todavía.</p>
             ) : (
-              linea.map((e, i) => (
-                <div key={i} className="border-l-2 border-primary/40 pl-3">
-                  <p className="text-xs text-muted-foreground">
-                    {e.quien} · {new Date(e.cuando).toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" })}
-                  </p>
-                  <p className="break-words">{e.texto || "—"}</p>
-                </div>
-              ))
+              <div className="relative space-y-4 pl-1">
+                <span className="absolute bottom-2 left-[17px] top-2 w-px bg-glass-border" aria-hidden="true" />
+                {linea.map((e, i) => {
+                  const Ic = e.quien === "Llegada" ? UserRound : e.quien === "Calificación IA" ? Sparkles : e.quien === "PQRS" ? AlertTriangle : MessageCircle;
+                  return (
+                    <div key={i} className="relative flex gap-3">
+                      <span className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-glass-border bg-card text-primary shadow-sm">
+                        <Ic className="h-4 w-4" />
+                      </span>
+                      <div className="min-w-0 flex-1 pt-0.5">
+                        <p className="text-xs text-muted-foreground">
+                          <span className="font-semibold text-foreground">{e.quien}</span> ·{" "}
+                          {new Date(e.cuando).toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" })}
+                        </p>
+                        <p className="break-words">{e.texto || "—"}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             ))}
           {pestana === "pqrs" &&
             (pqrs.length === 0 ? (
@@ -1331,40 +1481,44 @@ function Panel360({
               ))
             ))}
         </div>
-        <div className="grid grid-cols-2 gap-2 border-t border-glass-border p-3 text-sm">
-          <button
-            type="button"
-            onClick={() => {
-              void guardarCampo({ atendido_por_humano: true });
-              onNavegar(rutaAgente, { vista: "agente" });
-            }}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-glass-border px-2 py-2 hover:bg-primary/10"
-          >
-            <MessageCircle className="h-4 w-4" /> Abrir chat WhatsApp
-          </button>
-          <button
-            type="button"
-            onClick={cotizar}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-glass-border px-2 py-2 hover:bg-primary/10"
-          >
-            <FileText className="h-4 w-4" /> Crear cotización
-          </button>
-          <button
-            type="button"
-            disabled={ocupado}
-            onClick={() => void agendar()}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-glass-border px-2 py-2 hover:bg-primary/10 disabled:opacity-50"
-          >
-            <CalendarPlus className="h-4 w-4" /> Agendar cita
-          </button>
-          <button
-            type="button"
-            disabled={ocupado}
-            onClick={() => void convertir()}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-2 py-2 text-primary-foreground disabled:opacity-50"
-          >
-            <CheckCircle2 className="h-4 w-4" /> Convertir a cliente
-          </button>
+        <div className="space-y-2 border-t border-glass-border bg-background p-3 text-sm">
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                void guardarCampo({ atendido_por_humano: true });
+                onNavegar(rutaAgente, { vista: "agente" });
+              }}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-glass-border px-2 py-2 transition-colors hover:bg-primary/10"
+            >
+              <MessageCircle className="h-4 w-4" /> Abrir chat WhatsApp
+            </button>
+            <button
+              type="button"
+              disabled={ocupado}
+              onClick={() => void agendar()}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-glass-border px-2 py-2 transition-colors hover:bg-primary/10 disabled:opacity-50"
+            >
+              <CalendarPlus className="h-4 w-4" /> Agendar cita
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={cotizar}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-primary/40 bg-primary/10 px-2 py-2.5 font-semibold text-primary transition-colors hover:bg-primary/20"
+            >
+              <FileText className="h-4 w-4" /> Generar Cotización
+            </button>
+            <button
+              type="button"
+              disabled={ocupado}
+              onClick={() => void convertir()}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary px-2 py-2.5 font-semibold text-primary-foreground shadow-sm transition-all hover:shadow-md disabled:opacity-50"
+            >
+              <Handshake className="h-4 w-4" /> Cerrar Venta
+            </button>
+          </div>
         </div>
       </aside>
     </div>
