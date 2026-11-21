@@ -237,6 +237,7 @@ const TABS: Record<Sector, TabDef[]> = {
   auto: [
     { id: "inv", label: "Inventario", icon: Car, ayuda: "Toca un vehículo para ver su ficha completa, cotizarlo o separarlo." },
     { id: "cot", label: "Cotizar y financiar", icon: Calculator, ayuda: "Mueve la cuota inicial y el plazo: la cuota mensual se recalcula al instante." },
+    { id: "retomas", label: "Retomas", icon: Car, ayuda: "Avalúa el vehículo usado que recibes en parte de pago, apruébalo y pásalo al inventario." },
     { id: "cierre", label: "Separación y entrega", icon: Handshake, ayuda: "Lleva la venta paso a paso: separación, crédito, documentos, factura y entrega." },
     { id: "taller", label: "Taller", icon: Wrench, ayuda: "Recibe un vehículo, avanza la orden y cóbrala al entregarlo." },
     { id: "wa", label: "WhatsApp IA", icon: MessageCircle, ayuda: "Escribe lo que quieras como si fueras un cliente. A la derecha ves lo que registra tu equipo." },
@@ -388,6 +389,7 @@ function Simulador({ sector, onSalir }: { sector: Sector; onSalir: () => void })
         {tab === "inv" && sector === "auto" && <InventarioAuto productos={productos} onCotizar={(id) => { setVehSel(id); setTab("cot"); }} onSeparar={(id) => { setVehSel(id); setTab("cierre"); }} />}
         {tab === "inv" && sector === "comercio" && <InventarioComercio productos={productos} setProductos={setProductos} setGastos={setGastos} />}
         {tab === "cot" && <CotizadorAuto productos={productos.filter((p) => p.cat === "Vehículo")} vehSel={vehSel} setVehSel={setVehSel} onSeparar={(id) => { setVehSel(id); setTab("cierre"); }} onEtapa={avanzarProspecto} />}
+        {tab === "retomas" && <RetomasAuto setProductos={setProductos} />}
         {tab === "cierre" && <CierreAuto productos={productos} setProductos={setProductos} vehSel={vehSel} registrarVenta={registrarVenta} onEtapa={avanzarProspecto} />}
         {tab === "taller" && <Taller registrarVenta={registrarVenta} />}
         {tab === "ped" && <Domicilios pedidos={pedidos} setPedidos={setPedidos} tarifas={tarifas} setTarifas={setTarifas} registrarVenta={registrarVenta} />}
@@ -1054,6 +1056,62 @@ function CotizadorAuto({ productos, vehSel, setVehSel, onSeparar, onEtapa }: { p
           </ul>
         )}
       </section>
+    </div>
+  );
+}
+
+type Retoma = { id: string; cliente: string; vehiculo: string; placa: string; km: number; color: string; ofrece: number; avaluo: number; soat: string; tecno: string; estado: "Por avaluar" | "Avaluada" | "Aprobada" | "En inventario"; para: string };
+
+function RetomasAuto({ setProductos }: { setProductos: React.Dispatch<React.SetStateAction<Prod[]>> }) {
+  const [lista, setLista] = useState<Retoma[]>([
+    { id: "r1", cliente: "Andrés Felipe Ríos", vehiculo: "Chevrolet Spark GT 2019", placa: "HKX-208", km: 54000, color: "Gris", ofrece: 30000000, avaluo: 28000000, soat: "Vigente hasta 03/2027", tecno: "Vigente hasta 08/2027", estado: "Aprobada", para: "Chevrolet Onix Turbo RS 2023" },
+    { id: "r2", cliente: "Laura Ramírez", vehiculo: "Kia Picanto 2018", placa: "FNZ-731", km: 68500, color: "Rojo", ofrece: 29000000, avaluo: 0, soat: "Vencido", tecno: "Vigente hasta 11/2026", estado: "Por avaluar", para: "Renault Duster Iconic 2026" },
+    { id: "r3", cliente: "Carlos Mendoza", vehiculo: "Honda CB 190R 2021", placa: "MQT-45D", km: 21000, color: "Negro", ofrece: 7500000, avaluo: 7000000, soat: "Vigente hasta 05/2027", tecno: "No aplica", estado: "Avaluada", para: "Mazda CX-30 Grand Touring 2024" },
+  ]);
+  const [form, setForm] = useState({ cliente: "", vehiculo: "", placa: "", ofrece: "" });
+  const [error, setError] = useState("");
+  const agregar = () => {
+    const ofrece = Number(form.ofrece);
+    if (!form.cliente.trim() || !form.vehiculo.trim() || !ofrece) { setError("Escribe cliente, vehículo y valor ofrecido."); return; }
+    setError("");
+    setLista((a) => [{ id: "r" + Date.now(), cliente: form.cliente.trim().slice(0, 40), vehiculo: form.vehiculo.trim().slice(0, 40), placa: form.placa.trim().slice(0, 10).toUpperCase() || "Sin placa", km: 0, color: "—", ofrece, avaluo: 0, soat: "Por revisar", tecno: "Por revisar", estado: "Por avaluar", para: "Por definir" }, ...a]);
+    setForm({ cliente: "", vehiculo: "", placa: "", ofrece: "" });
+  };
+  const avanzar = (r: Retoma) => {
+    if (r.estado === "Por avaluar") { setLista((a) => a.map((x) => (x.id === r.id ? { ...x, avaluo: Math.round(x.ofrece * 0.93), estado: "Avaluada" } : x))); return; }
+    if (r.estado === "Avaluada") { setLista((a) => a.map((x) => (x.id === r.id ? { ...x, estado: "Aprobada" } : x))); return; }
+    if (r.estado === "Aprobada") {
+      setProductos((ps) => [...ps, { id: "rt" + r.id, nombre: `${r.vehiculo} (retoma)`, precio: Math.round(r.avaluo * 1.12), costo: r.avaluo, stock: 1, ean: "", ico: "car", minimo: 0, cat: "Vehículo", ficha: [["Condición", "Usado (retoma)"], ["Kilometraje", r.km ? `${r.km.toLocaleString("es-CO")} km` : "—"], ["Placa", r.placa], ["Color", r.color], ["SOAT", r.soat], ["Tecnomecánica", r.tecno]] }]);
+      setLista((a) => a.map((x) => (x.id === r.id ? { ...x, estado: "En inventario" } : x)));
+    }
+  };
+  const texto: Record<Retoma["estado"], string> = { "Por avaluar": "Avaluar", Avaluada: "Aprobar retoma", Aprobada: "Pasar al inventario", "En inventario": "" };
+  return (
+    <div className="space-y-6">
+      <section className="grid gap-2 rounded-xl border border-dashed border-border p-3 sm:grid-cols-2 lg:grid-cols-5">
+        <input value={form.cliente} onChange={(e) => setForm({ ...form, cliente: e.target.value })} placeholder="Cliente" className="rounded-lg border border-border bg-card px-3 py-2 text-base" />
+        <input value={form.vehiculo} onChange={(e) => setForm({ ...form, vehiculo: e.target.value })} placeholder="Vehículo (marca, modelo, año)" className="rounded-lg border border-border bg-card px-3 py-2 text-base" />
+        <input value={form.placa} onChange={(e) => setForm({ ...form, placa: e.target.value })} placeholder="Placa" className="rounded-lg border border-border bg-card px-3 py-2 text-base" />
+        <input value={form.ofrece} onChange={(e) => setForm({ ...form, ofrece: e.target.value.replace(/\D/g, "") })} inputMode="numeric" placeholder="Valor que pide el cliente" className="rounded-lg border border-border bg-card px-3 py-2 text-base" />
+        <button onClick={agregar} className="inline-flex items-center justify-center gap-1 rounded-lg bg-accent px-4 py-2 text-sm font-bold text-accent-foreground"><Plus className="h-4 w-4" /> Registrar retoma</button>
+      </section>
+      {error && <p className="text-sm font-semibold text-destructive">{error}</p>}
+      <div className="grid gap-3 md:grid-cols-2">
+        {lista.map((r) => (
+          <div key={r.id} className="rounded-xl border border-border bg-card p-4">
+            <div className="flex items-start justify-between gap-2">
+              <p className="min-w-0 font-bold">{r.vehiculo}<span className="block text-xs font-normal text-muted-foreground">{r.placa} · {r.km ? r.km.toLocaleString("es-CO") + " km" : "km por registrar"} · {r.color}</span></p>
+              <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-semibold">{r.estado}</span>
+            </div>
+            <p className="mt-2 text-sm">Cliente: <b>{r.cliente}</b> · Para: {r.para}</p>
+            <p className="text-sm">Pide: {cop(r.ofrece)} · Avalúo: <b>{r.avaluo ? cop(r.avaluo) : "pendiente"}</b></p>
+            <p className="text-xs text-muted-foreground">SOAT: {r.soat} · Tecnomecánica: {r.tecno}</p>
+            {r.estado !== "En inventario"
+              ? <button onClick={() => avanzar(r)} className="mt-3 rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-accent-foreground">{texto[r.estado]}</button>
+              : <p className="mt-3 inline-flex items-center gap-1 text-sm font-bold"><CheckCircle2 className="h-4 w-4" /> Ya está en el inventario como usado</p>}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
