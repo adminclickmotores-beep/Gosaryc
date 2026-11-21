@@ -238,8 +238,10 @@ const TABS: Record<Sector, TabDef[]> = {
     { id: "inv", label: "Inventario", icon: Car, ayuda: "Toca un vehículo para ver su ficha completa, cotizarlo o separarlo." },
     { id: "cot", label: "Cotizar y financiar", icon: Calculator, ayuda: "Mueve la cuota inicial y el plazo: la cuota mensual se recalcula al instante." },
     { id: "retomas", label: "Retomas", icon: Car, ayuda: "Avalúa el vehículo usado que recibes en parte de pago, apruébalo y pásalo al inventario." },
+    { id: "testdrive", label: "Test drive", icon: Car, ayuda: "Agenda una prueba de manejo, verifica la licencia, sal a la ruta y registra si el cliente quiere cotización." },
     { id: "cierre", label: "Separación y entrega", icon: Handshake, ayuda: "Lleva la venta paso a paso: separación, crédito, documentos, factura y entrega." },
     { id: "taller", label: "Taller", icon: Wrench, ayuda: "Recibe un vehículo, avanza la orden y cóbrala al entregarlo." },
+    { id: "postventa", label: "Postventa", icon: FileText, ayuda: "Clientes con vehículo entregado: garantía, próximo mantenimiento, recordatorio por WhatsApp y cobro del servicio." },
     { id: "wa", label: "WhatsApp IA", icon: MessageCircle, ayuda: "Escribe lo que quieras como si fueras un cliente. A la derecha ves lo que registra tu equipo." },
     { id: "crm", label: "CRM", icon: Kanban, ayuda: "Los interesados de WhatsApp aparecen aquí. Arrastra las tarjetas entre etapas." },
     { id: "fin", label: "Finanzas", icon: TrendingUp, ayuda: "Ingresos, gastos y utilidad se actualizan con cada venta y cada entrega." },
@@ -400,6 +402,8 @@ function Simulador({ sector, onSalir }: { sector: Sector; onSalir: () => void })
         {tab === "retomas" &&<RetomasAuto setProductos={setProductos} />}
         {tab === "cierre" && <CierreAuto productos={productos} setProductos={setProductos} vehSel={vehSel} registrarVenta={registrarVenta} onEtapa={avanzarProspecto} />}
         {tab === "taller" && <Taller registrarVenta={registrarVenta} />}
+        {tab === "testdrive" && <TestDriveAuto vehiculos={productos.filter((p) => p.cat === "Vehículo")} prospectos={prospectos} onEtapa={avanzarProspecto} />}
+        {tab === "postventa" && <PostventaAuto registrarVenta={registrarVenta} />}
         {tab === "ped" && <Domicilios pedidos={pedidos} setPedidos={setPedidos} tarifas={tarifas} setTarifas={setTarifas} registrarVenta={registrarVenta} />}
         {tab === "caja" && <Caja ventas={ventas} gastos={gastos} setGastos={setGastos} />}
         {tab === "ventas" && <Ventas ventas={ventas} />}
@@ -408,6 +412,179 @@ function Simulador({ sector, onSalir }: { sector: Sector; onSalir: () => void })
         {tab === "crm" && <Crm prospectos={prospectos} setProspectos={setProspectos} pqrs={pqrs} vehiculos={productos.filter((p) => p.cat === "Vehículo")} />}
         {tab === "nomina" && <Nomina empleados={esc.empleados} negocio={esc.negocio} />}
       </main>
+    </div>
+  );
+}
+
+/* ───────────── Test drive y postventa (concesionario) ───────────── */
+
+type PruebaManejo = {
+  id: string; cliente: string; vehiculo: string; valor: number; fecha: string; hora: string;
+  licencia: boolean; estado: "Programada" | "En ruta" | "Completada" | "Cancelada"; resultado: string; km: number;
+};
+
+function TestDriveAuto({ vehiculos, prospectos, onEtapa }: {
+  vehiculos: Prod[]; prospectos: Prospecto[];
+  onEtapa: (nombre: string, interes: string, etapa: Prospecto["etapa"], valor: number) => void;
+}) {
+  const [lista, setLista] = useState<PruebaManejo[]>([
+    { id: "t1", cliente: "Laura Ramírez", vehiculo: "Renault Duster Iconic 1.3 Turbo 2026", valor: 102900000, fecha: "Hoy", hora: "4:00 p. m.", licencia: true, estado: "Programada", resultado: "", km: 0 },
+    { id: "t2", cliente: "Carlos Mendoza", vehiculo: "Mazda CX-30 Grand Touring 2024", valor: 108500000, fecha: "Mañana", hora: "10:00 a. m.", licencia: false, estado: "Programada", resultado: "", km: 0 },
+  ]);
+  const [cliente, setCliente] = useState(prospectos[0]?.nombre ?? "");
+  const [vehiculo, setVehiculo] = useState(vehiculos[0]?.id ?? "");
+  const [fecha, setFecha] = useState("Hoy");
+  const [hora, setHora] = useState("5:00 p. m.");
+  const [licencia, setLicencia] = useState(false);
+  const [error, setError] = useState("");
+
+  const programar = () => {
+    const v = vehiculos.find((x) => x.id === vehiculo);
+    if (!cliente.trim() || !v) { setError("Elige el cliente y el vehículo."); return; }
+    if (!licencia) { setError("Confirma que verificaste la licencia de conducción vigente."); return; }
+    setError("");
+    setLista((a) => [{ id: "t" + Date.now(), cliente: cliente.trim().slice(0, 40), vehiculo: v.nombre, valor: v.precio, fecha, hora, licencia, estado: "Programada", resultado: "", km: 0 }, ...a]);
+    onEtapa(cliente, v.nombre, "Prueba de manejo", v.precio);
+    setLicencia(false);
+  };
+  const cambiar = (id: string, p: Partial<PruebaManejo>) => setLista((a) => a.map((x) => (x.id === id ? { ...x, ...p } : x)));
+  const completar = (t: PruebaManejo, resultado: string) => {
+    cambiar(t.id, { estado: "Completada", resultado, km: 12 });
+    onEtapa(t.cliente, t.vehiculo, resultado === "Quiere cotización" ? "Cotizado" : "Prueba de manejo", t.valor);
+  };
+
+  const programadas = lista.filter((t) => t.estado === "Programada" || t.estado === "En ruta").length;
+  const hechas = lista.filter((t) => t.estado === "Completada").length;
+  const interesados = lista.filter((t) => t.resultado === "Quiere cotización").length;
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Tarjeta titulo="Pruebas pendientes" valor={String(programadas)} />
+        <Tarjeta titulo="Pruebas realizadas" valor={String(hechas)} />
+        <Tarjeta titulo="Pasaron a cotización" valor={String(interesados)} sub={hechas ? Math.round((interesados / hechas) * 100) + " % de conversión" : "Aún sin datos"} />
+      </div>
+      <div className="rounded-xl border border-border bg-card p-4">
+        <h3 className="font-bold">Agendar test drive</h3>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+          <select value={cliente} onChange={(e) => setCliente(e.target.value)} className="rounded-lg border border-border bg-background px-2 py-2 text-base">
+            {prospectos.map((p) => <option key={p.id} value={p.nombre}>{p.nombre}</option>)}
+          </select>
+          <select value={vehiculo} onChange={(e) => setVehiculo(e.target.value)} className="rounded-lg border border-border bg-background px-2 py-2 text-base">
+            {vehiculos.map((v) => <option key={v.id} value={v.id}>{v.nombre}</option>)}
+          </select>
+          <select value={fecha} onChange={(e) => setFecha(e.target.value)} className="rounded-lg border border-border bg-background px-2 py-2 text-base">
+            {["Hoy", "Mañana", "Pasado mañana", "Sábado"].map((f) => <option key={f}>{f}</option>)}
+          </select>
+          <select value={hora} onChange={(e) => setHora(e.target.value)} className="rounded-lg border border-border bg-background px-2 py-2 text-base">
+            {["9:00 a. m.", "10:00 a. m.", "11:00 a. m.", "2:00 p. m.", "4:00 p. m.", "5:00 p. m."].map((h) => <option key={h}>{h}</option>)}
+          </select>
+          <button onClick={programar} className="rounded-lg bg-primary px-3 py-2 text-sm font-bold text-primary-foreground">Agendar</button>
+        </div>
+        <label className="mt-2 flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={licencia} onChange={(e) => setLicencia(e.target.checked)} /> Verifiqué la licencia de conducción vigente y dejé copia del documento
+        </label>
+        {error && <p className="mt-2 text-sm font-semibold text-destructive">{error}</p>}
+      </div>
+      <div className="space-y-3">
+        {lista.map((t) => (
+          <div key={t.id} className="rounded-xl border border-border bg-card p-4">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <p className="font-bold">{t.cliente} · {t.vehiculo}</p>
+                <p className="text-sm text-muted-foreground">{t.fecha} · {t.hora} · Licencia {t.licencia ? "verificada" : "pendiente de verificar"}</p>
+                {t.resultado && <p className="mt-1 text-sm">Resultado: <b>{t.resultado}</b> · {t.km} km recorridos</p>}
+              </div>
+              <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold">{t.estado}</span>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {t.estado === "Programada" && (
+                <>
+                  {!t.licencia && <button onClick={() => cambiar(t.id, { licencia: true })} className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold">Verificar licencia</button>}
+                  <button disabled={!t.licencia} onClick={() => cambiar(t.id, { estado: "En ruta" })} className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground disabled:opacity-40">Salir a la prueba</button>
+                  <button onClick={() => cambiar(t.id, { estado: "Cancelada" })} className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold">Cancelar</button>
+                </>
+              )}
+              {t.estado === "En ruta" && (
+                <>
+                  <button onClick={() => completar(t, "Quiere cotización")} className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground">Terminó: quiere cotización</button>
+                  <button onClick={() => completar(t, "Lo está pensando")} className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold">Terminó: lo está pensando</button>
+                  <button onClick={() => completar(t, "No le interesó")} className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold">Terminó: no le interesó</button>
+                </>
+              )}
+            </div>
+          </div>
+        ))}
+        {lista.length === 0 && <p className="text-sm text-muted-foreground">No hay pruebas de manejo agendadas.</p>}
+      </div>
+    </div>
+  );
+}
+
+type Entregado = {
+  id: string; cliente: string; telefono: string; vehiculo: string; entrega: string; garantia: string;
+  proximo: string; km: number; estado: "Al día" | "Por vencer" | "Vencido"; aviso: boolean;
+};
+
+function PostventaAuto({ registrarVenta }: { registrarVenta: (v: NuevaVenta) => void }) {
+  const [lista, setLista] = useState<Entregado[]>([
+    { id: "x1", cliente: "Marcela Duarte", telefono: "3157001122", vehiculo: "Kia Sportage 2022", entrega: "12 may 2026", garantia: "Garantía mecánica hasta 12 may 2027", proximo: "Mantenimiento de 20.000 km", km: 19400, estado: "Por vencer", aviso: false },
+    { id: "x2", cliente: "Héctor Villa", telefono: "3004455667", vehiculo: "Suzuki Swift 2021", entrega: "03 feb 2026", garantia: "Garantía mecánica hasta 03 feb 2027", proximo: "Cambio de aceite y filtros", km: 15200, estado: "Vencido", aviso: false },
+    { id: "x3", cliente: "Paola Giraldo", telefono: "3112233445", vehiculo: "Honda CB 190R 2025", entrega: "20 oct 2026", garantia: "Garantía de fábrica hasta 20 oct 2028", proximo: "Primera revisión de 1.000 km", km: 450, estado: "Al día", aviso: false },
+  ]);
+  const [servicio, setServicio] = useState<string | null>(null);
+  const [cobrados, setCobrados] = useState(0);
+
+  const avisar = (x: Entregado) => {
+    const msg = `Hola ${x.cliente.split(" ")[0]}, te escribimos de AutoElite Colombia. Tu ${x.vehiculo} tiene pendiente: ${x.proximo}. ¿Te agendamos cita en el taller esta semana?`;
+    window.open("https://wa.me/57" + x.telefono + "?text=" + encodeURIComponent(msg), "_blank", "noopener,noreferrer");
+    setLista((a) => a.map((y) => (y.id === x.id ? { ...y, aviso: true } : y)));
+  };
+  const cobrarServicio = (x: Entregado, s: { n: string; v: number }) => {
+    registrarVenta({ detalle: s.n + " · " + x.vehiculo + " (postventa)", total: s.v, pago: "Datáfono", tipo: "Taller", envio: 0 });
+    setLista((a) => a.map((y) => (y.id === x.id ? { ...y, estado: "Al día", aviso: true, km: y.km } : y)));
+    setCobrados((n) => n + s.v);
+    setServicio(null);
+  };
+  const pendientes = lista.filter((x) => x.estado !== "Al día").length;
+  const sel = lista.find((x) => x.id === servicio) ?? null;
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Tarjeta titulo="Clientes con vehículo entregado" valor={String(lista.length)} />
+        <Tarjeta titulo="Con servicio pendiente" valor={String(pendientes)} sub="Oportunidad de taller" />
+        <Tarjeta titulo="Cobrado en postventa" valor={cop(cobrados)} />
+      </div>
+      {lista.map((x) => (
+        <div key={x.id} className="rounded-xl border border-border bg-card p-4">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <p className="font-bold">{x.cliente} · {x.vehiculo}</p>
+              <p className="text-sm text-muted-foreground">Entregado el {x.entrega} · {x.km.toLocaleString("es-CO")} km · {x.garantia}</p>
+              <p className="mt-1 text-sm">Próximo: <b>{x.proximo}</b>{x.aviso && " · Cliente avisado"}</p>
+            </div>
+            <span className={"rounded-full px-3 py-1 text-xs font-bold " + (x.estado === "Vencido" ? "bg-destructive text-destructive-foreground" : "bg-muted")}>{x.estado}</span>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button onClick={() => avisar(x)} className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold"><MessageCircle className="h-3.5 w-3.5" /> Recordar por WhatsApp</button>
+            <button onClick={() => setServicio(x.id)} className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground">Registrar y cobrar servicio</button>
+          </div>
+        </div>
+      ))}
+      {sel && (
+        <Modal onClose={() => setServicio(null)}>
+          <h3 className="font-bold">Servicio para {sel.cliente}</h3>
+          <p className="mb-3 text-muted-foreground">{sel.vehiculo}. Elige el servicio realizado: se cobra y queda en Ventas y Finanzas.</p>
+          <div className="space-y-2">
+            {SERVICIOS_TALLER.map((s) => (
+              <button key={s.n} onClick={() => cobrarServicio(sel, s)} className="flex w-full items-center justify-between rounded-lg border border-border px-3 py-2 text-left hover:border-primary">
+                <span>{s.n}</span><b>{cop(s.v)}</b>
+              </button>
+            ))}
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
