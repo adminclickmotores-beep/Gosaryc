@@ -16,10 +16,10 @@ export type AgenteMensaje = { role: "user" | "assistant"; content: string };
 
 // Asistente virtual general: sirve para cualquier tipo de negocio.
 export const runAgenteVirtual = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d: { messages: AgenteMensaje[]; tipoNegocio?: string | null }) => ({
     messages: Array.isArray(d?.messages) ? d.messages : [],
   }))
+  .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
     await assertAiQuota(context.supabase, "agente-virtual");
 

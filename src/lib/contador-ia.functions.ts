@@ -24,8 +24,8 @@ const destino = () => {
 
 /** Consulta cambios recientes (UVT, decretos, topes, resoluciones DIAN) y los guarda. */
 export const actualizarNormativa = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d: { anio?: number }) => d)
+  .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }): Promise<{ uvt: number | null; total: number; novedades: Novedad[] }> => {
     await assertAiQuota(context.supabase, "contador-normativa");
     const { endpoint, modelo, llave } = destino();
@@ -113,8 +113,8 @@ export type MensajeContador = { role: "user" | "assistant"; content: string };
 
 /** Asesor contable: responde como tributarista colombiano con las cifras reales del negocio. */
 export const asesorContable = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d: { messages: MensajeContador[]; cifras: string }) => d)
+  .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }): Promise<{ respuesta: string }> => {
     await assertAiQuota(context.supabase, "contador-asesor");
     const { endpoint, modelo, llave } = destino();

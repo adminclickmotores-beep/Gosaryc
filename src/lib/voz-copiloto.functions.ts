@@ -137,10 +137,10 @@ const HERRAMIENTAS = [
 
 /** Copiloto de voz: convierte lo dictado en llamadas a las 6 herramientas universales (rol, negocio y módulos se resuelven en el servidor). */
 export const interpretarVoz = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d: { texto: string; tipoNegocio?: string; modulos?: VozModulo[]; esAdmin?: boolean }) => ({
     texto: typeof d?.texto === "string" ? d.texto.replace(/[\u0000-\u001f\u007f<>]/g, " ").slice(0, 600) : "",
   }))
+  .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }): Promise<VozRespuesta> => {
     await assertAiQuota(context.supabase, "voz-copiloto");
 

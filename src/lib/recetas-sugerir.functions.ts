@@ -17,7 +17,6 @@ export type RecetaSugerida = {
 };
 
 export const sugerirReceta = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator(
     (d: {
       platillo: string;
@@ -26,6 +25,7 @@ export const sugerirReceta = createServerFn({ method: "POST" })
       insumos: { nombre: string; unidad: string }[];
     }) => d,
   )
+  .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }): Promise<RecetaSugerida> => {
     await assertAiQuota(context.supabase, "recetas");
     const apiKey = process.env.LOVABLE_API_KEY;

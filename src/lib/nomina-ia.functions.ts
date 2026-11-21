@@ -36,8 +36,8 @@ type ParametrosIA = {
 };
 
 export const actualizarParametrosNomina = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d: { forzar?: boolean }) => d)
+  .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<{ creada: boolean; mensaje: string; params: ParametrosIA | null }> => {
     await assertAiQuota(context.supabase, "nomina-normativa");
     const { endpoint, modelo, llave } = destino();

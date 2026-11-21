@@ -14,8 +14,8 @@ const GEMINI_MODEL = "gemini-2.5-flash";
 type Seccion = { clave: string; titulo: string; texto: string };
 
 export const entrenarSectorAgente = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d: { negocioId: string; tipoNegocio?: string; ciudad?: string }) => d)
+  .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }): Promise<{ secciones: number }> => {
     await assertAiQuota(context.supabase, "agente-entrenamiento");
     const geminiKey = process.env.GEMINI_API_KEY;
