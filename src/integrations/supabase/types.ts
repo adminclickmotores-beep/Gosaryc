@@ -3212,6 +3212,36 @@ export type Database = {
         Update: { brazo_cm?: number | null; cadera_cm?: number | null; cintura_cm?: number | null; created_at?: string; entrenador?: string | null; estatura_cm?: number | null; fecha?: string; grasa_pct?: number | null; id?: string; masa_muscular_kg?: number | null; muslo_cm?: number | null; notas?: string | null; owner_id?: string | null; pecho_cm?: number | null; peso_kg?: number | null; registrado_por?: string | null; rutina?: string | null; socio_id?: string; tipo_negocio?: string | null }
         Relationships: []
       }
+      com_venta_item_lotes: {
+        Row: {
+          cantidad: number
+          created_at: string
+          id: string
+          lote_id: string
+          owner_id: string | null
+          producto_id: string
+          venta_id: string
+        }
+        Insert: {
+          cantidad: number
+          created_at?: string
+          id?: string
+          lote_id: string
+          owner_id?: string | null
+          producto_id: string
+          venta_id: string
+        }
+        Update: {
+          cantidad?: number
+          created_at?: string
+          id?: string
+          lote_id?: string
+          owner_id?: string | null
+          producto_id?: string
+          venta_id?: string
+        }
+        Relationships: []
+      }
       com_lotes: {
         Row: {
           cantidad_actual: number
@@ -8680,6 +8710,7 @@ export type Database = {
       }
       com_estado_credito: { Args: { p_cliente: string; p_telefono: string }; Returns: Json }
       com_devolver_venta: { Args: { p_venta: string; p_motivo: string }; Returns: Json }
+      nomina_pagar: { Args: { p_liquidacion: string; p_metodo: string }; Returns: Json }
       com_ingresar_lote: {
         Args: { p_producto: string; p_lote: string; p_vence: string | null; p_cantidad: number; p_unidad: string; p_costo: number }
         Returns: string

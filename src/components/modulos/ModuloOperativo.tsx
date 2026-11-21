@@ -116,8 +116,16 @@ export function ModuloOperativo({ id }: { id: string }) {
   const camposRubro = useMemo(() => camposDelModulo(esquema, id), [esquema, id]);
   const campos: CampoForm[] = useMemo(() => {
     const base: CampoForm[] = cfg.campos ?? [];
-    return [...base, ...camposRubro.filter((c) => !base.some((b) => b.clave === c.clave))];
-  }, [cfg, camposRubro]);
+    // Compras a proveedores: IVA descontable y retención practicada por tercero (alimentan la Exógena 1001, 1005 y 1007).
+    const fiscales: CampoForm[] =
+      tabla === "proveedores_registros"
+        ? ([
+            { clave: "iva_descontable", etiqueta: "IVA descontable de la compra (COP)", tipo: "text" },
+            { clave: "retencion_practicada", etiqueta: "Retención practicada al proveedor (COP)", tipo: "text" },
+          ] as CampoForm[]).filter((c) => !base.some((b) => b.clave === c.clave))
+        : [];
+    return [...base, ...fiscales, ...camposRubro.filter((c) => !base.some((b) => b.clave === c.clave))];
+  }, [cfg, camposRubro, tabla]);
   const etiquetaContacto =
     cfg.etiquetaContacto === "Cliente" ? vocabulario(esquema, "cliente", cfg.etiquetaContacto) : cfg.etiquetaContacto;
   const conSaldo = TIPOS_SALDO.includes(tipo);

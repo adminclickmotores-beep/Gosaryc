@@ -342,26 +342,50 @@ function paramPara(params: Parametro[], fecha: string): Parametro | null {
   return params.slice().sort(orden)[0];
 }
 
-type HorasNom = { heD: number; heN: number; recN: number; recD: number; otrosDev: number; otrosDesc: number };
+type HorasNom = { heD: number; heN: number; recN: number; recD: number; otrosDev: number; otrosDesc: number; incap: number };
+
+/** Fondo de Solidaridad Pensional según el ingreso en SMMLV (escala de ley). */
+function porcentajeFsp(ibc: number, smmlv: number): number {
+  if (!(smmlv > 0)) return 0;
+  const n = ibc / smmlv;
+  if (n >= 20) return 0.02;
+  if (n >= 19) return 0.018;
+  if (n >= 18) return 0.016;
+  if (n >= 17) return 0.014;
+  if (n >= 16) return 0.012;
+  if (n >= 4) return 0.01;
+  return 0;
+}
 
 /** Liquidación con los porcentajes de la vigencia (nunca valores fijos en el código). */
 function calcularNomina(p: Parametro, base: number, dias: number, arlPct: number, exonerado: boolean, h: HorasNom) {
   const d = Math.min(Math.max(dias, 0), 30);
   const horasMes = p.horas_mes > 0 ? p.horas_mes : 210;
   const valorHora = horasMes > 0 ? base / horasMes : 0;
-  const sueldo = (base / 30) * d;
+  // Incapacidad (enfermedad general): días 1-2 los paga el empleador al 100 %; desde el día 3 paga la EPS al 66,67 %
+  // sin bajar del salario mínimo diario. Esos días no llevan auxilio de transporte.
+  const valorDia = base / 30;
+  const dInc = Math.min(Math.max(h.incap, 0), d);
+  const dTrab = d - dInc;
+  const diasEmpleador = Math.min(dInc, 2);
+  const diasEps = dInc - diasEmpleador;
+  const pagoDiaEps = Math.min(valorDia, Math.max(valorDia * 0.6667, p.smmlv / 30));
+  const incapacidad = valorDia * diasEmpleador + pagoDiaEps * diasEps;
+  const sueldo = valorDia * dTrab;
   const extras =
     valorHora * (1 + p.extra_diurna) * h.heD +
     valorHora * (1 + p.extra_nocturna) * h.heN +
     valorHora * p.rec_nocturno * h.recN +
     valorHora * p.rec_dominical * h.recD;
-  const ibc = Math.max(sueldo + extras + h.otrosDev, 0);
-  const auxPaga = base > 0 && base <= p.tope_aux_smmlv * p.smmlv ? (p.aux_transporte / 30) * d : 0;
+  // IBC: mínimo 1 SMMLV proporcional a los días y máximo 25 SMMLV; el auxilio de transporte no hace parte.
+  const ibcBruto = Math.max(sueldo + extras + h.otrosDev + incapacidad, 0);
+  const ibc = Math.min(Math.max(ibcBruto, (p.smmlv / 30) * d), 25 * p.smmlv);
+  const auxPaga = base > 0 && base <= p.tope_aux_smmlv * p.smmlv ? (p.aux_transporte / 30) * dTrab : 0;
   const saludEmp = ibc * p.salud_trab;
   const pensionEmp = ibc * p.pension_trab;
-  const fsp = base >= 4 * p.smmlv ? ibc * 0.01 : 0;
+  const fsp = ibc * porcentajeFsp(ibc, p.smmlv);
   const descuentos = saludEmp + pensionEmp + fsp + h.otrosDesc;
-  const totalDev = sueldo + extras + h.otrosDev + auxPaga;
+  const totalDev = sueldo + extras + h.otrosDev + incapacidad + auxPaga;
   const neto = totalDev - descuentos;
   const exento = exonerado && base < p.exoneracion_tope_smmlv * p.smmlv;
   const saludPat = exento ? 0 : ibc * p.salud_emp;
@@ -371,14 +395,14 @@ function calcularNomina(p: Parametro, base: number, dias: number, arlPct: number
   const sena = exento ? 0 : ibc * p.sena;
   const icbf = exento ? 0 : ibc * p.icbf;
   const aportes = saludPat + pensionPat + arlPat + caja + sena + icbf;
-  const basePrest = sueldo + extras + h.otrosDev + auxPaga;
+  const basePrest = sueldo + extras + h.otrosDev + incapacidad + auxPaga;
   const cesantias = basePrest * p.prov_cesantias;
   const intereses = cesantias * p.prov_intereses;
   const prima = basePrest * p.prov_prima;
-  const vacaciones = (sueldo + extras + h.otrosDev) * p.prov_vacaciones;
+  const vacaciones = (sueldo + extras + h.otrosDev + incapacidad) * p.prov_vacaciones;
   const provisiones = cesantias + intereses + prima + vacaciones;
   return {
-    valorHora, sueldo, extras, auxPaga, totalDev, saludEmp, pensionEmp, fsp, descuentos, neto,
+    valorHora, sueldo, extras, incapacidad, ibc, auxPaga, totalDev, saludEmp, pensionEmp, fsp, descuentos, neto,
     saludPat, pensionPat, arlPat, caja, sena, icbf, aportes, cesantias, intereses, prima, vacaciones,
     provisiones, costoTotal: totalDev + aportes + provisiones,
   };
@@ -420,6 +444,11 @@ function MotorNominaDinamica() {
   const [recD, setRecD] = useState("");
   const [otrosDev, setOtrosDev] = useState("");
   const [otrosDesc, setOtrosDesc] = useState("");
+  const [incap, setIncap] = useState("");
+  const [metodoPago, setMetodoPago] = useState("efectivo");
+  // Edición de la vigencia (cuando sale un decreto nuevo).
+  const [verParams, setVerParams] = useState(false);
+  const [nuevoParam, setNuevoParam] = useState<Record<string, string>>({});
 
   const cargar = useCallback(async () => {
     const [pa, em, li] = await Promise.all([
@@ -451,10 +480,10 @@ function MotorNominaDinamica() {
     () =>
       vigencia
         ? calcularNomina(vigencia, baseVigente, num(dias), empleado ? empleado.tarifa_arl : 0.522, empleado ? empleado.exonerado : true, {
-            heD: num(heD), heN: num(heN), recN: num(recN), recD: num(recD), otrosDev: num(otrosDev), otrosDesc: num(otrosDesc),
+            heD: num(heD), heN: num(heN), recN: num(recN), recD: num(recD), otrosDev: num(otrosDev), otrosDesc: num(otrosDesc), incap: num(incap),
           })
         : null,
-    [vigencia, baseVigente, dias, empleado, heD, heN, recN, recD, otrosDev, otrosDesc],
+    [vigencia, baseVigente, dias, empleado, heD, heN, recN, recD, otrosDev, otrosDesc, incap],
   );
 
   const guardarEmpleado = async () => {
@@ -524,7 +553,10 @@ function MotorNominaDinamica() {
         detalle: {
           vigencia_desde: vigencia.vigencia_desde, smmlv: vigencia.smmlv, auxilio_vigente: vigencia.aux_transporte,
           anclado: empleado.anclado_smmlv, num_smmlv: empleado.num_smmlv,
-          heD: num(heD), heN: num(heN), recN: num(recN), recD: num(recD),
+          heD: num(heD), heN: num(heN), recN: num(recN), recD: num(recD), incap: num(incap),
+          incapacidad: Math.round(r.incapacidad),
+          cesantias: Math.round(r.cesantias), intereses: Math.round(r.intereses),
+          prima: Math.round(r.prima), vacaciones: Math.round(r.vacaciones),
         },
       })
       .select("*")
@@ -546,18 +578,110 @@ function MotorNominaDinamica() {
   };
 
   const contabilizar = async (liq: Liquidacion) => {
+    if (liq.estado !== "liquidada") return toast.error("Esta nómina ya fue contabilizada.");
+    const det = (liq.detalle && typeof liq.detalle === "object" && !Array.isArray(liq.detalle) ? liq.detalle : {}) as Record<string, unknown>;
+    const nd = (k: string): number => Math.round(Number(det[k]) || 0);
+    const costo = Math.round(liq.costo_total);
+    const aportes = Math.round(liq.aportes);
+    const descuentos = Math.round(liq.descuentos);
+    const prov = [
+      { codigo: "2510", nombre: "Cesantías consolidadas", monto: nd("cesantias") },
+      { codigo: "2515", nombre: "Intereses sobre cesantías", monto: nd("intereses") },
+      { codigo: "2520", nombre: "Prima de servicios", monto: nd("prima") },
+      { codigo: "2525", nombre: "Vacaciones consolidadas", monto: nd("vacaciones") },
+    ];
+    const provDetallada = prov.reduce((s, x) => s + x.monto, 0);
+    // Si la liquidación es antigua y no trae el desglose, las provisiones quedan dentro de la nómina por pagar.
+    const usaDesglose = provDetallada > 0 && Math.abs(provDetallada - Math.round(liq.provisiones)) <= 3;
+    const creditos: { codigo: string; nombre: string; tipo: string; monto: number }[] = [
+      { codigo: "2370", nombre: "Retenciones y aportes de nómina", tipo: "pasivo", monto: descuentos + aportes },
+      ...(usaDesglose ? prov.map((x) => ({ ...x, tipo: "pasivo" })) : []),
+    ].filter((x) => x.monto > 0);
+    // La nómina por pagar absorbe el neto y cualquier diferencia de redondeo: el asiento siempre cuadra.
+    const sumaOtros = creditos.reduce((s, x) => s + x.monto, 0);
+    const porPagar = costo - sumaOtros;
+    if (!(costo > 0) || porPagar < 0) return toast.error("Los valores de la liquidación no permiten contabilizarla.");
     const gastoId = await asegurarCuenta("5105", "Nómina", "gasto");
     const pasivoId = await asegurarCuenta("2505", "Nómina por pagar", "pasivo");
     if (!gastoId || !pasivoId) return toast.error("No se pudieron abrir las cuentas de nómina.");
+    const idsCred: { id: string; monto: number }[] = [];
+    for (const c of creditos) {
+      const id = await asegurarCuenta(c.codigo, c.nombre, c.tipo);
+      if (!id) return toast.error("No se pudieron abrir las cuentas de nómina.");
+      idsCred.push({ id, monto: c.monto });
+    }
     const asientoId = crypto.randomUUID();
     const concepto = `Nómina ${liq.empleado_nombre} ${liq.periodo_inicio} al ${liq.periodo_fin} (neto ${dinero(liq.neto)}, aportes ${dinero(liq.aportes)}, provisiones ${dinero(liq.provisiones)})`;
+    const base = { asiento_id: asientoId, fecha: liq.periodo_fin, concepto, origen_tipo: "nomina", origen_id: liq.id };
     const { error } = await supabase.from("asientos_contables").insert([
-      { asiento_id: asientoId, fecha: liq.periodo_fin, cuenta_id: gastoId, concepto, debe: liq.costo_total, haber: 0, origen_tipo: "nomina", origen_id: liq.id },
-      { asiento_id: asientoId, fecha: liq.periodo_fin, cuenta_id: pasivoId, concepto, debe: 0, haber: liq.costo_total, origen_tipo: "nomina", origen_id: liq.id },
+      { ...base, cuenta_id: gastoId, debe: costo, haber: 0 },
+      { ...base, cuenta_id: pasivoId, debe: 0, haber: porPagar },
+      ...idsCred.map((c) => ({ ...base, cuenta_id: c.id, debe: 0, haber: c.monto })),
     ]);
     if (error) return toast.error("No se pudo contabilizar.");
     await supabase.from("nomina_liquidaciones").update({ estado: "contabilizada" }).eq("id", liq.id);
     toast.success("Contabilizado: gasto y pasivo de nómina en Contabilidad.");
+    void cargar();
+  };
+
+  const pagar = async (liq: Liquidacion) => {
+    const { error } = await supabase.rpc("nomina_pagar", { p_liquidacion: liq.id, p_metodo: metodoPago });
+    if (error) return toast.error(error.message.length < 160 ? error.message : "No se pudo registrar el pago.");
+    toast.success("Pago registrado: asiento cuadrado y egreso en caja.");
+    void cargar();
+  };
+
+  const CAMPOS_PARAM: { k: keyof Parametro; t: string }[] = [
+    { k: "smmlv", t: "Salario mínimo (COP)" }, { k: "aux_transporte", t: "Auxilio de transporte (COP)" },
+    { k: "salud_trab", t: "Salud trabajador" }, { k: "salud_emp", t: "Salud empleador" },
+    { k: "pension_trab", t: "Pensión trabajador" }, { k: "pension_emp", t: "Pensión empleador" },
+    { k: "caja_compensacion", t: "Caja de compensación" }, { k: "sena", t: "SENA" }, { k: "icbf", t: "ICBF" },
+    { k: "prov_prima", t: "Prima" }, { k: "prov_cesantias", t: "Cesantías" },
+    { k: "prov_intereses", t: "Intereses de cesantías" }, { k: "prov_vacaciones", t: "Vacaciones" },
+    { k: "rec_nocturno", t: "Recargo nocturno" }, { k: "rec_dominical", t: "Recargo dominical/festivo" },
+    { k: "extra_diurna", t: "Extra diurna" }, { k: "extra_nocturna", t: "Extra nocturna" },
+    { k: "horas_mes", t: "Horas al mes" }, { k: "tope_aux_smmlv", t: "Tope del auxilio (SMMLV)" },
+  ];
+
+  const guardarVigencia = async () => {
+    const desde = nuevoParam.vigencia_desde;
+    if (!desde) return toast.error("Indica desde qué fecha rige el nuevo decreto.");
+    const ref = vigencia;
+    if (!ref) return toast.error("No hay una vigencia de referencia.");
+    const fila: Record<string, number> = {};
+    for (const c of CAMPOS_PARAM) {
+      const crudo = nuevoParam[c.k as string];
+      const v = crudo !== undefined && crudo !== "" ? Number(crudo.replace(",", ".")) : Number(ref[c.k]);
+      if (!Number.isFinite(v) || v < 0) return toast.error(`Revisa el valor de «${c.t}».`);
+      fila[c.k as string] = v;
+    }
+    if (!(fila.smmlv > 0) || !(fila.aux_transporte >= 0)) return toast.error("El salario mínimo debe ser mayor a cero.");
+    // La vigencia anterior termina el día antes.
+    const dia = new Date(`${desde}T00:00:00`);
+    dia.setDate(dia.getDate() - 1);
+    const fin = `${dia.getFullYear()}-${String(dia.getMonth() + 1).padStart(2, "0")}-${String(dia.getDate()).padStart(2, "0")}`;
+    for (const p of params) {
+      if (p.vigencia_desde < desde && (p.vigencia_hasta === null || p.vigencia_hasta >= desde)) {
+        await supabase.from("parametros_nomina_colombia").update({ vigencia_hasta: fin }).eq("id", p.id);
+      }
+    }
+    const { error } = await supabase.from("parametros_nomina_colombia").insert({
+      vigencia_desde: desde,
+      vigencia_hasta: null,
+      jornada_semanal: ref.jornada_semanal,
+      exoneracion_tope_smmlv: ref.exoneracion_tope_smmlv,
+      fuente_legal: (nuevoParam.fuente_legal ?? "").trim() || "Actualizado por el negocio según decreto",
+      smmlv: fila.smmlv, aux_transporte: fila.aux_transporte, salud_trab: fila.salud_trab, salud_emp: fila.salud_emp,
+      pension_trab: fila.pension_trab, pension_emp: fila.pension_emp, caja_compensacion: fila.caja_compensacion,
+      sena: fila.sena, icbf: fila.icbf, prov_prima: fila.prov_prima, prov_cesantias: fila.prov_cesantias,
+      prov_intereses: fila.prov_intereses, prov_vacaciones: fila.prov_vacaciones, rec_nocturno: fila.rec_nocturno,
+      rec_dominical: fila.rec_dominical, extra_diurna: fila.extra_diurna, extra_nocturna: fila.extra_nocturna,
+      horas_mes: fila.horas_mes, tope_aux_smmlv: fila.tope_aux_smmlv,
+    });
+    if (error) return toast.error("No se pudo guardar la nueva vigencia.");
+    toast.success("Vigencia guardada. Los empleados anclados al salario mínimo se ajustaron solos.");
+    setNuevoParam({});
+    setVerParams(false);
     void cargar();
   };
 
@@ -625,6 +749,33 @@ function MotorNominaDinamica() {
           </p>
         )}
         {iaMsg && <p className="mt-2 text-xs text-muted-foreground">{iaMsg}</p>}
+        <button type="button" onClick={() => setVerParams((v) => !v)} className="mt-2 rounded-full border border-glass-border px-4 py-1.5 text-sm text-foreground">
+          {verParams ? "Cerrar editor de valores de ley" : "Editar valores de ley (nuevo decreto)"}
+        </button>
+        {verParams && vigencia && (
+          <div className="mt-3 space-y-3">
+            <p className="text-xs text-muted-foreground">Cambia solo lo que haya variado; lo demás se copia de la vigencia actual. Los porcentajes van en decimales (0.04 = 4 %).</p>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <label className="block space-y-1">
+                <span className="text-xs text-muted-foreground">Rige desde *</span>
+                <input type="date" className={campoNomina} value={nuevoParam.vigencia_desde ?? ""} onChange={(e) => setNuevoParam((p) => ({ ...p, vigencia_desde: e.target.value }))} />
+              </label>
+              {CAMPOS_PARAM.map((c) => (
+                <label key={c.k} className="block space-y-1">
+                  <span className="text-xs text-muted-foreground">{c.t}</span>
+                  <input className={campoNomina} inputMode="decimal" placeholder={String(vigencia[c.k] ?? "")} value={nuevoParam[c.k as string] ?? ""} onChange={(e) => setNuevoParam((p) => ({ ...p, [c.k as string]: e.target.value }))} />
+                </label>
+              ))}
+              <label className="block space-y-1 sm:col-span-2">
+                <span className="text-xs text-muted-foreground">Decreto o fuente</span>
+                <input className={campoNomina} value={nuevoParam.fuente_legal ?? ""} onChange={(e) => setNuevoParam((p) => ({ ...p, fuente_legal: e.target.value }))} />
+              </label>
+            </div>
+            <button type="button" onClick={() => void guardarVigencia()} className="rounded-full border border-glass-border px-4 py-2 text-sm text-foreground">
+              Guardar nueva vigencia
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="space-y-3">
@@ -699,6 +850,7 @@ function MotorNominaDinamica() {
           {entrada("Horas extra nocturnas", heN, setHeN)}
           {entrada("Horas recargo nocturno", recN, setRecN)}
           {entrada("Horas dominical/festivo", recD, setRecD)}
+          {entrada("Días de incapacidad (dentro de los días del periodo)", incap, setIncap, "Enfermedad general")}
           {entrada("Otros devengos (COP)", otrosDev, setOtrosDev, "Comisiones, bonos")}
           {entrada("Otros descuentos (COP)", otrosDesc, setOtrosDesc, "Préstamos, embargos")}
         </div>
@@ -708,7 +860,9 @@ function MotorNominaDinamica() {
               <p className="text-xs text-muted-foreground">Base liquidada: {dinero(Math.round(baseVigente))}{empleado.anclado_smmlv ? " (anclada al SMMLV)" : ""} · Hora: {dinero(Math.round(r.valorHora))}</p>
               {linea("Sueldo por días", r.sueldo)}
               {linea("Extras y recargos", r.extras)}
+              {r.incapacidad > 0 && linea("Incapacidad pagada", r.incapacidad)}
               {linea("Auxilio de transporte", r.auxPaga)}
+              {linea("Descuentos (salud, pensión, solidaridad y otros)", r.descuentos)}
               {linea("Neto a pagar", r.neto, true)}
             </div>
             <div className="space-y-2 rounded-xl border border-glass-border p-4">
@@ -769,6 +923,18 @@ function MotorNominaDinamica() {
                 <button type="button" onClick={() => void contabilizar(l)} className="rounded-full border border-glass-border px-3 py-1 text-xs text-foreground">
                   Contabilizar
                 </button>
+              )}
+              {l.estado === "contabilizada" && (
+                <div className="flex items-center gap-2">
+                  <select className="rounded-lg border border-glass-border bg-transparent px-2 py-1 text-base text-foreground" value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)}>
+                    <option value="efectivo">Efectivo (caja)</option>
+                    <option value="transferencia">Transferencia (bancos)</option>
+                    <option value="tarjeta">Tarjeta</option>
+                  </select>
+                  <button type="button" onClick={() => void pagar(l)} className="rounded-full border border-glass-border px-3 py-1 text-xs text-foreground">
+                    Pagar nómina
+                  </button>
+                </div>
               )}
             </div>
           ))}

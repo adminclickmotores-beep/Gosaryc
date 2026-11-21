@@ -418,23 +418,32 @@ export function ContadorPro({ cuentas, filas }: { cuentas: Cuenta[]; filas: Asie
     }
     const clientes = Array.from(porCliente.values());
     // Agrupa las compras por proveedor (NIT guardado en la compra).
-    const porProv = new Map<string, { nit: string; nombre: string; pagos: number }>();
+    const aNumero = (v: unknown): number => {
+      const n = Number(String(v ?? "").replace(/[^\d.,-]/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(",", "."));
+      return Number.isFinite(n) && n > 0 ? n : 0;
+    };
+    const porProv = new Map<string, { nit: string; nombre: string; pagos: number; iva: number; ret: number }>();
     for (const p of datosFiscales.provs) {
-      const nit = ((p.datos as unknown as { nit?: string | null } | null)?.nit ?? "").toString().trim();
+      const d = (p.datos as unknown as { nit?: string | null; iva_descontable?: string | number | null; retencion_practicada?: string | number | null } | null) ?? null;
+      const nit = (d?.nit ?? "").toString().trim();
       const clave = nit || (p.contacto ?? p.titulo);
-      const x = porProv.get(clave) ?? { nit, nombre: p.contacto ?? p.titulo, pagos: 0 };
+      const x = porProv.get(clave) ?? { nit, nombre: p.contacto ?? p.titulo, pagos: 0, iva: 0, ret: 0 };
       x.pagos += Number(p.monto) || 0;
+      x.iva += aNumero(d?.iva_descontable);
+      x.ret += aNumero(d?.retencion_practicada);
       porProv.set(clave, x);
     }
     const provs = Array.from(porProv.values());
+    const totalIvaProv = provs.reduce((s, p) => s + p.iva, 0);
+    const totalRetProv = provs.reduce((s, p) => s + p.ret, 0);
     if (formato === "1001") {
-      const filasP = provs.map((p) => [p.nit, "", p.nombre, r2(p.pagos), ""] as (string | number)[]);
+      const filasP = provs.map((p) => [p.nit, "", p.nombre, r2(p.pagos), r2(p.ret)] as (string | number)[]);
       exportarExcel("exogena-1001-borrador", ["NIT", "DV", "Tercero", "Pago o abono en cuenta", "Retención practicada"],
-        [...filasP, ["TOTAL", "", "", r2(provs.reduce((s, p) => s + p.pagos, 0)), r2(Math.max(0, fiscal.retencionesPorPagar))]]);
+        [...filasP, ["TOTAL", "", "", r2(provs.reduce((s, p) => s + p.pagos, 0)), r2(totalRetProv)]]);
     } else if (formato === "1005") {
-      const filasP = provs.map((p) => [p.nit, "", p.nombre, r2(p.pagos), ""] as (string | number)[]);
+      const filasP = provs.map((p) => [p.nit, "", p.nombre, r2(p.pagos), r2(p.iva)] as (string | number)[]);
       exportarExcel("exogena-1005-borrador", ["NIT", "DV", "Tercero", "Base de la compra", "IVA descontable"],
-        [...filasP, ["TOTAL", "", "", r2(provs.reduce((s, p) => s + p.pagos, 0)), r2(fiscal.ivaDescontable)]]);
+        [...filasP, ["TOTAL", "", "", r2(provs.reduce((s, p) => s + p.pagos, 0)), r2(totalIvaProv)]]);
     } else if (formato === "1006") {
       exportarExcel("exogena-1006-borrador", ["NIT / Documento", "Tercero", "Base gravable", "IVA generado", "Impoconsumo"],
         [...clientes.map((c) => [c.doc, c.nombre, r2(c.base), r2(c.iva), r2(c.inc)] as (string | number)[]),
