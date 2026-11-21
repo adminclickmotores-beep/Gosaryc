@@ -1125,6 +1125,19 @@ html.light .crm-card:hover { box-shadow: 0 10px 24px -12px rgb(15 23 42 / 0.25);
 html.light .crm-columna { background: rgb(241 245 249 / 0.8); border-color: rgb(226 232 240 / 0.9); }
 html.light .crm-segmentado { background: #fff; border-color: rgb(226 232 240 / 0.8); }
 
+/* Modo oscuro: textos de color 600/700 se aclaran para que se lean sobre fondo oscuro */
+html:not(.light) .text-emerald-600, html:not(.light) .text-emerald-700, .gs-dark .text-emerald-600 { color: #34d399; }
+html:not(.light) .text-amber-600, html:not(.light) .text-amber-700, .gs-dark .text-amber-600 { color: #fbbf24; }
+html:not(.light) .text-rose-600, html:not(.light) .text-rose-700, .gs-dark .text-rose-600 { color: #fb7185; }
+html:not(.light) .text-sky-600, html:not(.light) .text-sky-700, .gs-dark .text-sky-600 { color: #38bdf8; }
+html:not(.light) .text-blue-600, html:not(.light) .text-blue-700, .gs-dark .text-blue-600 { color: #60a5fa; }
+html:not(.light) .text-violet-600, html:not(.light) .text-violet-700 { color: #a78bfa; }
+html:not(.light) .text-red-600, html:not(.light) .text-red-700 { color: #f87171; }
+html:not(.light) .text-green-600, html:not(.light) .text-green-700 { color: #4ade80; }
+html:not(.light) .text-orange-600, html:not(.light) .text-orange-700 { color: #fb923c; }
+html:not(.light) .text-slate-500, html:not(.light) .text-slate-600, html:not(.light) .text-slate-700 { color: #cbd5e1; }
+html:not(.light) .crm-raiz { color: var(--foreground); }
+
 /* GoIDE: oculta la insignia "Edit with Lovable" (v2) */
 #lovable-badge, [id^="lovable-badge"], [id*="lovable-badge"], [class*="lovable-badge"], aside[id*="lovable" i], a[href*="utm_source=lovable-badge"], a[href*="lovable.dev"][href*="utm_campaign=lovable-badge"] { display:none !important; visibility:hidden !important; opacity:0 !important; pointer-events:none !important }
 /* /GoIDE */
