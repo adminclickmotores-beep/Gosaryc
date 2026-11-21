@@ -2,6 +2,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { Json } from "@/integrations/supabase/types";
 import { generarConfiguracionAutomaticaSector } from "@/lib/agente-autoconfig";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
+import { conversacionesModelo } from "@/lib/agente-conversaciones";
 import { tarifasComoTexto } from "@/lib/tarifas-domicilio";
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
@@ -535,7 +536,7 @@ ${perfil}
 
 Catálogo de productos y servicios con precios:
 ${catalogo}
-${domicilio ? `\n${domicilio}\n` : ""}${conocimientoSector}${aprendido}${extra ? `\nInstrucciones propias del dueño (tienen prioridad en el estilo y las políticas):\n${extra}\n` : ""}
+${domicilio ? `\n${domicilio}\n` : ""}${conocimientoSector}${conversacionesModelo(tipo)}${aprendido}${extra ? `\nInstrucciones propias del dueño (tienen prioridad en el estilo y las políticas):\n${extra}\n` : ""}
 Reglas:
 - No inventes precios, horarios, direcciones, productos, promociones, descuentos ni disponibilidad. Si un dato dice NO CONFIGURADO o no está arriba, di que lo confirma una persona del equipo y usa [[ASESOR]] si es necesario para cerrar.
 - No prometas lo que no puedas cumplir (tiempos exactos, garantías, descuentos) si no está en los datos.
