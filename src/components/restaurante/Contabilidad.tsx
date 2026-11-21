@@ -28,9 +28,12 @@ const TIPOS: { clave: TipoCuenta; texto: string }[] = [
 const PLAN_BASICO: { codigo: string; nombre: string; tipo: TipoCuenta }[] = [
   { codigo: "1105", nombre: "Caja", tipo: "activo" },
   { codigo: "1110", nombre: "Bancos", tipo: "activo" },
-  { codigo: "1305", nombre: "Cuentas por cobrar", tipo: "activo" },
+  { codigo: "1305", nombre: "Clientes (cuentas por cobrar)", tipo: "activo" },
+  { codigo: "1355", nombre: "Anticipo de impuestos y contribuciones (Retefuente, ReteIVA, ReteICA)", tipo: "activo" },
   { codigo: "1435", nombre: "Inventario de insumos", tipo: "activo" },
   { codigo: "2205", nombre: "Proveedores por pagar", tipo: "pasivo" },
+  { codigo: "2408", nombre: "IVA por pagar", tipo: "pasivo" },
+  { codigo: "2495", nombre: "Impuesto Nacional al Consumo (INC) por pagar", tipo: "pasivo" },
   { codigo: "2505", nombre: "Nómina por pagar", tipo: "pasivo" },
   { codigo: "4135", nombre: "Ventas", tipo: "ingreso" },
   { codigo: "4210", nombre: "Otros ingresos", tipo: "ingreso" },
