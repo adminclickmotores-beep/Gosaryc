@@ -1513,6 +1513,7 @@ function Panel360({
 }) {
   const [pestana, setPestana] = useState<"perfil" | "pre" | "chat" | "tiempo" | "pqrs">("perfil");
   const [preIngresos, setPreIngresos] = useState(String(extraDe(lead).pre_ingresos ?? ""));
+  const [prePct, setPrePct] = useState(String(extraDe(lead).pre_pct ?? "35"));
   const [preDeudas, setPreDeudas] = useState(String(extraDe(lead).pre_deudas ?? ""));
   const [preInicial, setPreInicial] = useState(String(extraDe(lead).pre_inicial ?? ""));
   const [chat, setChat] = useState<Array<{ id: string; rol: string; contenido: string; created_at: string }>>([]);
@@ -1768,7 +1769,8 @@ function Panel360({
             const deu = Number(preDeudas) || 0;
             const ini = Number(preInicial) || 0;
             const val = Number(lead.valor_estimado) || 0;
-            const capacidad = ing * 0.35 - deu;
+            const pct = Math.min(Math.max(Number(prePct) || 35, 1), 70);
+            const capacidad = ing * (pct / 100) - deu;
             const cuota = cuotaEstimada(val, ini);
             const estado: "viable" | "codeudor" | "no" =
               capacidad >= cuota ? "viable" : capacidad >= cuota * 0.7 ? "codeudor" : "no";
@@ -1780,7 +1782,7 @@ function Panel360({
               void onParchar(lead, {
                 datos_extra: nuevoExtra(
                   lead,
-                  { pre_ingresos: ing, pre_deudas: deu, pre_inicial: ini, pre_estado: estado, pre_cuota: Math.round(cuota) },
+                  { pre_ingresos: ing, pre_deudas: deu, pre_inicial: ini, pre_pct: pct, pre_estado: estado, pre_cuota: Math.round(cuota) },
                   { tipo: "Preaprobado", texto: estado === "viable" ? "Preaprobado Viable" : estado === "codeudor" ? "Viable con Codeudor / Mayor Inicial" : "No Viable para Crédito", cuando: new Date().toISOString() },
                 ),
               });
@@ -1803,9 +1805,19 @@ function Panel360({
                 {campo("Ingresos mensuales del cliente (COP)", preIngresos, setPreIngresos)}
                 {campo("Obligaciones / deudas mensuales actuales (COP)", preDeudas, setPreDeudas)}
                 {campo("Cuota inicial + Retoma disponible (COP)", preInicial, setPreInicial)}
+                <label className="block">
+                  <span className="mb-1 block text-xs text-muted-foreground">Porcentaje de endeudamiento máximo (%) — estándar en Colombia: 35</span>
+                  <input
+                    className="w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base tabular-nums"
+                    inputMode="decimal"
+                    maxLength={5}
+                    value={prePct}
+                    onChange={(e) => setPrePct(e.target.value.replace(/[^0-9.]/g, ""))}
+                  />
+                </label>
                 <div className="space-y-1 rounded-xl border border-glass-border p-3 tabular-nums">
                   <p className="flex justify-between"><span className="text-muted-foreground">Valor del negocio</span><b>{dinero(val)}</b></p>
-                  <p className="flex justify-between"><span className="text-muted-foreground">Capacidad de pago disponible</span><b>{dinero(Math.max(0, capacidad))}</b></p>
+                  <p className="flex justify-between"><span className="text-muted-foreground">Capacidad de pago disponible ({pct}%)</span><b>{dinero(Math.max(0, capacidad))}</b></p>
                   <p className="flex justify-between"><span className="text-muted-foreground">Cuota mensual estimada (60 meses)</span><b>{dinero(cuota)}</b></p>
                 </div>
                 <span

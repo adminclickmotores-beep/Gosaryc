@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import type { Json } from "@/integrations/supabase/types";
 import { generarConfiguracionAutomaticaSector } from "@/lib/agente-autoconfig";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 import { tarifasComoTexto } from "@/lib/tarifas-domicilio";
@@ -26,7 +27,7 @@ export function obtenerPlaybookSector(tipoNegocio: string): string {
   const t = tipoNegocio.toLowerCase();
   let guion: string;
   if (/concesion|vehic|auto|carro|moto|compraventa|usado/.test(t)) {
-    guion = "CONCESIONARIO / COMPRAVENTA: valida (1) vehículo o moto de interés, (2) plazo de compra, (3) forma de pago: contado, crédito o retoma, (4) monto de cuota inicial y (5) de forma sutil y respetuosa si está al día en centrales de riesgo o si necesita un crédito flexible.";
+    guion = "CONCESIONARIO / COMPRAVENTA: valida (1) vehículo o moto de interés, (2) plazo de compra, (3) forma de pago: contado, crédito o retoma, (4) monto de cuota inicial (en pesos, incluyendo retoma si la hay), (5) si es crédito, sus ingresos mensuales aproximados y (6) las deudas o cuotas mensuales que ya paga (explica que es para calcular su preaprobado en segundos), y (7) de forma sutil y respetuosa si está al día en centrales de riesgo o si necesita un crédito flexible.";
   } else if (/constru|inmobil|propiedad|vivienda|arriendo/.test(t)) {
     guion = "CONSTRUCTORA / INMOBILIARIA: valida (1) uso: vivienda propia o inversión, (2) proyecto o número de habitaciones, (3) plazo, (4) cuota inicial, cesantías o subsidio (VIS / No VIS) y (5) si ya tiene preaprobado bancario.";
   } else if (/salud|clinic|medic|odont|estetic|belleza|salon|spa|veterin|taller|mecan|lavadero|servicio|oficio|gimnas/.test(t)) {
@@ -261,10 +262,14 @@ async function sincronizarCrm(ag: DuenoMemoria, telefono: string, canalEntrada: 
   const canalDicho = lead?.canal_origen && CANALES.includes(lead.canal_origen) ? lead.canal_origen : "";
   const { data: previo } = await supabaseAdmin
     .from("crm_leads")
-    .select("id,etapa_embudo,canal_origen")
+    .select("id,etapa_embudo,canal_origen,datos_extra,valor_estimado")
     .eq("negocio_id", ag.negocio_id)
     .eq("telefono", telefono)
     .maybeSingle();
+  const extraPrevio: Record<string, unknown> =
+    previo?.datos_extra && typeof previo.datos_extra === "object" && !Array.isArray(previo.datos_extra) ? (previo.datos_extra as Record<string, unknown>) : {};
+  const soloCifras = (v: unknown): number => Number(String(v ?? "").replace(/[^\d]/g, "").slice(0, 12)) || 0;
+  const CLAVES_PROTEGIDAS = ["actividades", "pre_estado", "pre_cuota", "pre_pct", "motivo_perdida"];
   const calif = lead
     ? {
         temperatura: String(lead.temperatura ?? "").toUpperCase().slice(0, 12) || null,
@@ -273,12 +278,35 @@ async function sincronizarCrm(ag: DuenoMemoria, telefono: string, canalEntrada: 
         capacidad_pago: String(lead.capacidad_pago ?? "").slice(0, 300) || null,
         urgencia: String(lead.urgencia ?? "").slice(0, 300) || null,
         valor_estimado: Number.isFinite(Number(lead.valor_estimado)) ? Math.max(0, Math.min(1e12, Number(lead.valor_estimado))) : 0,
-        datos_extra: {
-          ...(lead.datos_extra && typeof lead.datos_extra === "object" && !Array.isArray(lead.datos_extra)
-            ? Object.fromEntries(Object.entries(lead.datos_extra).slice(0, 15).map(([k, v]) => [k.slice(0, 40), String(v).slice(0, 200)]))
-            : {}),
-          datos_confirmados: String(lead.datos_confirmados ?? "").slice(0, 500),
-        },
+        datos_extra: (() => {
+          const nuevos: Record<string, unknown> =
+            lead.datos_extra && typeof lead.datos_extra === "object" && !Array.isArray(lead.datos_extra)
+              ? Object.fromEntries(
+                  Object.entries(lead.datos_extra)
+                    .filter(([k]) => !CLAVES_PROTEGIDAS.includes(k))
+                    .slice(0, 15)
+                    .map(([k, v]) => [k.slice(0, 40), String(v).slice(0, 200)]),
+                )
+              : {};
+          const mezcla: Record<string, unknown> = { ...extraPrevio, ...nuevos, datos_confirmados: String(lead.datos_confirmados ?? "").slice(0, 500) };
+          // Preaprobado automático: el cliente dio ingresos (y opcionalmente deudas e inicial) en el chat.
+          const ing = soloCifras(mezcla.pre_ingresos);
+          const valor = Number.isFinite(Number(lead.valor_estimado)) && Number(lead.valor_estimado) > 0 ? Number(lead.valor_estimado) : Number(previo?.valor_estimado) || 0;
+          if (ing > 0 && valor > 0) {
+            const deu = soloCifras(mezcla.pre_deudas);
+            const ini = Math.min(soloCifras(mezcla.pre_inicial), valor);
+            const pct = Math.min(Math.max(Number(mezcla.pre_pct) || 35, 1), 70);
+            const capacidad = ing * (pct / 100) - deu;
+            const cuota = Math.max(0, valor - ini) * (0.015 / (1 - Math.pow(1.015, -60)));
+            mezcla.pre_ingresos = ing;
+            mezcla.pre_deudas = deu;
+            mezcla.pre_inicial = ini;
+            mezcla.pre_pct = pct;
+            mezcla.pre_cuota = Math.round(cuota);
+            mezcla.pre_estado = capacidad >= cuota ? "viable" : capacidad >= cuota * 0.7 ? "codeudor" : "no";
+          }
+          return mezcla as unknown as Json;
+        })(),
       }
     : {};
   const canal = previo ? (previo.canal_origen === "WhatsApp Directo" && canalDicho && canalDicho !== "WhatsApp Directo" ? canalDicho : previo.canal_origen) : canalDicho || canalEntrada;
@@ -479,7 +507,7 @@ MEMORIA DEL HILO (regla estricta): antes de responder, revisa TODO el historial 
 Tres modos automáticos (elige según lo que escriba el cliente):
 A) COMERCIAL Y CIERRE: califica según el playbook del sector (concesionario: modelo, plazo, cuota inicial, reportes en centrales de riesgo; constructora/inmobiliaria: vivienda o inversión, cuota inicial, subsidio; restaurante: pedido completo y domicilio; otros: la necesidad, presupuesto y fecha) y cierra la operación.
 B) SERVICIO AL CLIENTE Y PQRS: si hay duda postventa, garantía, reclamo o solicitud, mantén la calma, pide los datos del caso (número de pedido/factura/placa y descripción), da solución inmediata según las políticas del negocio y añade al final la etiqueta oculta [[PQRS:{"tipo":"Peticion|Queja|Reclamo|Sugerencia","resumen":"...","urgencia":"Alta|Media|Baja"}]]. Solo escala con [[ASESOR]] si exigen hablar con un gerente, hay amenaza legal o estafa, o se requiere aprobación financiera especial.
-C) CLASIFICACIÓN DE LEAD: al final de CADA turno añade la etiqueta oculta [[LEAD:{"temperatura":"FRIO|TIBIO|CALIENTE","puntaje":0,"canal_origen":"...","interes":"...","capacidad_pago":"...","urgencia":"...","valor_estimado":0,"datos_extra":{},"datos_confirmados":"..."}]] (puntaje de 0 a 100). El cliente nunca ve las etiquetas.
+C) CLASIFICACIÓN DE LEAD: al final de CADA turno añade la etiqueta oculta [[LEAD:{"temperatura":"FRIO|TIBIO|CALIENTE","puntaje":0,"canal_origen":"...","interes":"...","capacidad_pago":"...","urgencia":"...","valor_estimado":0,"datos_extra":{},"datos_confirmados":"..."}]] (puntaje de 0 a 100). PREAPROBADO: cuando el cliente te diga sus ingresos mensuales, sus deudas mensuales o su cuota inicial/retoma, guárdalos como números enteros en pesos dentro de datos_extra (pre_ingresos, pre_deudas, pre_inicial) y pon en valor_estimado el precio del vehículo o bien de interés; el sistema calcula solo el preaprobado. Nunca le prometas aprobación: dile que es un estimado sujeto a estudio de la entidad financiera. El cliente nunca ve las etiquetas.
 
 Cómo atender:
 1. Saluda por el nombre del negocio la primera vez y pregunta en qué puedes ayudar.
