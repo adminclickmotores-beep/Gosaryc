@@ -435,24 +435,24 @@ GUIAS_NEGOCIO.parqueadero = {
 GUIAS_NEGOCIO.compraventa = {
   frase: "Cada artículo avaluado, cada contrato al día.",
   pasos: [
-    { titulo: "Registra el empeño", texto: "En “Empeños y contratos” anota el artículo, el avalúo, el monto prestado, el interés y la fecha límite." },
-    { titulo: "Cobra intereses y retiros", texto: "En “Retiros y renovaciones” registra cada pago; entra a Caja y Contabilidad." },
-    { titulo: "Vende lo vencido", texto: "Pasa los artículos no retirados a “Artículos en venta” con su precio." },
+    { titulo: "Registra el empeño", texto: "En “Empeños y contratos” anota el artículo con fotos, el avalúo, el valor prestado, el plazo y el porcentaje de retroventa. El préstamo sale de Caja con su asiento contable." },
+    { titulo: "Prorroga o rescata", texto: "En el mismo contrato prorrogas (cobra el interés) o el cliente rescata su artículo; el cobro entra a Caja y el historial queda en “Retiros y renovaciones”." },
+    { titulo: "Lo vencido pasa a venta", texto: "Cuando vence el plazo (más 3 días de gracia) el artículo pasa solo a “Artículos en venta”; al venderlo cobras a Caja y se registra la utilidad." },
   ],
 };
 GUIAS_NEGOCIO.distribuidora = {
   frase: "Cada ruta cumplida, cada factura cobrada.",
   pasos: [
-    { titulo: "Carga tus clientes y precios", texto: "Registra clientes y sus listas de precios mayoristas." },
-    { titulo: "Toma los pedidos", texto: "En “Pedidos de clientes” anota lo que pide cada negocio y su fecha de entrega." },
-    { titulo: "Despacha y cobra", texto: "En “Rutas y despachos” asigna vendedor y vehículo; controla lo pendiente en “Cartera y cobranza”." },
+    { titulo: "Carga productos, stock y precios", texto: "En “Listas de precios por cliente” crea productos por caja, paca o bulto, ingresa la mercancía y define precios por volumen para mayorista, distribuidor y tienda." },
+    { titulo: "Toma los pedidos", texto: "En “Pedidos de clientes” el precio se calcula solo y el crédito respeta el cupo de cada cliente." },
+    { titulo: "Despacha y cobra", texto: "En “Rutas y despachos” despacha cada pedido: baja el inventario y cobra a Caja o suma a la cartera, que abonas en “Cartera y cobranza”." },
   ],
 };
 GUIAS_NEGOCIO.taller_motos = {
   frase: "Cada moto lista, cada cliente de vuelta.",
   pasos: [
-    { titulo: "Abre la orden", texto: "En “Órdenes de trabajo” anota placa, kilometraje, falla y mecánico." },
-    { titulo: "Controla repuestos", texto: "En “Repuestos y accesorios” lleva el stock con mínimo y proveedor." },
+    { titulo: "Abre la orden", texto: "En “Órdenes de trabajo” anota placa, cilindraje, kilometraje, checklist, fotos, falla y mecánico; avisa por WhatsApp cuando la moto esté lista." },
+    { titulo: "Repuestos y entrega", texto: "Los repuestos que uses se descuentan del inventario; al entregar se cobra a Caja con asiento contable y se calcula la comisión del mecánico." },
     { titulo: "Avisa los vencimientos", texto: "Con “Mantenimientos programados” y “SOAT y tecnomecánica” recuerda al cliente por WhatsApp." },
   ],
 };

@@ -44,6 +44,9 @@ import { AnimalesGanaderia, GuiasGanaderia, InsumosGanaderia, ProduccionGanaderi
 import { BeneficiariosFundacion, DonacionesFundacion, ProyectosFundacion, VoluntariosFundacion } from "@/components/fundacion/FundacionModulos";
 import { AportesIglesia, EventosIglesia, GruposIglesia, MiembrosIglesia, VisitasIglesia } from "@/components/iglesia/IglesiaModulos";
 import { AbonadosParqueadero } from "@/components/parqueadero/AbonadosParqueadero";
+import { ArticulosVentaCV, ComprasParticularesCV, EmpenosContratos, RetirosCV } from "@/components/compraventa/CompraventaModulos";
+import { CarteraDistribuidora, ListasPreciosDistribuidora, PedidosDistribuidora, RutasDistribuidora } from "@/components/distribuidora/DistribuidoraModulos";
+import { OrdenesMoto, RepuestosMoto } from "@/components/taller/TallerMotosModulos";
 
 // Módulos pesados con carga diferida: el panel abre al instante y cada uno
 // baja solo cuando se visita (cero lags en la página principal y el login).
@@ -210,6 +213,16 @@ function ModuloPage() {
   if (id === "grupos_iglesia") return <GruposIglesia />;
   if (id === "visitas_iglesia") return <VisitasIglesia />;
   if (id === "parq_abonados") return <AbonadosParqueadero />;
+  if (id === "empenos_cv") return <EmpenosContratos />;
+  if (id === "articulos_cv") return <ArticulosVentaCV />;
+  if (id === "compras_cv") return <ComprasParticularesCV />;
+  if (id === "retiros_cv") return <RetirosCV />;
+  if (id === "pedidos_dist") return <PedidosDistribuidora />;
+  if (id === "rutas_dist") return <RutasDistribuidora />;
+  if (id === "listas_dist") return <ListasPreciosDistribuidora />;
+  if (id === "cartera_dist") return <CarteraDistribuidora />;
+  if (id === "ordenes_moto") return <OrdenesMoto />;
+  if (id === "repuestos_moto") return <RepuestosMoto />;
   if (id === "gim_checkin") return <CheckinGimnasio />;
   if (id === "gim_socios") return <SociosGimnasio />;
   if (id === "gim_planes") return <PlanesGimnasio />;

@@ -6,6 +6,24 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+// Ayudas para las tablas de compraventa, distribuidora y taller de motos (mismas reglas que el resto de tablas).
+type OpcionalesExcepto<R, Req extends keyof R> = Pick<R, Req> & Partial<Omit<R, Req>>
+type BaseNeg = { id: string; owner_id: string | null; tipo_negocio: string | null; created_at: string }
+type CvArticuloRow = BaseNeg & { nombre: string; descripcion: string | null; fotos: string[]; origen: string; contrato_id: string | null; vendedor: string | null; vendedor_doc: string | null; vendedor_tel: string | null; costo: number; precio_venta: number; ubicacion: string | null; estado: string; precio_vendido: number | null; metodo: string | null; recibo: string | null; vendido_en: string | null }
+type CvContratoRow = BaseNeg & { numero: string; articulo: string; descripcion: string | null; fotos: string[]; cliente: string; documento: string | null; telefono: string | null; avaluo: number; prestado: number; plazo_dias: number; retroventa_pct: number; inicio: string; vence: string; prorrogas: number; estado: string; articulo_id: string | null; metodo: string | null }
+type CvMovimientoRow = BaseNeg & { contrato_id: string; numero: string; articulo: string; cliente: string; tipo: string; capital: number; interes: number; total: number; vence_anterior: string | null; vence_nuevo: string | null; metodo: string; recibo: string; fecha: string }
+type DisRutaRow = BaseNeg & { nombre: string; vendedor: string | null; vehiculo: string | null; zona: string | null; dias: string | null; activo: boolean }
+type DisClienteRow = BaseNeg & { nombre: string; documento: string | null; telefono: string | null; direccion: string | null; canal: string; cupo_credito: number; saldo: number; ruta_id: string | null; activo: boolean }
+type DisProductoRow = BaseNeg & { nombre: string; sku: string | null; presentacion: string; unidades_por_presentacion: number; stock_unidades: number; costo_unidad: number; precio_unidad: number; activo: boolean }
+type DisPrecioRow = BaseNeg & { producto_id: string; canal: string; desde_unidades: number; precio_unidad: number }
+type DisPedidoRow = BaseNeg & { numero: string; cliente_id: string; cliente: string; canal: string; ruta_id: string | null; ruta: string | null; fecha: string; fecha_entrega: string | null; condicion: string; estado: string; total: number; metodo: string | null; despachado_en: string | null }
+type DisPedidoItemRow = BaseNeg & { pedido_id: string; producto_id: string; nombre: string; presentacion: string; cantidad: number; unidades: number; precio_unidad: number; costo_unidad: number; subtotal: number }
+type DisAbonoRow = BaseNeg & { cliente_id: string; cliente: string; monto: number; metodo: string; recibo: string; fecha: string }
+type MotMecanicoRow = BaseNeg & { nombre: string; comision_pct: number; activo: boolean }
+type MotRepuestoRow = BaseNeg & { nombre: string; referencia: string | null; proveedor: string | null; stock: number; stock_minimo: number; costo: number; precio: number; activo: boolean }
+type MotOrdenRow = BaseNeg & { numero: string; placa: string; marca: string | null; cilindraje: number | null; kilometraje: number; cliente: string; documento: string | null; telefono: string | null; falla: string; checklist: Json; fotos: string[]; mecanico_id: string | null; mecanico: string | null; estado: string; mano_obra: number; repuestos_total: number; total: number; comision_pct: number; comision: number; comision_pagada: boolean; pagado: boolean; metodo: string | null; prox_mantenimiento: string | null; entregada_en: string | null }
+type MotOrdenRepuestoRow = BaseNeg & { orden_id: string; repuesto_id: string; nombre: string; cantidad: number; precio: number; costo: number; subtotal: number; anulado: boolean }
+
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
@@ -2996,6 +3014,20 @@ export type Database = {
         Update: { activo?: boolean; created_at?: string; id?: string; nombre?: string; owner_id?: string | null; placa?: string; tarifa_mensual?: number; telefono?: string | null; tipo_negocio?: string | null; vence?: string }
         Relationships: []
       }
+      cv_articulos: { Row: CvArticuloRow; Insert: OpcionalesExcepto<CvArticuloRow, "nombre">; Update: Partial<CvArticuloRow>; Relationships: [] }
+      cv_contratos: { Row: CvContratoRow; Insert: OpcionalesExcepto<CvContratoRow, "numero" | "articulo" | "cliente" | "prestado" | "plazo_dias" | "vence">; Update: Partial<CvContratoRow>; Relationships: [] }
+      cv_movimientos: { Row: CvMovimientoRow; Insert: OpcionalesExcepto<CvMovimientoRow, "contrato_id" | "numero" | "articulo" | "cliente" | "tipo" | "recibo">; Update: Partial<CvMovimientoRow>; Relationships: [] }
+      dis_rutas: { Row: DisRutaRow; Insert: OpcionalesExcepto<DisRutaRow, "nombre">; Update: Partial<DisRutaRow>; Relationships: [] }
+      dis_clientes: { Row: DisClienteRow; Insert: OpcionalesExcepto<DisClienteRow, "nombre">; Update: Partial<DisClienteRow>; Relationships: [] }
+      dis_productos: { Row: DisProductoRow; Insert: OpcionalesExcepto<DisProductoRow, "nombre">; Update: Partial<DisProductoRow>; Relationships: [] }
+      dis_precios: { Row: DisPrecioRow; Insert: OpcionalesExcepto<DisPrecioRow, "producto_id" | "canal" | "desde_unidades" | "precio_unidad">; Update: Partial<DisPrecioRow>; Relationships: [] }
+      dis_pedidos: { Row: DisPedidoRow; Insert: OpcionalesExcepto<DisPedidoRow, "numero" | "cliente_id" | "cliente" | "canal">; Update: Partial<DisPedidoRow>; Relationships: [] }
+      dis_pedido_items: { Row: DisPedidoItemRow; Insert: OpcionalesExcepto<DisPedidoItemRow, "pedido_id" | "producto_id" | "nombre" | "presentacion" | "cantidad" | "unidades" | "precio_unidad" | "subtotal">; Update: Partial<DisPedidoItemRow>; Relationships: [] }
+      dis_abonos: { Row: DisAbonoRow; Insert: OpcionalesExcepto<DisAbonoRow, "cliente_id" | "cliente" | "monto" | "recibo">; Update: Partial<DisAbonoRow>; Relationships: [] }
+      mot_mecanicos: { Row: MotMecanicoRow; Insert: OpcionalesExcepto<MotMecanicoRow, "nombre">; Update: Partial<MotMecanicoRow>; Relationships: [] }
+      mot_repuestos: { Row: MotRepuestoRow; Insert: OpcionalesExcepto<MotRepuestoRow, "nombre">; Update: Partial<MotRepuestoRow>; Relationships: [] }
+      mot_ordenes: { Row: MotOrdenRow; Insert: OpcionalesExcepto<MotOrdenRow, "placa" | "cliente" | "falla">; Update: Partial<MotOrdenRow>; Relationships: [] }
+      mot_orden_repuestos: { Row: MotOrdenRepuestoRow; Insert: OpcionalesExcepto<MotOrdenRepuestoRow, "orden_id" | "repuesto_id" | "nombre" | "cantidad" | "precio" | "subtotal">; Update: Partial<MotOrdenRepuestoRow>; Relationships: [] }
       parq_pagos: {
         Row: { abonado_id: string; created_at: string; desde: string; fecha: string; hasta: string; id: string; metodo: string; nombre: string; owner_id: string | null; placa: string; recibo: string; tipo_negocio: string | null; valor: number }
         Insert: { abonado_id: string; created_at?: string; desde: string; fecha?: string; hasta: string; id?: string; metodo?: string; nombre: string; owner_id?: string | null; placa: string; recibo: string; tipo_negocio?: string | null; valor: number }
@@ -8984,6 +9016,23 @@ export type Database = {
       igl_egresar: { Args: { p_fondo: string; p_concepto: string; p_obra_social: boolean; p_valor: number; p_metodo: string; p_culto: string; p_fecha: string; p_evento: string }; Returns: Json }
       igl_cerrar: { Args: { p_culto: string; p_desde: string; p_hasta: string }; Returns: Json }
       parq_cobrar_abono: { Args: { p_abonado: string; p_metodo: string }; Returns: Json }
+      cv_crear_contrato: { Args: { p_articulo: string; p_descripcion: string; p_cliente: string; p_documento: string; p_telefono: string; p_avaluo: number; p_prestado: number; p_plazo_dias: number; p_retroventa_pct: number; p_fotos: string[]; p_metodo: string }; Returns: Json }
+      cv_prorrogar: { Args: { p_contrato: string; p_metodo: string }; Returns: Json }
+      cv_rescatar: { Args: { p_contrato: string; p_metodo: string }; Returns: Json }
+      cv_procesar_vencidos: { Args: { p_gracia: number; p_margen: number }; Returns: number }
+      cv_comprar: { Args: { p_nombre: string; p_descripcion: string; p_vendedor: string; p_documento: string; p_telefono: string; p_costo: number; p_precio_venta: number; p_fotos: string[]; p_metodo: string }; Returns: Json }
+      cv_vender: { Args: { p_articulo: string; p_precio: number; p_metodo: string }; Returns: Json }
+      dis_ingresar_stock: { Args: { p_producto: string; p_cantidad: number; p_costo_unidad: number; p_metodo: string }; Returns: undefined }
+      dis_crear_pedido: { Args: { p_cliente: string; p_ruta: string | null; p_entrega: string | null; p_condicion: string; p_items: Json }; Returns: Json }
+      dis_despachar: { Args: { p_pedido: string; p_metodo: string }; Returns: Json }
+      dis_cancelar: { Args: { p_pedido: string }; Returns: undefined }
+      dis_abonar: { Args: { p_cliente: string; p_monto: number; p_metodo: string }; Returns: Json }
+      mot_agregar_repuesto: { Args: { p_orden: string; p_repuesto: string; p_cantidad: number }; Returns: undefined }
+      mot_quitar_repuesto: { Args: { p_item: string }; Returns: undefined }
+      mot_ingresar_stock: { Args: { p_repuesto: string; p_cantidad: number; p_costo: number; p_metodo: string }; Returns: undefined }
+      mot_entregar: { Args: { p_orden: string; p_metodo: string }; Returns: Json }
+      mot_cancelar: { Args: { p_orden: string }; Returns: undefined }
+      mot_pagar_comisiones: { Args: { p_mecanico: string; p_metodo: string }; Returns: Json }
       tex_consumir: { Args: { p_orden: string; p_insumo: string; p_cantidad: number }; Returns: Json }
       tex_entregar: { Args: { p_orden: string; p_cantidad: number; p_metodo: string }; Returns: Json }
       flo_vender: { Args: { p_arreglo: string; p_cantidad: number; p_cliente: string; p_telefono: string; p_destinatario: string; p_direccion: string; p_tarjeta: string; p_fecha: string; p_franja: string; p_metodo: string }; Returns: Json }

@@ -25,6 +25,9 @@ const IDS_DEDICADOS = new Set<string>([
   "beneficiarios_fund", "donaciones_fund", "proyectos_fund", "voluntarios_fund",
   "miembros_iglesia", "aportes_iglesia", "eventos_iglesia", "grupos_iglesia", "visitas_iglesia",
   "parq_abonados",
+  "empenos_cv", "articulos_cv", "compras_cv", "retiros_cv",
+  "pedidos_dist", "rutas_dist", "listas_dist", "cartera_dist",
+  "ordenes_moto", "repuestos_moto",
 ]);
 
 export type FilaAuditoria = {
