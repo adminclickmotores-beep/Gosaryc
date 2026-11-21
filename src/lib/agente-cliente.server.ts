@@ -112,6 +112,11 @@ export class ErrorAgente extends Error {
 const ventanas = new Map<string, number[]>();
 function dentroDelLimite(clave: string): boolean {
   const ahora = Date.now();
+  // Evita que claves inventadas llenen la memoria: se purgan las ventanas vencidas.
+  if (ventanas.size > 5000) {
+    for (const [k, v] of ventanas) if (v.every((t) => ahora - t >= 60_000)) ventanas.delete(k);
+    if (ventanas.size > 5000) ventanas.clear();
+  }
   const lista = (ventanas.get(clave) ?? []).filter((t) => ahora - t < 60_000);
   if (lista.length >= 40) {
     ventanas.set(clave, lista);
