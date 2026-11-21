@@ -51,7 +51,8 @@ function resumen(turno: Turno, movs: Mov[]) {
     ventas: suma((m) => m.tipo === "venta"),
     gastos: suma((m) => m.tipo === "gasto"),
     retiros: suma((m) => m.tipo === "retiro"),
-    esperado: turno.fondo_inicial + ingEf - egrEf,
+    // Efectivo esperado = base inicial + ventas y abonos en efectivo − gastos/retiros/devoluciones en efectivo (sin Nequi ni datáfono).
+    esperado: Math.round((turno.fondo_inicial + ingEf - egrEf) * 100) / 100,
   };
 }
 
@@ -170,7 +171,7 @@ ${t.notas_cierre ? `<hr><p>Notas: ${esc(t.notas_cierre)}</p>` : ""}<br><br><p cl
     if (!turno || !r) return;
     const c = Number(contado);
     if (!contado.trim() || !Number.isFinite(c) || c < 0) return toast.error("Cuenta el efectivo y escribe cuánto hay.");
-    const dif = c - r.esperado;
+    const dif = Math.round((c - r.esperado) * 100) / 100;
     if (!ciego && dif !== 0 && !notas.trim()) return toast.error("Hay diferencia: explica el motivo en las notas del cierre.");
     const pregunta = ciego
       ? `Vas a cerrar la caja con ${dinero(c)} contados. ¿Confirmas?`
@@ -199,7 +200,7 @@ ${t.notas_cierre ? `<hr><p>Notas: ${esc(t.notas_cierre)}</p>` : ""}<br><br><p cl
   if (cargando) return <p className="text-sm text-muted-foreground">Cargando caja…</p>;
 
   const esGasto = tipo === "gasto";
-  const diferencia = !ciego && r && contado.trim() && Number.isFinite(Number(contado)) ? Number(contado) - r.esperado : null;
+  const diferencia = !ciego && r && contado.trim() && Number.isFinite(Number(contado)) ? Math.round((Number(contado) - r.esperado) * 100) / 100 : null;
 
   return (
     <div className="space-y-6">

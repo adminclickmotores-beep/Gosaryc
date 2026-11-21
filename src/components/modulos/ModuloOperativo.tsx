@@ -142,6 +142,7 @@ export function ModuloOperativo({ id }: { id: string }) {
   const [panel, setPanel] = useState<Panel>(null);
   const [valor, setValor] = useState("");
   const [nota, setNota] = useState("");
+  const [metodoCaja, setMetodoCaja] = useState<"efectivo" | "transferencia" | "tarjeta">("efectivo");
   const [op, setOp] = useState("entrada");
   const [verHistorial, setVerHistorial] = useState<string | null>(null);
   const [vista, setVista] = useState<"lista" | "tablero">("lista");
@@ -214,6 +215,21 @@ export function ModuloOperativo({ id }: { id: string }) {
       monto: valorCaja,
     });
     if (error) toast.warning("El valor se guardó, pero no se pudo reflejar en la caja.");
+    // Arqueo: el movimiento también entra al turno abierto con su medio de pago (efectivo / transferencia / tarjeta),
+    // para que el efectivo esperado cuente solo el dinero físico.
+    const { data: turnos } = await supabase.from("turnos_caja").select("id").eq("estado", "abierto").order("abierto_en", { ascending: false }).limit(1);
+    const turnoId = turnos?.[0]?.id;
+    if (turnoId) {
+      const { error: eTurno } = await supabase.from("movimientos_turno").insert({
+        turno_id: turnoId,
+        tipo: sale ? "gasto" : "ingreso",
+        metodo: metodoCaja,
+        concepto: `${modulo?.titulo ?? "Módulo"}: ${titulo}`.slice(0, 160),
+        monto: valorCaja,
+        referencia_pago: metodoCaja === "efectivo" ? null : "Abono desde módulo",
+      });
+      if (eTurno) toast.warning("El valor se guardó, pero no se pudo reflejar en el turno de caja.");
+    }
   };
 
   const guardar = async (r: Registro, cambios: TablesUpdate<"modulo_registros">, texto: string) => {
@@ -828,6 +844,11 @@ export function ModuloOperativo({ id }: { id: string }) {
                       <>
                         <p className="text-xs text-muted-foreground">Saldo actual: {dinero(saldo)}</p>
                         <input className={campo} placeholder="Valor del abono (COP)" inputMode="decimal" value={valor} onChange={(e) => setValor(e.target.value)} />
+                        <select className={campo} aria-label="Medio de pago" value={metodoCaja} onChange={(e) => setMetodoCaja(e.target.value as "efectivo" | "transferencia" | "tarjeta")}>
+                          <option value="efectivo">Efectivo</option>
+                          <option value="transferencia">Transferencia (Nequi, Daviplata, Bre-B)</option>
+                          <option value="tarjeta">Tarjeta / datáfono</option>
+                        </select>
                         <input className={campo} placeholder="Nota (opcional)" value={nota} onChange={(e) => setNota(e.target.value)} />
                         <div className="flex gap-2">
                           <button onClick={() => registrarAbono(r)} className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground">Registrar abono</button>

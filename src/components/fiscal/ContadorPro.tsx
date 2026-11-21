@@ -26,6 +26,8 @@ type Oblig = Tables<"obligaciones_tributarias_negocio">;
 type Novedad = Tables<"novedades_normativas">;
 type Tarifa = Tables<"ica_tarifas">;
 type Tercero = Tables<"restaurante_clientes">;
+type Factura = Tables<"fac_emitidas">;
+type RegProveedor = Tables<"proveedores_registros">;
 
 export const UVT_2026 = 54000;
 
@@ -96,8 +98,8 @@ export function ContadorPro({ cuentas, filas }: { cuentas: Cuenta[]; filas: Asie
   // Impuestos
   const [desde, setDesde] = useState("");
   const [hasta, setHasta] = useState("");
-  const [tarifaIva, setTarifaIva] = useState("19");
-  const [tarifaRete, setTarifaRete] = useState("3.5");
+  const [tarifaRenta, setTarifaRenta] = useState("35");
+  const [datosFiscales, setDatosFiscales] = useState<{ asientos: Asiento[]; facturas: Factura[]; provs: RegProveedor[] }>({ asientos: [], facturas: [], provs: [] });
   const [tarifaId, setTarifaId] = useState("");
   const [nMun, setNMun] = useState("");
   const [nCiuu, setNCiuu] = useState("");
@@ -133,6 +135,38 @@ export function ContadorPro({ cuentas, filas }: { cuentas: Cuenta[]; filas: Asie
   useEffect(() => {
     void cargar();
   }, [cargar]);
+
+  // Datos fiscales del negocio activo: asientos vigentes, facturas emitidas y compras a proveedores del período.
+  const duenoId = negocio?.owner_id ?? null;
+  useEffect(() => {
+    let vivo = true;
+    void (async () => {
+      let qa = supabase.from("asientos_contables").select("*").eq("anulado", false).order("fecha").limit(20000);
+      let qf = supabase.from("fac_emitidas").select("*").order("created_at").limit(20000);
+      let qp = supabase.from("proveedores_registros").select("*").eq("anulado", false).order("created_at").limit(20000);
+      if (duenoId) {
+        qa = qa.eq("owner_id", duenoId);
+        qf = qf.eq("owner_id", duenoId);
+        qp = qp.eq("owner_id", duenoId);
+      }
+      if (desde) {
+        qa = qa.gte("fecha", desde);
+        qf = qf.gte("created_at", desde);
+        qp = qp.gte("created_at", desde);
+      }
+      if (hasta) {
+        qa = qa.lte("fecha", hasta);
+        qf = qf.lte("created_at", `${hasta}T23:59:59`);
+        qp = qp.lte("created_at", `${hasta}T23:59:59`);
+      }
+      const [a, f, p] = await Promise.all([qa, qf, qp]);
+      if (!vivo) return;
+      setDatosFiscales({ asientos: a.data ?? [], facturas: f.data ?? [], provs: p.data ?? [] });
+    })();
+    return () => {
+      vivo = false;
+    };
+  }, [desde, hasta, duenoId]);
 
   useEffect(() => {
     if (!negocio) return;
@@ -245,19 +279,48 @@ export function ContadorPro({ cuentas, filas }: { cuentas: Cuenta[]; filas: Asie
   const vencidas = useMemo(() => pendientes.filter((o) => diasHasta(o.fecha_vencimiento) <= 3), [pendientes]);
 
   // ---- Pre-liquidación con los asientos reales ----
-  const libro = useMemo(() => {
+  // Todo sale de los asientos contables reales y de las facturas emitidas del negocio (nada se estima con porcentajes).
+  const fiscal = useMemo(() => {
+    const porId = new Map(cuentas.map((c) => [c.id, c]));
     let ingresos = 0;
     let gastos = 0;
-    for (const f of filas) {
-      if (f.anulado) continue;
-      if (desde && f.fecha < desde) continue;
-      if (hasta && f.fecha > hasta) continue;
-      const c = cuentas.find((x) => x.id === f.cuenta_id);
-      if (c?.tipo === "ingreso") ingresos += f.haber - f.debe;
-      if (c?.tipo === "gasto") gastos += f.debe - f.haber;
+    const cod: Record<string, { debe: number; haber: number }> = {};
+    for (const f of datosFiscales.asientos) {
+      const c = porId.get(f.cuenta_id);
+      if (!c) continue;
+      if (c.tipo === "ingreso") ingresos += f.haber - f.debe;
+      if (c.tipo === "gasto") gastos += f.debe - f.haber;
+      for (const p of ["2408", "2495", "1355", "2365", "2368", "2367"]) {
+        if (c.codigo.startsWith(p)) {
+          const x = cod[p] ?? { debe: 0, haber: 0 };
+          x.debe += f.debe;
+          x.haber += f.haber;
+          cod[p] = x;
+        }
+      }
     }
-    return { ingresos: Math.max(0, ingresos), gastos: Math.max(0, gastos) };
-  }, [filas, cuentas, desde, hasta]);
+    const g = (p: string) => cod[p] ?? { debe: 0, haber: 0 };
+    const fac = datosFiscales.facturas;
+    const sum = (f: (x: Factura) => number) => fac.reduce((s, x) => s + (Number(f(x)) || 0), 0);
+    return {
+      ingresos: Math.max(0, ingresos),
+      gastos: Math.max(0, gastos),
+      ivaGenerado: g("2408").haber,
+      ivaDescontable: g("2408").debe,
+      impoconsumo: g("2495").haber - g("2495").debe,
+      retencionesAFavor: g("1355").debe - g("1355").haber,
+      retencionesPorPagar: g("2365").haber - g("2365").debe,
+      reteicaPorPagar: g("2368").haber - g("2368").debe,
+      nFacturas: fac.length,
+      baseFacturada: sum((x) => x.subtotal),
+      ivaFacturado: sum((x) => x.iva),
+      incFacturado: sum((x) => x.impoconsumo),
+      retefuenteFacturas: sum((x) => x.retefuente),
+      reteivaFacturas: sum((x) => x.reteiva),
+      reteicaFacturas: sum((x) => x.reteica),
+    };
+  }, [datosFiscales, cuentas]);
+  const libro = { ingresos: fiscal.ingresos, gastos: fiscal.gastos };
 
   const descuadre = useMemo(() => {
     let d = 0;
@@ -270,12 +333,15 @@ export function ContadorPro({ cuentas, filas }: { cuentas: Cuenta[]; filas: Asie
     return d - h;
   }, [filas]);
 
-  const tIva = Math.min(Math.max(Number(tarifaIva) || 0, 0), 100);
-  const tRete = Math.min(Math.max(Number(tarifaRete) || 0, 0), 100);
-  const ivaGenerado = Math.round((libro.ingresos * tIva) / 100);
-  const ivaDescontable = Math.round((libro.gastos * tIva) / 100);
-  const ivaPagar = Math.max(0, ivaGenerado - ivaDescontable);
-  const retePagar = Math.round((libro.gastos * tRete) / 100);
+  const tRenta = Math.min(Math.max(Number(tarifaRenta) || 0, 0), 100);
+  const ivaGenerado = Math.round(fiscal.ivaGenerado);
+  const ivaDescontable = Math.round(fiscal.ivaDescontable);
+  const ivaNeto = ivaGenerado - ivaDescontable;
+  const ivaPagar = Math.max(0, ivaNeto);
+  const retePagar = Math.round(fiscal.retencionesPorPagar);
+  const utilidadAntes = libro.ingresos - libro.gastos;
+  const rentaEstimada = Math.round(Math.max(0, utilidadAntes) * tRenta / 100);
+  const rentaNeta = Math.max(0, rentaEstimada - Math.round(Math.max(0, fiscal.retencionesAFavor)));
   const tarifaSel = tarifas.find((t) => t.id === tarifaId) ?? tarifas.find((t) => t.municipio === icaMun && (!icaCiuu || t.ciuu === icaCiuu)) ?? null;
   const icaPagar = tarifaSel ? Math.round((libro.ingresos * tarifaSel.tarifa_por_mil) / 1000) : 0;
   const enUvt = (n: number) => `${(n / UVT_2026).toFixed(2)} UVT`;
@@ -337,13 +403,47 @@ export function ContadorPro({ cuentas, filas }: { cuentas: Cuenta[]; filas: Asie
   const exportarFormato = (formato: "1001" | "1005" | "1006" | "1007" | "1008" | "1009") => {
     const conDoc = terceros.filter((t) => t.documento?.trim());
     const base = conDoc.map((t) => [t.documento ?? "", t.digito_verificacion ?? "", t.nombre, t.correo ?? "", t.direccion ?? ""]);
-    if (formato === "1001")
-      exportarExcel("exogena-1001-borrador", ["NIT", "DV", "Tercero", "Correo", "Dirección", "Pagos", "Retención"],
-        conDoc.map((t) => [t.documento ?? "", t.digito_verificacion ?? "", t.nombre, t.correo ?? "", t.direccion ?? "", t.total_gastado, ""]));
-    else if (formato === "1007")
-      exportarExcel("exogena-1007-borrador", ["NIT", "DV", "Tercero", "Correo", "Dirección", "Ingresos"],
-        conDoc.map((t) => [t.documento ?? "", t.digito_verificacion ?? "", t.nombre, t.correo ?? "", t.direccion ?? "", t.total_gastado]));
-    else if (formato === "1008")
+    const r2 = (n: number) => Math.round(n * 100) / 100;
+    // Agrupa las facturas emitidas por documento del cliente.
+    const porCliente = new Map<string, { doc: string; nombre: string; base: number; iva: number; inc: number; ret: number; total: number }>();
+    for (const f of datosFiscales.facturas) {
+      const clave = (f.cliente_doc ?? "").trim() || f.cliente;
+      const x = porCliente.get(clave) ?? { doc: (f.cliente_doc ?? "").trim(), nombre: f.cliente, base: 0, iva: 0, inc: 0, ret: 0, total: 0 };
+      x.base += Number(f.subtotal) || 0;
+      x.iva += Number(f.iva) || 0;
+      x.inc += Number(f.impoconsumo) || 0;
+      x.ret += Number(f.total_retenciones) || 0;
+      x.total += Number(f.total) || 0;
+      porCliente.set(clave, x);
+    }
+    const clientes = Array.from(porCliente.values());
+    // Agrupa las compras por proveedor (NIT guardado en la compra).
+    const porProv = new Map<string, { nit: string; nombre: string; pagos: number }>();
+    for (const p of datosFiscales.provs) {
+      const nit = ((p.datos as unknown as { nit?: string | null } | null)?.nit ?? "").toString().trim();
+      const clave = nit || (p.contacto ?? p.titulo);
+      const x = porProv.get(clave) ?? { nit, nombre: p.contacto ?? p.titulo, pagos: 0 };
+      x.pagos += Number(p.monto) || 0;
+      porProv.set(clave, x);
+    }
+    const provs = Array.from(porProv.values());
+    if (formato === "1001") {
+      const filasP = provs.map((p) => [p.nit, "", p.nombre, r2(p.pagos), ""] as (string | number)[]);
+      exportarExcel("exogena-1001-borrador", ["NIT", "DV", "Tercero", "Pago o abono en cuenta", "Retención practicada"],
+        [...filasP, ["TOTAL", "", "", r2(provs.reduce((s, p) => s + p.pagos, 0)), r2(Math.max(0, fiscal.retencionesPorPagar))]]);
+    } else if (formato === "1005") {
+      const filasP = provs.map((p) => [p.nit, "", p.nombre, r2(p.pagos), ""] as (string | number)[]);
+      exportarExcel("exogena-1005-borrador", ["NIT", "DV", "Tercero", "Base de la compra", "IVA descontable"],
+        [...filasP, ["TOTAL", "", "", r2(provs.reduce((s, p) => s + p.pagos, 0)), r2(fiscal.ivaDescontable)]]);
+    } else if (formato === "1006") {
+      exportarExcel("exogena-1006-borrador", ["NIT / Documento", "Tercero", "Base gravable", "IVA generado", "Impoconsumo"],
+        [...clientes.map((c) => [c.doc, c.nombre, r2(c.base), r2(c.iva), r2(c.inc)] as (string | number)[]),
+          ["TOTAL", "", r2(clientes.reduce((s, c) => s + c.base, 0)), r2(fiscal.ivaGenerado), r2(fiscal.impoconsumo)]]);
+    } else if (formato === "1007") {
+      exportarExcel("exogena-1007-borrador", ["NIT / Documento", "Tercero", "Ingresos brutos", "Devoluciones", "Retenciones que te practicaron"],
+        [...clientes.map((c) => [c.doc, c.nombre, r2(c.base), "", r2(c.ret)] as (string | number)[]),
+          ["TOTAL", "", r2(clientes.reduce((s, c) => s + c.base, 0)), "", r2(clientes.reduce((s, c) => s + c.ret, 0))]]);
+    } else if (formato === "1008")
       exportarExcel("exogena-1008-borrador", ["NIT", "DV", "Tercero", "Correo", "Dirección", "Saldo por cobrar"],
         conDoc.map((t) => [t.documento ?? "", t.digito_verificacion ?? "", t.nombre, t.correo ?? "", t.direccion ?? "", t.total_gastado]));
     else
@@ -516,29 +616,38 @@ export function ContadorPro({ cuentas, filas }: { cuentas: Cuenta[]; filas: Asie
               <input type="date" className={campo} value={hasta} onChange={(e) => setHasta(e.target.value)} />
             </label>
             <label className="block space-y-1 text-xs text-muted-foreground">
-              Tarifa IVA %
-              <select className={campo} value={tarifaIva} onChange={(e) => setTarifaIva(e.target.value)}>
-                {["0", "5", "19"].map((t) => <option key={t} value={t}>{t}%</option>)}
-              </select>
+              Tarifa de renta %
+              <input className={campo} inputMode="decimal" value={tarifaRenta} onChange={(e) => setTarifaRenta(e.target.value)} />
             </label>
-            <label className="block space-y-1 text-xs text-muted-foreground">
-              Tarifa Retefuente %
-              <input className={campo} inputMode="decimal" value={tarifaRete} onChange={(e) => setTarifaRete(e.target.value)} />
-            </label>
+            <p className="self-end text-xs text-muted-foreground">
+              Cifras tomadas de tus asientos contables y de {fiscal.nFacturas} facturas emitidas del período.
+            </p>
           </GlassPanel>
 
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <GlassPanel className="space-y-1 p-4">
               <p className="flex items-center gap-2 text-sm font-medium text-foreground"><Calculator className="h-4 w-4 text-primary" /> Retefuente (F. 350)</p>
-              <p className="text-xs text-muted-foreground">Base gastos: {dinero(libro.gastos)} · {enUvt(libro.gastos)}</p>
+              <p className="text-xs text-muted-foreground">Retenciones por pagar (2365) · Base gastos: {dinero(libro.gastos)} · {enUvt(libro.gastos)}</p>
               <p className="text-xl text-foreground">{dinero(retePagar)}</p>
-              <p className="text-xs text-muted-foreground">Estimado a pagar. Confírmalo con tu contador.</p>
+              <p className="text-xs text-muted-foreground">A tu favor (1355): {dinero(Math.round(fiscal.retencionesAFavor))} · En facturas: Retefuente {dinero(fiscal.retefuenteFacturas)}, ReteIVA {dinero(fiscal.reteivaFacturas)}</p>
             </GlassPanel>
             <GlassPanel className="space-y-1 p-4">
               <p className="flex items-center gap-2 text-sm font-medium text-foreground"><Calculator className="h-4 w-4 text-primary" /> IVA (F. 300)</p>
-              <p className="text-xs text-muted-foreground">Generado {dinero(ivaGenerado)} − Descontable {dinero(ivaDescontable)}</p>
-              <p className="text-xl text-foreground">{dinero(ivaPagar)}</p>
-              <p className="text-xs text-muted-foreground">Base ingresos: {dinero(libro.ingresos)} · {enUvt(libro.ingresos)}</p>
+              <p className="text-xs text-muted-foreground">Generado (2408) {dinero(ivaGenerado)} − Descontable / devoluciones {dinero(ivaDescontable)}</p>
+              <p className="text-xl text-foreground">{ivaNeto < 0 ? `Saldo a favor ${dinero(-ivaNeto)}` : dinero(ivaPagar)}</p>
+              <p className="text-xs text-muted-foreground">Base gravable facturada: {dinero(fiscal.baseFacturada)} · Base ingresos: {dinero(libro.ingresos)} · {enUvt(libro.ingresos)}</p>
+            </GlassPanel>
+            <GlassPanel className="space-y-1 p-4">
+              <p className="flex items-center gap-2 text-sm font-medium text-foreground"><Calculator className="h-4 w-4 text-primary" /> Impoconsumo (2495)</p>
+              <p className="text-xs text-muted-foreground">Facturado: {dinero(fiscal.incFacturado)}</p>
+              <p className="text-xl text-foreground">{dinero(Math.round(fiscal.impoconsumo))}</p>
+              <p className="text-xs text-muted-foreground">Saldo por pagar según asientos.</p>
+            </GlassPanel>
+            <GlassPanel className="space-y-1 p-4">
+              <p className="flex items-center gap-2 text-sm font-medium text-foreground"><Calculator className="h-4 w-4 text-primary" /> Renta (provisión)</p>
+              <p className="text-xs text-muted-foreground">Utilidad {dinero(utilidadAntes)} × {tRenta}% = {dinero(rentaEstimada)}</p>
+              <p className="text-xl text-foreground">{dinero(rentaNeta)}</p>
+              <p className="text-xs text-muted-foreground">Menos retenciones a favor (1355). Confírmalo con tu contador.</p>
             </GlassPanel>
             <GlassPanel className="space-y-1 p-4">
               <p className="flex items-center gap-2 text-sm font-medium text-foreground"><Calculator className="h-4 w-4 text-primary" /> ICA{tarifaSel ? ` · ${tarifaSel.municipio}` : ""}</p>

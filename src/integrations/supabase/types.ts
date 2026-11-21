@@ -3034,6 +3034,8 @@ export type Database = {
           base: number
           cantidad: number
           cantidad_base: number
+          costo_unitario: number
+          utilidad_bruta: number
           created_at: string
           id: string
           impuesto: number
@@ -3052,6 +3054,8 @@ export type Database = {
           base?: number
           cantidad: number
           cantidad_base: number
+          costo_unitario?: number
+          utilidad_bruta?: number
           created_at?: string
           id?: string
           impuesto?: number
@@ -3070,6 +3074,8 @@ export type Database = {
           base?: number
           cantidad?: number
           cantidad_base?: number
+          costo_unitario?: number
+          utilidad_bruta?: number
           created_at?: string
           id?: string
           impuesto?: number
