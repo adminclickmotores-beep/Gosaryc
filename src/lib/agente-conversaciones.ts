@@ -77,6 +77,42 @@ const FAMILIAS: Record<string, Ejemplo[]> = {
   ],
 };
 
+/** Objeciones frecuentes por familia: cómo responder sin presionar y avanzar a la siguiente pregunta útil. */
+const OBJECIONES: Record<string, Ejemplo[]> = {
+  comida: [
+    ["Es mucho para lo que quiero", "Entiendo. Puedo armarte una opción más pequeña o un combo con mejor precio. ¿Cuántas personas comen?"],
+    ["Ya comí, solo miraba", "Perfecto, cuando quieras te envío la carta o te ayudo a pedir. ¿Te la dejo por aquí?"],
+  ],
+  vehiculos: [
+    ["Ya tengo otro carro en mente", "Qué bueno que estés comparando. ¿Cuál es, para ver si lo podemos igualar o mejorar en condiciones?"],
+    ["La cuota me parece alta", "Podemos mover el plazo o aumentar la inicial para bajarla. ¿Cuánto podrías pagar al mes sin apretarte?"],
+  ],
+  inmuebles: [
+    ["Mejor espero a que bajen las tasas", "Es una decisión válida. Puedo dejarte el preaprobado listo para que sepas cuánto te alcanzaría cuando decidas. ¿Te lo preparo?"],
+    ["No tengo cuota inicial", "Hay opciones con subsidio de vivienda y planes de cuota inicial en varias etapas. ¿Tienes cesantías o algún ahorro?"],
+  ],
+  citas: [
+    ["Me lo pienso con calma", "Claro. Te dejo los horarios libres por si luego quieres separar uno. ¿Para qué día te los muestro?"],
+    ["Ya me atendieron en otro lugar", "Gracias por contarlo. ¿Quieres que te ayude a agendar una segunda opinión o un control con nosotros?"],
+  ],
+  taller: [
+    ["Me cobraron mucho en otro taller", "Te entiendo. Hacemos diagnóstico con el valor antes de reparar, así sabes cuánto va a costar. ¿Qué día lo traes?"],
+    ["Solo quiero saber cuánto vale", "El valor depende del diagnóstico. Te agendo una revisión sin compromiso. ¿Qué placa o equipo es?"],
+  ],
+  comercio: [
+    ["Lo consigo más barato en otro lado", "Puedo revisar si tenemos una promoción o precio por volumen. ¿Cuántas unidades necesitas?"],
+    ["Mejor después te escribo", "Con gusto. Dejo tu cotización guardada para que la retomes cuando quieras."],
+  ],
+  alojamiento: [
+    ["Está lejos para mí", "Entiendo. Te puedo indicar cómo llegar o qué opciones cercanas tenemos. ¿Desde dónde viajas?"],
+    ["Quiero una fecha que no sé", "No hay problema. Puedo reservar una opción provisional o mostrarte las tarifas de varias fechas."],
+  ],
+  educacion: [
+    ["No tengo tiempo", "Tenemos horarios flexibles y clases cortas. ¿Qué días y en qué franja te quedaría mejor?"],
+    ["Es muy costoso para mí", "Podemos revisar planes de pago o becas disponibles. ¿Cuál es el presupuesto que tienes pensado?"],
+  ],
+};
+
 const FAMILIA_POR_CLAVE: Record<string, keyof typeof FAMILIAS> = {
   restaurante: "comida", panaderia: "comida", cafeteria: "comida", comida_rapida: "comida", catering: "comida",
   concesionario: "vehiculos", alquiler_vehiculos: "vehiculos",
@@ -92,7 +128,7 @@ const FAMILIA_POR_CLAVE: Record<string, keyof typeof FAMILIAS> = {
 export function preguntasPrecargadas(tipoNegocio: string | null | undefined): Ejemplo[] {
   const giro = resolverTipoNegocio(tipoNegocio ?? null);
   const familia = FAMILIA_POR_CLAVE[giro.clave] ?? "comercio";
-  return [...(FAMILIAS[familia] ?? []), ...COMUNES];
+  return [...(FAMILIAS[familia] ?? []), ...(OBJECIONES[familia] ?? []), ...COMUNES];
 }
 
 const OBJETIVOS: Record<string, string[]> = {
@@ -144,7 +180,7 @@ export function objetivosSector(tipoNegocio: string | null | undefined): string[
 export function conversacionesModelo(tipoNegocio: string | null | undefined): string {
   const giro = resolverTipoNegocio(tipoNegocio ?? null);
   const familia = FAMILIA_POR_CLAVE[giro.clave] ?? "comercio";
-  const lista = [...(FAMILIAS[familia] ?? []), ...COMUNES];
+  const lista = [...(FAMILIAS[familia] ?? []), ...(OBJECIONES[familia] ?? []), ...COMUNES];
   const lineas = lista.map(([c, a]) => `Cliente: ${c}\nAgente: ${a}`).join("\n\n");
   return `\nCONVERSACIONES MODELO (${giro.panel}): así de natural, corto y resolutivo debes responder preguntas parecidas. Son ejemplos de estilo y de flujo: NO copies cifras, horarios ni políticas de ellos; usa SIEMPRE los datos reales del negocio y adapta la respuesta a lo que el cliente escribió.\n\n${lineas}\n`;
 }
