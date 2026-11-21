@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Bot, CheckCircle2, Cloud, Copy, Eye, EyeOff, Link2, RefreshCw, Wifi, WifiOff, Zap } from "lucide-react";
 import { ProbadorAgenteVivo } from "@/components/restaurante/ProbadorAgenteVivo";
@@ -60,6 +60,7 @@ function AgenteWhatsAppReal() {
   const [verClave, setVerClave] = useState(false);
   const [linea, setLinea] = useState<LineaLocal | null>(null);
   const [apiCaida, setApiCaida] = useState(false);
+  const creandoLinea = useRef(false);
 
   const apiBase = normalizarUrlApi(urlApiLocal);
   const guardarUrlApi = (valor: string) => {
@@ -95,6 +96,31 @@ function AgenteWhatsAppReal() {
     void cargar();
   }, [cargar]);
 
+  // Enlace automático: pide la clave a la API local (solo responde al panel autorizado en este equipo).
+  useEffect(() => {
+    if (claveLocal.trim()) return;
+    let vivo = true;
+    const pedir = async () => {
+      try {
+        const r = await fetch(`${apiBase}/enlace`);
+        if (!r.ok) return;
+        const j = (await r.json()) as { clave?: string };
+        if (vivo && j.clave) {
+          setClaveLocal(j.clave);
+          setApiCaida(false);
+        }
+      } catch {
+        if (vivo) setApiCaida(true);
+      }
+    };
+    void pedir();
+    const t = setInterval(() => void pedir(), 6000);
+    return () => {
+      vivo = false;
+      clearInterval(t);
+    };
+  }, [apiBase, claveLocal]);
+
   const consultarLinea = useCallback(async () => {
     if (!claveLocal.trim()) return;
     try {
@@ -105,11 +131,33 @@ function AgenteWhatsAppReal() {
       }
       const j = (await r.json()) as { lineas: LineaLocal[] };
       setApiCaida(false);
-      setLinea(j.lineas.find((l) => l.id === idLinea) ?? null);
+      const encontrada = j.lineas.find((l) => l.id === idLinea) ?? null;
+      setLinea(encontrada);
+      // Conexión automática: si el negocio aún no tiene línea, se crea sola y aparece el QR.
+      if (!encontrada && agente && negocio?.id && !creandoLinea.current) {
+        creandoLinea.current = true;
+        try {
+          await fetch(`${apiBase}/lineas`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${claveLocal.trim()}` },
+            body: JSON.stringify({
+              id: idLinea,
+              nombre: negocio.nombre ?? idLinea,
+              clave: agente.clave ?? "",
+              agente: (agente.ia_activa ?? true) && (agente.activo ?? true),
+              perfil: tipoNegocio,
+              instrucciones: agente.instrucciones ?? "",
+            }),
+          });
+        } catch {
+          /* se reintenta en el siguiente ciclo */
+        }
+        creandoLinea.current = false;
+      }
     } catch {
       setApiCaida(true);
     }
-  }, [apiBase, claveLocal, idLinea]);
+  }, [apiBase, claveLocal, idLinea, agente, negocio?.id, negocio?.nombre, tipoNegocio]);
 
   useEffect(() => {
     void consultarLinea();
@@ -342,10 +390,22 @@ function AgenteWhatsAppReal() {
 
         {/* 2. Vinculación / QR 24/7 (Modo Dual: API Local / Túnel + Respaldo Web/Nube) */}
         <div className="space-y-3 border-t border-glass-border/60 pt-4">
-          <h4 className="text-sm font-medium">Vinculación Dual (API Local / Túnel + Respaldo Web/Nube)</h4>
+          <h4 className="text-sm font-medium">Conecta tu WhatsApp</h4>
           <p className="text-xs text-muted-foreground">
-            Conecta la API local (<span className="font-mono">http://localhost:3001</span>) o la URL de tu túnel seguro (<span className="font-mono">https://...</span>). Si el computador local está apagado, el <strong>Modo Web/Nube</strong> mantiene activo tu agente IA, los enlaces de rastreo y la sincronización de leads y PQRS en el <strong>CRM y Embudo IA</strong>.
+            {linea?.estado === "listo"
+              ? "Tu WhatsApp está conectado y el agente ya atiende a tus clientes. No tienes que configurar nada más."
+              : linea?.qr
+                ? "Abre WhatsApp en tu celular → Dispositivos vinculados → Vincular dispositivo y escanea este código. En cuanto lo escanees, el agente empieza a trabajar solo."
+                : claveLocal
+                  ? "Preparando tu código QR…"
+                  : "Abre la app de escritorio de Gosaryc en este computador: aquí aparecerá el código QR automáticamente. Mientras tanto, el agente ya responde desde la nube."}
           </p>
+          {linea?.qr && linea.estado !== "listo" && (
+            <img src={linea.qr} alt="Código QR para vincular WhatsApp" className="h-auto max-w-full rounded-lg bg-white p-2" width={260} height={260} />
+          )}
+          <details className="rounded-lg border border-glass-border/60 p-3">
+            <summary className="cursor-pointer text-xs text-muted-foreground">Opciones avanzadas (túnel o clave manual)</summary>
+            <div className="mt-3 space-y-3">
           <label className="block space-y-1">
             <span className="text-xs text-muted-foreground">URL de la API Local o Túnel</span>
             <input
@@ -408,21 +468,14 @@ function AgenteWhatsAppReal() {
               </p>
             </div>
           )}
+            </div>
+          </details>
           {linea && (
             <div className="space-y-2 rounded-xl border border-glass-border bg-background/40 p-3">
               <p className="text-sm">
                 Estado: <span className="font-medium">{ETIQUETA_ESTADO[linea.estado] ?? linea.estado}</span>
               </p>
               {linea.aviso && <p className="text-sm text-destructive">{linea.aviso}</p>}
-              {linea.qr && (
-                <img
-                  src={linea.qr}
-                  alt="Código QR para vincular WhatsApp"
-                  className="h-auto max-w-full rounded-lg bg-white p-2"
-                  width={260}
-                  height={260}
-                />
-              )}
             </div>
           )}
         </div>

@@ -544,6 +544,13 @@ const servidor = http.createServer(async (req, res) => {
     return responder(200, { estado: l ? l.estado : "iniciando" });
   }
 
+  // Enlace automático: solo el panel autorizado (origen permitido) en este mismo equipo recibe la clave,
+  // para que el dueño no tenga que copiarla. Sin origen (otros programas) no se entrega.
+  if (ruta === "/enlace" && req.method === "GET") {
+    if (!origen || !ORIGENES.includes(origen)) return responder(403, { error: "Origen no permitido" });
+    return responder(200, { clave: TOKEN });
+  }
+
   if ((req.headers.authorization || "") !== `Bearer ${TOKEN}`) return responder(401, { error: "Clave incorrecta" });
 
   try {
