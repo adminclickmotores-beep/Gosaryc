@@ -85,6 +85,8 @@ const ESTILOS = `
 .gs-land.gs-dark{--gs-bg:#090D16;--gs-card:#111827;--gs-borde:#1E293B;--gs-texto:#F8FAFC;--gs-muted:#94A3B8;--gs-cobalto:#3B82F6;--gs-esm:#10B981;--gs-glass:rgba(9,13,22,.8);
   background-image:radial-gradient(#1e293b 1px,transparent 1px)}
 .gs-land .gs-titulo{font-family:"Plus Jakarta Sans","Inter",sans-serif;font-weight:800;letter-spacing:-0.03em}
+.gs-land h1,.gs-land h2,.gs-land h3,.gs-land h4,.gs-land .gs-titulo{color:var(--gs-texto)}
+.gs-land .gs-final h2,.gs-land .gs-final h3,.gs-land .gs-final .gs-titulo{color:#fff}
 .gs-land .gs-num{font-variant-numeric:tabular-nums}
 .gs-land .gs-muted{color:var(--gs-muted)}
 .gs-land .gs-card{background:var(--gs-card);border:1px solid var(--gs-borde);border-radius:1.25rem;transition:transform .3s,border-color .3s,box-shadow .3s}
