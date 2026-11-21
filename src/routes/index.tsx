@@ -587,6 +587,74 @@ function LandingPage() {
           )}
         </section>
 
+        {/* C2. CRM INTELIGENTE */}
+        <section className="mt-24" aria-labelledby="crm-ia">
+          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+            <Aparece className="min-w-0">
+              <p className="gs-card inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold tracking-wider">
+                <Brain className="gs-verde h-4 w-4" /> CRM INTELIGENTE CON IA INTEGRADA
+              </p>
+              <h2 id="crm-ia" className="gs-titulo mt-5 break-words text-3xl sm:text-5xl" style={{ background: "linear-gradient(135deg, var(--gs-cobalto), var(--gs-esm))", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>
+                Convierte cada mensaje de WhatsApp en una venta cerrada
+              </h2>
+              <p className="gs-muted mt-5 max-w-xl text-base sm:text-lg">
+                Tu CRM califica a cada prospecto automáticamente, calcula la viabilidad de su crédito y organiza el embudo de ventas sin trabajo manual.
+              </p>
+              <ul className="mt-6 space-y-4">
+                {[
+                  { Icon: TrendingUp, t: "Calificación Automática (Lead Scoring 0-100)", d: "Prioriza al instante a los clientes listos para comprar hoy." },
+                  { Icon: Calculator, t: "Preaprobado Financiero en Segundos", d: "Calcula capacidad de pago, cuota inicial y retoma sin salir de la ficha." },
+                  { Icon: MessageCircle, t: "Conectado con WhatsApp IA y Facturación", d: "Del primer mensaje al cierre y comisión sin digitar dos veces." },
+                ].map(({ Icon, t, d }) => (
+                  <li key={t} className="flex items-start gap-3">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl" style={{ background: "color-mix(in srgb, var(--gs-esm) 14%, transparent)", color: "var(--gs-esm)" }}><Icon className="h-5 w-5" /></span>
+                    <div className="min-w-0">
+                      <p className="font-bold">{t}</p>
+                      <p className="gs-muted text-sm">{d}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <Link to={"/demo" as "/"} className="gs-cta mt-8 inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
+                Probar Demo Interactiva del CRM <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Aparece>
+            <Aparece retraso={0.1} className="relative min-w-0">
+              <div className="absolute -inset-4 -z-10 rounded-[36px] opacity-20 blur-3xl" style={{ background: "linear-gradient(135deg, var(--gs-cobalto), var(--gs-esm))" }} />
+              <div className="gs-card space-y-3 rounded-2xl border p-5 shadow-2xl backdrop-blur-xl">
+                <div className="flex items-center justify-between">
+                  <p className="font-bold">Embudo de ventas</p>
+                  <span className="gs-muted text-xs">Ordenado por puntaje</span>
+                </div>
+                {[
+                  { n: "Carlos Ramírez", i: "Mazda CX-30 2023", p: 94, etapa: "Negociando", pre: true },
+                  { n: "Laura Gómez", i: "Renault Duster 2022", p: 78, etapa: "Cotizado", pre: true },
+                  { n: "Andrés Pineda", i: "Chevrolet Onix 2021", p: 41, etapa: "Nuevo Lead", pre: false },
+                ].map((c) => (
+                  <div key={c.n} className="rounded-xl border p-3" style={{ borderColor: "var(--gs-borde)" }}>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="min-w-0 truncate font-semibold">{c.n}</p>
+                      <span className="gs-muted shrink-0 text-[11px]">{c.etapa}</span>
+                    </div>
+                    <p className="gs-muted truncate text-xs">{c.i}</p>
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-full" style={{ background: "var(--gs-borde)" }}>
+                      <div className="h-full rounded-full" style={{ width: `${c.p}%`, background: c.p >= 70 ? "var(--gs-esm)" : "#f59e0b" }} />
+                    </div>
+                    <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2">
+                      <p className="gs-num text-[11px] font-bold">{c.p} pts</p>
+                      {c.pre && <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-600"><BadgeCheck className="h-3 w-3" /> Preaprobado Viable</span>}
+                    </div>
+                  </div>
+                ))}
+                <div className="flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-semibold shadow-lg sm:ml-auto sm:max-w-[16rem]" style={{ borderColor: "var(--gs-borde)" }}>
+                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-white" style={{ background: "var(--gs-esm)" }}><MessageCircle className="h-4 w-4" /></span>
+                  <span className="min-w-0">WhatsApp IA: Nuevo lead calificado automáticamente</span>
+                </div>
+              </div>
+            </Aparece>
+          </div>
+        </section>
+
         {/* D. AGENTE WHATSAPP */}
         <section className="mt-24" aria-labelledby="agente-ia">
           <Aparece>

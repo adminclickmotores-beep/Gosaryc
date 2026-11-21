@@ -53,17 +53,31 @@ const fechaLocal = (d: Date): string =>
 
 /** Lead scoring 0-100 según temperatura, presupuesto y etapa. */
 function scoreDe(l: Lead): number {
-  const t = tempDe(l);
-  const temp = t === "CALIENTE" ? 40 : t === "TIBIO" ? 25 : t === "FRIO" ? 10 : 5;
+  const ex = extraDe(l);
+  let p = 0;
+  if ((l.telefono || "").trim() && (l.nombre || "").trim().split(/\s+/).length >= 2) p += 15;
+  if ((l.interes || "").trim()) p += 15;
+  if (["cotizado", "cita", "separado"].includes(l.etapa_embudo)) p += 20;
   const v = Number(l.valor_estimado || 0);
-  const pres = v >= 50000000 ? 25 : v >= 10000000 ? 20 : v >= 1000000 ? 14 : v > 0 ? 8 : 0;
-  const etapa = Math.round((PROB_ETAPA[l.etapa_embudo] ?? 0.2) * 35);
-  return Math.min(100, temp + pres + etapa);
+  const ini = Number(ex.pre_inicial || 0);
+  if ((v > 0 && ini >= v * 0.2) || ex.retoma === true) p += 20;
+  if (ex.pre_estado === "viable") p += 30;
+  if (l.etapa_embudo !== "ganado" && l.etapa_embudo !== "perdido" && l.ultima_interaccion) {
+    const h = (Date.now() - new Date(l.ultima_interaccion).getTime()) / 3600000;
+    if (h > 48) p -= 15;
+  }
+  return Math.max(0, Math.min(100, p));
 }
 function nivelScore(p: number): { texto: string; barra: string; clase: string } {
-  if (p >= 70) return { texto: "Alta probabilidad", barra: "bg-emerald-500", clase: "text-emerald-600" };
-  if (p >= 40) return { texto: "Probabilidad media", barra: "bg-amber-500", clase: "text-amber-600" };
-  return { texto: "Baja probabilidad", barra: "bg-slate-400", clase: "text-muted-foreground" };
+  if (p >= 70) return { texto: "Alta", barra: "bg-emerald-500", clase: "text-emerald-600" };
+  if (p >= 40) return { texto: "Media", barra: "bg-amber-500", clase: "text-amber-600" };
+  return { texto: "Baja", barra: "bg-slate-400", clase: "text-muted-foreground" };
+}
+/** Cuota mensual estimada a 60 meses con 1,5 % mensual. */
+function cuotaEstimada(valor: number, inicial: number): number {
+  const monto = Math.max(0, valor - inicial);
+  const i = 0.015;
+  return monto * (i / (1 - Math.pow(1 + i, -60)));
 }
 function ScoreBar({ l }: { l: Lead }) {
   const p = scoreDe(l);
@@ -1484,7 +1498,10 @@ function Panel360({
   onCambio: (l: Lead) => void;
   onNavegar: (to: string, search?: Record<string, string>) => void;
 }) {
-  const [pestana, setPestana] = useState<"perfil" | "chat" | "tiempo" | "pqrs">("perfil");
+  const [pestana, setPestana] = useState<"perfil" | "pre" | "chat" | "tiempo" | "pqrs">("perfil");
+  const [preIngresos, setPreIngresos] = useState(String(extraDe(lead).pre_ingresos ?? ""));
+  const [preDeudas, setPreDeudas] = useState(String(extraDe(lead).pre_deudas ?? ""));
+  const [preInicial, setPreInicial] = useState(String(extraDe(lead).pre_inicial ?? ""));
   const [chat, setChat] = useState<Array<{ id: string; rol: string; contenido: string; created_at: string }>>([]);
   const [pqrs, setPqrs] = useState<Pqrs[]>([]);
   const [mensajes, setMensajes] = useState<Evento[]>([]);
@@ -1681,7 +1698,7 @@ function Panel360({
           </div>
         </div>
         <div className="flex gap-1 overflow-x-auto border-b border-glass-border px-3 pt-2 text-sm">
-          {([["perfil", "Perfil IA"], ["chat", "Conversación"], ["tiempo", "Línea de tiempo"], ["pqrs", `PQRS (${pqrs.length})`]] as const).map(([id, txt]) => (
+          {([["perfil", "Perfil IA"], ["pre", "Preaprobado Financiero"], ["chat", "Conversación"], ["tiempo", "Línea de tiempo"], ["pqrs", `PQRS (${pqrs.length})`]] as const).map(([id, txt]) => (
             <button
               key={id}
               type="button"
@@ -1693,6 +1710,68 @@ function Panel360({
           ))}
         </div>
         <div className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
+          {pestana === "pre" && (() => {
+            const ing = Number(preIngresos) || 0;
+            const deu = Number(preDeudas) || 0;
+            const ini = Number(preInicial) || 0;
+            const val = Number(lead.valor_estimado) || 0;
+            const capacidad = ing * 0.35 - deu;
+            const cuota = cuotaEstimada(val, ini);
+            const estado: "viable" | "codeudor" | "no" =
+              capacidad >= cuota ? "viable" : capacidad >= cuota * 0.7 ? "codeudor" : "no";
+            // Inicial extra para que la cuota baje a la capacidad disponible.
+            const factor = cuotaEstimada(1, 0);
+            const inicialNecesaria = factor > 0 ? Math.max(0, val - Math.max(0, capacidad) / factor) : 0;
+            const aumento = Math.max(0, inicialNecesaria - ini);
+            const guardar = () => {
+              void onParchar(lead, {
+                datos_extra: nuevoExtra(
+                  lead,
+                  { pre_ingresos: ing, pre_deudas: deu, pre_inicial: ini, pre_estado: estado, pre_cuota: Math.round(cuota) },
+                  { tipo: "Preaprobado", texto: estado === "viable" ? "Preaprobado Viable" : estado === "codeudor" ? "Viable con Codeudor / Mayor Inicial" : "No Viable para Crédito", cuando: new Date().toISOString() },
+                ),
+              });
+              toast.success("Preaprobado guardado en la tarjeta");
+            };
+            const campo = (txt: string, v: string, set: (s: string) => void) => (
+              <label className="block">
+                <span className="mb-1 block text-xs text-muted-foreground">{txt}</span>
+                <input
+                  className="w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base tabular-nums"
+                  inputMode="numeric"
+                  maxLength={12}
+                  value={v}
+                  onChange={(e) => set(e.target.value.replace(/[^0-9]/g, ""))}
+                />
+              </label>
+            );
+            return (
+              <div className="space-y-3">
+                {campo("Ingresos mensuales del cliente (COP)", preIngresos, setPreIngresos)}
+                {campo("Obligaciones / deudas mensuales actuales (COP)", preDeudas, setPreDeudas)}
+                {campo("Cuota inicial + Retoma disponible (COP)", preInicial, setPreInicial)}
+                <div className="space-y-1 rounded-xl border border-glass-border p-3 tabular-nums">
+                  <p className="flex justify-between"><span className="text-muted-foreground">Valor del negocio</span><b>{dinero(val)}</b></p>
+                  <p className="flex justify-between"><span className="text-muted-foreground">Capacidad de pago disponible</span><b>{dinero(Math.max(0, capacidad))}</b></p>
+                  <p className="flex justify-between"><span className="text-muted-foreground">Cuota mensual estimada (60 meses)</span><b>{dinero(cuota)}</b></p>
+                </div>
+                <span
+                  className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${
+                    estado === "viable" ? "bg-emerald-500/15 text-emerald-600" : estado === "codeudor" ? "bg-amber-500/15 text-amber-600" : "bg-rose-500/15 text-rose-600"
+                  }`}
+                >
+                  {estado === "viable" ? "Preaprobado Viable" : estado === "codeudor" ? "Viable con Codeudor / Mayor Inicial" : "No Viable para Crédito"}
+                </span>
+                {estado === "codeudor" && aumento > 0 && (
+                  <p className="text-xs text-amber-600">Para aprobar, aumenta la inicial en aprox. {dinero(aumento)} o suma un codeudor.</p>
+                )}
+                {val <= 0 && <p className="text-xs text-muted-foreground">Define el valor estimado del prospecto en «Perfil IA» para calcular la cuota.</p>}
+                <button type="button" onClick={guardar} className="w-full rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground">
+                  Guardar en la tarjeta del prospecto
+                </button>
+              </div>
+            );
+          })()}
           {pestana === "perfil" && (
             <>
               <Dato k="Interés" v={lead.interes} />
