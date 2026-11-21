@@ -8,6 +8,7 @@ import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { exportarExcel, imprimirReporte } from "@/lib/exportes";
 import { useNegocio } from "@/hooks/use-negocio";
 import { actualizarParametrosNomina } from "@/lib/nomina-ia.functions";
+import { esSuperadminServidor } from "@/lib/cuenta-maestra";
 
 export const Route = createFileRoute("/_app/equipo-nomina")({
   head: () => ({ meta: [{ title: "Equipo, turnos y nómina" }] }),
@@ -420,6 +421,17 @@ function MotorNominaDinamica() {
   const [cargando, setCargando] = useState(true);
   const [iaMsg, setIaMsg] = useState("");
   const [actualizando, setActualizando] = useState(false);
+  // Los valores de ley son globales: solo el Superadministrador los crea o edita (la base de datos también lo exige).
+  const [esSuper, setEsSuper] = useState(false);
+  useEffect(() => {
+    let vivo = true;
+    void esSuperadminServidor().then((v) => {
+      if (vivo) setEsSuper(v);
+    });
+    return () => {
+      vivo = false;
+    };
+  }, []);
 
   const [fNombre, setFNombre] = useState("");
   const [fDoc, setFDoc] = useState("");
@@ -644,6 +656,7 @@ function MotorNominaDinamica() {
   ];
 
   const guardarVigencia = async () => {
+    if (!esSuper) return toast.error("Solo el Superadministrador puede cambiar los valores de ley.");
     const desde = nuevoParam.vigencia_desde;
     if (!desde) return toast.error("Indica desde qué fecha rige el nuevo decreto.");
     const ref = vigencia;
@@ -686,6 +699,7 @@ function MotorNominaDinamica() {
   };
 
   const actualizarConIA = async () => {
+    if (!esSuper) return toast.error("Solo el Superadministrador puede actualizar los valores de ley.");
     setActualizando(true);
     setIaMsg("");
     try {
@@ -734,14 +748,16 @@ function MotorNominaDinamica() {
               ? `Vigencia ${vigencia.vigencia_desde} al ${vigencia.vigencia_hasta ?? "actualidad"} · SMMLV ${dinero(vigencia.smmlv)} · Auxilio ${dinero(vigencia.aux_transporte)}`
               : "Sin vigencia paramétrica cargada."}
           </p>
-          <button
-            type="button"
-            onClick={() => void actualizarConIA()}
-            disabled={actualizando}
-            className="inline-flex items-center gap-1 rounded-full border border-glass-border px-4 py-1.5 text-sm text-foreground disabled:opacity-60"
-          >
-            <Sparkles className="h-4 w-4" /> {actualizando ? "Consultando…" : "Consultar y actualizar valores de ley (IA)"}
-          </button>
+          {esSuper && (
+            <button
+              type="button"
+              onClick={() => void actualizarConIA()}
+              disabled={actualizando}
+              className="inline-flex items-center gap-1 rounded-full border border-glass-border px-4 py-1.5 text-sm text-foreground disabled:opacity-60"
+            >
+              <Sparkles className="h-4 w-4" /> {actualizando ? "Consultando…" : "Consultar y actualizar valores de ley (IA)"}
+            </button>
+          )}
         </div>
         {vigencia && (
           <p className="mt-1 text-xs text-muted-foreground">
@@ -749,10 +765,14 @@ function MotorNominaDinamica() {
           </p>
         )}
         {iaMsg && <p className="mt-2 text-xs text-muted-foreground">{iaMsg}</p>}
-        <button type="button" onClick={() => setVerParams((v) => !v)} className="mt-2 rounded-full border border-glass-border px-4 py-1.5 text-sm text-foreground">
-          {verParams ? "Cerrar editor de valores de ley" : "Editar valores de ley (nuevo decreto)"}
-        </button>
-        {verParams && vigencia && (
+        {esSuper ? (
+          <button type="button" onClick={() => setVerParams((v) => !v)} className="mt-2 rounded-full border border-glass-border px-4 py-1.5 text-sm text-foreground">
+            {verParams ? "Cerrar editor de valores de ley" : "Crear / editar vigencia de ley de nómina"}
+          </button>
+        ) : (
+          <p className="mt-2 text-xs text-muted-foreground">Los valores de ley son de solo lectura: los actualiza el Superadministrador cuando sale un decreto.</p>
+        )}
+        {esSuper && verParams && vigencia && (
           <div className="mt-3 space-y-3">
             <p className="text-xs text-muted-foreground">Cambia solo lo que haya variado; lo demás se copia de la vigencia actual. Los porcentajes van en decimales (0.04 = 4 %).</p>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

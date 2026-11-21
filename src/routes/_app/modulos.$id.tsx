@@ -32,6 +32,11 @@ import { ComisionesTaller, OrdenesTaller, ProyectosMedida, RepuestosTaller } fro
 import { AgroLotes, ObrasConstructora, PropiedadesInmobiliaria, TransporteManifiestos } from "@/components/medida/MedidaModulos";
 import { AcademicoEducacion, ControlFarmacia, EventosSalon, FormulasOptica, HabitacionesHotel, MatriculasEducacion, MatrizModa, PensionesEducacion, ReservasHotel } from "@/components/turismo/TurismoModulos";
 import { CargaModulo } from "@/components/carga/CargaModulo";
+import { AgendaServicios } from "@/components/servicios/AgendaServicios";
+import { CuotasCondominio, UnidadesCondominio } from "@/components/condominio/CondominioModulos";
+import { PrestamosCobranza, PrestamosCreditos, PrestamosCronograma } from "@/components/prestamos/PrestamosModulos";
+import { InsumosTextil, OrdenesConfeccion } from "@/components/textil/TextilModulos";
+import { CatalogoArreglos, EncargosFlor, FloresStock } from "@/components/floristeria/FloristeriaModulos";
 
 // Módulos pesados con carga diferida: el panel abre al instante y cada uno
 // baja solo cuando se visita (cero lags en la página principal y el login).
@@ -162,6 +167,17 @@ function ModuloPage() {
   if (id === "joy_apartados") return <JoyeriaPiezas />;
   if (id === "lic_domicilios") return <LicoreraDomicilios />;
   if (id === "parq_turnos") return <ParqueaderoTurnos />;
+  if (id === "agenda_serv" || id === "ordenes_serv_cita") return <AgendaServicios />;
+  if (id === "unidades_cond") return <UnidadesCondominio />;
+  if (id === "cuotas_cond") return <CuotasCondominio />;
+  if (id === "prestamos_reg") return <PrestamosCreditos />;
+  if (id === "cronograma_cuotas") return <PrestamosCronograma />;
+  if (id === "cobranza_diaria") return <PrestamosCobranza />;
+  if (id === "ordenes_confeccion" || id === "cortes_tela") return <OrdenesConfeccion />;
+  if (id === "insumos_textil") return <InsumosTextil />;
+  if (id === "arreglos_flor") return <CatalogoArreglos />;
+  if (id === "encargos_flor") return <EncargosFlor />;
+  if (id === "flores_frescas") return <FloresStock />;
   if (id === "gim_checkin") return <CheckinGimnasio />;
   if (id === "gim_socios") return <SociosGimnasio />;
   if (id === "gim_planes") return <PlanesGimnasio />;
