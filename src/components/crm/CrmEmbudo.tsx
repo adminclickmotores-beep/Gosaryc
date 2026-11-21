@@ -4,10 +4,10 @@ import { toast } from "sonner";
 import {
   AlertTriangle, Bot, CalendarPlus, CheckCircle2, ChevronDown, ChevronUp, FileText, Flame, Globe, Instagram,
   Facebook, LayoutGrid, ListOrdered, MessageCircle, Plus, RefreshCw, RotateCcw, Search, Settings2, Snowflake,
-  Sparkles, Sun, Target, Trash2, TrendingUp, UserRound, X, Check, CalendarDays, Clock, Handshake,
+  Sparkles, Sun, Target, Trash2, TrendingUp, UserRound, X, Check, CalendarDays, Clock, Handshake, Phone, Copy, Send,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables } from "@/integrations/supabase/types";
+import type { Json, Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,9 +28,70 @@ type VistaCrm = "kanban" | "fifo" | "agenda" | "pqrs" | "ia";
 const RAPIDOS = ["Todos", "Calientes", "Hoy", "Vencidos"] as const;
 type Rapido = (typeof RAPIDOS)[number];
 
+/** Probabilidad de cierre por etapa (para el valor ponderado / forecast). */
+const PROB_ETAPA: Record<string, number> = {
+  nuevo: 0.1, calificacion: 0.25, cotizado: 0.5, cita: 0.6, separado: 0.8, ganado: 1, perdido: 0,
+};
+
+type Actividad = { tipo: string; texto: string; cuando: string };
+
+function extraDe(l: Lead): Record<string, unknown> {
+  const e = l.datos_extra;
+  return e && typeof e === "object" && !Array.isArray(e) ? (e as Record<string, unknown>) : {};
+}
+function actividadesDe(l: Lead): Actividad[] {
+  const a = extraDe(l).actividades;
+  return Array.isArray(a) ? (a as Actividad[]) : [];
+}
+function nuevoExtra(l: Lead, cambios: Record<string, unknown>, act?: Actividad): Json {
+  const base: Record<string, unknown> = { ...extraDe(l), ...cambios };
+  if (act) base.actividades = [act, ...actividadesDe(l)].slice(0, 100);
+  return base as Json;
+}
+const fechaLocal = (d: Date): string =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+/** Lead scoring 0-100 según temperatura, presupuesto y etapa. */
+function scoreDe(l: Lead): number {
+  const t = tempDe(l);
+  const temp = t === "CALIENTE" ? 40 : t === "TIBIO" ? 25 : t === "FRIO" ? 10 : 5;
+  const v = Number(l.valor_estimado || 0);
+  const pres = v >= 50000000 ? 25 : v >= 10000000 ? 20 : v >= 1000000 ? 14 : v > 0 ? 8 : 0;
+  const etapa = Math.round((PROB_ETAPA[l.etapa_embudo] ?? 0.2) * 35);
+  return Math.min(100, temp + pres + etapa);
+}
+function nivelScore(p: number): { texto: string; barra: string; clase: string } {
+  if (p >= 70) return { texto: "Alta probabilidad", barra: "bg-emerald-500", clase: "text-emerald-600" };
+  if (p >= 40) return { texto: "Probabilidad media", barra: "bg-amber-500", clase: "text-amber-600" };
+  return { texto: "Baja probabilidad", barra: "bg-slate-400", clase: "text-muted-foreground" };
+}
+function ScoreBar({ l }: { l: Lead }) {
+  const p = scoreDe(l);
+  const n = nivelScore(p);
+  return (
+    <div className="mt-2">
+      <div className="h-1.5 overflow-hidden rounded-full bg-glass-strong">
+        <div className={`h-full rounded-full transition-all duration-500 ${n.barra}`} style={{ width: `${p}%` }} />
+      </div>
+      <p className={`mt-1 text-[11px] font-semibold tabular-nums ${n.clase}`}>
+        {p} pts • {n.texto}
+      </p>
+    </div>
+  );
+}
+
+/** Alerta de estancamiento: más de 24 h sin gestión. */
+function sla(l: Lead, ahora: number): { texto: string; critico: boolean } | null {
+  if (!ahora || l.etapa_embudo === "ganado" || l.etapa_embudo === "perdido") return null;
+  const h = (ahora - new Date(l.ultima_interaccion).getTime()) / 3600000;
+  if (h < 24) return null;
+  const d = Math.floor(h / 24);
+  return { texto: `Sin gestión hace ${d}d`, critico: d >= 3 };
+}
+
 function esVencido(l: Lead): boolean {
   if (l.etapa_embudo === "ganado" || l.etapa_embudo === "perdido") return false;
-  return Date.now() - new Date(l.ultima_interaccion).getTime() > 2 * 86400000;
+  return Date.now() - new Date(l.ultima_interaccion).getTime() > 24 * 3600000;
 }
 
 function Tendencia({ pct }: { pct: number | null }) {
@@ -223,15 +284,44 @@ export function CrmEmbudo() {
     return Math.round(((a - p) / p) * 100);
   };
 
+  const forecast = activos.reduce((s, l) => s + Number(l.valor_estimado || 0) * (PROB_ETAPA[l.etapa_embudo] ?? 0.2), 0);
+  const listaGanados = leads.filter((l) => l.etapa_embudo === "ganado");
+  const ticket =
+    listaGanados.length > 0
+      ? listaGanados.reduce((s, l) => s + Number(l.valor_estimado || 0), 0) / listaGanados.length
+      : activos.length > 0
+        ? valorEmbudo / activos.length
+        : 0;
+  const alertas = activos.filter((l) => tempDe(l) === "CALIENTE" || esVencido(l)).length;
+
+  const parchar = async (l: Lead, cambios: Partial<Lead>) => {
+    const completo: Partial<Lead> = { ...cambios, ultima_interaccion: new Date().toISOString(), atendido_por_humano: true };
+    const nuevoL: Lead = { ...l, ...completo };
+    setLeads((ls) => ls.map((x) => (x.id === l.id ? nuevoL : x)));
+    setAbierto((a) => (a && a.id === l.id ? nuevoL : a));
+    const { error } = await supabase.from("crm_leads").update(completo).eq("id", l.id);
+    if (error) {
+      toast.error("No se pudo guardar el cambio.");
+      void cargar();
+    }
+  };
+
   const mover = async (id: string, etapa: string) => {
     const previo = leads.find((l) => l.id === id);
     if (!previo || previo.etapa_embudo === etapa) return;
-    setLeads((ls) => ls.map((l) => (l.id === id ? { ...l, etapa_embudo: etapa } : l)));
-    const { error } = await supabase.from("crm_leads").update({ etapa_embudo: etapa, atendido_por_humano: true }).eq("id", id);
-    if (error) {
-      toast.error("No se pudo mover el prospecto.");
-      void cargar();
-    }
+    const titulo = etapas.find((e) => e.id === etapa)?.titulo ?? etapa;
+    await parchar(previo, {
+      etapa_embudo: etapa,
+      datos_extra: nuevoExtra(previo, {}, { tipo: "Etapa", texto: `Pasó a ${titulo}`, cuando: new Date().toISOString() }),
+    });
+  };
+
+  const completarTarea = (l: Lead) => {
+    const txt = String(extraDe(l).proxima_accion ?? "").trim() || "Seguimiento";
+    void parchar(l, {
+      datos_extra: nuevoExtra(l, { proxima_accion: "", proxima_fecha: "" }, { tipo: "Tarea", texto: `Completada: ${txt}`, cuando: new Date().toISOString() }),
+    });
+    toast.success("Tarea completada y registrada en la línea de tiempo.");
   };
 
   const cambiarEstadoPqrs = async (id: string, nuevoEstado: "Abierta" | "En gestión" | "Resuelta") => {
@@ -341,10 +431,11 @@ export function CrmEmbudo() {
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/25 to-blue-500/5 text-blue-600">
                   <TrendingUp className="h-5 w-5" />
                 </span>
-                <Tendencia pct={tendencia(() => 1)} />
+                <Tendencia pct={tendencia((l) => Number(l.valor_estimado || 0))} />
               </div>
-              <p className="mt-3 text-xs font-medium text-muted-foreground">Leads activos</p>
-              <p className="text-3xl font-extrabold tracking-tight tabular-nums">{activos.length}</p>
+              <p className="mt-3 text-xs font-medium text-muted-foreground">Pipeline total (COP)</p>
+              <p className="break-words text-2xl font-extrabold tracking-tight tabular-nums">{dinero(valorEmbudo)}</p>
+              <p className="text-[11px] text-muted-foreground">{activos.length} leads en negociación</p>
             </div>
             <div className="crm-card p-4">
               <div className="flex items-center justify-between gap-2">
@@ -352,32 +443,32 @@ export function CrmEmbudo() {
                   <Flame className="h-5 w-5" />
                   {calientes.length > 0 && <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 animate-pulse rounded-full bg-orange-500" />}
                 </span>
-                <Tendencia pct={tendencia((l) => (tempDe(l) === "CALIENTE" ? 1 : 0))} />
               </div>
-              <p className="mt-3 text-xs font-medium text-muted-foreground">Leads calientes</p>
-              <p className="text-3xl font-extrabold tracking-tight tabular-nums text-orange-600">{calientes.length}</p>
+              <p className="mt-3 text-xs font-medium text-muted-foreground">Proyección ponderada (forecast)</p>
+              <p className="break-words text-2xl font-extrabold tracking-tight tabular-nums text-orange-600">{dinero(forecast)}</p>
+              <p className="text-[11px] text-muted-foreground">Valor × probabilidad de cada etapa</p>
             </div>
             <div className="crm-card p-4">
               <div className="flex items-center justify-between gap-2">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-green-500/25 to-green-500/5 text-green-600">
                   <Target className="h-5 w-5" />
                 </span>
-                <Tendencia pct={tendencia((l) => Number(l.valor_estimado || 0))} />
               </div>
-              <p className="mt-3 text-xs font-medium text-muted-foreground">Valor en embudo (COP)</p>
-              <p className="break-words text-2xl font-extrabold tracking-tight tabular-nums">{dinero(valorEmbudo)}</p>
+              <p className="mt-3 text-xs font-medium text-muted-foreground">Conversión y ticket promedio</p>
+              <p className="break-words text-2xl font-extrabold tracking-tight tabular-nums">
+                {tasa}% <span className="text-sm font-semibold text-muted-foreground">· {dinero(ticket)}</span>
+              </p>
             </div>
             <div className="crm-card p-4">
               <div className="flex items-center justify-between gap-2">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500/25 to-emerald-500/5 text-emerald-600">
                   <CheckCircle2 className="h-5 w-5" />
                 </span>
-                <Tendencia pct={tendencia((l) => (l.etapa_embudo === "ganado" ? 1 : 0))} />
               </div>
-              <p className="mt-3 text-xs font-medium text-muted-foreground">Tasa de cierre</p>
-              <p className="text-3xl font-extrabold tracking-tight tabular-nums">{tasa}%</p>
+              <p className="mt-3 text-xs font-medium text-muted-foreground">Alertas de atención</p>
+              <p className="text-3xl font-extrabold tracking-tight tabular-nums">{alertas}</p>
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-glass-strong">
-                <div className="h-full rounded-full bg-emerald-500 transition-all duration-500" style={{ width: `${tasa}%` }} />
+                <div className="h-full rounded-full bg-rose-500 transition-all duration-500" style={{ width: `${activos.length ? Math.round((alertas / activos.length) * 100) : 0}%` }} />
               </div>
             </div>
           </div>
@@ -438,7 +529,7 @@ export function CrmEmbudo() {
           ) : vista === "kanban" ? (
             <div className="flex gap-3 overflow-x-auto pb-3">
               {etapas.map((e) => {
-                const items = filtrados.filter((l) => l.etapa_embudo === e.id);
+                const items = filtrados.filter((l) => l.etapa_embudo === e.id).sort((a, b) => scoreDe(b) - scoreDe(a));
                 return (
                   <div
                     key={e.id}
@@ -463,10 +554,13 @@ export function CrmEmbudo() {
                       <p className="mt-0.5 text-sm font-extrabold tracking-tight tabular-nums text-foreground">
                         {dinero(items.reduce((s, l) => s + Number(l.valor_estimado || 0), 0))}
                       </p>
+                      <p className="text-[11px] tabular-nums text-muted-foreground">
+                        Ponderado {dinero(items.reduce((s, l) => s + Number(l.valor_estimado || 0) * (PROB_ETAPA[e.id] ?? 0.2), 0))}
+                      </p>
                     </div>
                     <div className="max-h-[60vh] min-h-24 space-y-2 overflow-y-auto px-2 pb-2">
                       {items.map((l) => (
-                        <Tarjeta key={l.id} l={l} ahora={ahora} onAbrir={() => setAbierto(l)} onArrastrar={() => setArrastrando(l.id)} />
+                        <Tarjeta key={l.id} l={l} ahora={ahora} etapas={etapas} onMover={(et: string) => void mover(l.id, et)} onAbrir={() => setAbierto(l)} onArrastrar={() => setArrastrando(l.id)} />
                       ))}
                     </div>
                   </div>
@@ -474,83 +568,34 @@ export function CrmEmbudo() {
               })}
             </div>
           ) : vista === "agenda" ? (
-            <div className="space-y-2.5">
-              {[...filtrados]
-                .filter((l) => l.etapa_embudo === "cita" || esVencido(l))
-                .sort((a, b) => a.ultima_interaccion.localeCompare(b.ultima_interaccion))
-                .map((l) => {
-                  const t = TEMP_UI[tempDe(l)];
-                  return (
-                    <button
-                      key={l.id}
-                      type="button"
-                      onClick={() => setAbierto(l)}
-                      className="crm-card flex w-full items-center gap-3 p-3.5 text-left"
-                    >
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/30 to-primary/10 text-xs font-bold text-primary">
-                        {iniciales(l)}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-semibold">{l.nombre || "Sin nombre"}</span>
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          {etapas.find((e) => e.id === l.etapa_embudo)?.titulo ?? l.etapa_embudo} · {ahora ? tiempo(l.ultima_interaccion, ahora) : ""}
-                        </span>
-                      </span>
-                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${t.clase}`}>{t.texto}</span>
-                    </button>
-                  );
-                })}
-              {filtrados.filter((l) => l.etapa_embudo === "cita" || esVencido(l)).length === 0 && (
-                <p className="crm-card p-6 text-center text-sm text-muted-foreground">No hay citas ni seguimientos pendientes.</p>
-              )}
-            </div>
+            <AgendaTareas leads={filtrados} ahora={ahora} onAbrir={(l: Lead) => setAbierto(l)} onCompletar={completarTarea} />
           ) : (
-            <GlassPanel className="overflow-x-auto p-0">
-              <table className="w-full min-w-[640px] text-sm">
+            <div className="crm-card overflow-x-auto p-0">
+              <table className="w-full min-w-[960px] text-sm">
                 <thead className="text-left text-xs text-muted-foreground">
                   <tr>
-                    <th className="p-3">Turno</th>
-                    <th>Llegada</th>
-                    <th>Cliente</th>
-                    <th>Canal</th>
-                    <th>Temperatura</th>
-                    <th>Etapa</th>
-                    <th>Estado</th>
+                    <th className="p-3">Prospecto</th>
+                    <th className="px-2">Score</th>
+                    <th className="px-2">Etapa</th>
+                    <th className="px-2">Temperatura</th>
+                    <th className="px-2">Valor (COP)</th>
+                    <th className="px-2">Próxima acción</th>
+                    <th className="px-2">Fecha</th>
                   </tr>
                 </thead>
                 <tbody>
                   {[...filtrados]
-                    .sort((a, b) => a.numero_turno - b.numero_turno || a.fecha_llegada.localeCompare(b.fecha_llegada))
-                    .map((l) => {
-                      const c = iconoCanal(l.canal_origen);
-                      const t = TEMP_UI[tempDe(l)];
-                      return (
-                        <tr key={l.id} onClick={() => setAbierto(l)} className="cursor-pointer border-t border-glass-border/60 hover:bg-primary/5">
-                          <td className="p-3 font-mono font-semibold">#{String(l.numero_turno).padStart(3, "0")}</td>
-                          <td className="whitespace-nowrap text-xs">
-                            {new Date(l.fecha_llegada).toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" })}
-                          </td>
-                          <td>
-                            <p className="font-medium">{l.nombre || "Sin nombre"}</p>
-                            <p className="text-xs text-muted-foreground">{l.telefono}</p>
-                          </td>
-                          <td>
-                            <span className={`inline-flex items-center gap-1 ${c.clase}`}>
-                              <c.Icono className="h-4 w-4" /> <span className="text-foreground">{l.canal_origen}</span>
-                            </span>
-                          </td>
-                          <td>
-                            <span className={`rounded-full px-2 py-0.5 text-xs ${t.clase}`}>
-                              {t.texto}
-                              {l.puntaje != null ? ` ${l.puntaje}%` : ""}
-                            </span>
-                          </td>
-                          <td className="text-xs">{etapas.find((e) => e.id === l.etapa_embudo)?.titulo ?? l.etapa_embudo}</td>
-                          <td className="text-xs">{l.atendido_por_humano ? "En gestión" : "Sin atender"}</td>
-                        </tr>
-                      );
-                    })}
+                    .sort((a, b) => scoreDe(b) - scoreDe(a))
+                    .map((l) => (
+                      <FilaGrid
+                        key={`${l.id}-${l.valor_estimado}-${String(extraDe(l).proxima_accion ?? "")}`}
+                        l={l}
+                        etapas={etapas}
+                        ahora={ahora}
+                        onAbrir={() => setAbierto(l)}
+                        onParchar={parchar}
+                      />
+                    ))}
                   {filtrados.length === 0 && (
                     <tr>
                       <td colSpan={7} className="p-6 text-center text-muted-foreground">
@@ -560,7 +605,7 @@ export function CrmEmbudo() {
                   )}
                 </tbody>
               </table>
-            </GlassPanel>
+            </div>
           )}
         </>
       )}
@@ -680,6 +725,8 @@ export function CrmEmbudo() {
           etapas={etapas}
           tipoClave={tipo.clave}
           rutaAgente={tipo.clave === "restaurante" ? "/restaurante" : `/negocio/${tipo.clave}`}
+          nombreNegocio={negocio?.nombre ?? "nuestro negocio"}
+          onParchar={parchar}
           onCerrar={() => setAbierto(null)}
           onCambio={actualizar}
           onNavegar={(to: string, search?: Record<string, string>) => void navigate({ to: to as never, search: search as never })}
@@ -1064,6 +1111,181 @@ function InteligenciaIAAutomatica({
   );
 }
 
+const CAMPO_GRID = "w-full rounded-lg border border-glass-border bg-background/60 px-2 py-1 text-base sm:text-xs";
+
+function FilaGrid({
+  l, etapas, ahora, onAbrir, onParchar,
+}: {
+  l: Lead;
+  etapas: Etapa[];
+  ahora: number;
+  onAbrir: () => void;
+  onParchar: (l: Lead, c: Partial<Lead>) => Promise<void>;
+}) {
+  const extra = extraDe(l);
+  const [valor, setValor] = useState(String(Number(l.valor_estimado) || ""));
+  const [accion, setAccion] = useState(String(extra.proxima_accion ?? ""));
+  const fecha = String(extra.proxima_fecha ?? "");
+  const alerta = sla(l, ahora);
+  const pts = scoreDe(l);
+  const n = nivelScore(pts);
+  return (
+    <tr className="border-t border-glass-border/60 align-middle hover:bg-primary/5">
+      <td className="p-3">
+        <button type="button" onClick={onAbrir} className="text-left">
+          <span className="block font-semibold">{l.nombre || "Sin nombre"}</span>
+          <span className="block text-xs text-muted-foreground">{l.telefono}</span>
+          {alerta && (
+            <span className={`text-[11px] font-semibold ${alerta.critico ? "text-rose-600" : "text-amber-600"}`}>{alerta.texto}</span>
+          )}
+        </button>
+      </td>
+      <td className="px-2">
+        <span className={`text-xs font-bold tabular-nums ${n.clase}`}>{pts} pts</span>
+        <div className="mt-1 h-1.5 w-16 overflow-hidden rounded-full bg-glass-strong">
+          <div className={`h-full rounded-full ${n.barra}`} style={{ width: `${pts}%` }} />
+        </div>
+      </td>
+      <td className="px-2">
+        <select
+          aria-label="Etapa"
+          className={CAMPO_GRID}
+          value={l.etapa_embudo}
+          onChange={(e) => {
+            const titulo = etapas.find((x) => x.id === e.target.value)?.titulo ?? e.target.value;
+            void onParchar(l, {
+              etapa_embudo: e.target.value,
+              datos_extra: nuevoExtra(l, {}, { tipo: "Etapa", texto: `Pasó a ${titulo}`, cuando: new Date().toISOString() }),
+            });
+          }}
+        >
+          {etapas.map((e) => (
+            <option key={e.id} value={e.id}>
+              {e.titulo}
+            </option>
+          ))}
+        </select>
+      </td>
+      <td className="px-2">
+        <select
+          aria-label="Temperatura"
+          className={CAMPO_GRID}
+          value={tempDe(l)}
+          onChange={(e) => void onParchar(l, { temperatura: e.target.value || null })}
+        >
+          <option value="">Sin calificar</option>
+          <option value="CALIENTE">Caliente</option>
+          <option value="TIBIO">Tibio</option>
+          <option value="FRIO">Frío</option>
+        </select>
+      </td>
+      <td className="px-2">
+        <input
+          aria-label="Valor estimado"
+          className={`${CAMPO_GRID} tabular-nums`}
+          inputMode="numeric"
+          maxLength={12}
+          value={valor}
+          onChange={(e) => setValor(e.target.value.replace(/[^0-9]/g, ""))}
+          onBlur={() => {
+            if ((Number(valor) || 0) !== Number(l.valor_estimado || 0)) void onParchar(l, { valor_estimado: Number(valor) || 0 });
+          }}
+        />
+      </td>
+      <td className="px-2">
+        <input
+          aria-label="Próxima acción"
+          className={CAMPO_GRID}
+          maxLength={120}
+          placeholder="Ej. Llamar para cerrar"
+          value={accion}
+          onChange={(e) => setAccion(limpiarTexto(e.target.value, 120))}
+          onBlur={() => {
+            if (accion.trim() !== String(extra.proxima_accion ?? "")) void onParchar(l, { datos_extra: nuevoExtra(l, { proxima_accion: accion.trim() }) });
+          }}
+        />
+      </td>
+      <td className="px-2">
+        <input
+          type="date"
+          aria-label="Fecha de la próxima acción"
+          className={CAMPO_GRID}
+          value={fecha}
+          onChange={(e) => void onParchar(l, { datos_extra: nuevoExtra(l, { proxima_fecha: e.target.value }) })}
+        />
+      </td>
+    </tr>
+  );
+}
+
+function AgendaTareas({
+  leads, ahora, onAbrir, onCompletar,
+}: {
+  leads: Lead[];
+  ahora: number;
+  onAbrir: (l: Lead) => void;
+  onCompletar: (l: Lead) => void;
+}) {
+  if (!ahora) return <p className="py-10 text-center text-sm text-muted-foreground">Cargando agenda…</p>;
+  const hoy = fechaLocal(new Date(ahora));
+  const tareas = leads
+    .filter((l) => l.etapa_embudo !== "ganado" && l.etapa_embudo !== "perdido")
+    .map((l) => {
+      const ex = extraDe(l);
+      return { l, fecha: String(ex.proxima_fecha ?? ""), accion: String(ex.proxima_accion ?? "").trim() };
+    })
+    .filter((t) => t.fecha || t.accion || esVencido(t.l));
+  const grupoDe = (t: { l: Lead; fecha: string }): "v" | "h" | "p" =>
+    t.fecha ? (t.fecha < hoy ? "v" : t.fecha === hoy ? "h" : "p") : esVencido(t.l) ? "v" : "p";
+  const grupos: Array<{ id: "v" | "h" | "p"; titulo: string; clase: string }> = [
+    { id: "v", titulo: "Vencidas", clase: "text-rose-600" },
+    { id: "h", titulo: "Para hoy", clase: "text-amber-600" },
+    { id: "p", titulo: "Próximas", clase: "text-sky-600" },
+  ];
+  return (
+    <div className="space-y-5">
+      {grupos.map((g) => {
+        const items = tareas.filter((t) => grupoDe(t) === g.id).sort((a, b) => (a.fecha || "9").localeCompare(b.fecha || "9"));
+        return (
+          <section key={g.id} className="space-y-2">
+            <h3 className={`flex items-center gap-2 text-sm font-bold ${g.clase}`}>
+              {g.titulo}
+              <span className="rounded-full bg-glass-strong px-2 text-xs tabular-nums text-foreground">{items.length}</span>
+            </h3>
+            {items.length === 0 ? (
+              <p className="crm-card p-4 text-center text-xs text-muted-foreground">Nada en esta sección.</p>
+            ) : (
+              items.map(({ l, fecha, accion }) => {
+                const alerta = sla(l, ahora);
+                return (
+                  <div key={l.id} className="crm-card flex items-center gap-3 p-3">
+                    <button
+                      type="button"
+                      onClick={() => onCompletar(l)}
+                      aria-label="Completar tarea"
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-glass-border text-emerald-600 transition-colors hover:bg-emerald-500/15"
+                    >
+                      <Check className="h-4 w-4" />
+                    </button>
+                    <button type="button" onClick={() => onAbrir(l)} className="min-w-0 flex-1 text-left">
+                      <span className="block truncate text-sm font-semibold">{l.nombre || "Sin nombre"}</span>
+                      <span className="block truncate text-xs text-muted-foreground">{accion || "Dar seguimiento"}</span>
+                    </button>
+                    <span className="shrink-0 text-right text-[11px] text-muted-foreground">
+                      {fecha ? new Date(`${fecha}T12:00:00`).toLocaleDateString("es-CO", { day: "numeric", month: "short" }) : ""}
+                      {alerta && <span className={`block font-semibold ${alerta.critico ? "text-rose-600" : "text-amber-600"}`}>{alerta.texto}</span>}
+                    </span>
+                  </div>
+                );
+              })
+            )}
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
 function Pildora({ activa, onClick, n, children }: { activa: boolean; onClick: () => void; n: number; children: string }) {
   return (
     <button
@@ -1078,8 +1300,11 @@ function Pildora({ activa, onClick, n, children }: { activa: boolean; onClick: (
   );
 }
 
-function Tarjeta({ l, ahora, onAbrir, onArrastrar }: { l: Lead; ahora: number; onAbrir: () => void; onArrastrar: () => void }) {
+function Tarjeta({
+  l, ahora, etapas, onMover, onAbrir, onArrastrar,
+}: { l: Lead; ahora: number; etapas: Etapa[]; onMover: (etapa: string) => void; onAbrir: () => void; onArrastrar: () => void }) {
   const t = TEMP_UI[tempDe(l)];
+  const alerta = sla(l, ahora);
   const c = iconoCanal(l.canal_origen);
   return (
     <div
@@ -1110,6 +1335,29 @@ function Tarjeta({ l, ahora, onAbrir, onArrastrar }: { l: Lead; ahora: number; o
         </span>
       </div>
       {l.interes && <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">{l.interes}</p>}
+      <ScoreBar l={l} />
+      {alerta && (
+        <span
+          className={`mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+            alerta.critico ? "bg-rose-500/10 text-rose-600" : "bg-amber-500/10 text-amber-600"
+          }`}
+        >
+          <Clock className="h-3 w-3" /> {alerta.texto}
+        </span>
+      )}
+      <select
+        aria-label="Mover a etapa"
+        className="mt-2 w-full rounded-lg border border-glass-border bg-background/60 px-2 py-1 text-base sm:text-xs"
+        value={l.etapa_embudo}
+        onClick={(e) => e.stopPropagation()}
+        onChange={(e) => onMover(e.target.value)}
+      >
+        {etapas.map((e) => (
+          <option key={e.id} value={e.id}>
+            {e.titulo}
+          </option>
+        ))}
+      </select>
       <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-dashed border-glass-border pt-2.5 text-xs">
         <span className="text-sm font-extrabold tracking-tight tabular-nums">
           {Number(l.valor_estimado) > 0 ? dinero(Number(l.valor_estimado)) : "—"}
@@ -1220,6 +1468,8 @@ function Panel360({
   etapas,
   tipoClave,
   rutaAgente,
+  nombreNegocio,
+  onParchar,
   onCerrar,
   onCambio,
   onNavegar,
@@ -1228,6 +1478,8 @@ function Panel360({
   etapas: Etapa[];
   tipoClave: string;
   rutaAgente: string;
+  nombreNegocio: string;
+  onParchar: (l: Lead, c: Partial<Lead>) => Promise<void>;
   onCerrar: () => void;
   onCambio: (l: Lead) => void;
   onNavegar: (to: string, search?: Record<string, string>) => void;
@@ -1238,8 +1490,13 @@ function Panel360({
   const [mensajes, setMensajes] = useState<Evento[]>([]);
   const [valor, setValor] = useState(String(Number(lead.valor_estimado) || ""));
   const [ocupado, setOcupado] = useState(false);
+  const [mensajeIA, setMensajeIA] = useState("");
+  const [nota, setNota] = useState("");
+  const [tipoNota, setTipoNota] = useState("Nota");
+  const [accion, setAccion] = useState(String(extraDe(lead).proxima_accion ?? ""));
+  const [fechaAccion, setFechaAccion] = useState(String(extraDe(lead).proxima_fecha ?? ""));
   const t = TEMP_UI[tempDe(lead)];
-  const puntaje = Math.max(0, Math.min(100, lead.puntaje ?? 0));
+  const puntaje = scoreDe(lead);
   const extra = (lead.datos_extra && typeof lead.datos_extra === "object" && !Array.isArray(lead.datos_extra) ? lead.datos_extra : {}) as Record<string, unknown>;
 
   useEffect(() => {
@@ -1277,7 +1534,51 @@ function Panel360({
     ...(lead.temperatura ? [{ quien: "Calificación IA", texto: `${t.texto} · ${puntaje}% · ${lead.interes ?? ""}`, cuando: lead.ultima_interaccion }] : []),
     ...pqrs.map((p) => ({ quien: "PQRS", texto: `${p.tipo}: ${p.resumen ?? ""}`, cuando: p.created_at })),
     ...mensajes,
+    ...actividadesDe(lead).map((a) => ({ quien: a.tipo, texto: a.texto, cuando: a.cuando })),
   ].sort((a, b) => b.cuando.localeCompare(a.cuando));
+
+  const generarMensaje = () => {
+    const nombre = (lead.nombre || "").trim().split(/\s+/)[0] ?? "";
+    const saludo = nombre ? `Hola ${nombre}` : "Hola";
+    const interes = lead.interes?.trim() ? lead.interes.trim() : "lo que estabas buscando";
+    const prox = accion.trim() ? ` Lo siguiente que tenemos pendiente es: ${accion.trim()}${fechaAccion ? ` (${fechaAccion})` : ""}.` : "";
+    const cuerpo =
+      lead.etapa_embudo === "cotizado"
+        ? `te escribo de ${nombreNegocio} para saber si pudiste revisar la propuesta sobre ${interes}.`
+        : lead.etapa_embudo === "cita"
+          ? `te recuerdo tu cita con ${nombreNegocio} sobre ${interes}.`
+          : `te escribe ${nombreNegocio}. Vi que te interesa ${interes} y quiero ayudarte a avanzar.`;
+    setMensajeIA(`${saludo}, ${cuerpo}${prox} Tenemos disponibilidad esta semana y puedo resolverte cualquier duda hoy mismo. ¿Te parece si lo coordinamos?`);
+  };
+  const copiarMensaje = () => {
+    void navigator.clipboard
+      .writeText(mensajeIA)
+      .then(() => toast.success("Mensaje copiado"))
+      .catch(() => toast.error("No se pudo copiar el mensaje."));
+  };
+  const enviarMensaje = () => {
+    const tel = lead.telefono.replace(/\D/g, "");
+    if (!tel) return toast.error("Este prospecto no tiene teléfono.");
+    window.open(`https://wa.me/${tel}?text=${encodeURIComponent(mensajeIA)}`, "_blank", "noopener,noreferrer");
+    void onParchar(lead, { datos_extra: nuevoExtra(lead, {}, { tipo: "WhatsApp", texto: mensajeIA.slice(0, 200), cuando: new Date().toISOString() }) });
+  };
+  const guardarAccion = () => {
+    const txt = accion.trim();
+    void onParchar(lead, {
+      datos_extra: nuevoExtra(
+        lead,
+        { proxima_accion: txt, proxima_fecha: fechaAccion },
+        txt ? { tipo: "Tarea", texto: `Próxima acción: ${txt}${fechaAccion ? ` · ${fechaAccion}` : ""}`, cuando: new Date().toISOString() } : undefined,
+      ),
+    });
+    toast.success("Próxima acción guardada");
+  };
+  const registrarNota = () => {
+    const txt = limpiarTexto(nota, 400);
+    if (!txt) return toast.error("Escribe la nota.");
+    void onParchar(lead, { datos_extra: nuevoExtra(lead, {}, { tipo: tipoNota, texto: txt, cuando: new Date().toISOString() }) });
+    setNota("");
+  };
 
   const cotizar = () => {
     window.sessionStorage.setItem(
@@ -1324,7 +1625,7 @@ function Panel360({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm" onClick={onCerrar}>
+    <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-md" onClick={onCerrar}>
       <aside className="flex h-full w-full max-w-xl flex-col border-l border-glass-border bg-background shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-3 border-b border-glass-border p-4">
           <div className="relative h-14 w-14 shrink-0">
@@ -1333,13 +1634,13 @@ function Panel360({
               <circle cx="18" cy="18" r="15.9" fill="none" stroke={t.borde} strokeWidth="3" strokeDasharray={`${puntaje} 100`} strokeLinecap="round" />
             </svg>
             <span className="absolute inset-0 flex items-center justify-center text-xs font-bold tabular-nums">
-              {lead.puntaje != null ? `${puntaje}%` : "—"}
+              {puntaje}
             </span>
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate font-display text-lg">{lead.nombre || "Sin nombre"}</p>
             <p className="truncate text-xs text-muted-foreground">
-              {lead.telefono || "Sin teléfono"} · {t.texto}
+              {lead.telefono || "Sin teléfono"} · {t.texto} · {puntaje} pts • {nivelScore(puntaje).texto}
             </p>
           </div>
           <button type="button" onClick={onCerrar} aria-label="Cerrar">
@@ -1357,7 +1658,12 @@ function Panel360({
                 <button
                   key={e.id}
                   type="button"
-                  onClick={() => void guardarCampo({ etapa_embudo: e.id, atendido_por_humano: true })}
+                  onClick={() =>
+                    void onParchar(lead, {
+                      etapa_embudo: e.id,
+                      datos_extra: nuevoExtra(lead, {}, { tipo: "Etapa", texto: `Pasó a ${e.titulo}`, cuando: new Date().toISOString() }),
+                    })
+                  }
                   className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${
                     esActual
                       ? "border-transparent text-white shadow-sm"
@@ -1392,8 +1698,60 @@ function Panel360({
               <Dato k="Interés" v={lead.interes} />
               <Dato k="Capacidad de pago / cuota inicial" v={lead.capacidad_pago} />
               <Dato k="Urgencia" v={lead.urgencia} />
+              <div className="space-y-2 rounded-xl border border-glass-border p-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Próxima acción</p>
+                <input
+                  className="w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base"
+                  placeholder="Ej. Llamar para confirmar la visita"
+                  maxLength={120}
+                  value={accion}
+                  onChange={(e) => setAccion(limpiarTexto(e.target.value, 120))}
+                />
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    aria-label="Fecha de la próxima acción"
+                    className="min-w-0 flex-1 rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base"
+                    value={fechaAccion}
+                    onChange={(e) => setFechaAccion(e.target.value)}
+                  />
+                  <button type="button" onClick={guardarAccion} className="rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground">
+                    Guardar
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-2 rounded-xl border border-primary/30 bg-primary/5 p-3">
+                <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
+                  <Sparkles className="h-3.5 w-3.5" /> Copiloto IA de seguimiento
+                </p>
+                <button
+                  type="button"
+                  onClick={generarMensaje}
+                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground"
+                >
+                  <Sparkles className="h-4 w-4" /> Generar Mensaje IA para WhatsApp
+                </button>
+                {mensajeIA && (
+                  <>
+                    <textarea
+                      className="min-h-28 w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base"
+                      value={mensajeIA}
+                      maxLength={800}
+                      onChange={(e) => setMensajeIA(e.target.value)}
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <button type="button" onClick={copiarMensaje} className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-glass-border px-2 py-2 hover:bg-primary/10">
+                        <Copy className="h-4 w-4" /> Copiar
+                      </button>
+                      <button type="button" onClick={enviarMensaje} className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-2 py-2 font-semibold text-white">
+                        <Send className="h-4 w-4" /> Enviar por WhatsApp
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
               {Object.entries(extra)
-                .filter(([, v]) => typeof v === "string" && v.trim())
+                .filter(([k, v]) => typeof v === "string" && v.trim() && !k.startsWith("proxima_"))
                 .map(([k, v]) => (
                   <Dato key={k} k={k === "datos_confirmados" ? "Datos confirmados en la conversación" : k.replace(/_/g, " ")} v={String(v)} />
                 ))}
@@ -1439,6 +1797,37 @@ function Panel360({
                 </div>
               ))
             ))}
+          {pestana === "tiempo" && (
+            <div className="space-y-2 rounded-xl border border-glass-border p-3">
+              <div className="flex gap-2">
+                <select
+                  aria-label="Tipo de actividad"
+                  className="rounded-lg border border-glass-border bg-background/60 px-2 py-2 text-base"
+                  value={tipoNota}
+                  onChange={(e) => setTipoNota(e.target.value)}
+                >
+                  {["Nota", "Llamada", "Cotización", "Visita"].map((x) => (
+                    <option key={x} value={x}>
+                      {x}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  className="min-w-0 flex-1 rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base"
+                  placeholder="Registrar una nota rápida"
+                  maxLength={400}
+                  value={nota}
+                  onChange={(e) => setNota(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") registrarNota();
+                  }}
+                />
+                <button type="button" onClick={registrarNota} className="rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground">
+                  Agregar
+                </button>
+              </div>
+            </div>
+          )}
           {pestana === "tiempo" &&
             (linea.length === 0 ? (
               <p className="text-muted-foreground">Sin actividad todavía.</p>
@@ -1446,7 +1835,16 @@ function Panel360({
               <div className="relative space-y-4 pl-1">
                 <span className="absolute bottom-2 left-[17px] top-2 w-px bg-glass-border" aria-hidden="true" />
                 {linea.map((e, i) => {
-                  const Ic = e.quien === "Llegada" ? UserRound : e.quien === "Calificación IA" ? Sparkles : e.quien === "PQRS" ? AlertTriangle : MessageCircle;
+                  const Ic =
+                    e.quien === "Llegada" ? UserRound
+                    : e.quien === "Calificación IA" ? Sparkles
+                    : e.quien === "PQRS" ? AlertTriangle
+                    : e.quien === "Llamada" ? Phone
+                    : e.quien === "Nota" || e.quien === "Cotización" ? FileText
+                    : e.quien === "Etapa" ? Target
+                    : e.quien === "Tarea" ? CheckCircle2
+                    : e.quien === "Visita" ? CalendarDays
+                    : MessageCircle;
                   return (
                     <div key={i} className="relative flex gap-3">
                       <span className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-glass-border bg-card text-primary shadow-sm">
