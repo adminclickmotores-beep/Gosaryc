@@ -109,6 +109,10 @@ export type DatosFactura = {
   items: ItemFactura[];
   ivaPct?: number;
   incPct?: number;
+  /** Retenciones en pesos (ya calculadas al emitir): se restan para el neto a recibir. */
+  retefuente?: number;
+  reteiva?: number;
+  reteica?: number;
   dianCufe?: string | null;
   dianQr?: string | null;
   dianEstado?: string | null;
@@ -125,8 +129,15 @@ export function facturaHTML(d: DatosFactura, formato: FormatoFactura): string {
   const iva = Math.round(subtotal * ((d.ivaPct ?? 0) / 100));
   const inc = Math.round(subtotal * ((d.incPct ?? 0) / 100));
   const total = subtotal + iva + inc;
+  const rf = Math.round(d.retefuente ?? 0);
+  const ri = Math.round(d.reteiva ?? 0);
+  const rc = Math.round(d.reteica ?? 0);
+  const totalRet = rf + ri + rc;
   const cop = (n: number) => new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
   const e = escaparHtml;
+  const bloqueRet = totalRet > 0
+    ? `${rf > 0 ? `<br>Retefuente: -${cop(rf)}` : ""}${ri > 0 ? `<br>ReteIVA: -${cop(ri)}` : ""}${rc > 0 ? `<br>ReteICA: -${cop(rc)}` : ""}<br><strong>Neto a recibir: ${cop(total - totalRet)}</strong>`
+    : "";
   const es58 = formato === "58mm";
   const esTirilla = es58 || formato === "80mm" || formato === "tirilla";
   const fechaMostrar = d.fechaHora || new Date().toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" });
@@ -159,7 +170,7 @@ export function facturaHTML(d: DatosFactura, formato: FormatoFactura): string {
     <p class="c sub">NIT ${e(d.nit)}${d.regimen ? ` · ${e(d.regimen)}` : ""}${d.direccion ? `<br>${e(d.direccion)}` : ""}${d.telefono ? ` · Tel. ${e(d.telefono)}` : ""}${d.resolucion ? `<br>Res. DIAN ${e(d.resolucion)}` : ""}</p>
     <p><strong>Factura de venta ${e(numeroCompleto)}</strong><br>Fecha/Hora: ${e(fechaMostrar)}<br>Cliente: ${e(d.cliente)}${d.clienteNit ? ` · ${e(d.clienteNit)}` : ""}${d.clienteCorreo ? `<br>Correo: ${e(d.clienteCorreo)}` : ""}${d.metodoPago ? `<br>Medio de pago: ${e(d.metodoPago)}` : ""}</p>
     <table><thead><tr><th>Descripción</th><th class="num">Cant.</th><th class="num">Precio</th><th class="num">Total</th></tr></thead><tbody>${filas}</tbody></table>
-    <div class="totales">Subtotal: ${cop(subtotal)}<br>IVA${d.ivaPct ? ` (${d.ivaPct}%)` : ""}: ${cop(iva)}${inc > 0 ? `<br>INC (${d.incPct}%): ${cop(inc)}` : ""}<br><strong>Total: ${cop(total)}</strong></div>
+    <div class="totales">Subtotal: ${cop(subtotal)}<br>IVA${d.ivaPct ? ` (${d.ivaPct}%)` : ""}: ${cop(iva)}${inc > 0 ? `<br>INC (${d.incPct}%): ${cop(inc)}` : ""}<br><strong>Total: ${cop(total)}</strong>${bloqueRet}</div>
     ${bloqueDian}
     <p class="sub c">${d.piePagina ? e(d.piePagina) : "Documento generado por Gosaryc · listo para facturación electrónica DIAN."}</p>
   </body></html>`;

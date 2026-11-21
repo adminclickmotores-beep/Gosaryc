@@ -2613,7 +2613,7 @@ export type Database = {
         Relationships: []
       }
       fac_emitidas: {
-        Row: { cliente: string; cliente_doc: string | null; created_at: string; formato: string; id: string; items: Json; iva: number; numero: number; owner_id: string | null; subtotal: number; tipo_negocio: string | null; total: number; dian_cufe: string | null; dian_qr: string | null; dian_estado: string; dian_respuesta: Json }
+        Row: { cliente: string; cliente_doc: string | null; created_at: string; formato: string; id: string; items: Json; iva: number; numero: number; owner_id: string | null; subtotal: number; tipo_negocio: string | null; total: number; dian_cufe: string | null; dian_qr: string | null; dian_estado: string; dian_respuesta: Json; impoconsumo: number; retefuente: number; reteiva: number; reteica: number; total_retenciones: number; neto_a_recibir: number; metodo_pago: string | null }
         Insert: { cliente: string; cliente_doc?: string | null; created_at?: string; formato?: string; id?: string; items?: Json; iva?: number; numero?: number; owner_id?: string | null; subtotal?: number; tipo_negocio?: string | null; total: number; dian_cufe?: string | null; dian_qr?: string | null; dian_estado?: string; dian_respuesta?: Json }
         Update: { cliente?: string; cliente_doc?: string | null; created_at?: string; formato?: string; id?: string; items?: Json; iva?: number; numero?: number; owner_id?: string | null; subtotal?: number; tipo_negocio?: string | null; total?: number; dian_cufe?: string | null; dian_qr?: string | null; dian_estado?: string; dian_respuesta?: Json }
         Relationships: []
@@ -8616,7 +8616,7 @@ export type Database = {
       tra_cobrar_flete: { Args: { p_manifiesto: string; p_metodo: string }; Returns: Json }
       tra_liquidar: { Args: { p_manifiesto: string; p_pago: number; p_metodo: string }; Returns: Json }
       fac_emitir: {
-        Args: { p_cliente: string; p_cliente_doc: string | null; p_items: Json; p_iva: number; p_formato: string }
+        Args: { p_cliente: string; p_cliente_doc: string | null; p_items: Json; p_iva: number; p_formato: string; p_inc: number; p_retefuente: number; p_reteiva: number; p_reteica: number; p_metodo: string }
         Returns: Json
       }
       mi_dian_config: { Args: never; Returns: Json }

@@ -58,13 +58,16 @@ export function FacturaFiscal() {
     piePagina: negocio?.pie_factura ?? undefined,
     numero: String(f.numero),
     fechaHora: new Date(f.created_at).toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" }),
-    metodoPago,
+    metodoPago: f.metodo_pago ?? metodoPago,
     cliente: f.cliente,
     clienteNit: f.cliente_doc ?? undefined,
     clienteCorreo: correoCli.trim() || undefined,
     items: (Array.isArray(f.items) ? f.items : []) as ItemFactura[],
     ivaPct: f.subtotal > 0 ? Math.round((f.iva / f.subtotal) * 100) : 0,
-    incPct: Math.min(Math.max(num(inc), 0), 100),
+    incPct: f.subtotal > 0 ? Math.round((Number(f.impoconsumo ?? 0) / f.subtotal) * 10000) / 100 : 0,
+    retefuente: Number(f.retefuente ?? 0),
+    reteiva: Number(f.reteiva ?? 0),
+    reteica: Number(f.reteica ?? 0),
     dianCufe: f.dian_cufe ?? undefined,
     dianQr: f.dian_qr ?? undefined,
     dianEstado: f.dian_estado ?? undefined,
@@ -180,6 +183,11 @@ export function FacturaFiscal() {
       p_items: validos as never,
       p_iva: ivaPctNum,
       p_formato: formato === "carta" ? "carta" : formato,
+      p_inc: incPctNum,
+      p_retefuente: Math.min(Math.max(num(retefuente), 0), 100),
+      p_reteiva: Math.min(Math.max(num(reteiva), 0), 100),
+      p_reteica: Math.min(Math.max(num(reteica), 0), 30),
+      p_metodo: metodoPago,
     });
     if (error) return toast.error(error.message.length < 220 ? error.message : "No se pudo emitir la factura.");
     const numero = (data as { numero?: number } | null)?.numero ?? 0;
@@ -408,8 +416,8 @@ export function FacturaFiscal() {
           <div className="flex gap-2">
             <button
               type="button" className={botonSec}
-              onClick={() => exportarExcel("facturas-emitidas", ["Número", "Fecha", "Cliente", "Subtotal", "IVA", "Total"],
-                facs.map((f) => [f.numero, new Date(f.created_at).toLocaleString("es-CO"), f.cliente, f.subtotal, f.iva, f.total]))}
+              onClick={() => exportarExcel("facturas-emitidas", ["Número", "Fecha", "Cliente", "Subtotal", "IVA", "Impoconsumo", "Retefuente", "ReteIVA", "ReteICA", "Total", "Neto a recibir"],
+                facs.map((f) => [f.numero, new Date(f.created_at).toLocaleString("es-CO"), f.cliente, f.subtotal, f.iva, f.impoconsumo ?? 0, f.retefuente ?? 0, f.reteiva ?? 0, f.reteica ?? 0, f.total, f.neto_a_recibir || f.total]))}
             >
               Exportar a Excel
             </button>
