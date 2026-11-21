@@ -3,7 +3,7 @@ import { TIPOS_NEGOCIO, CRM_AUTOMATICO, MODULO_CRM } from "@/lib/modulos-negocio
 /** Ids de módulos con pantalla dedicada (lógica propia, tablas tipadas) en la ruta /modulos/$id. */
 const IDS_DEDICADOS = new Set<string>([
   "pan_produccion", "pan_recetas", "pan_mermas", "encargos_tortas", "pan_turnos",
-  "com_pos", "com_productos", "com_lotes", "com_cotizador", "com_desposte",
+  "com_pos", "com_productos", "com_lotes", "com_seriales", "com_cotizador", "com_desposte",
   "bel_agenda", "bel_fichas", "bel_servicios", "bel_comisiones",
   "tal_ordenes", "tal_repuestos", "tal_comisiones", "tal_proyectos",
   "obr_obras", "inm_propiedades", "agr_lotes", "tra_manifiestos",

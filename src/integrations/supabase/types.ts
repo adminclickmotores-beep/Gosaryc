@@ -3125,8 +3125,59 @@ export type Database = {
         Update: { abono?: number; cliente?: string; created_at?: string; descripcion?: string | null; estado?: string; fecha_entrega?: string | null; id?: string; materiales?: Json; owner_id?: string | null; registrado_por?: string | null; rubro?: string; saldo?: number; telefono?: string | null; tipo_negocio?: string | null; titulo?: string; total?: number }
         Relationships: []
       }
+      com_seriales: {
+        Row: {
+          cliente: string | null
+          created_at: string
+          estado: string
+          garantia_hasta: string | null
+          id: string
+          notas: string | null
+          owner_id: string | null
+          producto_id: string
+          registrado_por: string | null
+          serial: string
+          telefono: string | null
+          tipo_negocio: string | null
+          vendido_el: string | null
+        }
+        Insert: {
+          cliente?: string | null
+          created_at?: string
+          estado?: string
+          garantia_hasta?: string | null
+          id?: string
+          notas?: string | null
+          owner_id?: string | null
+          producto_id: string
+          registrado_por?: string | null
+          serial: string
+          telefono?: string | null
+          tipo_negocio?: string | null
+          vendido_el?: string | null
+        }
+        Update: {
+          cliente?: string | null
+          created_at?: string
+          estado?: string
+          garantia_hasta?: string | null
+          id?: string
+          notas?: string | null
+          owner_id?: string | null
+          producto_id?: string
+          registrado_por?: string | null
+          serial?: string
+          telefono?: string | null
+          tipo_negocio?: string | null
+          vendido_el?: string | null
+        }
+        Relationships: []
+      }
       com_productos: {
         Row: {
+          atributos: Json
+          garantia_dias: number
+          requiere_serial: boolean
           imagen_url: string | null
           ubicacion_pasillo: string | null
           ubicacion_estante: string | null
@@ -3154,6 +3205,9 @@ export type Database = {
           unidades_por_caja: number | null
         }
         Insert: {
+          atributos?: Json
+          garantia_dias?: number
+          requiere_serial?: boolean
           ubicacion_pasillo?: string | null
           ubicacion_estante?: string | null
           ubicacion_nivel?: string | null
@@ -3181,6 +3235,9 @@ export type Database = {
           imagen_url?: string | null
         }
         Update: {
+          atributos?: Json
+          garantia_dias?: number
+          requiere_serial?: boolean
           imagen_url?: string | null
           ubicacion_pasillo?: string | null
           ubicacion_estante?: string | null

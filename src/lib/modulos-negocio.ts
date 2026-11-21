@@ -1136,6 +1136,10 @@ for (const clave of ["tienda", "supermercado", "ferreteria", "carniceria"] as co
 const EXTRAS_COMERCIO: Record<string, ModuloNegocio[]> = {
   tienda: [m("com_lotes", "Lotes y vencimientos", "Número de lote y vencimiento al recibir mercancía; el POS vende primero lo que vence antes (FIFO) y avisa a 7, 15 y 30 días.", CalendarClock)],
   supermercado: [m("com_lotes", "Lotes y vencimientos", "Número de lote y vencimiento al recibir mercancía; el POS vende primero lo que vence antes (FIFO) y avisa a 7, 15 y 30 días.", CalendarClock)],
+  celulares: [m("com_seriales", "Seriales, IMEI y garantía", "Cada equipo con su serial o IMEI; al venderlo queda el cliente y la garantía calculada, y controlas equipos en garantía o devueltos.", ShieldCheck)],
+  joyeria: [m("com_seriales", "Seriales y garantía de piezas", "Piezas con serial o certificado; al venderlas queda el cliente y la fecha en que vence la garantía.", ShieldCheck)],
+  optica: [m("com_seriales", "Seriales y garantía", "Monturas y equipos con serial; garantía calculada al vender y control de devoluciones.", ShieldCheck)],
+  licorera: [m("com_lotes", "Lotes y vencimientos", "Número de lote y vencimiento al recibir mercancía; el POS vende primero lo que vence antes (FIFO) y avisa a 7, 15 y 30 días.", CalendarClock)],
   ferreteria: [m("com_cotizador", "Cotizador de materiales", "Lista de materiales para maestros y contratistas con descuento e impuestos, por WhatsApp o PDF, y se convierte en venta con un clic.", FileText)],
   carniceria: [
     m("com_lotes", "Lotes y vencimientos", "Número de lote y vencimiento al recibir mercancía; el POS vende primero lo que vence antes (FIFO) y avisa a 7, 15 y 30 días.", CalendarClock),

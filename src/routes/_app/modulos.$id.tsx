@@ -25,7 +25,8 @@ import {
   VacunasClinica,
 } from "@/components/clinica/ClinicaModulos";
 import { PosComercial, ProductosComercial } from "@/components/comercio/ComercioModulos";
-import { CotizadorFerreteria, DespostesFrescos, LotesComercial } from "@/components/comercio/ComercioEspecial";
+import { SerialesGarantia } from "@/components/comercio/SerialesGarantia";
+import { CotizadorFerreteria,DespostesFrescos, LotesComercial } from "@/components/comercio/ComercioEspecial";
 import { AgendaBelleza, ComisionesBelleza, FichasBelleza, ServiciosBelleza } from "@/components/belleza/BellezaModulos";
 import { CheckinGimnasio, PlanesGimnasio, SociosGimnasio, ValoracionGimnasio } from "@/components/gimnasio/GimnasioModulos";
 import { ComisionesTaller, OrdenesTaller, ProyectosMedida, RepuestosTaller } from "@/components/taller/TallerModulos";
@@ -136,6 +137,7 @@ function ModuloPage() {
   if (id === "com_pos") return <PosComercial />;
   if (id === "com_productos") return <ProductosComercial />;
   if (id === "com_lotes") return <LotesComercial />;
+  if (id === "com_seriales") return <SerialesGarantia />;
   if (id === "com_cotizador") return <CotizadorFerreteria />;
   if (id === "com_desposte") return <DespostesFrescos />;
   if (id === "bel_agenda") return <AgendaBelleza />;

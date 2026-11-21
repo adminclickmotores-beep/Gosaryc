@@ -10,6 +10,7 @@ import { useBarcodeScanner } from "@/hooks/use-barcode-scanner";
 import { descontarStockOffline, evitarSubmitConEnter, generarEAN13, reproducirBeep, stockEfectivoOffline } from "@/lib/escaner-barras";
 import { CLASE_NIVEL, diasPara, nivelVence, textoVence, type NivelVence } from "@/lib/lotes-comercio";
 import { escaparHtml, exportarExcel, imprimirReporte } from "@/lib/exportes";
+import { limpiarAtributos, perfilRetail } from "@/lib/retail-grupo1";
 import { ImportadorMasivo } from "@/components/comercio/ImportadorMasivo";
 import { EtiquetasBarras } from "@/components/comercio/EtiquetasBarras";
 import { SucursalesTraslados } from "@/components/negocio/SucursalesTraslados";
@@ -198,6 +199,15 @@ export function ProductosComercial() {
   const [vista, setVista] = useState<"mosaico" | "lista">("mosaico");
   const [abierto, setAbierto] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
+  const { negocio: negocioActual } = useNegocio();
+  const perfil = perfilRetail(negocioActual?.tipo_negocio);
+  const [atributos, setAtributos] = useState<Record<string, string>>({});
+  const [llevaSerial, setLlevaSerial] = useState<boolean | null>(null);
+  const [garantia, setGarantia] = useState("");
+  const [controlaLotes, setControlaLotes] = useState<boolean | null>(null);
+  const exigeSerial = llevaSerial ?? perfil.requiereSerial;
+  const diasGarantia = garantia.trim() ? Math.round(num(garantia)) : perfil.garantiaDias;
+  const llevaLotes = controlaLotes ?? perfil.lotes;
 
   const elegirImpuesto = (v: string) => {
     setImpuesto(v);
@@ -228,6 +238,10 @@ export function ProductosComercial() {
       ubicacion_pasillo: pasillo.trim() || null,
       ubicacion_estante: estante.trim() || null,
       ubicacion_nivel: nivel.trim() || null,
+      atributos: limpiarAtributos(atributos, perfil.campos),
+      requiere_serial: exigeSerial,
+      garantia_dias: Math.min(Math.max(diasGarantia, 0), 3650),
+      controla_lotes: llevaLotes,
     });
     setGuardando(false);
     if (error) {
@@ -236,6 +250,7 @@ export function ProductosComercial() {
     toast.success("Producto guardado.");
     setNombre(""); setBarras(""); setSku(""); setPorCaja(""); setDetal(""); setMayorista(""); setEspecial("");
     setStock(""); setMinimo(""); setCosto(""); setPasillo(""); setEstante(""); setNivel("");
+    setAtributos({}); setLlevaSerial(null); setGarantia(""); setControlaLotes(null);
     void recargar();
   };
 
@@ -341,6 +356,29 @@ export function ProductosComercial() {
           <Campo etiqueta="Ubicación: pasillo"><input className={campo} placeholder="Ej: 3" value={pasillo} onChange={(e) => setPasillo(e.target.value)} /></Campo>
           <Campo etiqueta="Ubicación: estante"><input className={campo} placeholder="Ej: B" value={estante} onChange={(e) => setEstante(e.target.value)} /></Campo>
           <Campo etiqueta="Ubicación: nivel"><input className={campo} placeholder="Ej: 2" value={nivel} onChange={(e) => setNivel(e.target.value)} /></Campo>
+          {perfil.campos.map((c) => (
+            <Campo key={c.clave} etiqueta={c.etiqueta}>
+              {c.opciones ? (
+                <select className={campo} value={atributos[c.clave] ?? ""} onChange={(e) => setAtributos({ ...atributos, [c.clave]: e.target.value })}>
+                  <option value="">Elige</option>
+                  {c.opciones.map((o) => <option key={o} value={o}>{o}</option>)}
+                </select>
+              ) : (
+                <input className={campo} maxLength={80} placeholder={c.ejemplo ? `Ej: ${c.ejemplo}` : undefined} value={atributos[c.clave] ?? ""} onChange={(e) => setAtributos({ ...atributos, [c.clave]: e.target.value })} />
+              )}
+            </Campo>
+          ))}
+          <Campo etiqueta="Días de garantía">
+            <input className={campo} inputMode="numeric" placeholder={String(perfil.garantiaDias)} value={garantia} onChange={(e) => setGarantia(e.target.value)} />
+          </Campo>
+        </div>
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
+          <label className="flex items-center gap-2 text-sm text-foreground">
+            <input type="checkbox" checked={exigeSerial} onChange={(e) => setLlevaSerial(e.target.checked)} /> Lleva serial / IMEI por unidad
+          </label>
+          <label className="flex items-center gap-2 text-sm text-foreground">
+            <input type="checkbox" checked={llevaLotes} onChange={(e) => setControlaLotes(e.target.checked)} /> Controla lotes y vencimientos
+          </label>
         </div>
         <label className="flex items-center gap-2 text-sm text-foreground">
           <input type="checkbox" checked={incluye} onChange={(e) => setIncluye(e.target.checked)} /> Los precios ya incluyen el impuesto
