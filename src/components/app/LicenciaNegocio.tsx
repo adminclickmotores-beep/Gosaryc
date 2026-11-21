@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { BRAND, enlaceWhatsappSoporte } from "@/lib/brand";
+import { esCuentaMaestra, esSuperadminServidor } from "@/lib/cuenta-maestra";
 import { evaluarVigenciaLicencia, leerTokenLicenciaOffline } from "@/lib/licencia-offline";
 
 type Suscripcion = Tables<"suscripciones_negocio">;
@@ -24,6 +25,16 @@ export function LicenciaNegocio({ modo }: { modo: "bloqueo" | "aviso" }) {
   const [diasPase, setDiasPase] = useState("1");
   const [enviando, setEnviando] = useState(false);
   const [abierto, setAbierto] = useState(modo === "bloqueo");
+
+  const [maestra, setMaestra] = useState(false);
+  useEffect(() => {
+    if (!user) return;
+    if (esCuentaMaestra(user.email)) {
+      setMaestra(true);
+      return;
+    }
+    void esSuperadminServidor().then(setMaestra);
+  }, [user]);
 
   const cargar = useCallback(async () => {
     if (!user) return;
@@ -48,7 +59,7 @@ export function LicenciaNegocio({ modo }: { modo: "bloqueo" | "aviso" }) {
     void cargar();
   }, [cargar]);
 
-  if (!user || (!sub && !offlineInfo)) return null;
+  if (!user || maestra || (!sub && !offlineInfo)) return null;
 
   const esTitular = sub ? sub.owner_id === user.id : true;
   const planActual = sub?.plan ?? offlineInfo?.plan ?? "prueba";

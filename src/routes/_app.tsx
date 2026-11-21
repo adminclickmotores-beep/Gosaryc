@@ -39,7 +39,7 @@ import { resolverTipoNegocio, CRM_AUTOMATICO, MODULO_CRM } from "@/lib/modulos-n
 import { AutosaveStatus } from "@/components/app/AutosaveStatus";
 import { purgeExpiredDrafts } from "@/hooks/use-draft";
 import { getCachedOnboardedAt } from "@/hooks/use-onboarding-status";
-import { esCuentaMaestra } from "@/lib/cuenta-maestra";
+import { esCuentaMaestra, esSuperadminServidor } from "@/lib/cuenta-maestra";
 
 export const Route = createFileRoute("/_app")({
   component: AppShell,
@@ -212,6 +212,10 @@ function AppShell() {
     if (!user) return;
     let cancelled = false;
     const revisar = async () => {
+      if (esCuentaMaestra(user.email) || (await esSuperadminServidor())) {
+        if (!cancelled) setBloqueo(null);
+        return;
+      }
       try {
         const { data } = await supabase.from("suscripciones_negocio").select("*").maybeSingle();
         if (cancelled) return;
