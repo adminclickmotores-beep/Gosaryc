@@ -1272,6 +1272,7 @@ function AgendaTareas({
   ];
   return (
     <div className="space-y-5">
+      <CitasAgendadas />
       {grupos.map((g) => {
         const items = tareas.filter((t) => grupoDe(t) === g.id).sort((a, b) => (a.fecha || "9").localeCompare(b.fecha || "9"));
         return (
@@ -1311,6 +1312,57 @@ function AgendaTareas({
         );
       })}
     </div>
+  );
+}
+
+type CitaAgendada = { id: string; titulo: string; cliente: string | null; telefono: string | null; fecha: string; hora: string | null };
+
+/** Citas agendadas desde el CRM (y la agenda) a partir de hoy, para verlas junto a las tareas de seguimiento. */
+function CitasAgendadas() {
+  const [citas, setCitas] = useState<CitaAgendada[] | null>(null);
+  useEffect(() => {
+    let vivo = true;
+    const d = new Date();
+    const hoy = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    void supabase
+      .from("agenda_citas")
+      .select("id,titulo,cliente,telefono,fecha,hora")
+      .eq("tipo", "cita")
+      .neq("estado", "cancelada")
+      .gte("fecha", hoy)
+      .order("fecha", { ascending: true })
+      .order("hora", { ascending: true })
+      .limit(50)
+      .then(({ data, error }) => {
+        if (!vivo) return;
+        setCitas(error ? [] : (data ?? []));
+      });
+    return () => {
+      vivo = false;
+    };
+  }, []);
+  if (citas === null) return null;
+  if (citas.length === 0) return null;
+  return (
+    <section className="space-y-2">
+      <h3 className="flex items-center gap-2 text-sm font-bold text-primary">
+        Citas agendadas
+        <span className="rounded-full bg-glass-strong px-2 text-xs tabular-nums text-foreground">{citas.length}</span>
+      </h3>
+      {citas.map((c) => (
+        <div key={c.id} className="crm-card flex items-center gap-3 p-3">
+          <CalendarPlus className="h-4 w-4 shrink-0 text-primary" />
+          <div className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-semibold">{c.cliente || c.titulo}</span>
+            <span className="block truncate text-xs text-muted-foreground">{c.telefono || "Sin teléfono"}</span>
+          </div>
+          <span className="shrink-0 text-right text-[11px] text-muted-foreground">
+            {new Date(`${c.fecha}T12:00:00`).toLocaleDateString("es-CO", { day: "numeric", month: "short" })}
+            <span className="block font-semibold text-foreground">{c.hora ? c.hora.slice(0, 5) : "Sin hora"}</span>
+          </span>
+        </div>
+      ))}
+    </section>
   );
 }
 
@@ -1522,6 +1574,11 @@ function Panel360({
   const [mensajes, setMensajes] = useState<Evento[]>([]);
   const [valor, setValor] = useState(String(Number(lead.valor_estimado) || ""));
   const [ocupado, setOcupado] = useState(false);
+  const [fechaCita, setFechaCita] = useState<string>(() => {
+    const m = new Date(Date.now() + 86400000);
+    return `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, "0")}-${String(m.getDate()).padStart(2, "0")}`;
+  });
+  const [horaCita, setHoraCita] = useState<string>("10:00");
   const [mensajeIA, setMensajeIA] = useState("");
   const [nota, setNota] = useState("");
   const [tipoNota, setTipoNota] = useState("Nota");
@@ -1662,20 +1719,21 @@ function Panel360({
   };
 
   const agendar = async () => {
-    const manana = new Date(Date.now() + 86400000);
-    const fecha = `${manana.getFullYear()}-${String(manana.getMonth() + 1).padStart(2, "0")}-${String(manana.getDate()).padStart(2, "0")}`;
+    if (!fechaCita) return toast.error("Elige la fecha de la cita.");
+    if (!horaCita) return toast.error("Elige la hora de la cita.");
     setOcupado(true);
     const { error } = await supabase.from("agenda_citas").insert({
       titulo: `Cita con ${lead.nombre || lead.telefono || "prospecto"}`,
       tipo: "cita",
       cliente: lead.nombre,
       telefono: lead.telefono || null,
-      fecha,
+      fecha: fechaCita,
+      hora: horaCita,
       notas: lead.interes,
     });
     setOcupado(false);
     if (error) return toast.error("No se pudo crear la cita.");
-    toast.success(`Cita creada para mañana (${fecha}). Ajusta la hora en la Agenda.`);
+    toast.success(`Cita agendada para el ${fechaCita} a las ${horaCita}.`);
     void guardarCampo({ etapa_embudo: "cita", atendido_por_humano: true });
   };
 
@@ -2078,6 +2136,16 @@ function Panel360({
             ))}
         </div>
         <div className="space-y-2 border-t border-glass-border bg-background p-3 text-sm">
+          <div className="grid grid-cols-2 gap-2">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+              Fecha de la cita
+              <input type="date" value={fechaCita} onChange={(e) => setFechaCita(e.target.value)} className="rounded-xl border border-glass-border bg-background px-2 py-2 text-base text-foreground" />
+            </label>
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+              Hora
+              <input type="time" value={horaCita} onChange={(e) => setHoraCita(e.target.value)} className="rounded-xl border border-glass-border bg-background px-2 py-2 text-base text-foreground" />
+            </label>
+          </div>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
