@@ -261,6 +261,8 @@ const TABS: Record<Sector, TabDef[]> = {
   comercio: [
     { id: "pos", label: "Punto de venta", icon: ShoppingCart, ayuda: "Escanea o digita un código EAN-13, cobra y mira cómo baja el stock." },
     { id: "inv", label: "Inventario", icon: Boxes, ayuda: "Revisa el stock bajo, pide a tu proveedor y crea productos nuevos." },
+    { id: "compras", label: "Compras a proveedor", icon: Package, ayuda: "Crea una orden de compra y recíbela con la factura: el stock sube y el gasto llega a Finanzas." },
+    { id: "cartera", label: "Cartera y crédito", icon: Handshake, ayuda: "Clientes con cupo de crédito: registra abonos, mira la mora y cobra por WhatsApp." },
     { id: "ped", label: "Pedidos y envíos", icon: Truck, ayuda: "Despacha pedidos a domicilio con la tarifa por zona ya configurada." },
     { id: "caja", label: "Caja", icon: Wallet, ayuda: "Abre el turno, registra gastos, cuenta el efectivo y revisa la diferencia." },
     { id: "ventas", label: "Ventas", icon: Receipt, ayuda: "Todas las ventas del día con su medio de pago." },
@@ -402,6 +404,8 @@ function Simulador({ sector, onSalir }: { sector: Sector; onSalir: () => void })
         {tab === "retomas" &&<RetomasAuto setProductos={setProductos} />}
         {tab === "cierre" && <CierreAuto productos={productos} setProductos={setProductos} vehSel={vehSel} registrarVenta={registrarVenta} onEtapa={avanzarProspecto} />}
         {tab === "taller" && <Taller registrarVenta={registrarVenta} />}
+        {tab === "compras" && <ComprasComercio productos={productos} setProductos={setProductos} setGastos={setGastos} />}
+        {tab === "cartera" && <CarteraComercio registrarVenta={registrarVenta} />}
         {tab === "testdrive" && <TestDriveAuto vehiculos={productos.filter((p) => p.cat === "Vehículo")} prospectos={prospectos} onEtapa={avanzarProspecto} />}
         {tab === "postventa" && <PostventaAuto registrarVenta={registrarVenta} />}
         {tab === "ped" && <Domicilios pedidos={pedidos} setPedidos={setPedidos} tarifas={tarifas} setTarifas={setTarifas} registrarVenta={registrarVenta} />}
@@ -585,6 +589,138 @@ function PostventaAuto({ registrarVenta }: { registrarVenta: (v: NuevaVenta) => 
           </div>
         </Modal>
       )}
+    </div>
+  );
+}
+
+/* ───────────── Cartera y compras (comercio) ───────────── */
+
+type Deudor = { id: string; nombre: string; doc: string; telefono: string; cupo: number; deuda: number; vence: string };
+
+function CarteraComercio({ registrarVenta }: { registrarVenta: (v: NuevaVenta) => void }) {
+  const [lista, setLista] = useState<Deudor[]>([
+    { id: "d1", nombre: "Constructora El Roble S.A.S.", doc: "NIT 900.451.220-1", telefono: "3105551020", cupo: 5000000, deuda: 1250000, vence: "En 12 días" },
+    { id: "d2", nombre: "Obras Hernández", doc: "NIT 901.332.118-4", telefono: "3207774411", cupo: 3000000, deuda: 2840000, vence: "Vencida hace 6 días" },
+    { id: "d3", nombre: "Carpintería La Esperanza", doc: "CC 71.552.093", telefono: "3014448899", cupo: 1500000, deuda: 0, vence: "Sin saldo" },
+  ]);
+  const [abono, setAbono] = useState<Record<string, string>>({});
+  const [medio, setMedio] = useState("Efectivo");
+  const [msg, setMsg] = useState("");
+
+  const pagar = (d: Deudor) => {
+    const v = Math.round(Number(abono[d.id] ?? 0));
+    if (!v || v <= 0) { setMsg("Escribe el valor del abono."); return; }
+    if (v > d.deuda) { setMsg("El abono no puede superar la deuda de " + cop(d.deuda) + "."); return; }
+    registrarVenta({ detalle: "Abono a cuenta por cobrar · " + d.nombre, total: v, pago: medio, tipo: "Abono", envio: 0 });
+    setLista((a) => a.map((x) => (x.id === d.id ? { ...x, deuda: x.deuda - v, vence: x.deuda - v === 0 ? "Sin saldo" : x.vence } : x)));
+    setAbono((a) => ({ ...a, [d.id]: "" }));
+    setMsg("Abono de " + cop(v) + " registrado: ya está en Ventas, Caja y Finanzas.");
+  };
+  const cobrar = (d: Deudor) => {
+    const t = `Hola, te escribimos de MultiComercio POS. Tu saldo pendiente es ${cop(d.deuda)}. ¿Cuándo podemos recibir tu pago? Gracias.`;
+    window.open("https://wa.me/57" + d.telefono + "?text=" + encodeURIComponent(t), "_blank", "noopener,noreferrer");
+  };
+  const total = lista.reduce((s, x) => s + x.deuda, 0);
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Tarjeta titulo="Cartera total" valor={cop(total)} />
+        <Tarjeta titulo="Clientes con saldo" valor={String(lista.filter((x) => x.deuda > 0).length)} />
+        <Tarjeta titulo="Cartera vencida" valor={cop(lista.filter((x) => x.vence.startsWith("Vencida")).reduce((s, x) => s + x.deuda, 0))} />
+      </div>
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <span>Medio del abono:</span>
+        <select value={medio} onChange={(e) => setMedio(e.target.value)} className="rounded-lg border border-border bg-background px-2 py-2 text-base">
+          {["Efectivo", "Nequi", "Transferencia", "Datáfono"].map((m) => <option key={m}>{m}</option>)}
+        </select>
+      </div>
+      {msg && <p className="rounded-lg bg-muted px-3 py-2 text-sm font-semibold">{msg}</p>}
+      {lista.map((d) => (
+        <div key={d.id} className="rounded-xl border border-border bg-card p-4">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <p className="font-bold">{d.nombre}</p>
+              <p className="text-sm text-muted-foreground">{d.doc} · Cupo {cop(d.cupo)} · Disponible {cop(d.cupo - d.deuda)}</p>
+              <p className="mt-1 text-sm">Debe <b>{cop(d.deuda)}</b> · {d.vence}</p>
+            </div>
+            <span className={"rounded-full px-3 py-1 text-xs font-bold " + (d.vence.startsWith("Vencida") ? "bg-destructive text-destructive-foreground" : "bg-muted")}>{d.vence.startsWith("Vencida") ? "En mora" : d.deuda > 0 ? "Al día" : "Sin deuda"}</span>
+          </div>
+          {d.deuda > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              <input inputMode="numeric" value={abono[d.id] ?? ""} onChange={(e) => setAbono((a) => ({ ...a, [d.id]: e.target.value.replace(/\D/g, "").slice(0, 9) }))} placeholder="Valor del abono" className="w-44 rounded-lg border border-border bg-background px-2 py-2 text-base" />
+              <button onClick={() => pagar(d)} className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-primary-foreground">Registrar abono</button>
+              <button onClick={() => cobrar(d)} className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-2 text-xs font-semibold"><MessageCircle className="h-3.5 w-3.5" /> Cobrar por WhatsApp</button>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ComprasComercio({ productos, setProductos, setGastos }: {
+  productos: Prod[]; setProductos: React.Dispatch<React.SetStateAction<Prod[]>>; setGastos: React.Dispatch<React.SetStateAction<Gasto[]>>;
+}) {
+  const fisicos = productos.filter((p) => p.cat !== "Servicio");
+  const [prov, setProv] = useState("Distribuidora Ferrosur");
+  const [pid, setPid] = useState(fisicos[0]?.id ?? "");
+  const [cant, setCant] = useState(10);
+  const [factura, setFactura] = useState("");
+  const [ordenes, setOrdenes] = useState<{ id: string; prov: string; pid: string; nombre: string; cant: number; costo: number; estado: "Pedida" | "Recibida" }[]>([]);
+  const [error, setError] = useState("");
+  const sel = fisicos.find((p) => p.id === pid);
+  const sugerencia = fisicos.filter((p) => p.stock <= p.minimo);
+
+  const crear = () => {
+    if (!sel || cant < 1) { setError("Elige un producto y una cantidad mayor que cero."); return; }
+    setError("");
+    setOrdenes((a) => [{ id: "oc" + Date.now(), prov, pid: sel.id, nombre: sel.nombre, cant, costo: sel.costo, estado: "Pedida" }, ...a]);
+  };
+  const recibir = (o: { id: string; pid: string; cant: number; costo: number; nombre: string; prov: string }) => {
+    if (!factura.trim()) { setError("Escribe el número de la factura del proveedor para recibir la mercancía."); return; }
+    setError("");
+    setProductos((a) => a.map((p) => (p.id === o.pid ? { ...p, stock: p.stock + o.cant } : p)));
+    setGastos((a) => [{ id: "g" + Date.now(), concepto: `Compra ${o.cant} x ${o.nombre} · ${o.prov} · Fact. ${factura.trim().slice(0, 20)}`, valor: o.cant * o.costo }, ...a]);
+    setOrdenes((a) => a.map((x) => (x.id === o.id ? { ...x, estado: "Recibida" } : x)));
+  };
+
+  return (
+    <div className="space-y-4">
+      {sugerencia.length > 0 && (
+        <div className="rounded-xl border border-border bg-muted p-4 text-sm">
+          <p className="flex items-center gap-2 font-bold"><AlertTriangle className="h-4 w-4" /> Sugerencia de reposición</p>
+          <p className="mt-1">{sugerencia.map((p) => `${p.nombre} (quedan ${p.stock}, mínimo ${p.minimo})`).join(" · ")}</p>
+        </div>
+      )}
+      <div className="rounded-xl border border-border bg-card p-4">
+        <h3 className="font-bold">Nueva orden de compra</h3>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          <select value={prov} onChange={(e) => setProv(e.target.value)} className="rounded-lg border border-border bg-background px-2 py-2 text-base">
+            {["Distribuidora Ferrosur", "Cementos del Valle", "Pinturas y Acabados S.A."].map((p) => <option key={p}>{p}</option>)}
+          </select>
+          <select value={pid} onChange={(e) => setPid(e.target.value)} className="rounded-lg border border-border bg-background px-2 py-2 text-base">
+            {fisicos.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+          </select>
+          <input type="number" min={1} max={9999} value={cant} onChange={(e) => setCant(Math.max(0, Math.min(9999, Number(e.target.value))))} className="rounded-lg border border-border bg-background px-2 py-2 text-base" />
+          <button onClick={crear} className="rounded-lg bg-primary px-3 py-2 text-sm font-bold text-primary-foreground">Crear orden</button>
+        </div>
+        {sel && <p className="mt-2 text-sm text-muted-foreground">Costo unitario {cop(sel.costo)} · Total {cop(sel.costo * cant)} · Stock actual {sel.stock}</p>}
+        <input value={factura} onChange={(e) => setFactura(e.target.value)} maxLength={20} placeholder="N.º de factura del proveedor (para recibir)" className="mt-2 w-full rounded-lg border border-border bg-background px-2 py-2 text-base sm:w-80" />
+        {error && <p className="mt-2 text-sm font-semibold text-destructive">{error}</p>}
+      </div>
+      {ordenes.map((o) => (
+        <div key={o.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-card p-4">
+          <div>
+            <p className="font-bold">{o.cant} x {o.nombre}</p>
+            <p className="text-sm text-muted-foreground">{o.prov} · {cop(o.cant * o.costo)}</p>
+          </div>
+          {o.estado === "Pedida"
+            ? <button onClick={() => recibir(o)} className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-primary-foreground">Recibir mercancía</button>
+            : <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold">Recibida: stock actualizado</span>}
+        </div>
+      ))}
+      {ordenes.length === 0 && <p className="text-sm text-muted-foreground">Aún no hay órdenes. Crea una y recíbela para ver subir el stock y el gasto en Finanzas.</p>}
     </div>
   );
 }
