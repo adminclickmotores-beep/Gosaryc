@@ -226,7 +226,7 @@ function TarjetaImpresion() {
     setMsg("Buscando la API local…");
     const est = await estadoApiLocal();
     if (!est.disponible) {
-      setMsg("La API local no está corriendo en este equipo (por ejemplo, si entraste desde el celular). Se usa la impresión normal del navegador, sin error.");
+      setMsg("Es normal: la impresión directa solo funciona con la app de escritorio de Windows abierta. Desde el navegador o el celular se usa la impresión normal, así que no necesitas hacer nada.");
       setProbando(null);
       return;
     }
