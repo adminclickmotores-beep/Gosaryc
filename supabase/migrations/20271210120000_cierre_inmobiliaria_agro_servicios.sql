@@ -138,6 +138,25 @@ BEGIN
   END LOOP;
 END $$;
 
+-- 4b. RLS por negocio (owner_id) para las tablas base, idempotente
+DO $$
+DECLARE
+  t text;
+BEGIN
+  FOREACH t IN ARRAY ARRAY['inm_propiedades', 'agr_lotes'] LOOP
+    EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', t);
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', t || '_cierre_leer', t);
+    EXECUTE format('CREATE POLICY %I ON public.%I FOR SELECT TO authenticated USING (owner_id = public.mi_negocio_id() AND public.es_personal())', t || '_cierre_leer', t);
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', t || '_cierre_crear', t);
+    EXECUTE format('CREATE POLICY %I ON public.%I FOR INSERT TO authenticated WITH CHECK (owner_id = public.mi_negocio_id() AND public.es_personal())', t || '_cierre_crear', t);
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', t || '_cierre_editar', t);
+    EXECUTE format('CREATE POLICY %I ON public.%I FOR UPDATE TO authenticated USING (owner_id = public.mi_negocio_id() AND public.es_personal()) WITH CHECK (owner_id = public.mi_negocio_id() AND public.es_personal())', t || '_cierre_editar', t);
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', t || '_cierre_solo_mi_negocio', t);
+    EXECUTE format('CREATE POLICY %I ON public.%I AS RESTRICTIVE FOR ALL TO authenticated USING (owner_id = public.mi_negocio_id()) WITH CHECK (owner_id = public.mi_negocio_id())', t || '_cierre_solo_mi_negocio', t);
+    EXECUTE format('REVOKE ALL ON public.%I FROM anon', t);
+  END LOOP;
+END $$;
+
 -- 5. Inmobiliaria: venta de inmueble, la comisión entra a Caja y Contabilidad
 CREATE OR REPLACE FUNCTION public.inm_vender(p_propiedad uuid, p_comprador text, p_telefono text, p_precio numeric, p_comision_pct numeric, p_metodo text)
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
