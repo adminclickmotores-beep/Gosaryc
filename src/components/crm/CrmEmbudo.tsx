@@ -320,7 +320,7 @@ export function CrmEmbudo() {
     const nuevoL: Lead = { ...l, ...completo };
     setLeads((ls) => ls.map((x) => (x.id === l.id ? nuevoL : x)));
     setAbierto((a) => (a && a.id === l.id ? nuevoL : a));
-    const { error } = await supabase.from("crm_leads").update(completo).eq("id", l.id);
+    const { error } = await supabase.from("crm_leads").update(completo).eq("id", l.id).eq("negocio_id", l.negocio_id);
     if (error) {
       toast.error("No se pudo guardar el cambio.");
       void cargar();
@@ -352,8 +352,9 @@ export function CrmEmbudo() {
   };
 
   const cambiarEstadoPqrs = async (id: string, nuevoEstado: "Abierta" | "En gestión" | "Resuelta") => {
+    if (!negocio?.id) return;
     setPqrsLista((lista) => lista.map((p) => (p.id === id ? { ...p, estado: nuevoEstado } : p)));
-    const { error } = await supabase.from("crm_pqrs").update({ estado: nuevoEstado }).eq("id", id);
+    const { error } = await supabase.from("crm_pqrs").update({ estado: nuevoEstado }).eq("id", id).eq("negocio_id", negocio.id);
     if (error) {
       toast.error("No se pudo actualizar el estado de la PQRS.");
       void cargar();
@@ -1544,7 +1545,12 @@ function Panel360({
         .limit(500);
       setChat(msgs ?? []);
       if (lead.telefono) {
-        const { data: av } = await supabase.from("whatsapp_avisos").select("detalle,created_at,chat_id").order("created_at", { ascending: false }).limit(40);
+        const { data: av } = await supabase
+          .from("whatsapp_avisos")
+          .select("detalle,created_at,chat_id")
+          .eq("owner_id", lead.owner_id)
+          .order("created_at", { ascending: false })
+          .limit(40);
         setMensajes(
           (av ?? [])
             .filter((a) => (a.chat_id ?? "").includes(lead.telefono))
@@ -1552,7 +1558,7 @@ function Panel360({
         );
       }
     })();
-  }, [lead.id, lead.negocio_id, lead.telefono]);
+  }, [lead.id, lead.negocio_id, lead.owner_id, lead.telefono]);
 
   const [vehiculosCrm, setVehiculosCrm] = useState<Array<{ id: string; marca: string; modelo: string; anio: number | null; tipo: string; condicion: string; precio: number }>>([]);
   const [asesor, setAsesor] = useState(String(extraDe(lead).asesor ?? ""));
@@ -1562,12 +1568,13 @@ function Panel360({
       const { data } = await supabase
         .from("vehiculos_inventario")
         .select("id,marca,modelo,anio,tipo,condicion,precio")
+        .eq("owner_id", lead.owner_id)
         .neq("estado", "vendido")
         .order("created_at", { ascending: false })
         .limit(300);
       setVehiculosCrm(data ?? []);
     })();
-  }, [tipoClave]);
+  }, [tipoClave, lead.owner_id]);
 
   const guardarVehiculo = (id: string) => {
     const v = vehiculosCrm.find((x) => x.id === id);
@@ -1589,7 +1596,7 @@ function Panel360({
   };
 
   const guardarCampo = async (cambios: Partial<Lead>) => {
-    const { error } = await supabase.from("crm_leads").update(cambios).eq("id", lead.id);
+    const { error } = await supabase.from("crm_leads").update(cambios).eq("id", lead.id).eq("negocio_id", lead.negocio_id);
     if (error) return toast.error("No se pudo guardar.");
     onCambio({ ...lead, ...cambios });
   };
@@ -1675,7 +1682,13 @@ function Panel360({
   const convertir = async () => {
     if (!lead.telefono) return toast.error("Agrega un teléfono al prospecto para convertirlo en cliente.");
     setOcupado(true);
-    const { data: ya } = await supabase.from("restaurante_clientes").select("id").eq("telefono", lead.telefono).limit(1).maybeSingle();
+    const { data: ya } = await supabase
+      .from("restaurante_clientes")
+      .select("id")
+      .eq("owner_id", lead.owner_id)
+      .eq("telefono", lead.telefono)
+      .limit(1)
+      .maybeSingle();
     if (!ya) {
       const { error } = await supabase.from("restaurante_clientes").insert({ nombre: lead.nombre || "Cliente CRM", telefono: lead.telefono, notas: lead.interes });
       if (error) {

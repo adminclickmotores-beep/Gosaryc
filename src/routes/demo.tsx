@@ -16,6 +16,10 @@ import type { DatosFactura } from "@/lib/exportes";
  * No importa ni llama al cliente de base de datos, auth, storage ni funciones.
  */
 export const Route = createFileRoute("/demo")({
+  validateSearch: (s: Record<string, unknown>): { sector?: string; tab?: string } => ({
+    sector: typeof s.sector === "string" ? s.sector : undefined,
+    tab: typeof s.tab === "string" ? s.tab : undefined,
+  }),
   head: () => ({ meta: [{ title: "Demo interactiva en vivo | Gosaryc" }] }),
   component: DemoPage,
 });

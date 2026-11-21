@@ -619,6 +619,7 @@ export function VacunasClinica() {
 const CATEGORIAS: Record<string, string> = { consulta: "Consulta", cirugia: "Cirugía", procedimiento: "Procedimiento", vacuna: "Vacunación", otro: "Otro" };
 
 export function ServiciosClinica() {
+  const { esAdmin, cargando: cargPermisos } = usePermisos();
   const [lista, setLista] = useState<Servicio[]>([]);
   const [cargando, setCargando] = useState(true);
   const vacio = { nombre: "", categoria: "consulta", precio: "", pct: "" };
@@ -633,6 +634,7 @@ export function ServiciosClinica() {
   }, [cargar]);
 
   const crear = async () => {
+    if (!esAdmin) return toast.error("Solo el dueño o administrador puede crear o editar servicios y honorarios.");
     if (!f.nombre.trim()) return toast.error("Escribe el nombre del servicio.");
     if (num(f.pct) < 0 || num(f.pct) > 100) return toast.error("La comisión debe estar entre 0 y 100%.");
     const { error } = await supabase.from("cl_servicios").insert({ nombre: f.nombre.trim(), categoria: f.categoria, precio: num(f.precio), comision_pct: num(f.pct) });
@@ -641,37 +643,47 @@ export function ServiciosClinica() {
     void cargar();
   };
   const alternar = async (s: Servicio) => {
+    if (!esAdmin) return toast.error("Solo el dueño o administrador puede modificar servicios.");
     const { error } = await supabase.from("cl_servicios").update({ activo: !s.activo }).eq("id", s.id);
     if (error) return toast.error("No se pudo actualizar.");
     void cargar();
   };
 
-  if (cargando) return <Cargando />;
+  if (cargando || cargPermisos) return <Cargando />;
   return (
     <div className="mx-auto max-w-4xl space-y-5">
       <Encabezado titulo="Servicios y tarifas" texto="Consultas, cirugías y procedimientos con su precio y el porcentaje de honorarios que gana el profesional." />
-      <GlassPanel className="space-y-3 p-4">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Campo etiqueta="Servicio"><input className={campo} value={f.nombre} onChange={(e) => setF((p) => ({ ...p, nombre: e.target.value }))} placeholder="Consulta general, esterilización..." /></Campo>
-          <Campo etiqueta="Tipo">
-            <select className={campo} value={f.categoria} onChange={(e) => setF((p) => ({ ...p, categoria: e.target.value }))}>
-              {Object.entries(CATEGORIAS).map(([k, v]) => (<option key={k} value={k}>{v}</option>))}
-            </select>
-          </Campo>
-          <Campo etiqueta="Precio"><input className={campo} inputMode="decimal" value={f.precio} onChange={(e) => setF((p) => ({ ...p, precio: e.target.value }))} /></Campo>
-          <Campo etiqueta="Honorarios del profesional (%)"><input className={campo} inputMode="decimal" value={f.pct} onChange={(e) => setF((p) => ({ ...p, pct: e.target.value }))} /></Campo>
-        </div>
-        <div><button type="button" className={boton} onClick={crear}>Agregar servicio</button></div>
-      </GlassPanel>
+      {!esAdmin && (
+        <GlassPanel className="p-4 text-sm text-muted-foreground">
+          Vista de solo lectura. Solo el dueño o administrador puede crear o editar servicios, precios y porcentajes de honorarios.
+        </GlassPanel>
+      )}
+      {esAdmin && (
+        <GlassPanel className="space-y-3 p-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Campo etiqueta="Servicio"><input className={campo} value={f.nombre} onChange={(e) => setF((p) => ({ ...p, nombre: e.target.value }))} placeholder="Consulta general, esterilización..." /></Campo>
+            <Campo etiqueta="Tipo">
+              <select className={campo} value={f.categoria} onChange={(e) => setF((p) => ({ ...p, categoria: e.target.value }))}>
+                {Object.entries(CATEGORIAS).map(([k, v]) => (<option key={k} value={k}>{v}</option>))}
+              </select>
+            </Campo>
+            <Campo etiqueta="Precio"><input className={campo} inputMode="decimal" value={f.precio} onChange={(e) => setF((p) => ({ ...p, precio: e.target.value }))} /></Campo>
+            <Campo etiqueta="Honorarios del profesional (%)"><input className={campo} inputMode="decimal" value={f.pct} onChange={(e) => setF((p) => ({ ...p, pct: e.target.value }))} /></Campo>
+          </div>
+          <div><button type="button" className={boton} onClick={crear}>Agregar servicio</button></div>
+        </GlassPanel>
+      )}
       <div className="space-y-2">
-        {lista.length === 0 && <p className="text-sm text-muted-foreground">Aún no hay servicios. Crea al menos la consulta para poder cobrar.</p>}
+        {lista.length === 0 && <p className="text-sm text-muted-foreground">{esAdmin ? "Aún no hay servicios. Crea al menos la consulta para poder cobrar." : "Aún no hay servicios registrados."}</p>}
         {lista.map((s) => (
           <GlassPanel key={s.id} className={`flex flex-wrap items-center justify-between gap-2 p-3 ${s.activo ? "" : "opacity-60"}`}>
             <div className="min-w-0">
               <p className="break-words font-medium text-foreground">{s.nombre}</p>
               <p className="text-xs text-muted-foreground">{CATEGORIAS[s.categoria] ?? s.categoria} · {dinero(s.precio)} · honorarios {s.comision_pct}%</p>
             </div>
-            <button type="button" className={botonSec} onClick={() => alternar(s)}>{s.activo ? "Desactivar" : "Activar"}</button>
+            {esAdmin && (
+              <button type="button" className={botonSec} onClick={() => alternar(s)}>{s.activo ? "Desactivar" : "Activar"}</button>
+            )}
           </GlassPanel>
         ))}
       </div>

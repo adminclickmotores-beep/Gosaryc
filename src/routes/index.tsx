@@ -446,7 +446,7 @@ function LandingPage() {
             </button>
             <Link to="/instalar" className="gs-muted hidden rounded-full px-4 py-2 text-sm font-medium sm:inline-flex">Descargar app</Link>
             {session ? (
-              <Link to={"/restaurante" as "/dashboard"} className="gs-cta inline-flex rounded-full px-5 py-2.5 text-sm">Ir a mi panel</Link>
+              <Link to="/restaurante" className="gs-cta inline-flex rounded-full px-5 py-2.5 text-sm">Ir a mi panel</Link>
             ) : (
               <Link to="/login" search={{ mode: "signin" }} className="gs-cta inline-flex rounded-full px-5 py-2.5 text-sm">Iniciar sesión</Link>
             )}
@@ -472,7 +472,7 @@ function LandingPage() {
               <Link to="/login" search={{ mode: "signup" }} className="gs-cta inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
                 Empieza 30 días gratis sin compromiso <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link to={"/demo" as "/"} className="gs-sec inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-bold">
+              <Link to="/demo" className="gs-sec inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-bold">
                 ▶ Probar Demo Interactiva en Vivo (Sin registro)
               </Link>
               <Link to="/instalar" className="gs-sec inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
@@ -617,9 +617,9 @@ function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <a href="/demo?sector=auto&tab=crm" className="gs-cta mt-8 inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
+              <Link to="/demo" search={{ sector: "auto", tab: "crm" }} className="gs-cta mt-8 inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
                 Probar Demo Interactiva del CRM <ArrowRight className="h-4 w-4" />
-              </a>
+              </Link>
             </Aparece>
             <Aparece retraso={0.1} className="relative min-w-0">
               <div className="absolute -inset-4 -z-10 rounded-[36px] opacity-20 blur-3xl" style={{ background: "linear-gradient(135deg, var(--gs-cobalto), var(--gs-esm))" }} />

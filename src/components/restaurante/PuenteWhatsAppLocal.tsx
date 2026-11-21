@@ -181,7 +181,7 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
   };
 
   const regenerarCodigo = async () => {
-    if (!puente) return;
+    if (!puente || !negocio?.id) return;
     setActualizando(true);
     const nuevoCodigo = generarCodigoEmparejamiento();
     const { data, error } = await supabase
@@ -192,6 +192,7 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
         updated_at: new Date().toISOString(),
       })
       .eq("id", puente.id)
+      .eq("business_id", negocio.id)
       .select("*")
       .maybeSingle();
     setActualizando(false);
@@ -204,7 +205,7 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
   };
 
   const alternarPiloto200 = async () => {
-    if (!puente) return;
+    if (!puente || !negocio?.id) return;
     setActualizando(true);
     const nuevoValor = !puente.auto_pilot_200;
     const { data, error } = await supabase
@@ -215,6 +216,7 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
         updated_at: new Date().toISOString(),
       })
       .eq("id", puente.id)
+      .eq("business_id", negocio.id)
       .select("*")
       .maybeSingle();
     setActualizando(false);
@@ -227,7 +229,7 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
   };
 
   const forzarSincronizacion = async () => {
-    if (!puente) return;
+    if (!puente || !negocio?.id) return;
     setActualizando(true);
     const { data, error } = await supabase
       .from("whatsapp_bridge")
@@ -236,6 +238,7 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
         updated_at: new Date().toISOString(),
       })
       .eq("id", puente.id)
+      .eq("business_id", negocio.id)
       .select("*")
       .maybeSingle();
     setActualizando(false);
@@ -295,7 +298,8 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
   };
 
   const marcarUrgenciaResuelta = async (id: string) => {
-    await supabase.from("crm_pqrs").update({ estado: "resuelto" }).eq("id", id);
+    if (!negocio?.id) return;
+    await supabase.from("crm_pqrs").update({ estado: "resuelto" }).eq("id", id).eq("negocio_id", negocio.id);
     setUrgencias((prev) => prev.filter((u) => u.id !== id));
     toast.success("Urgencia marcada como atendida");
   };
@@ -308,7 +312,7 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
   const mensajesHoy = puente && puente.mensajes_hoy_fecha === hoyIso ? puente.mensajes_hoy : 0;
 
   return (
-    <GlassPanel className="space-y-5 border border-slate-200/80 bg-white/80 p-5 text-slate-900 shadow-sm dark:border-white/10 dark:bg-slate-950/60 dark:text-slate-100">
+    <GlassPanel className="space-y-5 p-5 text-foreground">
       {/* Encabezado + Monitor de Salud en Vivo */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3">
@@ -316,10 +320,10 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
             <Laptop className="h-5 w-5" />
           </span>
           <div className="min-w-0">
-            <h3 className="font-display text-base font-semibold sm:text-lg">
+            <h3 className="font-display text-base font-semibold text-foreground sm:text-lg">
               Conexión Híbrida y Control Remoto (PC Local ↔ Web)
             </h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400">
+            <p className="text-xs text-muted-foreground">
               Sincroniza tu inventario, CRM, reglas y pedidos en tiempo real con la app local de WhatsApp IA en Windows.
             </p>
           </div>
@@ -362,26 +366,26 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
       </div>
 
       {cargando ? (
-        <p className="text-sm text-slate-500 dark:text-slate-400">Preparando puente de sincronización…</p>
+        <p className="text-sm text-muted-foreground">Preparando puente de sincronización…</p>
       ) : (
         <>
           {/* 1. Vinculación Rápida en 1 Paso */}
           <div className="grid gap-4 lg:grid-cols-12">
-            <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-white/10 dark:bg-white/5 lg:col-span-7">
+            <div className="space-y-3 rounded-xl border border-glass-border bg-background/50 p-4 lg:col-span-7">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                <p className="text-sm font-semibold text-foreground">
                   Vinculación Rápida en 1 Paso
                 </p>
-                <span className="rounded-md bg-slate-200/80 px-2 py-0.5 text-[11px] font-medium text-slate-700 dark:bg-white/10 dark:text-slate-300">
+                <span className="rounded-md bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                   Catálogo v{puente?.config_version ?? 1}
                 </span>
               </div>
-              <p className="text-xs text-slate-600 dark:text-slate-300">
+              <p className="text-xs text-muted-foreground">
                 Abre tu app local de WhatsApp IA en Windows y pega este código para vincular tu inventario, CRM y pedidos en tiempo real.
               </p>
 
               <div className="flex flex-wrap items-center gap-2">
-                <div className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-white px-4 py-2.5 font-mono text-xl font-bold tracking-[0.28em] text-emerald-700 shadow-xs dark:border-emerald-400/30 dark:bg-slate-900 dark:text-emerald-300">
+                <div className="flex items-center gap-2 rounded-xl border border-emerald-500/35 bg-card px-4 py-2.5 font-mono text-xl font-bold tracking-[0.28em] text-emerald-600 shadow-xs dark:border-emerald-400/30 dark:text-emerald-300">
                   {puente?.pairing_code ?? "------"}
                 </div>
                 <button
@@ -396,7 +400,7 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
                   type="button"
                   disabled={actualizando}
                   onClick={() => void regenerarCodigo()}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-60 dark:border-white/15 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-glass-border bg-card px-3 py-2.5 text-xs font-medium text-foreground transition hover:bg-muted disabled:opacity-60"
                 >
                   <RefreshCw className="h-3.5 w-3.5" />
                   Nuevo código
@@ -417,12 +421,12 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
 
             {/* 2. Métricas de Salud en Vivo + Sincronización Automática */}
             <div className="grid grid-cols-2 gap-3 lg:col-span-5">
-              <div className="flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/80 p-3.5 dark:border-white/10 dark:bg-white/5">
-                <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+              <div className="flex flex-col justify-between rounded-xl border border-glass-border bg-background/50 p-3.5">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Clock className="h-3.5 w-3.5 text-emerald-500" />
                   Última sincronización
                 </div>
-                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
+                <p className="mt-1 text-sm font-semibold text-foreground">
                   {formatearHoraCorta(puente?.last_sync_at ?? puente?.updated_at ?? null)}
                 </p>
                 <button
@@ -435,12 +439,12 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
                 </button>
               </div>
 
-              <div className="flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/80 p-3.5 dark:border-white/10 dark:bg-white/5">
-                <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+              <div className="flex flex-col justify-between rounded-xl border border-glass-border bg-background/50 p-3.5">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <MessageSquare className="h-3.5 w-3.5 text-sky-500" />
                   Resueltos hoy
                 </div>
-                <p className="mt-1 text-2xl font-bold tabular-nums text-slate-900 dark:text-white">
+                <p className="mt-1 text-2xl font-bold tabular-nums text-foreground">
                   {mensajesHoy}
                 </p>
                 <button
@@ -456,7 +460,7 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
             </div>
           </div>
 
-          <p className="flex items-center gap-2 rounded-lg border border-sky-500/25 bg-sky-500/10 px-3 py-2 text-xs text-sky-900 dark:text-sky-200">
+          <p className="flex items-center gap-2 rounded-lg border border-sky-500/30 bg-sky-500/10 px-3 py-2 text-xs text-foreground">
             <CheckCircle2 className="h-4 w-4 shrink-0 text-sky-600 dark:text-sky-400" />
             <span>
               <strong>Sincronización automática activa:</strong> cada vez que editas precios, platos, vehículos o preguntas frecuentes en la web, la versión de catálogo (v{puente?.config_version ?? 1}) sube sola y tu PC local descarga los cambios al instante.
@@ -464,15 +468,15 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
           </p>
 
           {/* 3. Toma de Control Remota (Solo Urgencias) */}
-          <div className="space-y-3 border-t border-slate-200/80 pt-4 dark:border-white/10">
+          <div className="space-y-3 border-t border-glass-border/70 pt-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <ShieldAlert className="h-4 w-4 text-amber-500" />
-                <h4 className="text-sm font-semibold text-slate-900 dark:text-white">
+                <h4 className="text-sm font-semibold text-foreground">
                   Toma de Control Remota (Solo Urgencias)
                 </h4>
               </div>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400">
+              <span className="text-[11px] text-muted-foreground">
                 Despacho instantáneo vía PC Local
               </span>
             </div>
@@ -482,14 +486,14 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
                 {urgencias.map((u) => (
                   <div
                     key={u.id}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs dark:border-amber-400/25 dark:bg-amber-500/15"
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs"
                   >
                     <div className="min-w-0 flex-1 space-y-0.5">
-                      <p className="flex items-center gap-1.5 font-semibold text-amber-900 dark:text-amber-200">
+                      <p className="flex items-center gap-1.5 font-semibold text-amber-700 dark:text-amber-300">
                         <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                         {u.tipo} · {u.telefono || "Sin teléfono"}
                       </p>
-                      <p className="break-words text-slate-700 dark:text-slate-200">
+                      <p className="break-words text-foreground/90">
                         {u.resumen || "El agente solicitó intervención humana urgente."}
                       </p>
                     </div>
@@ -506,7 +510,7 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
                       <button
                         type="button"
                         onClick={() => void marcarUrgenciaResuelta(u.id)}
-                        className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-700 hover:bg-slate-100 dark:border-white/15 dark:bg-white/10 dark:text-slate-200"
+                        className="rounded-lg border border-glass-border bg-card px-2.5 py-1.5 text-xs text-foreground hover:bg-muted"
                       >
                         Resolver
                       </button>
@@ -523,14 +527,14 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
                 placeholder="WhatsApp cliente (ej. 3001234567)"
                 value={telefonoUrgencia}
                 onChange={(e) => setTelefonoUrgencia(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 dark:border-white/15 dark:bg-slate-900/70 dark:text-white sm:col-span-4"
+                className="w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base text-foreground placeholder:text-muted-foreground/70 sm:col-span-4"
               />
               <input
                 type="text"
                 placeholder="Escribe tu respuesta urgente para que el PC local la envíe al instante…"
                 value={mensajeUrgencia}
                 onChange={(e) => setMensajeUrgencia(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 dark:border-white/15 dark:bg-slate-900/70 dark:text-white sm:col-span-6"
+                className="w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base text-foreground placeholder:text-muted-foreground/70 sm:col-span-6"
               />
               <button
                 type="button"
@@ -545,21 +549,21 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
 
             {outbox.length > 0 && (
               <div className="space-y-1.5 pt-1">
-                <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                   Últimos envíos remotos
                 </p>
                 <ul className="space-y-1.5">
                   {outbox.slice(0, 5).map((item) => (
                     <li
                       key={item.id}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200/80 bg-slate-50/70 px-3 py-2 text-xs dark:border-white/10 dark:bg-white/5"
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-glass-border bg-background/50 px-3 py-2 text-xs"
                     >
                       <div className="min-w-0 flex-1">
-                        <span className="font-mono font-medium text-slate-800 dark:text-slate-200">
+                        <span className="font-mono font-medium text-foreground">
                           {item.telefono}
                         </span>
-                        <span className="mx-1.5 text-slate-400">·</span>
-                        <span className="break-words text-slate-600 dark:text-slate-300">{item.mensaje}</span>
+                        <span className="mx-1.5 text-muted-foreground">·</span>
+                        <span className="break-words text-muted-foreground">{item.mensaje}</span>
                       </div>
                       <span
                         className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${

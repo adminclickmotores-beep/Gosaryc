@@ -5521,8 +5521,10 @@ export type Database = {
           total_gastado: number
           total_pedidos: number
           ultimo_pedido: string | null
+          owner_id: string | null
         }
         Insert: {
+          owner_id?: string | null
           created_at?: string
           direccion?: string | null
           id?: string
@@ -5537,6 +5539,7 @@ export type Database = {
           ultimo_pedido?: string | null
         }
         Update: {
+          owner_id?: string | null
           created_at?: string
           direccion?: string | null
           id?: string

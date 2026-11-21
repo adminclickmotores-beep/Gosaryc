@@ -265,7 +265,14 @@ const canalFalso = () => {
 export function crearClienteDemo() {
   return {
     from: (nombre: string) => new Consulta(nombre),
-    rpc: async () => ({ data: null, error: null }),
+    rpc: async (fn?: string) => {
+      if (fn === "mi_acceso") return { data: { admin: true, modulos: [] }, error: null };
+      if (fn === "mi_negocio_id") return { data: DEMO_NEGOCIO_ID, error: null };
+      if (fn === "es_superadmin" || fn === "es_soporte_plataforma") return { data: false, error: null };
+      if (fn === "licencia_activa_para") return { data: true, error: null };
+      if (fn === "mi_licencia_vigente") return { data: { activa: true, plan: "demo" }, error: null };
+      return { data: null, error: null };
+    },
     auth: {
       getSession: async () => ({ data: { session: sesionFalsa() }, error: null }),
       getUser: async () => ({ data: { user: sesionFalsa().user }, error: null }),

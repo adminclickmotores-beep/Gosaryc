@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { prefetchOrgId } from "@/hooks/use-org";
+import { prefetchOrgId } from "@/lib/org-cache";
 
 interface AuthCtx {
   session: Session | null;
