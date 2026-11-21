@@ -9,7 +9,8 @@ export type GuiaNegocio = {
 
 type TiposNuevos =
   | "ferreteria" | "supermercado" | "carniceria" | "licorera" | "floristeria" | "optica"
-  | "guarderia" | "alquiler_vehiculos" | "seguridad_aseo" | "ganaderia" | "fundacion" | "iglesia" | "parqueadero";
+  | "guarderia" | "alquiler_vehiculos" | "seguridad_aseo" | "ganaderia" | "fundacion" | "iglesia" | "parqueadero"
+  | "compraventa" | "distribuidora" | "taller_motos";
 
 const GUIAS_BASE: Record<Exclude<TipoNegocioClave, TiposNuevos>, GuiaNegocio> = {
   restaurante: {
@@ -429,6 +430,30 @@ GUIAS_NEGOCIO.parqueadero = {
     { titulo: "Registra el ingreso", texto: "En “Turnos y cobro por horas” anota la placa y la tarifa: el tiempo corre solo." },
     { titulo: "Cobra al salir", texto: "El programa calcula las horas por la tarifa y el pago entra a Caja y Contabilidad." },
     { titulo: "Factura si te la piden", texto: "Emite la factura con consecutivo desde el módulo de Facturación. Si tienes DIAN activa, sale con CUFE y QR oficial; si no, pídela por WhatsApp." },
+  ],
+};
+GUIAS_NEGOCIO.compraventa = {
+  frase: "Cada artículo avaluado, cada contrato al día.",
+  pasos: [
+    { titulo: "Registra el empeño", texto: "En “Empeños y contratos” anota el artículo, el avalúo, el monto prestado, el interés y la fecha límite." },
+    { titulo: "Cobra intereses y retiros", texto: "En “Retiros y renovaciones” registra cada pago; entra a Caja y Contabilidad." },
+    { titulo: "Vende lo vencido", texto: "Pasa los artículos no retirados a “Artículos en venta” con su precio." },
+  ],
+};
+GUIAS_NEGOCIO.distribuidora = {
+  frase: "Cada ruta cumplida, cada factura cobrada.",
+  pasos: [
+    { titulo: "Carga tus clientes y precios", texto: "Registra clientes y sus listas de precios mayoristas." },
+    { titulo: "Toma los pedidos", texto: "En “Pedidos de clientes” anota lo que pide cada negocio y su fecha de entrega." },
+    { titulo: "Despacha y cobra", texto: "En “Rutas y despachos” asigna vendedor y vehículo; controla lo pendiente en “Cartera y cobranza”." },
+  ],
+};
+GUIAS_NEGOCIO.taller_motos = {
+  frase: "Cada moto lista, cada cliente de vuelta.",
+  pasos: [
+    { titulo: "Abre la orden", texto: "En “Órdenes de trabajo” anota placa, kilometraje, falla y mecánico." },
+    { titulo: "Controla repuestos", texto: "En “Repuestos y accesorios” lleva el stock con mínimo y proveedor." },
+    { titulo: "Avisa los vencimientos", texto: "Con “Mantenimientos programados” y “SOAT y tecnomecánica” recuerda al cliente por WhatsApp." },
   ],
 };
 

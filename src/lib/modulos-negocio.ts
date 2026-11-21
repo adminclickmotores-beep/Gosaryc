@@ -120,7 +120,10 @@ export type TipoNegocioClave =
   | "ganaderia"
   | "fundacion"
   | "iglesia"
-  | "parqueadero";
+  | "parqueadero"
+  | "compraventa"
+  | "distribuidora"
+  | "taller_motos";
 
 export type ModuloNegocio = {
   id: string;
@@ -174,6 +177,9 @@ const FAMILIA_POR_CLAVE: Record<TipoNegocioClave, { familia: string; acento: str
   alquiler_vehiculos: { familia: "Automotriz", acento: "#fbbf24" },
   transporte: { familia: "Automotriz y transporte", acento: "#fbbf24" },
   parqueadero: { familia: "Automotriz y transporte", acento: "#fbbf24" },
+  taller_motos: { familia: "Automotriz y taller", acento: "#fbbf24" },
+  compraventa: { familia: "Comercio", acento: "#60a5fa" },
+  distribuidora: { familia: "Comercio", acento: "#60a5fa" },
   construccion: { familia: "Construcción y agro", acento: "#a3e635" },
   agro: { familia: "Construcción y agro", acento: "#a3e635" },
   inmobiliaria: { familia: "Construcción y agro", acento: "#a3e635" },
@@ -1069,6 +1075,49 @@ TIPOS_NEGOCIO.push({
   ],
 });
 
+// ---- Sectores comerciales adicionales: compraventa/empeño, distribuidora mayorista y taller de motos ----
+TIPOS_NEGOCIO.push(
+  {
+    clave: "compraventa",
+    etiqueta: "Compraventa / empeño",
+    panel: "Compraventa",
+    usaPedidos: false,
+    modulos: [
+      m("empenos_cv", "Empeños y contratos", "Artículo recibido, avalúo, monto prestado, interés mensual y fecha límite de retiro.", Gem),
+      m("articulos_cv", "Artículos en venta", "Artículos vencidos o comprados, con precio de venta, estado y ubicación.", Package),
+      m("compras_cv", "Compras a particulares", "Compra directa de artículos con documento del vendedor y soporte.", Coins),
+      m("retiros_cv", "Retiros y renovaciones", "Pagos de intereses, renovaciones y retiro del artículo por el cliente.", ClipboardList),
+      CLIENTES, FACTURAS, PAGOS, CAJA, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "distribuidora",
+    etiqueta: "Distribuidora / venta mayorista",
+    panel: "Distribución",
+    usaPedidos: false,
+    modulos: [
+      m("pedidos_dist", "Pedidos de clientes", "Pedidos de tiendas y negocios por ruta, con cantidades por referencia y fecha de entrega.", Boxes),
+      m("rutas_dist", "Rutas y despachos", "Vendedor, vehículo, zona y visitas del día con entrega y cobro.", Truck),
+      m("listas_dist", "Listas de precios por cliente", "Precios mayoristas, descuentos por volumen y condiciones de pago.", Tag),
+      m("cartera_dist", "Cartera y cobranza", "Facturas a crédito por cliente, vencimientos y abonos.", Coins),
+      CLIENTES, FACTURAS, PAGOS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+  {
+    clave: "taller_motos",
+    etiqueta: "Taller de motos",
+    panel: "Taller de motos",
+    usaPedidos: false,
+    modulos: [
+      m("ordenes_moto", "Órdenes de trabajo", "Placa, cilindraje, kilometraje, falla reportada, mecánico y estado de la reparación.", Wrench),
+      m("repuestos_moto", "Repuestos y accesorios", "Inventario con stock mínimo, proveedor y precio de venta.", Boxes),
+      m("mantenimientos_moto", "Mantenimientos programados", "Próximo cambio de aceite, kit de arrastre y revisión con aviso por WhatsApp.", Bike),
+      m("papeles_moto", "SOAT y tecnomecánica", "Vencimientos de papeles de cada moto con recordatorio al cliente.", ClipboardList),
+      CLIENTES, FACTURAS, PAGOS, CAJA, PROVEEDORES, EMPLEADOS, METAS, FINANZAS,
+    ],
+  },
+);
+
 // ---- Módulo profesional de Veterinaria y Salud (consultorio, clínica, odontología) ----
 // Reemplaza los módulos genéricos (pacientes, historia, fórmulas, vacunas, agenda, insumos) por los propios con
 // tablas tipadas. Si un tipo o un módulo no existe, simplemente no se toca (nunca falla el arranque).
@@ -1352,6 +1401,9 @@ export function resolverTipoNegocio(valor: string | null | undefined): TipoNegoc
   if (!t) return por("restaurante");
   const directo = TIPOS_NEGOCIO.find((x) => x.clave === t);
   if (directo) return directo;
+  if (/compraventa|compra venta|empeno|casa de empenos|montepio/.test(t)) return por("compraventa");
+  if (/distribuidora|mayorista|distribucion|venta al por mayor/.test(t)) return por("distribuidora");
+  if (/taller de motos|mecanica de motos|motos|motocicleta/.test(t)) return por("taller_motos");
   if (/ferreter|materiales de construccion|tornillo/.test(t)) return por("ferreteria");
   if (/supermercado|autoservicio|abarrote|minimercado/.test(t)) return por("supermercado");
   if (/carnicer|fruver|frutas y verduras|verduler|pescader|charcuter/.test(t)) return por("carniceria");
