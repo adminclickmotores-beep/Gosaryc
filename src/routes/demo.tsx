@@ -22,7 +22,7 @@ const CLAVE = "gosaryc_demo_sector";
 type Sector = "auto" | "rest" | "comercio";
 type Prod = {
   id: string; nombre: string; precio: number; stock: number; ean: string; ico: string; minimo: number;
-  cat: string; costo: number; ficha?: [string, string][];
+  cat: string; costo: number; ficha?: [string, string][]; opciones?: string[]; terminos?: string[];
 };
 type Empleado = { id: string; nombre: string; cargo: string; salario: number; horasExtra: number; comisiones: number };
 type Prospecto = {
@@ -52,10 +52,10 @@ const ESCENARIOS: Record<Sector, {
     titulo: "Concesionario y Taller Automotriz", negocio: "AutoElite Colombia", icono: Car, costoPct: 0.88,
     descripcion: "Inventario de autos y motos con ficha, cotización con financiación, separación y entrega, taller, CRM y comisiones.",
     productos: [
-      { id: "a1", nombre: "Renault Kwid 2023", precio: 42900000, costo: 38500000, stock: 2, ean: "7701234500011", ico: "car", minimo: 1, cat: "Vehículo", ficha: [["Año", "2023"], ["Kilometraje", "18.400 km"], ["Color", "Blanco glaciar"], ["Combustible", "Gasolina"], ["Placa", "KLM 482"], ["Estado", "Peritaje aprobado"]] },
-      { id: "a2", nombre: "Mazda CX-30 2022", precio: 98500000, costo: 90200000, stock: 1, ean: "7701234500028", ico: "car", minimo: 1, cat: "Vehículo", ficha: [["Año", "2022"], ["Kilometraje", "31.200 km"], ["Color", "Gris acero"], ["Combustible", "Gasolina"], ["Placa", "PQR 917"], ["Estado", "Garantía vigente"]] },
-      { id: "a3", nombre: "Pulsar NS200 2024", precio: 12800000, costo: 11300000, stock: 5, ean: "7701234500035", ico: "moto", minimo: 2, cat: "Vehículo", ficha: [["Año", "2024"], ["Kilometraje", "0 km"], ["Color", "Negro mate"], ["Cilindraje", "200 cc"], ["Placa", "Por matricular"], ["Estado", "Nueva"]] },
-      { id: "a4", nombre: "Yamaha XTZ 150", precio: 11500000, costo: 10100000, stock: 4, ean: "7701234500042", ico: "moto", minimo: 2, cat: "Vehículo", ficha: [["Año", "2023"], ["Kilometraje", "6.800 km"], ["Color", "Azul"], ["Cilindraje", "150 cc"], ["Placa", "XTZ 34D"], ["Estado", "Revisada"]] },
+      { id: "a1", nombre: "Mazda CX-30 Grand Touring 2024", precio: 108500000, costo: 96000000, stock: 1, ean: "7701234500011", ico: "car", minimo: 1, cat: "Vehículo", ficha: [["Año", "2024"], ["Condición", "Usado"], ["Kilometraje", "18.500 km"], ["Color", "Rojo Diamante"], ["Placa", "KLM-482"], ["Estado", "Disponible"]] },
+      { id: "a2", nombre: "Renault Duster Iconic 1.3 Turbo 2026", precio: 102900000, costo: 91000000, stock: 1, ean: "7701234500028", ico: "car", minimo: 1, cat: "Vehículo", ficha: [["Año", "2026"], ["Condición", "Nuevo"], ["Kilometraje", "0 km"], ["Color", "Gris Estrella"], ["VIN", "9FBHSR...8921"], ["Estado", "Disponible"]] },
+      { id: "a3", nombre: "Yamaha MT-03 ABS 2026", precio: 29500000, costo: 25800000, stock: 0, ean: "7701234500035", ico: "moto", minimo: 0, cat: "Vehículo", ficha: [["Año", "2026"], ["Condición", "Nueva"], ["Kilometraje", "0 km"], ["Color", "Azul Racing"], ["VIN", "JYARJ2...4410"], ["Estado", "Separado (abono $2.000.000)"]] },
+      { id: "a4", nombre: "Chevrolet Onix Turbo RS 2023", precio: 64900000, costo: 56500000, stock: 1, ean: "7701234500042", ico: "car", minimo: 1, cat: "Vehículo", ficha: [["Año", "2023"], ["Condición", "Usado"], ["Kilometraje", "32.000 km"], ["Color", "Blanco"], ["Placa", "JHT-915"], ["Estado", "Disponible"]] },
     ],
     empleados: [
       { id: "e1", nombre: "Carlos Mejía", cargo: "Asesor comercial", salario: 2200000, horasExtra: 4, comisiones: 1450000 },
@@ -63,7 +63,7 @@ const ESCENARIOS: Record<Sector, {
       { id: "e3", nombre: "Andrés Pardo", cargo: "Mecánico", salario: 1750905, horasExtra: 10, comisiones: 320000 },
     ],
     preguntas: [
-      "Hola, ¿tienen disponible la NS200 y cuánto piden de inicial?", "Quiero cotizar el Mazda CX-30 a crédito",
+      "Hola, ¿tienen disponible la Yamaha MT-03 y cuánto piden de inicial?", "Quiero cotizar el Mazda CX-30 a crédito",
       "¿Reciben mi carro en retoma?", "¿Puedo hacer test drive esta semana?",
       "Necesito cita en el taller para alineación", "Tengo un reclamo con mi pedido",
     ],
@@ -72,11 +72,11 @@ const ESCENARIOS: Record<Sector, {
     titulo: "Restaurante y Comidas Rápidas", negocio: "Sabores del Valle", icono: UtensilsCrossed, costoPct: 0.38,
     descripcion: "Platos con foto y acompañantes, mesas, domicilios con tarifa por zona, caja, ventas, finanzas y pedidos por WhatsApp.",
     productos: [
-      { id: "r1", nombre: "Chuleta de cerdo", precio: 24000, costo: 9500, stock: 30, ean: "7702345600011", ico: "carne", minimo: 5, cat: "Plato" },
-      { id: "r2", nombre: "Alitas BBQ x8", precio: 22000, costo: 8200, stock: 25, ean: "7702345600028", ico: "fuego", minimo: 5, cat: "Plato" },
-      { id: "r3", nombre: "Hamburguesa artesanal", precio: 19500, costo: 7000, stock: 40, ean: "7702345600035", ico: "sandwich", minimo: 8, cat: "Plato" },
-      { id: "r4", nombre: "Combo familiar", precio: 69000, costo: 26000, stock: 12, ean: "7702345600042", ico: "pizza", minimo: 3, cat: "Plato" },
-      { id: "r5", nombre: "Limonada de coco", precio: 8500, costo: 2200, stock: 50, ean: "7702345600059", ico: "cafe", minimo: 10, cat: "Bebida" },
+      { id: "r1", nombre: "Churrasco Angus 350g", precio: 48000, costo: 19000, stock: 30, ean: "7702345600011", ico: "carne", minimo: 5, cat: "Plato", opciones: ["Papa criolla", "Papas a la francesa", "Ensalada de la casa"], terminos: ["Azul", "Medio", "Tres cuartos", "Bien asado"] },
+      { id: "r2", nombre: "Salmón en Salsa de Maracuyá", precio: 52000, costo: 21000, stock: 25, ean: "7702345600028", ico: "fuego", minimo: 5, cat: "Plato", opciones: ["Puré rústico", "Verduras salteadas", "Arroz con coco"] },
+      { id: "r3", nombre: "Costillas BBQ Ahumadas", precio: 44000, costo: 17000, stock: 40, ean: "7702345600035", ico: "sandwich", minimo: 8, cat: "Plato", opciones: ["Papas cascos", "Yuca frita", "Mazorca dulce"] },
+      { id: "r4", nombre: "Limonada de Coco Natural", precio: 11000, costo: 2800, stock: 50, ean: "7702345600042", ico: "cafe", minimo: 10, cat: "Bebida" },
+      { id: "r5", nombre: "Jugo Natural en Agua/Leche", precio: 8500, costo: 2200, stock: 50, ean: "7702345600059", ico: "cafe", minimo: 10, cat: "Bebida" },
     ],
     empleados: [
       { id: "e1", nombre: "María Gómez", cargo: "Cocinera", salario: 1900000, horasExtra: 8, comisiones: 0 },
@@ -84,7 +84,7 @@ const ESCENARIOS: Record<Sector, {
       { id: "e3", nombre: "Sandra Lugo", cargo: "Cajera", salario: 1850000, horasExtra: 2, comisiones: 150000 },
     ],
     preguntas: [
-      "Quiero pedir 2 hamburguesas a domicilio", "¿Cuánto cuesta el envío a Laureles?", "¿Tienen combo familiar?",
+      "Quiero pedir 2 churrascos a domicilio", "¿Cuánto cuesta el envío a la Zona Norte?", "¿Tienen salmón?",
       "¿A qué hora cierran?", "¿Qué medios de pago aceptan?", "Tengo un reclamo con mi pedido",
     ],
   },
@@ -92,11 +92,11 @@ const ESCENARIOS: Record<Sector, {
     titulo: "Ferretería / Minimercado", negocio: "MultiComercio POS", icono: ShoppingCart, costoPct: 0.68,
     descripcion: "Productos con imagen y código de barras EAN-13, escáner, inventario con proveedor, caja, ventas, envíos y finanzas.",
     productos: [
-      { id: "c1", nombre: "Taladro percutor 600W", precio: 189000, costo: 128000, stock: 6, ean: "7703456700010", ico: "martillo", minimo: 2, cat: "Ferretería" },
-      { id: "c2", nombre: "Cemento gris 50 kg", precio: 34500, costo: 27000, stock: 3, ean: "7703456700027", ico: "caja", minimo: 5, cat: "Ferretería" },
-      { id: "c3", nombre: "Pintura blanca galón", precio: 78000, costo: 52000, stock: 14, ean: "7703456700034", ico: "pintura", minimo: 4, cat: "Ferretería" },
-      { id: "c4", nombre: "Arroz Diana 5 lb", precio: 19800, costo: 15200, stock: 40, ean: "7703456700041", ico: "trigo", minimo: 10, cat: "Mercado" },
-      { id: "c5", nombre: "Aceite 3 L", precio: 31500, costo: 24800, stock: 2, ean: "7703456700058", ico: "gota", minimo: 6, cat: "Mercado" },
+      { id: "c1", nombre: "Taladro Percutor DeWalt 1/2\" 700W", precio: 329000, costo: 245000, stock: 8, ean: "7701001001012", ico: "martillo", minimo: 2, cat: "Ferretería" },
+      { id: "c2", nombre: "Cemento Gris Uso General 50 kg", precio: 33500, costo: 27500, stock: 45, ean: "7701001001029", ico: "caja", minimo: 10, cat: "Ferretería" },
+      { id: "c3", nombre: "Cable Eléctrico AWG 12 (metro · rollo 100 m $245.000)", precio: 2800, costo: 2000, stock: 320, ean: "7701001001036", ico: "llave", minimo: 50, cat: "Ferretería" },
+      { id: "c4", nombre: "Pintura Vinilo Tipo 1 Blanco Galón", precio: 56000, costo: 42000, stock: 3, ean: "7701001001043", ico: "pintura", minimo: 4, cat: "Ferretería" },
+      { id: "c5", nombre: "Servicio de Instalación / Mantenimiento Técnico", precio: 65000, costo: 0, stock: 9999, ean: "SERV-01", ico: "llave", minimo: 0, cat: "Servicio" },
     ],
     empleados: [
       { id: "e1", nombre: "Pedro Castaño", cargo: "Vendedor", salario: 1750905, horasExtra: 6, comisiones: 420000 },
@@ -121,6 +121,9 @@ const ACOMPANANTES: { n: string; v: number }[] = [
 ];
 
 const TARIFAS_INICIALES: Tarifas = { Centro: 3000, Laureles: 5000, "El Poblado": 7000, Envigado: 9000, "Belén": 6000 };
+const TARIFAS_RESTAURANTE: Tarifas = { "Zona Norte / Centro": 5000, "Zona Sur / Oeste": 7000, "Periferia / Parcelaciones": 10000 };
+const MESAS_ESTADO = ["Mesa 1 · Ocupada ($107.000)", "Mesa 2 · Libre", "Mesa 3 · Cuenta pedida ($92.000)", "Mesa 4 · Libre", "Mesa 5 · Libre", "Mesa 6 · Libre"];
+const CLIENTES_FRECUENTES = ["Consumidor Final (222222222222) — Contado", "Constructora El Roble S.A.S. (NIT 900.451.220-1) — Cupo $5.000.000 · usado $1.250.000"];
 const REPARTIDORES = ["Camilo", "Yurley", "Dani"];
 const ESTADOS_PEDIDO = ["Nuevo", "En preparación", "En camino", "Entregado"];
 
@@ -264,27 +267,26 @@ const TABS: Record<Sector, TabDef[]> = {
 
 function ventasIniciales(sector: Sector): Venta[] {
   if (sector === "rest") return [
-    { id: "s1", hora: "11:42", detalle: "2 x Hamburguesa artesanal, 1 x Limonada de coco", total: 47500, pago: "Nequi", tipo: "Mesa 3", envio: 0 },
-    { id: "s2", hora: "12:10", detalle: "1 x Combo familiar", total: 74000, pago: "Efectivo", tipo: "Domicilio", envio: 5000 },
-    { id: "s3", hora: "12:36", detalle: "2 x Alitas BBQ x8", total: 44000, pago: "Datáfono", tipo: "Recoger", envio: 0 },
+    { id: "s1", hora: "11:42", detalle: "1 x Salmón en Salsa de Maracuyá, 1 x Limonada de Coco Natural", total: 68000, pago: "Nequi", tipo: "Domicilio", envio: 5000 },
+    { id: "s2", hora: "12:10", detalle: "2 x Costillas BBQ Ahumadas, 2 x Jugo Natural en Agua/Leche", total: 105000, pago: "Datáfono", tipo: "Recoger", envio: 0 },
   ];
   if (sector === "comercio") return [
-    { id: "s1", hora: "08:20", detalle: "1 x Taladro percutor 600W", total: 189000, pago: "Datáfono", tipo: "Mostrador", envio: 0 },
-    { id: "s2", hora: "09:05", detalle: "3 x Arroz Diana 5 lb", total: 59400, pago: "Efectivo", tipo: "Mostrador", envio: 0 },
-    { id: "s3", hora: "10:30", detalle: "2 x Pintura blanca galón", total: 156000, pago: "Nequi", tipo: "Mostrador", envio: 0 },
+    { id: "s1", hora: "08:20", detalle: "1 x Taladro Percutor DeWalt 1/2\" 700W", total: 329000, pago: "Datáfono", tipo: "Mostrador", envio: 0 },
+    { id: "s2", hora: "09:05", detalle: "3 x Cemento Gris Uso General 50 kg", total: 100500, pago: "Efectivo", tipo: "Mostrador", envio: 0 },
+    { id: "s3", hora: "10:30", detalle: "1 x Pintura Vinilo Tipo 1 Blanco Galón", total: 56000, pago: "Nequi", tipo: "Mostrador", envio: 0 },
   ];
   return [
-    { id: "s1", hora: "09:15", detalle: "Revisión y alineación · KLM 482", total: 180000, pago: "Datáfono", tipo: "Taller", envio: 0 },
-    { id: "s2", hora: "10:40", detalle: "Yamaha XTZ 150 · entrega a Julián Vega", total: 11500000, pago: "Transferencia", tipo: "Vehículo", envio: 0 },
+    { id: "s1", hora: "09:15", detalle: "Revisión y alineación · KLM-482", total: 180000, pago: "Datáfono", tipo: "Taller", envio: 0 },
   ];
 }
 
 function pedidosIniciales(sector: Sector): Pedido[] {
   if (sector === "rest") return [
-    { id: "P101", cliente: "Natalia Ruiz", canal: "WhatsApp", barrio: "Laureles", direccion: "Cra 70 #44-12", envio: 5000, items: "2 x Alitas BBQ x8", total: 49000, estado: "En camino", repartidor: "Camilo", cobrado: false },
+    { id: "P101", cliente: "Natalia Ruiz", canal: "WhatsApp", barrio: "Zona Sur / Oeste", direccion: "Cra 70 #44-12", envio: 7000, items: "1 x Costillas BBQ Ahumadas, 1 x Limonada de Coco Natural", total: 62000, estado: "En camino", repartidor: "Camilo", cobrado: false },
+    { id: "P102", cliente: "Mateo Salazar", canal: "WhatsApp IA", barrio: "Zona Norte / Centro", direccion: "Cl 10 #5-30", envio: 5000, items: "2 x Churrasco Angus 350g", total: 101000, estado: "En preparación", repartidor: "", cobrado: false },
   ];
   if (sector === "comercio") return [
-    { id: "P101", cliente: "Obras Hernández", canal: "WhatsApp", barrio: "Envigado", direccion: "Cl 37 Sur #30-15", envio: 9000, items: "4 x Cemento gris 50 kg", total: 147000, estado: "Nuevo", repartidor: "", cobrado: false },
+    { id: "P101", cliente: "Obras Hernández", canal: "WhatsApp", barrio: "Envigado", direccion: "Cl 37 Sur #30-15", envio: 9000, items: "4 x Cemento Gris Uso General 50 kg", total: 143000, estado: "Nuevo", repartidor: "", cobrado: false },
   ];
   return [];
 }
@@ -296,20 +298,22 @@ function Simulador({ sector, onSalir }: { sector: Sector; onSalir: () => void })
   const [tab, setTab] = useState<string>(tabs[0].id);
   const [productos, setProductos] = useState<Prod[]>(esc.productos);
   const [ventas, setVentas] = useState<Venta[]>(() => ventasIniciales(sector));
-  const [gastos, setGastos] = useState<Gasto[]>([{ id: "g1", concepto: "Servicios públicos", valor: 85000 }]);
+  const [gastos, setGastos] = useState<Gasto[]>(sector === "rest"
+    ? [{ id: "g1", concepto: "Compra de hielo y limones", valor: 18000 }]
+    : [{ id: "g1", concepto: "Servicios públicos", valor: 85000 }]);
   const [pedidos, setPedidos] = useState<Pedido[]>(() => pedidosIniciales(sector));
-  const [tarifas, setTarifas] = useState<Tarifas>(TARIFAS_INICIALES);
+  const [tarifas, setTarifas] = useState<Tarifas>(sector === "rest" ? TARIFAS_RESTAURANTE : TARIFAS_INICIALES);
   const [vehSel, setVehSel] = useState<string>(esc.productos[0].id);
   const [prospectos, setProspectos] = useState<Prospecto[]>([
-    { id: "p0", nombre: "Julián Vega", interes: esc.productos[0].nombre, nivel: "TIBIO", etapa: "Contactado", telefono: "310 555 0142", origen: "Facebook", valor: esc.productos[0].precio, proximo: "Llamar mañana 10:00 a. m.", notas: "Quiere financiar a 60 meses." },
-    { id: "p1", nombre: "Marcela Torres", interes: esc.productos[1].nombre, nivel: "CALIENTE", etapa: "Negociando", telefono: "300 555 0177", origen: "Referido", valor: esc.productos[1].precio, proximo: "Enviar cotización final", notas: "Ofrece su Spark 2019 en retoma." },
-    { id: "p2", nombre: "Andrea Cano", interes: esc.productos[2].nombre, nivel: "CALIENTE", etapa: "Prueba de manejo", telefono: "315 555 0108", origen: "WhatsApp", valor: esc.productos[2].precio, proximo: "Prueba el sábado 9:00 a. m.", notas: "" },
-    { id: "p3", nombre: "Felipe Duque", interes: esc.productos[3].nombre, nivel: "FRIO", etapa: "Nuevo", telefono: "320 555 0166", origen: "Vitrina", valor: esc.productos[3].precio, proximo: "Primer contacto", notas: "" },
+    { id: "p0", nombre: "Carlos Mendoza", interes: "Mazda CX-30 2024", nivel: "CALIENTE", etapa: "Nuevo", telefono: "315 482 9102", origen: "WhatsApp IA", valor: 108500000, proximo: "Llamar para agendar Test Drive hoy.", notas: "" },
+    { id: "p1", nombre: "Laura Ramírez", interes: "Renault Duster 2026", nivel: "CALIENTE", etapa: "Prueba de manejo", telefono: "300 719 3340", origen: "Vitrina", valor: 102900000, proximo: "Test Drive agendado 4:00 p. m.", notas: "" },
+    { id: "p2", nombre: "Andrés Felipe Ríos", interes: "Chevrolet Onix RS", nivel: "TIBIO", etapa: "Cotizado", telefono: "318 220 5511", origen: "Instagram", valor: 64900000, proximo: "Dar seguimiento a la cotización", notas: "Retoma: Spark GT 2019 ($28.000.000)." },
+    { id: "p3", nombre: "Julián Ospina", interes: "Yamaha MT-03", nivel: "CALIENTE", etapa: "Negociando", telefono: "312 604 8877", origen: "WhatsApp IA", valor: 29500000, proximo: "Completar trámites de la moto", notas: "Abono de separación: $2.000.000." },
   ]);
   const [pqrs, setPqrs] = useState(0);
 
   // Las tarjetas del CRM de la demo se guardan en el navegador (no en la base de datos).
-  const claveCrm = "gosaryc_demo_crm_" + sector;
+  const claveCrm = "gosaryc_demo_crm_v2_" + sector;
   const primeraEscritura = useRef(true);
   useEffect(() => {
     try {
@@ -420,6 +424,8 @@ function Pos({ sector, productos, setProductos, tarifas, registrarVenta, nuevoPe
   const [error, setError] = useState("");
   const [personalizar, setPersonalizar] = useState<Prod | null>(null);
   const [sel, setSel] = useState<string[]>([]);
+  const [acomp, setAcomp] = useState("");
+  const [termino, setTermino] = useState("");
   const [cant, setCant] = useState(1);
   const [nota, setNota] = useState("");
   const [tirilla, setTirilla] = useState<Tirilla | null>(null);
@@ -439,7 +445,7 @@ function Pos({ sector, productos, setProductos, tarifas, registrarVenta, nuevoPe
     setLineas((ls) => (ls.some((l) => l.key === key) ? ls.map((l) => (l.key === key ? { ...l, c: l.c + c } : l)) : [...ls, { key, p, extras, extraValor, nota: n, c }]));
   };
   const tocar = (p: Prod) => {
-    if (esRest && p.cat === "Plato") { setPersonalizar(p); setSel([]); setCant(1); setNota(""); return; }
+    if (esRest && p.cat === "Plato") { setPersonalizar(p); setSel([]); setAcomp(""); setTermino(""); setCant(1); setNota(""); return; }
     agregarLinea(p, [], 1, "");
   };
   const cambiar = (key: string, d: number) => setLineas((ls) => ls.flatMap((l) => {
@@ -534,9 +540,15 @@ function Pos({ sector, productos, setProductos, tarifas, registrarVenta, nuevoPe
             <button key={s} onClick={() => setServicio(s)} className={"flex-1 rounded-lg px-2 py-2 text-xs font-semibold " + (servicio === s ? "bg-primary text-primary-foreground" : "bg-muted")}>{s}</button>
           ))}
         </div>
+        {!esRest && (
+          <select value={cliente} onChange={(e) => setCliente(e.target.value)} className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-base">
+            <option value="">Cliente frecuente (opcional)</option>
+            {CLIENTES_FRECUENTES.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        )}
         {servicio === "Mesa" && (
           <select value={mesa} onChange={(e) => setMesa(e.target.value)} className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-base">
-            {Array.from({ length: 8 }, (_, i) => <option key={i} value={String(i + 1)}>Mesa {i + 1}</option>)}
+            {MESAS_ESTADO.map((t, i) => <option key={i} value={String(i + 1)}>{t}</option>)}
           </select>
         )}
         {servicio === "Domicilio" && (
@@ -574,7 +586,27 @@ function Pos({ sector, productos, setProductos, tarifas, registrarVenta, nuevoPe
       {personalizar && (
         <Modal onClose={() => setPersonalizar(null)}>
           <h3 className="font-bold">{personalizar.nombre} · {cop(personalizar.precio)}</h3>
-          <p className="mt-3 text-xs font-semibold uppercase text-muted-foreground">Acompañantes</p>
+          {personalizar.opciones && (
+            <>
+              <p className="mt-3 text-xs font-semibold uppercase text-muted-foreground">Acompañante (obligatorio)</p>
+              <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {personalizar.opciones.map((o) => (
+                  <button key={o} onClick={() => setAcomp(o)} className={"rounded-lg border px-2 py-2 text-left text-xs font-semibold " + (acomp === o ? "border-primary bg-primary/10" : "border-border")}>{o}</button>
+                ))}
+              </div>
+            </>
+          )}
+          {personalizar.terminos && (
+            <>
+              <p className="mt-3 text-xs font-semibold uppercase text-muted-foreground">Término (obligatorio)</p>
+              <div className="mt-1 grid grid-cols-2 gap-2">
+                {personalizar.terminos.map((o) => (
+                  <button key={o} onClick={() => setTermino(o)} className={"rounded-lg border px-2 py-2 text-left text-xs font-semibold " + (termino === o ? "border-primary bg-primary/10" : "border-border")}>{o}</button>
+                ))}
+              </div>
+            </>
+          )}
+          <p className="mt-3 text-xs font-semibold uppercase text-muted-foreground">Adicionales</p>
           <div className="mt-1 grid grid-cols-2 gap-2">
             {ACOMPANANTES.map((a) => {
               const on = sel.includes(a.n);
@@ -592,7 +624,14 @@ function Pos({ sector, productos, setProductos, tarifas, registrarVenta, nuevoPe
               <b>{cant}</b>
               <button onClick={() => setCant((c) => c + 1)} aria-label="Más"><Plus className="h-4 w-4" /></button>
             </span>
-            <button onClick={() => { agregarLinea(personalizar, sel, cant, nota.trim()); setPersonalizar(null); }} className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">
+            <button
+              disabled={(!!personalizar.opciones && !acomp) || (!!personalizar.terminos && !termino)}
+              onClick={() => {
+                const extras = [...(acomp ? [acomp] : []), ...(termino ? ["Término " + termino] : []), ...sel];
+                agregarLinea(personalizar, extras, cant, nota.trim());
+                setPersonalizar(null);
+              }}
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground disabled:opacity-50">
               Agregar · {cop((personalizar.precio + sel.reduce((s, x) => s + (ACOMPANANTES.find((a) => a.n === x)?.v ?? 0), 0)) * cant)}
             </button>
           </div>
@@ -1027,7 +1066,7 @@ function CierreAuto({ productos, setProductos, vehSel, registrarVenta, onEtapa }
   productos: Prod[]; setProductos: React.Dispatch<React.SetStateAction<Prod[]>>; vehSel: string; registrarVenta: (v: NuevaVenta) => void; onEtapa: OnEtapa;
 }) {
   const veh = productos.filter((p) => p.cat === "Vehículo");
-  const [lista, setLista] = useState<Negocio[]>([{ id: "n0", cliente: "Marcela Torres", vehId: "a1", abono: 1500000, etapa: 0, docs: [false, false, false, false] }]);
+  const [lista, setLista] = useState<Negocio[]>([{ id: "n0", cliente: "Julián Ospina", vehId: "a3", abono: 2000000, etapa: 0, docs: [false, false, false, false] }]);
   const [cliente, setCliente] = useState("");
   const [vId, setVId] = useState(vehSel);
   const [abono, setAbono] = useState("2000000");
@@ -1178,14 +1217,15 @@ function WhatsApp({ sector, productos, tarifas, onLead, onPedido, onPqrs }: {
       if (s > puntos) { puntos = s; mejor = p; }
     }
     if (!mejor && sector === "auto") {
-      if (/\bcx\b|cx-?30|suv/.test(m)) return productos.find((p) => p.id === "a2") ?? null;
-      if (/\bns\b|moto/.test(m)) return productos.find((p) => p.id === "a3") ?? null;
-      if (/xtz/.test(m)) return productos.find((p) => p.id === "a4") ?? null;
+      if (/\bcx\b|cx-?30|mazda/.test(m)) return productos.find((p) => p.id === "a1") ?? null;
+      if (/duster|suv|renault/.test(m)) return productos.find((p) => p.id === "a2") ?? null;
+      if (/\bmt\b|mt-?03|moto|yamaha/.test(m)) return productos.find((p) => p.id === "a3") ?? null;
+      if (/onix|chevrolet/.test(m)) return productos.find((p) => p.id === "a4") ?? null;
       if (/carro|auto|vehiculo/.test(m)) return productos.find((p) => p.id === "a1") ?? null;
     }
     return mejor;
   };
-  const barrioDe = (m: string): string | null => Object.keys(tarifas).find((b) => m.includes(norm(b))) ?? null;
+  const barrioDe = (m: string): string | null => Object.keys(tarifas).find((b) => b.split("/").some((parte) => m.includes(norm(parte.trim())))) ?? null;
   const cantidadDe = (m: string): number => {
     const d = m.match(/\b(\d{1,2})\b/);
     if (d && Number(d[1]) <= 20 && Number(d[1]) > 0) return Number(d[1]);
