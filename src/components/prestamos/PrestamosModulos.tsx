@@ -53,9 +53,17 @@ export function amortizar(monto: number, tasaMensual: number, frec: string, plaz
   return filas;
 }
 
-function FilaAbono({ cuota, titulo, metodo, hoy, onListo }: { cuota: Cuota; titulo: string; metodo: string; hoy: string; onListo: () => void }) {
+/** Misma fórmula que la base de datos: saldo de la cuota × tasa moratoria mensual × días de atraso / 30, menos la mora ya cobrada. */
+export const moraDeCuota = (cuota: Cuota, tasaMora: number, hoy: string): number => {
+  if (!hoy || tasaMora <= 0 || cuota.estado === "pagada" || cuota.vence >= hoy) return 0;
   const pendiente = cuota.valor - cuota.capital_pagado - cuota.interes_pagado;
-  const [monto, setMonto] = useState(String(pendiente));
+  return Math.max(Math.round((pendiente * tasaMora * diasEntre(cuota.vence, hoy)) / 100 / 30) - cuota.mora_cobrada, 0);
+};
+
+function FilaAbono({ cuota, titulo, metodo, hoy, tasaMora, onListo }: { cuota: Cuota; titulo: string; metodo: string; hoy: string; tasaMora: number; onListo: () => void }) {
+  const pendiente = cuota.valor - cuota.capital_pagado - cuota.interes_pagado;
+  const mora = moraDeCuota(cuota, tasaMora, hoy);
+  const [monto, setMonto] = useState(String(pendiente + mora));
   const [ocupado, setOcupado] = useState(false);
   const vencida = !!hoy && cuota.vence < hoy;
   const abonar = async () => {
@@ -63,18 +71,19 @@ function FilaAbono({ cuota, titulo, metodo, hoy, onListo }: { cuota: Cuota; titu
     const { data, error } = await supabase.rpc("pre_abonar", { p_cuota: cuota.id, p_monto: num(monto), p_metodo: metodo });
     setOcupado(false);
     if (error) return toast.error(msg(error.message, "No se pudo registrar el abono."));
-    const r = (data ?? {}) as { capital?: number; interes?: number };
-    toast.success(`Abono registrado: capital ${dinero(r.capital ?? 0)} + interés ${dinero(r.interes ?? 0)}. Entró a Caja.`);
+    const r = (data ?? {}) as { capital?: number; interes?: number; mora?: number };
+    toast.success(`Abono registrado: capital ${dinero(r.capital ?? 0)} + interés ${dinero(r.interes ?? 0)} + mora ${dinero(r.mora ?? 0)}. Entró a Caja.`);
     onListo();
   };
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-glass-border p-3">
       <div className="min-w-0">
         <p className="break-words text-sm font-semibold text-foreground">{titulo}</p>
-        <p className="text-xs text-muted-foreground">Cuota {cuota.numero} · vence {cuota.vence} · saldo {dinero(pendiente)} (capital {dinero(cuota.capital - cuota.capital_pagado)} + interés {dinero(cuota.interes - cuota.interes_pagado)})</p>
+        <p className="text-xs text-muted-foreground">Cuota {cuota.numero} · vence {cuota.vence} · saldo {dinero(pendiente)} (capital {dinero(cuota.capital - cuota.capital_pagado)} + interés {dinero(cuota.interes - cuota.interes_pagado)}){mora > 0 ? ` + mora ${dinero(mora)}` : ""}</p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
         {vencida && <Etiqueta texto={`${diasEntre(cuota.vence, hoy)} días vencida`} tono="alerta" />}
+        {mora > 0 && <Etiqueta texto={`Mora ${dinero(mora)}`} tono="alerta" />}
         {cuota.estado === "parcial" && <Etiqueta texto="Parcial" tono="info" />}
         <input className={`${campo} !w-32`} inputMode="decimal" aria-label="Valor del abono" value={monto} onChange={(e) => setMonto(e.target.value)} />
         <button type="button" className={boton} disabled={ocupado} onClick={() => void abonar()}>Abonar</button>
@@ -99,6 +108,8 @@ function PanelPrestamos({ vistaInicial }: { vistaInicial: Vista }) {
   const [cobrador, setCobrador] = useState("");
   const [monto, setMonto] = useState("");
   const [tasa, setTasa] = useState("");
+  const [tasaMoraNueva, setTasaMoraNueva] = useState("2");
+  const [moraEdit, setMoraEdit] = useState("");
   const [frec, setFrec] = useState("mensual");
   const [plazo, setPlazo] = useState("12");
   const [inicio, setInicio] = useState("");
@@ -164,6 +175,10 @@ function PanelPrestamos({ vistaInicial }: { vistaInicial: Vista }) {
     setGuardando(false);
     if (error) return toast.error(msg(error.message, "No se pudo crear el préstamo."));
     const r = (data ?? {}) as { id?: string; cuota?: number };
+    if (r.id && num(tasaMoraNueva) > 0) {
+      const { error: errMora } = await supabase.rpc("pre_fijar_mora", { p_credito: r.id, p_tasa: Math.min(num(tasaMoraNueva), 10) });
+      if (errMora) toast.error(msg(errMora.message, "El préstamo se creó, pero no se pudo guardar la tasa de mora."));
+    }
     toast.success(`Préstamo creado: cuota de ${dinero(r.cuota ?? 0)}. El desembolso salió de Caja y quedó en Contabilidad.`);
     setCliente(""); setTel(""); setDoc(""); setMonto(""); setNotas("");
     await cargar();
@@ -201,15 +216,27 @@ function PanelPrestamos({ vistaInicial }: { vistaInicial: Vista }) {
   const vencidasTotal = pendientes.filter((c) => hoy && c.vence < hoy);
   const valorVencido = vencidasTotal.reduce((s, c) => s + (c.valor - c.capital_pagado - c.interes_pagado), 0);
   const credSel = creditos.find((c) => c.id === sel);
+  const moraTotal = vencidasTotal.reduce((s, q) => s + moraDeCuota(q, nombreCredito(q.credito_id)?.tasa_mora_pct ?? 0, hoy), 0);
+  const guardarMora = async () => {
+    if (!credSel) return;
+    const t = num(moraEdit);
+    if (t < 0 || t > 10) return toast.error("La mora mensual debe estar entre 0 y 10 %.");
+    const { error } = await supabase.rpc("pre_fijar_mora", { p_credito: credSel.id, p_tasa: t });
+    if (error) return toast.error(msg(error.message, "No se pudo guardar la tasa de mora."));
+    toast.success("Tasa de mora actualizada.");
+    setMoraEdit("");
+    recargar();
+  };
 
   return (
     <div className="space-y-6">
       <Encabezado titulo="Préstamos y cobranza" texto="Simulador con tabla de amortización, desembolso desde Caja, cuotas vencidas, abonos que separan capital e interés y cierre diario de cada cobrador." />
       <Pestanas items={[{ clave: "nuevo", texto: "Simulador y desembolso" }, { clave: "creditos", texto: "Créditos y cronograma" }, { clave: "cobranza", texto: "Cobranza del día" }, { clave: "cierre", texto: "Cierre de cobradores" }]} valor={vista} onChange={setVista} />
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicador titulo="Capital por cobrar" valor={dinero(saldoCapital)} />
         <Indicador titulo="Cuotas vencidas" valor={vencidasTotal.length} nota={dinero(valorVencido)} alerta={vencidasTotal.length > 0} />
+        <Indicador titulo="Mora acumulada hoy" valor={dinero(moraTotal)} nota="Según días de atraso y tasa moratoria" alerta={moraTotal > 0} />
         <Indicador titulo="Créditos activos" valor={creditos.filter((c) => c.estado === "activo").length} />
       </div>
 
@@ -231,6 +258,7 @@ function PanelPrestamos({ vistaInicial }: { vistaInicial: Vista }) {
                 <select className={campo} value={frec} onChange={(e) => setFrec(e.target.value)}>{FRECUENCIAS.map((f) => <option key={f.clave} value={f.clave}>{f.texto}</option>)}</select>
               </Campo>
               <Campo etiqueta="Número de cuotas"><input className={campo} inputMode="numeric" value={plazo} onChange={(e) => setPlazo(e.target.value)} /></Campo>
+              <Campo etiqueta="Tasa de mora mensual % (0 a 10)"><input className={campo} inputMode="decimal" value={tasaMoraNueva} onChange={(e) => setTasaMoraNueva(e.target.value)} placeholder="Ej. 2" /></Campo>
               <Campo etiqueta="Fecha del desembolso"><input type="date" className={campo} value={inicio} onChange={(e) => setInicio(e.target.value)} /></Campo>
               <Campo etiqueta="Desembolsar desde"><SelectorMetodo valor={metodo} onChange={setMetodo} /></Campo>
               <Campo etiqueta="Notas / garantía"><input className={campo} value={notas} onChange={(e) => setNotas(e.target.value)} /></Campo>
@@ -268,7 +296,7 @@ function PanelPrestamos({ vistaInicial }: { vistaInicial: Vista }) {
               const atrasadas = pendientes.filter((q) => q.credito_id === c.id && hoy && q.vence < hoy).length;
               return (
                 <button key={c.id} type="button" onClick={() => void cargarSel(c.id === sel ? "" : c.id)} className={`flex w-full flex-wrap items-center justify-between gap-2 rounded-xl border p-3 text-left ${c.id === sel ? "border-primary" : "border-glass-border"}`}>
-                  <span className="min-w-0"><span className="block break-words text-sm font-semibold text-foreground">{c.cliente}</span><span className="block text-xs text-muted-foreground">{dinero(c.monto)} · {c.plazo} cuotas {c.frecuencia}s · {c.tasa_pct} % mensual · cobrador {c.cobrador ?? "—"}</span></span>
+                  <span className="min-w-0"><span className="block break-words text-sm font-semibold text-foreground">{c.cliente}</span><span className="block text-xs text-muted-foreground">{dinero(c.monto)} · {c.plazo} cuotas {c.frecuencia}s · {c.tasa_pct} % mensual · mora {c.tasa_mora_pct} % · cobrador {c.cobrador ?? "—"}</span></span>
                   <span className="flex flex-wrap items-center gap-2"><span className="text-sm text-foreground">Saldo {dinero(c.saldo_capital)}</span>{atrasadas > 0 && <Etiqueta texto={`${atrasadas} vencida(s)`} tono="alerta" />}{c.estado === "pagado" && <Etiqueta texto="Pagado" tono="ok" />}</span>
                 </button>
               );
@@ -283,9 +311,13 @@ function PanelPrestamos({ vistaInicial }: { vistaInicial: Vista }) {
                   <button type="button" className={botonSec} onClick={() => { const u = aWhatsapp(credSel.telefono, `Hola ${credSel.cliente}, te recordamos tu cuota de ${dinero(credSel.cuota)}.`); if (u) window.open(u, "_blank", "noopener"); else toast.error("Sin teléfono."); }}>Recordar por WhatsApp</button>
                 </div>
               </div>
+              <div className="flex flex-wrap items-end gap-2">
+                <Campo etiqueta={`Tasa de mora mensual % (actual ${credSel.tasa_mora_pct} %)`}><input className={`${campo} !w-32`} inputMode="decimal" value={moraEdit} onChange={(e) => setMoraEdit(e.target.value)} /></Campo>
+                <button type="button" className={botonSec} disabled={moraEdit === ""} onClick={() => void guardarMora()}>Guardar tasa de mora</button>
+              </div>
               {cuotasSel.map((q) => q.estado === "pagada"
                 ? <p key={q.id} className="flex flex-wrap justify-between gap-2 text-sm text-muted-foreground"><span>Cuota {q.numero} · {q.vence}</span><span>Pagada · {dinero(q.valor)}</span></p>
-                : <FilaAbono key={q.id} cuota={q} titulo={credSel.cliente} metodo={metodo} hoy={hoy} onListo={recargar} />)}
+                : <FilaAbono key={q.id} cuota={q} titulo={credSel.cliente} metodo={metodo} hoy={hoy} tasaMora={credSel.tasa_mora_pct} onListo={recargar} />)}
             </GlassPanel>
           )}
         </div>
@@ -300,7 +332,7 @@ function PanelPrestamos({ vistaInicial }: { vistaInicial: Vista }) {
           </div>
           <GlassPanel className="space-y-2 p-4">
             {porCobrar.length === 0 ? <p className="text-sm text-muted-foreground">No hay cuotas por cobrar con este filtro.</p> : porCobrar.map((q) => (
-              <FilaAbono key={q.id} cuota={q} titulo={`${nombreCredito(q.credito_id)?.cliente ?? "Cliente"} · ${nombreCredito(q.credito_id)?.cobrador ?? "Sin cobrador"}`} metodo={metodo} hoy={hoy} onListo={recargar} />
+              <FilaAbono key={q.id} cuota={q} titulo={`${nombreCredito(q.credito_id)?.cliente ?? "Cliente"} · ${nombreCredito(q.credito_id)?.cobrador ?? "Sin cobrador"}`} metodo={metodo} hoy={hoy} tasaMora={nombreCredito(q.credito_id)?.tasa_mora_pct ?? 0} onListo={recargar} />
             ))}
           </GlassPanel>
         </div>
@@ -320,7 +352,7 @@ function PanelPrestamos({ vistaInicial }: { vistaInicial: Vista }) {
               <Indicador titulo="Transferencias y tarjeta" valor={dinero(otrosMetodos)} nota="No se suman al efectivo" />
               <Indicador titulo="Diferencia" valor={dinero(Math.round(num(entregado)) - efectivoEsperado)} alerta={Math.round(num(entregado)) !== efectivoEsperado && entregado !== ""} />
             </div>
-            <p className="text-xs text-muted-foreground">Abonos del día: {abonosCierre.length} · capital {dinero(abonosCierre.reduce((s, a) => s + a.capital, 0))} · interés {dinero(abonosCierre.reduce((s, a) => s + a.interes, 0))}</p>
+            <p className="text-xs text-muted-foreground">Abonos del día: {abonosCierre.length} · capital {dinero(abonosCierre.reduce((s, a) => s + a.capital, 0))} · interés {dinero(abonosCierre.reduce((s, a) => s + a.interes, 0))} · mora {dinero(abonosCierre.reduce((s, a) => s + a.mora, 0))}</p>
             <button type="button" className={boton} onClick={() => void cerrarDia()}>Cerrar día del cobrador</button>
           </GlassPanel>
           <GlassPanel className="space-y-2 p-4">

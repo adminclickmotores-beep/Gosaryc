@@ -2745,21 +2745,21 @@ export type Database = {
         Relationships: []
       }
       pre_creditos: {
-        Row: { cliente: string; cobrador: string | null; created_at: string; cuota: number; documento: string | null; estado: string; fecha_inicio: string; frecuencia: string; id: string; monto: number; notas: string | null; owner_id: string | null; plazo: number; saldo_capital: number; tasa_pct: number; telefono: string | null; tipo_negocio: string | null; total_interes: number }
-        Insert: { cliente: string; cobrador?: string | null; created_at?: string; cuota?: number; documento?: string | null; estado?: string; fecha_inicio?: string; frecuencia: string; id?: string; monto: number; notas?: string | null; owner_id?: string | null; plazo: number; saldo_capital?: number; tasa_pct?: number; telefono?: string | null; tipo_negocio?: string | null; total_interes?: number }
-        Update: { cliente?: string; cobrador?: string | null; created_at?: string; cuota?: number; documento?: string | null; estado?: string; fecha_inicio?: string; frecuencia?: string; id?: string; monto?: number; notas?: string | null; owner_id?: string | null; plazo?: number; saldo_capital?: number; tasa_pct?: number; telefono?: string | null; tipo_negocio?: string | null; total_interes?: number }
+        Row: { cliente: string; cobrador: string | null; created_at: string; cuota: number; documento: string | null; estado: string; fecha_inicio: string; frecuencia: string; id: string; monto: number; notas: string | null; owner_id: string | null; plazo: number; saldo_capital: number; tasa_mora_pct: number; tasa_pct: number; telefono: string | null; tipo_negocio: string | null; total_interes: number }
+        Insert: { cliente: string; cobrador?: string | null; created_at?: string; cuota?: number; documento?: string | null; estado?: string; fecha_inicio?: string; frecuencia: string; id?: string; monto: number; notas?: string | null; owner_id?: string | null; plazo: number; saldo_capital?: number; tasa_mora_pct?: number; tasa_pct?: number; telefono?: string | null; tipo_negocio?: string | null; total_interes?: number }
+        Update: { cliente?: string; cobrador?: string | null; created_at?: string; cuota?: number; documento?: string | null; estado?: string; fecha_inicio?: string; frecuencia?: string; id?: string; monto?: number; notas?: string | null; owner_id?: string | null; plazo?: number; saldo_capital?: number; tasa_mora_pct?: number; tasa_pct?: number; telefono?: string | null; tipo_negocio?: string | null; total_interes?: number }
         Relationships: []
       }
       pre_cuotas: {
-        Row: { capital: number; capital_pagado: number; created_at: string; credito_id: string; estado: string; id: string; interes: number; interes_pagado: number; numero: number; owner_id: string | null; pagada_en: string | null; tipo_negocio: string | null; valor: number; vence: string }
-        Insert: { capital?: number; capital_pagado?: number; created_at?: string; credito_id: string; estado?: string; id?: string; interes?: number; interes_pagado?: number; numero: number; owner_id?: string | null; pagada_en?: string | null; tipo_negocio?: string | null; valor?: number; vence: string }
-        Update: { capital?: number; capital_pagado?: number; created_at?: string; credito_id?: string; estado?: string; id?: string; interes?: number; interes_pagado?: number; numero?: number; owner_id?: string | null; pagada_en?: string | null; tipo_negocio?: string | null; valor?: number; vence?: string }
+        Row: { capital: number; capital_pagado: number; created_at: string; credito_id: string; estado: string; id: string; interes: number; interes_pagado: number; mora_cobrada: number; numero: number; owner_id: string | null; pagada_en: string | null; tipo_negocio: string | null; valor: number; vence: string }
+        Insert: { capital?: number; capital_pagado?: number; created_at?: string; credito_id: string; estado?: string; id?: string; interes?: number; interes_pagado?: number; mora_cobrada?: number; numero: number; owner_id?: string | null; pagada_en?: string | null; tipo_negocio?: string | null; valor?: number; vence: string }
+        Update: { capital?: number; capital_pagado?: number; created_at?: string; credito_id?: string; estado?: string; id?: string; interes?: number; interes_pagado?: number; mora_cobrada?: number; numero?: number; owner_id?: string | null; pagada_en?: string | null; tipo_negocio?: string | null; valor?: number; vence?: string }
         Relationships: []
       }
       pre_abonos: {
-        Row: { capital: number; cobrador: string; created_at: string; credito_id: string; cuota_id: string; fecha: string; id: string; interes: number; metodo: string; monto: number; owner_id: string | null; tipo_negocio: string | null }
-        Insert: { capital?: number; cobrador?: string; created_at?: string; credito_id: string; cuota_id: string; fecha?: string; id?: string; interes?: number; metodo?: string; monto: number; owner_id?: string | null; tipo_negocio?: string | null }
-        Update: { capital?: number; cobrador?: string; created_at?: string; credito_id?: string; cuota_id?: string; fecha?: string; id?: string; interes?: number; metodo?: string; monto?: number; owner_id?: string | null; tipo_negocio?: string | null }
+        Row: { capital: number; cobrador: string; created_at: string; credito_id: string; cuota_id: string; fecha: string; id: string; interes: number; metodo: string; monto: number; mora: number; owner_id: string | null; tipo_negocio: string | null }
+        Insert: { capital?: number; cobrador?: string; created_at?: string; credito_id: string; cuota_id: string; fecha?: string; id?: string; interes?: number; metodo?: string; monto: number; mora?: number; owner_id?: string | null; tipo_negocio?: string | null }
+        Update: { capital?: number; cobrador?: string; created_at?: string; credito_id?: string; cuota_id?: string; fecha?: string; id?: string; interes?: number; metodo?: string; monto?: number; mora?: number; owner_id?: string | null; tipo_negocio?: string | null }
         Relationships: []
       }
       pre_cierres: {
@@ -2808,6 +2808,198 @@ export type Database = {
         Row: { arreglo: string; arreglo_id: string; cantidad: number; cliente: string; costo: number; created_at: string; destinatario: string; direccion: string | null; estado: string; fecha_entrega: string; franja: string; id: string; metodo: string; owner_id: string | null; repartidor: string | null; tarjeta: string | null; telefono: string | null; tipo_negocio: string | null; total: number }
         Insert: { arreglo: string; arreglo_id: string; cantidad: number; cliente: string; costo?: number; created_at?: string; destinatario: string; direccion?: string | null; estado?: string; fecha_entrega: string; franja?: string; id?: string; metodo?: string; owner_id?: string | null; repartidor?: string | null; tarjeta?: string | null; telefono?: string | null; tipo_negocio?: string | null; total?: number }
         Update: { arreglo?: string; arreglo_id?: string; cantidad?: number; cliente?: string; costo?: number; created_at?: string; destinatario?: string; direccion?: string | null; estado?: string; fecha_entrega?: string; franja?: string; id?: string; metodo?: string; owner_id?: string | null; repartidor?: string | null; tarjeta?: string | null; telefono?: string | null; tipo_negocio?: string | null; total?: number }
+        Relationships: []
+      }
+      alq_vehiculos: {
+        Row: { activo: boolean; created_at: string; descripcion: string; estado: string; foto_ruta: string | null; id: string; km_actual: number; km_incluidos_dia: number; owner_id: string | null; placa: string; tarifa_dia: number; tarifa_hora: number; tipo_negocio: string | null; valor_km_extra: number; valor_tanque: number }
+        Insert: { activo?: boolean; created_at?: string; descripcion: string; estado?: string; foto_ruta?: string | null; id?: string; km_actual?: number; km_incluidos_dia?: number; owner_id?: string | null; placa: string; tarifa_dia?: number; tarifa_hora?: number; tipo_negocio?: string | null; valor_km_extra?: number; valor_tanque?: number }
+        Update: { activo?: boolean; created_at?: string; descripcion?: string; estado?: string; foto_ruta?: string | null; id?: string; km_actual?: number; km_incluidos_dia?: number; owner_id?: string | null; placa?: string; tarifa_dia?: number; tarifa_hora?: number; tipo_negocio?: string | null; valor_km_extra?: number; valor_tanque?: number }
+        Relationships: []
+      }
+      alq_contratos: {
+        Row: { cantidad: number; cerrado_en: string | null; cliente: string; combustible_entrega: number | null; combustible_salida: number; created_at: string; deposito: number; descripcion: string; documento: string | null; estado: string; id: string; km_entrega: number | null; km_salida: number; metodo: string | null; modalidad: string; notas: string | null; owner_id: string | null; placa: string; prevista: string | null; recargo_combustible: number; recargo_dano: number; recargo_demora: number; recargo_km: number; salida: string; saldo_cobrado: number; tarifa: number; telefono: string | null; tipo_negocio: string | null; total: number; vehiculo_id: string }
+        Insert: { cantidad: number; cerrado_en?: string | null; cliente: string; combustible_entrega?: number | null; combustible_salida?: number; created_at?: string; deposito?: number; descripcion: string; documento?: string | null; estado?: string; id?: string; km_entrega?: number | null; km_salida?: number; metodo?: string | null; modalidad: string; notas?: string | null; owner_id?: string | null; placa: string; prevista?: string | null; recargo_combustible?: number; recargo_dano?: number; recargo_demora?: number; recargo_km?: number; salida?: string; saldo_cobrado?: number; tarifa?: number; telefono?: string | null; tipo_negocio?: string | null; total?: number; vehiculo_id: string }
+        Update: { cantidad?: number; cerrado_en?: string | null; cliente?: string; combustible_entrega?: number | null; combustible_salida?: number; created_at?: string; deposito?: number; descripcion?: string; documento?: string | null; estado?: string; id?: string; km_entrega?: number | null; km_salida?: number; metodo?: string | null; modalidad?: string; notas?: string | null; owner_id?: string | null; placa?: string; prevista?: string | null; recargo_combustible?: number; recargo_dano?: number; recargo_demora?: number; recargo_km?: number; salida?: string; saldo_cobrado?: number; tarifa?: number; telefono?: string | null; tipo_negocio?: string | null; total?: number; vehiculo_id?: string }
+        Relationships: []
+      }
+      alq_multas: {
+        Row: { cliente: string; cobrada_en: string | null; concepto: string; contrato_id: string | null; created_at: string; detalle: string | null; estado: string; fecha: string; id: string; metodo: string | null; owner_id: string | null; placa: string; tipo_negocio: string | null; valor: number }
+        Insert: { cliente: string; cobrada_en?: string | null; concepto?: string; contrato_id?: string | null; created_at?: string; detalle?: string | null; estado?: string; fecha?: string; id?: string; metodo?: string | null; owner_id?: string | null; placa: string; tipo_negocio?: string | null; valor: number }
+        Update: { cliente?: string; cobrada_en?: string | null; concepto?: string; contrato_id?: string | null; created_at?: string; detalle?: string | null; estado?: string; fecha?: string; id?: string; metodo?: string | null; owner_id?: string | null; placa?: string; tipo_negocio?: string | null; valor?: number }
+        Relationships: []
+      }
+      seg_puestos: {
+        Row: { activo: boolean; cliente: string; created_at: string; fin: string | null; id: string; inicio: string; owner_id: string | null; personal_requerido: number; sede: string; servicio: string; supervisor: string | null; telefono: string | null; tipo_negocio: string | null; turno: string; valor_mensual: number }
+        Insert: { activo?: boolean; cliente: string; created_at?: string; fin?: string | null; id?: string; inicio?: string; owner_id?: string | null; personal_requerido?: number; sede: string; servicio?: string; supervisor?: string | null; telefono?: string | null; tipo_negocio?: string | null; turno?: string; valor_mensual?: number }
+        Update: { activo?: boolean; cliente?: string; created_at?: string; fin?: string | null; id?: string; inicio?: string; owner_id?: string | null; personal_requerido?: number; sede?: string; servicio?: string; supervisor?: string | null; telefono?: string | null; tipo_negocio?: string | null; turno?: string; valor_mensual?: number }
+        Relationships: []
+      }
+      seg_turnos: {
+        Row: { created_at: string; empleado: string; estado: string; fecha: string; id: string; owner_id: string | null; puesto_id: string; reemplazo: string | null; tipo_negocio: string | null; turno: string }
+        Insert: { created_at?: string; empleado: string; estado?: string; fecha: string; id?: string; owner_id?: string | null; puesto_id: string; reemplazo?: string | null; tipo_negocio?: string | null; turno?: string }
+        Update: { created_at?: string; empleado?: string; estado?: string; fecha?: string; id?: string; owner_id?: string | null; puesto_id?: string; reemplazo?: string | null; tipo_negocio?: string | null; turno?: string }
+        Relationships: []
+      }
+      seg_novedades: {
+        Row: { accion: string | null; created_at: string; detalle: string; empleado: string | null; fecha: string; id: string; owner_id: string | null; puesto_id: string; tipo: string; tipo_negocio: string | null }
+        Insert: { accion?: string | null; created_at?: string; detalle: string; empleado?: string | null; fecha?: string; id?: string; owner_id?: string | null; puesto_id: string; tipo?: string; tipo_negocio?: string | null }
+        Update: { accion?: string | null; created_at?: string; detalle?: string; empleado?: string | null; fecha?: string; id?: string; owner_id?: string | null; puesto_id?: string; tipo?: string; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      seg_insumos: {
+        Row: { activo: boolean; costo: number; created_at: string; elemento: string; id: string; meses_reposicion: number; owner_id: string | null; stock: number; tipo_negocio: string | null; unidad: string }
+        Insert: { activo?: boolean; costo?: number; created_at?: string; elemento: string; id?: string; meses_reposicion?: number; owner_id?: string | null; stock?: number; tipo_negocio?: string | null; unidad?: string }
+        Update: { activo?: boolean; costo?: number; created_at?: string; elemento?: string; id?: string; meses_reposicion?: number; owner_id?: string | null; stock?: number; tipo_negocio?: string | null; unidad?: string }
+        Relationships: []
+      }
+      seg_entregas: {
+        Row: { cantidad: number; costo_total: number; created_at: string; elemento: string; empleado: string; fecha: string; id: string; insumo_id: string; owner_id: string | null; proxima_entrega: string | null; puesto: string | null; tipo_negocio: string | null }
+        Insert: { cantidad: number; costo_total?: number; created_at?: string; elemento: string; empleado: string; fecha?: string; id?: string; insumo_id: string; owner_id?: string | null; proxima_entrega?: string | null; puesto?: string | null; tipo_negocio?: string | null }
+        Update: { cantidad?: number; costo_total?: number; created_at?: string; elemento?: string; empleado?: string; fecha?: string; id?: string; insumo_id?: string; owner_id?: string | null; proxima_entrega?: string | null; puesto?: string | null; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      seg_facturas: {
+        Row: { cliente: string; created_at: string; estado: string; id: string; metodo: string | null; owner_id: string | null; pagada_en: string | null; periodo: string; puesto_id: string; sede: string; tipo_negocio: string | null; valor: number; vence: string }
+        Insert: { cliente: string; created_at?: string; estado?: string; id?: string; metodo?: string | null; owner_id?: string | null; pagada_en?: string | null; periodo: string; puesto_id: string; sede: string; tipo_negocio?: string | null; valor: number; vence: string }
+        Update: { cliente?: string; created_at?: string; estado?: string; id?: string; metodo?: string | null; owner_id?: string | null; pagada_en?: string | null; periodo?: string; puesto_id?: string; sede?: string; tipo_negocio?: string | null; valor?: number; vence?: string }
+        Relationships: []
+      }
+      gan_animales: {
+        Row: { chapeta: string; created_at: string; especie: string; estado: string; fecha_ingreso: string; fecha_nacimiento: string | null; id: string; lote: string | null; notas: string | null; owner_id: string | null; peso_actual: number; peso_inicial: number; potrero: string | null; raza: string | null; sexo: string; tipo_negocio: string | null }
+        Insert: { chapeta: string; created_at?: string; especie?: string; estado?: string; fecha_ingreso?: string; fecha_nacimiento?: string | null; id?: string; lote?: string | null; notas?: string | null; owner_id?: string | null; peso_actual?: number; peso_inicial?: number; potrero?: string | null; raza?: string | null; sexo?: string; tipo_negocio?: string | null }
+        Update: { chapeta?: string; created_at?: string; especie?: string; estado?: string; fecha_ingreso?: string; fecha_nacimiento?: string | null; id?: string; lote?: string | null; notas?: string | null; owner_id?: string | null; peso_actual?: number; peso_inicial?: number; potrero?: string | null; raza?: string | null; sexo?: string; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      gan_pesajes: {
+        Row: { animal_id: string; chapeta: string; created_at: string; dias: number | null; fecha: string; ganancia_dia: number | null; id: string; owner_id: string | null; peso: number; tipo_negocio: string | null }
+        Insert: { animal_id: string; chapeta: string; created_at?: string; dias?: number | null; fecha: string; ganancia_dia?: number | null; id?: string; owner_id?: string | null; peso: number; tipo_negocio?: string | null }
+        Update: { animal_id?: string; chapeta?: string; created_at?: string; dias?: number | null; fecha?: string; ganancia_dia?: number | null; id?: string; owner_id?: string | null; peso?: number; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      gan_sanidad: {
+        Row: { animal_id: string | null; chapeta: string | null; created_at: string; fecha: string; id: string; lote: string | null; notas: string | null; owner_id: string | null; producto: string; proxima: string | null; registro_ica: string | null; tipo: string; tipo_negocio: string | null }
+        Insert: { animal_id?: string | null; chapeta?: string | null; created_at?: string; fecha?: string; id?: string; lote?: string | null; notas?: string | null; owner_id?: string | null; producto: string; proxima?: string | null; registro_ica?: string | null; tipo?: string; tipo_negocio?: string | null }
+        Update: { animal_id?: string | null; chapeta?: string | null; created_at?: string; fecha?: string; id?: string; lote?: string | null; notas?: string | null; owner_id?: string | null; producto?: string; proxima?: string | null; registro_ica?: string | null; tipo?: string; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      gan_produccion: {
+        Row: { cantidad: number; chapeta: string | null; created_at: string; fecha: string; id: string; lote: string | null; notas: string | null; owner_id: string | null; tipo: string; tipo_negocio: string | null; unidad: string; valor: number }
+        Insert: { cantidad: number; chapeta?: string | null; created_at?: string; fecha?: string; id?: string; lote?: string | null; notas?: string | null; owner_id?: string | null; tipo?: string; tipo_negocio?: string | null; unidad?: string; valor?: number }
+        Update: { cantidad?: number; chapeta?: string | null; created_at?: string; fecha?: string; id?: string; lote?: string | null; notas?: string | null; owner_id?: string | null; tipo?: string; tipo_negocio?: string | null; unidad?: string; valor?: number }
+        Relationships: []
+      }
+      gan_insumos: {
+        Row: { activo: boolean; costo: number; created_at: string; id: string; nombre: string; owner_id: string | null; stock: number; stock_minimo: number; tipo_negocio: string | null; unidad: string }
+        Insert: { activo?: boolean; costo?: number; created_at?: string; id?: string; nombre: string; owner_id?: string | null; stock?: number; stock_minimo?: number; tipo_negocio?: string | null; unidad?: string }
+        Update: { activo?: boolean; costo?: number; created_at?: string; id?: string; nombre?: string; owner_id?: string | null; stock?: number; stock_minimo?: number; tipo_negocio?: string | null; unidad?: string }
+        Relationships: []
+      }
+      gan_consumos: {
+        Row: { cantidad: number; costo_total: number; created_at: string; fecha: string; id: string; insumo_id: string; lote: string | null; nombre: string; owner_id: string | null; tipo_negocio: string | null }
+        Insert: { cantidad: number; costo_total?: number; created_at?: string; fecha?: string; id?: string; insumo_id: string; lote?: string | null; nombre: string; owner_id?: string | null; tipo_negocio?: string | null }
+        Update: { cantidad?: number; costo_total?: number; created_at?: string; fecha?: string; id?: string; insumo_id?: string; lote?: string | null; nombre?: string; owner_id?: string | null; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      gan_guias: {
+        Row: { cantidad: number; chapetas: string | null; created_at: string; destino: string; emitida: string; id: string; numero: string; origen: string; owner_id: string | null; tipo_negocio: string | null; vence: string }
+        Insert: { cantidad: number; chapetas?: string | null; created_at?: string; destino: string; emitida?: string; id?: string; numero: string; origen: string; owner_id?: string | null; tipo_negocio?: string | null; vence: string }
+        Update: { cantidad?: number; chapetas?: string | null; created_at?: string; destino?: string; emitida?: string; id?: string; numero?: string; origen?: string; owner_id?: string | null; tipo_negocio?: string | null; vence?: string }
+        Relationships: []
+      }
+      gan_ventas: {
+        Row: { animales: number; comprador: string; created_at: string; detalle: Json; fecha: string; id: string; kilos: number; metodo: string; modalidad: string; owner_id: string | null; precio: number; tipo_negocio: string | null; total: number }
+        Insert: { animales?: number; comprador: string; created_at?: string; detalle?: Json; fecha?: string; id?: string; kilos?: number; metodo?: string; modalidad: string; owner_id?: string | null; precio: number; tipo_negocio?: string | null; total?: number }
+        Update: { animales?: number; comprador?: string; created_at?: string; detalle?: Json; fecha?: string; id?: string; kilos?: number; metodo?: string; modalidad?: string; owner_id?: string | null; precio?: number; tipo_negocio?: string | null; total?: number }
+        Relationships: []
+      }
+      fun_donantes: {
+        Row: { activo: boolean; ciudad: string | null; correo: string | null; created_at: string; documento: string | null; id: string; nombre: string; owner_id: string | null; telefono: string | null; tipo: string; tipo_negocio: string | null }
+        Insert: { activo?: boolean; ciudad?: string | null; correo?: string | null; created_at?: string; documento?: string | null; id?: string; nombre: string; owner_id?: string | null; telefono?: string | null; tipo?: string; tipo_negocio?: string | null }
+        Update: { activo?: boolean; ciudad?: string | null; correo?: string | null; created_at?: string; documento?: string | null; id?: string; nombre?: string; owner_id?: string | null; telefono?: string | null; tipo?: string; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      fun_proyectos: {
+        Row: { created_at: string; descripcion: string | null; ejecutado: number; estado: string; fin: string | null; id: string; inicio: string; meta_beneficiarios: number; nombre: string; owner_id: string | null; presupuesto: number; tipo_negocio: string | null }
+        Insert: { created_at?: string; descripcion?: string | null; ejecutado?: number; estado?: string; fin?: string | null; id?: string; inicio?: string; meta_beneficiarios?: number; nombre: string; owner_id?: string | null; presupuesto?: number; tipo_negocio?: string | null }
+        Update: { created_at?: string; descripcion?: string | null; ejecutado?: number; estado?: string; fin?: string | null; id?: string; inicio?: string; meta_beneficiarios?: number; nombre?: string; owner_id?: string | null; presupuesto?: number; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      fun_beneficiarios: {
+        Row: { activo: boolean; consentimiento: boolean; created_at: string; documento: string | null; id: string; necesidad: string | null; nombre: string; owner_id: string | null; proyecto_id: string; telefono: string | null; tipo_negocio: string | null }
+        Insert: { activo?: boolean; consentimiento?: boolean; created_at?: string; documento?: string | null; id?: string; necesidad?: string | null; nombre: string; owner_id?: string | null; proyecto_id: string; telefono?: string | null; tipo_negocio?: string | null }
+        Update: { activo?: boolean; consentimiento?: boolean; created_at?: string; documento?: string | null; id?: string; necesidad?: string | null; nombre?: string; owner_id?: string | null; proyecto_id?: string; telefono?: string | null; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      fun_donaciones: {
+        Row: { certificado: string; created_at: string; descripcion: string | null; documento: string | null; donante: string; donante_id: string; fecha: string; id: string; metodo: string | null; owner_id: string | null; proyecto: string | null; proyecto_id: string | null; tipo: string; tipo_negocio: string | null; valor: number }
+        Insert: { certificado: string; created_at?: string; descripcion?: string | null; documento?: string | null; donante: string; donante_id: string; fecha?: string; id?: string; metodo?: string | null; owner_id?: string | null; proyecto?: string | null; proyecto_id?: string | null; tipo: string; tipo_negocio?: string | null; valor: number }
+        Update: { certificado?: string; created_at?: string; descripcion?: string | null; documento?: string | null; donante?: string; donante_id?: string; fecha?: string; id?: string; metodo?: string | null; owner_id?: string | null; proyecto?: string | null; proyecto_id?: string | null; tipo?: string; tipo_negocio?: string | null; valor?: number }
+        Relationships: []
+      }
+      fun_gastos: {
+        Row: { concepto: string; created_at: string; fecha: string; id: string; metodo: string; owner_id: string | null; proyecto: string; proyecto_id: string; tipo_negocio: string | null; valor: number }
+        Insert: { concepto: string; created_at?: string; fecha?: string; id?: string; metodo?: string; owner_id?: string | null; proyecto: string; proyecto_id: string; tipo_negocio?: string | null; valor: number }
+        Update: { concepto?: string; created_at?: string; fecha?: string; id?: string; metodo?: string; owner_id?: string | null; proyecto?: string; proyecto_id?: string; tipo_negocio?: string | null; valor?: number }
+        Relationships: []
+      }
+      fun_voluntarios: {
+        Row: { activo: boolean; area: string; created_at: string; desde: string; documento: string | null; horas_mes: number; id: string; nombre: string; owner_id: string | null; telefono: string | null; tipo_negocio: string | null }
+        Insert: { activo?: boolean; area?: string; created_at?: string; desde?: string; documento?: string | null; horas_mes?: number; id?: string; nombre: string; owner_id?: string | null; telefono?: string | null; tipo_negocio?: string | null }
+        Update: { activo?: boolean; area?: string; created_at?: string; desde?: string; documento?: string | null; horas_mes?: number; id?: string; nombre?: string; owner_id?: string | null; telefono?: string | null; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      igl_miembros: {
+        Row: { activo: boolean; created_at: string; documento: string | null; familia: string | null; fecha_bautizo: string | null; grupo: string | null; id: string; ministerio: string | null; nombre: string; owner_id: string | null; telefono: string | null; tipo_negocio: string | null }
+        Insert: { activo?: boolean; created_at?: string; documento?: string | null; familia?: string | null; fecha_bautizo?: string | null; grupo?: string | null; id?: string; ministerio?: string | null; nombre: string; owner_id?: string | null; telefono?: string | null; tipo_negocio?: string | null }
+        Update: { activo?: boolean; created_at?: string; documento?: string | null; familia?: string | null; fecha_bautizo?: string | null; grupo?: string | null; id?: string; ministerio?: string | null; nombre?: string; owner_id?: string | null; telefono?: string | null; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      igl_grupos: {
+        Row: { activo: boolean; created_at: string; dia_reunion: string | null; id: string; lider: string | null; nombre: string; owner_id: string | null; tipo: string; tipo_negocio: string | null }
+        Insert: { activo?: boolean; created_at?: string; dia_reunion?: string | null; id?: string; lider?: string | null; nombre: string; owner_id?: string | null; tipo?: string; tipo_negocio?: string | null }
+        Update: { activo?: boolean; created_at?: string; dia_reunion?: string | null; id?: string; lider?: string | null; nombre?: string; owner_id?: string | null; tipo?: string; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      igl_ingresos: {
+        Row: { concepto: string; created_at: string; culto: string; evento: string | null; fecha: string; fondo: string; id: string; metodo: string; miembro: string | null; miembro_id: string | null; owner_id: string | null; recibo: string; tipo_negocio: string | null; valor: number }
+        Insert: { concepto: string; created_at?: string; culto?: string; evento?: string | null; fecha?: string; fondo?: string; id?: string; metodo?: string; miembro?: string | null; miembro_id?: string | null; owner_id?: string | null; recibo: string; tipo_negocio?: string | null; valor: number }
+        Update: { concepto?: string; created_at?: string; culto?: string; evento?: string | null; fecha?: string; fondo?: string; id?: string; metodo?: string; miembro?: string | null; miembro_id?: string | null; owner_id?: string | null; recibo?: string; tipo_negocio?: string | null; valor?: number }
+        Relationships: []
+      }
+      igl_egresos: {
+        Row: { concepto: string; created_at: string; culto: string; evento: string | null; fecha: string; fondo: string; id: string; metodo: string; obra_social: boolean; owner_id: string | null; tipo_negocio: string | null; valor: number }
+        Insert: { concepto: string; created_at?: string; culto?: string; evento?: string | null; fecha?: string; fondo?: string; id?: string; metodo?: string; obra_social?: boolean; owner_id?: string | null; tipo_negocio?: string | null; valor: number }
+        Update: { concepto?: string; created_at?: string; culto?: string; evento?: string | null; fecha?: string; fondo?: string; id?: string; metodo?: string; obra_social?: boolean; owner_id?: string | null; tipo_negocio?: string | null; valor?: number }
+        Relationships: []
+      }
+      igl_cierres: {
+        Row: { created_at: string; culto: string; desde: string; diezmos: number; egresos: number; eventos: number; hasta: string; id: string; neto: number; ofrendas: number; owner_id: string | null; por_fondo: Json; primicias: number; tipo_negocio: string | null }
+        Insert: { created_at?: string; culto?: string; desde: string; diezmos?: number; egresos?: number; eventos?: number; hasta: string; id?: string; neto?: number; ofrendas?: number; owner_id?: string | null; por_fondo?: Json; primicias?: number; tipo_negocio?: string | null }
+        Update: { created_at?: string; culto?: string; desde?: string; diezmos?: number; egresos?: number; eventos?: number; hasta?: string; id?: string; neto?: number; ofrendas?: number; owner_id?: string | null; por_fondo?: Json; primicias?: number; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      igl_eventos: {
+        Row: { created_at: string; estado: string; fecha: string; id: string; lugar: string | null; nombre: string; notas: string | null; owner_id: string | null; presupuesto: number; tipo_negocio: string | null }
+        Insert: { created_at?: string; estado?: string; fecha: string; id?: string; lugar?: string | null; nombre: string; notas?: string | null; owner_id?: string | null; presupuesto?: number; tipo_negocio?: string | null }
+        Update: { created_at?: string; estado?: string; fecha?: string; id?: string; lugar?: string | null; nombre?: string; notas?: string | null; owner_id?: string | null; presupuesto?: number; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      igl_visitas: {
+        Row: { created_at: string; fecha: string; id: string; notas: string | null; owner_id: string | null; persona: string; responsable: string | null; seguimiento: string; tipo: string; tipo_negocio: string | null }
+        Insert: { created_at?: string; fecha?: string; id?: string; notas?: string | null; owner_id?: string | null; persona: string; responsable?: string | null; seguimiento?: string; tipo?: string; tipo_negocio?: string | null }
+        Update: { created_at?: string; fecha?: string; id?: string; notas?: string | null; owner_id?: string | null; persona?: string; responsable?: string | null; seguimiento?: string; tipo?: string; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      parq_abonados: {
+        Row: { activo: boolean; created_at: string; id: string; nombre: string; owner_id: string | null; placa: string; tarifa_mensual: number; telefono: string | null; tipo_negocio: string | null; vence: string }
+        Insert: { activo?: boolean; created_at?: string; id?: string; nombre: string; owner_id?: string | null; placa: string; tarifa_mensual?: number; telefono?: string | null; tipo_negocio?: string | null; vence?: string }
+        Update: { activo?: boolean; created_at?: string; id?: string; nombre?: string; owner_id?: string | null; placa?: string; tarifa_mensual?: number; telefono?: string | null; tipo_negocio?: string | null; vence?: string }
+        Relationships: []
+      }
+      parq_pagos: {
+        Row: { abonado_id: string; created_at: string; desde: string; fecha: string; hasta: string; id: string; metodo: string; nombre: string; owner_id: string | null; placa: string; recibo: string; tipo_negocio: string | null; valor: number }
+        Insert: { abonado_id: string; created_at?: string; desde: string; fecha?: string; hasta: string; id?: string; metodo?: string; nombre: string; owner_id?: string | null; placa: string; recibo: string; tipo_negocio?: string | null; valor: number }
+        Update: { abonado_id?: string; created_at?: string; desde?: string; fecha?: string; hasta?: string; id?: string; metodo?: string; nombre?: string; owner_id?: string | null; placa?: string; recibo?: string; tipo_negocio?: string | null; valor?: number }
         Relationships: []
       }
       tal_ordenes: {
@@ -8719,6 +8911,22 @@ export type Database = {
       pre_crear: { Args: { p_cliente: string; p_telefono: string; p_documento: string; p_cobrador: string; p_monto: number; p_tasa: number; p_frecuencia: string; p_plazo: number; p_inicio: string; p_metodo: string; p_notas: string }; Returns: Json }
       pre_abonar: { Args: { p_cuota: string; p_monto: number; p_metodo: string }; Returns: Json }
       pre_cerrar_dia: { Args: { p_cobrador: string; p_fecha: string; p_entregado: number }; Returns: Json }
+      pre_fijar_mora: { Args: { p_credito: string; p_tasa: number }; Returns: undefined }
+      alq_abrir: { Args: { p_vehiculo: string; p_cliente: string; p_documento: string; p_telefono: string; p_modalidad: string; p_cantidad: number; p_tarifa: number; p_deposito: number; p_km_salida: number; p_combustible: number; p_metodo: string; p_notas: string }; Returns: Json }
+      alq_cerrar: { Args: { p_contrato: string; p_km_entrega: number; p_combustible: number; p_dano: number; p_metodo: string }; Returns: Json }
+      alq_cobrar_multa: { Args: { p_multa: string; p_metodo: string }; Returns: number }
+      seg_facturar_mes: { Args: { p_periodo: string; p_vence: string }; Returns: Json }
+      seg_cobrar_factura: { Args: { p_factura: string; p_metodo: string }; Returns: number }
+      seg_entregar: { Args: { p_insumo: string; p_empleado: string; p_puesto: string; p_cantidad: number; p_proxima: string | null }; Returns: number }
+      gan_pesar: { Args: { p_animal: string; p_peso: number; p_fecha: string }; Returns: Json }
+      gan_consumir: { Args: { p_insumo: string; p_lote: string; p_cantidad: number }; Returns: number }
+      gan_vender: { Args: { p_animales: string[]; p_modalidad: string; p_precio: number; p_comprador: string; p_metodo: string }; Returns: Json }
+      fun_donar: { Args: { p_donante: string; p_tipo: string; p_descripcion: string; p_valor: number; p_proyecto: string | null; p_metodo: string }; Returns: Json }
+      fun_gastar: { Args: { p_proyecto: string; p_concepto: string; p_valor: number; p_metodo: string }; Returns: Json }
+      igl_ingresar: { Args: { p_miembro: string | null; p_nombre: string; p_concepto: string; p_fondo: string; p_valor: number; p_metodo: string; p_culto: string; p_fecha: string; p_evento: string }; Returns: Json }
+      igl_egresar: { Args: { p_fondo: string; p_concepto: string; p_obra_social: boolean; p_valor: number; p_metodo: string; p_culto: string; p_fecha: string; p_evento: string }; Returns: Json }
+      igl_cerrar: { Args: { p_culto: string; p_desde: string; p_hasta: string }; Returns: Json }
+      parq_cobrar_abono: { Args: { p_abonado: string; p_metodo: string }; Returns: Json }
       tex_consumir: { Args: { p_orden: string; p_insumo: string; p_cantidad: number }; Returns: Json }
       tex_entregar: { Args: { p_orden: string; p_cantidad: number; p_metodo: string }; Returns: Json }
       flo_vender: { Args: { p_arreglo: string; p_cantidad: number; p_cliente: string; p_telefono: string; p_destinatario: string; p_direccion: string; p_tarjeta: string; p_fecha: string; p_franja: string; p_metodo: string }; Returns: Json }

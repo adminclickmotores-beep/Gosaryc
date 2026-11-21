@@ -15,6 +15,16 @@ const IDS_DEDICADOS = new Set<string>([
   "cl_agenda", "cl_pacientes", "cl_historias", "cl_vacunas", "cl_alertas", "cl_caja", "cl_servicios", "cl_insumos", "cl_comisiones",
   "vehiculos", "caja_diaria", "compras_veh", "consignaciones_veh", "vehiculos_usados", "creditos_veh",
   "separaciones_veh", "vencimientos_veh", "documentos_veh", "cotizaciones_veh", "financiacion_veh", "financiacion_agro",
+  // Tanda 1 (#35 a #39)
+  "agenda_serv", "ordenes_serv_cita", "unidades_cond", "cuotas_cond", "prestamos_reg", "cronograma_cuotas", "cobranza_diaria",
+  "ordenes_confeccion", "cortes_tela", "insumos_textil", "arreglos_flor", "encargos_flor", "flores_frescas",
+  // Tanda 2 (#40 a #45)
+  "flota_alquiler", "reservas_alquiler", "contratos_alquiler", "entregas_alq", "multas_alquiler",
+  "puestos_seg", "turnos_seg", "dotacion_seg", "novedades_seg",
+  "lotes_ganado", "produccion_pecuaria", "sanidad_pecuaria", "alimentacion_pecuaria", "guias_movilizacion",
+  "beneficiarios_fund", "donaciones_fund", "proyectos_fund", "voluntarios_fund",
+  "miembros_iglesia", "aportes_iglesia", "eventos_iglesia", "grupos_iglesia", "visitas_iglesia",
+  "parq_abonados",
 ]);
 
 export type FilaAuditoria = {

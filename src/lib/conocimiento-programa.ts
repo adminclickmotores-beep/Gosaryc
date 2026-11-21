@@ -162,6 +162,16 @@ export const MANUAL_FIJO = `
 - Auto-actualización: escritorio con electron-updater (GitHub Releases, revisa al abrir y cada 6 h) y web/PWA con service worker v48; banner «¡Nueva versión disponible! Haz clic aquí para actualizar ahora» que instala sin borrar datos.
 - Sin programa instalado todo funciona: facturas en tirilla 58/80 mm o carta PDF con el diálogo limpio del navegador (respaldo con descarga si lo bloquea) y envío por WhatsApp (wa.me) de pedidos, facturas y recordatorios.
 - Nube automática: .github/workflows/compilar-todo.yml compila Windows + Linux + Android al subir versión o pulsar Run workflow; guía súper sencilla en LEEME-INSTALADORES-FACIL.txt.
+
+# 19. NEGOCIOS CON PANTALLAS PROPIAS (45 DE 45) Y MORA EN PRÉSTAMOS
+- Servicios/citas, condominio, préstamos, taller textil y floristería: agenda, cuotas con mora, amortización, órdenes por talla y color, y arreglos con receta; todo cobra a Caja y genera asiento contable.
+- Préstamos: cada crédito guarda su tasa de mora mensual; las cuotas vencidas suman mora según los días de atraso y el abono se imputa primero a mora, luego a interés y después a capital.
+- Alquiler de vehículos: flota (Disponible, Alquilado, Mantenimiento) con foto, contrato por días u horas con depósito en garantía, kilometraje y combustible de salida y entrega, recargos automáticos (km extra, combustible, demora, daños), liquidación en Caja y cobro de multas y peajes al cliente.
+- Seguridad y aseo: puestos y contratos mensuales, turnos con cobertura y reemplazos, bitácora de novedades y rondas, dotación entregada desde inventario con próxima reposición y facturación mensual automática con recaudo.
+- Ganadería: animales por chapeta, lote y potrero, pesajes con ganancia diaria, sanidad por animal o lote, producción, alimentación con consumo por lote, guías ICA y venta por kilo o por cabeza.
+- Fundación: donantes, donaciones en dinero o especie con certificado imprimible, proyectos con ejecución presupuestal (no deja gastar más del presupuesto), beneficiarios y voluntarios con certificado.
+- Iglesia: miembros y familias, ministerios, diezmos, ofrendas, primicias y eventos separados por fondo (un egreso no puede superar el saldo del fondo), obra social y cierre por culto o periodo que bloquea más movimientos.
+- Parqueadero: turnos por hora y abonados mensuales con vigencia, aviso por WhatsApp y cobro a Caja con recibo.
 `;
 
 const RUTAS_INSTRUCTIVO = [

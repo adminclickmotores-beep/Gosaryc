@@ -1064,7 +1064,7 @@ TIPOS_NEGOCIO.push({
   usaPedidos: false,
   modulos: [
     m("parq_turnos", "Turnos y cobro por horas", "Placa, hora de entrada y salida, tarifa por hora y cobro automático que entra a Caja y Contabilidad.", Car),
-    CLIENTES,
+    m("parq_abonados", "Abonados y mensualidades", "Vehículos con mensualidad: vigencia, aviso de vencimiento por WhatsApp y cobro a Caja con recibo.", Users),
     FACTURAS, PAGOS, ...propios("parq", "caja", "finanzas"),
   ],
 });

@@ -37,6 +37,12 @@ import { CuotasCondominio, UnidadesCondominio } from "@/components/condominio/Co
 import { PrestamosCobranza, PrestamosCreditos, PrestamosCronograma } from "@/components/prestamos/PrestamosModulos";
 import { InsumosTextil, OrdenesConfeccion } from "@/components/textil/TextilModulos";
 import { CatalogoArreglos, EncargosFlor, FloresStock } from "@/components/floristeria/FloristeriaModulos";
+import { ContratosAlquiler, EntregasAlquiler, FlotaAlquiler, MultasAlquiler, ReservasAlquiler } from "@/components/alquiler/AlquilerModulos";
+import { DotacionSeguridad, NovedadesSeguridad, PuestosSeguridad, TurnosSeguridad } from "@/components/seguridad/SeguridadModulos";
+import { AnimalesGanaderia, GuiasGanaderia, InsumosGanaderia, ProduccionGanaderia, SanidadGanaderia } from "@/components/ganaderia/GanaderiaModulos";
+import { BeneficiariosFundacion, DonacionesFundacion, ProyectosFundacion, VoluntariosFundacion } from "@/components/fundacion/FundacionModulos";
+import { AportesIglesia, EventosIglesia, GruposIglesia, MiembrosIglesia, VisitasIglesia } from "@/components/iglesia/IglesiaModulos";
+import { AbonadosParqueadero } from "@/components/parqueadero/AbonadosParqueadero";
 
 // Módulos pesados con carga diferida: el panel abre al instante y cada uno
 // baja solo cuando se visita (cero lags en la página principal y el login).
@@ -178,6 +184,30 @@ function ModuloPage() {
   if (id === "arreglos_flor") return <CatalogoArreglos />;
   if (id === "encargos_flor") return <EncargosFlor />;
   if (id === "flores_frescas") return <FloresStock />;
+  if (id === "flota_alquiler") return <FlotaAlquiler />;
+  if (id === "reservas_alquiler") return <ReservasAlquiler />;
+  if (id === "contratos_alquiler") return <ContratosAlquiler />;
+  if (id === "entregas_alq") return <EntregasAlquiler />;
+  if (id === "multas_alquiler") return <MultasAlquiler />;
+  if (id === "puestos_seg") return <PuestosSeguridad />;
+  if (id === "turnos_seg") return <TurnosSeguridad />;
+  if (id === "dotacion_seg") return <DotacionSeguridad />;
+  if (id === "novedades_seg") return <NovedadesSeguridad />;
+  if (id === "lotes_ganado") return <AnimalesGanaderia />;
+  if (id === "produccion_pecuaria") return <ProduccionGanaderia />;
+  if (id === "sanidad_pecuaria") return <SanidadGanaderia />;
+  if (id === "alimentacion_pecuaria") return <InsumosGanaderia />;
+  if (id === "guias_movilizacion") return <GuiasGanaderia />;
+  if (id === "donaciones_fund") return <DonacionesFundacion />;
+  if (id === "proyectos_fund") return <ProyectosFundacion />;
+  if (id === "beneficiarios_fund") return <BeneficiariosFundacion />;
+  if (id === "voluntarios_fund") return <VoluntariosFundacion />;
+  if (id === "miembros_iglesia") return <MiembrosIglesia />;
+  if (id === "aportes_iglesia") return <AportesIglesia />;
+  if (id === "eventos_iglesia") return <EventosIglesia />;
+  if (id === "grupos_iglesia") return <GruposIglesia />;
+  if (id === "visitas_iglesia") return <VisitasIglesia />;
+  if (id === "parq_abonados") return <AbonadosParqueadero />;
   if (id === "gim_checkin") return <CheckinGimnasio />;
   if (id === "gim_socios") return <SociosGimnasio />;
   if (id === "gim_planes") return <PlanesGimnasio />;
