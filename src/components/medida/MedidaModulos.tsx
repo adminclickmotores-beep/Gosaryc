@@ -182,6 +182,17 @@ export function ObrasConstructora() {
               Planeado {dinero(capsObra.reduce((a, c) => a + Number(c.planeado), 0))} · Ejecutado {dinero(ejecutado)}
               {obra.presupuesto > 0 && <> · Presupuesto {dinero(obra.presupuesto)}</>}
             </p>
+            {(() => {
+              const planeadoTotal = capsObra.reduce((a, c) => a + Number(c.planeado), 0);
+              const financiero = planeadoTotal > 0 ? Math.round((ejecutado / planeadoTotal) * 100) : 0;
+              const fisico = cortesObra.length > 0 ? Math.max(...cortesObra.map((c) => Number(c.avance_pct))) : 0;
+              return (
+                <p className="text-sm font-medium text-foreground">
+                  Avance físico {fisico}% (último corte) · Avance financiero {financiero}% del presupuesto por capítulos
+                  {financiero > fisico + 10 && <span className="text-destructive"> · se gasta más rápido de lo que se construye</span>}
+                </p>
+              );
+            })()}
             {obra.presupuesto > 0 && ejecutado > obra.presupuesto && (
               <p className="text-sm font-medium text-destructive">⚠ Sobrecosto: lo ejecutado supera el presupuesto en {dinero(ejecutado - Number(obra.presupuesto))}.</p>
             )}
@@ -189,6 +200,7 @@ export function ObrasConstructora() {
               {capsObra.map((c) => (
                 <p key={c.id} className={`text-sm ${Number(c.ejecutado) > Number(c.planeado) ? "text-destructive" : "text-muted-foreground"}`}>
                   {c.nombre}: planeado {dinero(c.planeado)} · ejecutado {dinero(c.ejecutado)}
+                  {Number(c.planeado) > 0 ? ` (${Math.round((Number(c.ejecutado) / Number(c.planeado)) * 100)}%)` : ""}
                   {Number(c.ejecutado) > Number(c.planeado) ? " (sobrecosto)" : ""}
                 </p>
               ))}

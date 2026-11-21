@@ -6,7 +6,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { usePermisos } from "@/hooks/use-permisos";
 import { Campo, Cargando, Encabezado, boton, botonSec, campo, dinero, num } from "@/components/comercio/ComercioModulos";
-import { escaparHtml } from "@/lib/exportes";
+import { escaparHtml, imprimirReporte } from "@/lib/exportes";
 
 const hoyIso = (): string => {
   const d = new Date();
@@ -1253,6 +1253,11 @@ export function EventosSalon() {
     });
     if (error) return toast.error(msg(error.message, "No se pudo reservar."));
     const id = (data as { id?: string } | null)?.id;
+    if (id) {
+      await supabase.from("eve_eventos").update({
+        invitados: Math.max(Math.round(num(invitados)), 0), menu: menu.trim() || null,
+      }).eq("id", id);
+    }
     if (id && Math.max(num(anticipo), 0) > 0) {
       await supabase.rpc("eve_abonar", { p_evento: id, p_valor: Math.max(num(anticipo), 0), p_metodo: metodo });
     }
@@ -1284,6 +1289,45 @@ export function EventosSalon() {
   const toggleTarea = async (t: Tarea) => {
     await supabase.from("eve_checklist").update({ listo: !t.listo }).eq("id", t.id);
     void cargar();
+  };
+
+  const liquidarSaldo = async (e: Eve) => {
+    if (Number(e.saldo) <= 0) return toast.error("El evento ya está pagado.");
+    const { error } = await supabase.rpc("eve_abonar", { p_evento: e.id, p_valor: Number(e.saldo), p_metodo: metodo });
+    if (error) return toast.error(msg(error.message, "No se pudo liquidar."));
+    await supabase.from("eve_eventos").update({ estado: "realizado" }).eq("id", e.id);
+    toast.success("Evento liquidado: el saldo final entró a Caja y Contabilidad.");
+    void cargar();
+  };
+
+  const guardarDetalle = async (e: Eve, campoNombre: "invitados" | "menu" | "alquiler" | "decoracion", valorTxt: string) => {
+    const cambios =
+      campoNombre === "invitados"
+        ? { invitados: Math.max(Math.round(num(valorTxt)), 0) }
+        : campoNombre === "menu"
+          ? { menu: valorTxt.trim() || null }
+          : campoNombre === "alquiler"
+            ? { alquiler: valorTxt.trim() || null }
+            : { decoracion: valorTxt.trim() || null };
+    const { error } = await supabase.from("eve_eventos").update(cambios).eq("id", e.id);
+    if (error) return toast.error(msg(error.message, "No se pudo guardar."));
+    void cargar();
+  };
+
+  const imprimirContrato = (e: Eve, abs: Abono[]) => {
+    imprimirReporte(
+      `Contrato de evento · ${e.cliente}`,
+      `Fecha ${e.fecha} · ${e.invitados} invitados${e.menu ? ` · menú ${e.menu}` : ""}`,
+      ["Concepto", "Detalle"],
+      [
+        ["Alquileres", e.alquiler ?? "-"],
+        ["Decoración", e.decoracion ?? "-"],
+        ["Anticipo", dinero(e.anticipo)],
+        ...abs.map((a): string[] => ["Abono", dinero(a.valor)]),
+        ["Saldo pendiente", dinero(e.saldo)],
+      ],
+      ["Valor total", dinero(e.valor)],
+    );
   };
 
   const cambiarEstado = async (e: Eve, estado: string) => {
@@ -1341,6 +1385,16 @@ export function EventosSalon() {
             {(["confirmado", "realizado", "cancelado"] as const).filter((x) => x !== ev.estado).map((x) => (
               <button key={x} type="button" className={botonSec} onClick={() => void cambiarEstado(ev, x)}>{x}</button>
             ))}
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button type="button" className={boton} onClick={() => void liquidarSaldo(ev)}>Liquidar saldo final</button>
+            <button type="button" className={botonSec} onClick={() => imprimirContrato(ev, abonosEv)}>Imprimir contrato</button>
+          </div>
+          <div key={ev.id} className="mt-3 grid gap-2 sm:grid-cols-2">
+            <Campo etiqueta="Invitados"><input className={campo} inputMode="numeric" defaultValue={ev.invitados} onBlur={(x) => void guardarDetalle(ev, "invitados", x.target.value)} /></Campo>
+            <Campo etiqueta="Menú / paquete"><input className={campo} defaultValue={ev.menu ?? ""} onBlur={(x) => void guardarDetalle(ev, "menu", x.target.value)} /></Campo>
+            <Campo etiqueta="Alquileres (mesas, sillas, mantelería)"><input className={campo} defaultValue={ev.alquiler ?? ""} onBlur={(x) => void guardarDetalle(ev, "alquiler", x.target.value)} /></Campo>
+            <Campo etiqueta="Decoración"><input className={campo} defaultValue={ev.decoracion ?? ""} onBlur={(x) => void guardarDetalle(ev, "decoracion", x.target.value)} /></Campo>
           </div>
           {abonosEv.length > 0 && <p className="mt-1 text-xs text-muted-foreground">Abonos: {abonosEv.map((a) => dinero(a.valor)).join(" + ")}</p>}
           <div className="mt-3 border-t border-glass-border pt-2">

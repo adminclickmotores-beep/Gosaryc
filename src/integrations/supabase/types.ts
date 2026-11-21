@@ -2643,9 +2643,9 @@ export type Database = {
         Relationships: []
       }
       lav_ordenes: {
-        Row: { abono: number; cliente: string; created_at: string; entrega: string | null; estado: string; id: string; owner_id: string | null; prendas: string; telefono: string | null; tipo_negocio: string | null; total: number }
-        Insert: { abono?: number; cliente: string; created_at?: string; entrega?: string | null; estado?: string; id?: string; owner_id?: string | null; prendas: string; telefono?: string | null; tipo_negocio?: string | null; total?: number }
-        Update: { abono?: number; cliente?: string; created_at?: string; entrega?: string | null; estado?: string; id?: string; owner_id?: string | null; prendas?: string; telefono?: string | null; tipo_negocio?: string | null; total?: number }
+        Row: { abono: number; cliente: string; created_at: string; entrega: string | null; estado: string; id: string; owner_id: string | null; peso_kg: number; prendas: string; servicio: string | null; telefono: string | null; tipo_negocio: string | null; total: number }
+        Insert: { abono?: number; cliente: string; created_at?: string; entrega?: string | null; estado?: string; id?: string; owner_id?: string | null; peso_kg?: number; prendas: string; servicio?: string | null; telefono?: string | null; tipo_negocio?: string | null; total?: number }
+        Update: { abono?: number; cliente?: string; created_at?: string; entrega?: string | null; estado?: string; id?: string; owner_id?: string | null; peso_kg?: number; prendas?: string; servicio?: string | null; telefono?: string | null; tipo_negocio?: string | null; total?: number }
         Relationships: []
       }
       prof_casos: {

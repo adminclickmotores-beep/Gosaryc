@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { imprimirReporte } from "@/lib/exportes";
 import { Campo, Cargando, Encabezado, boton, botonSec, campo, dinero, num } from "@/components/comercio/ComercioModulos";
 
 type Lav = Tables<"lav_ordenes">;
@@ -68,6 +69,25 @@ export function LavanderiaOrdenes() {
   const [prendas, setPrendas] = useState("");
   const [total, setTotal] = useState("");
   const [entrega, setEntrega] = useState("");
+  const [peso, setPeso] = useState("");
+  const [servicio, setServicio] = useState("Lavado y secado");
+
+  const imprimirTicket = (o: Lav) => {
+    imprimirReporte(
+      `Ticket de lavandería #${o.id.slice(0, 6).toUpperCase()}`,
+      `${o.cliente}${o.telefono ? ` · ${o.telefono}` : ""} · recibido ${new Date(o.created_at).toLocaleDateString("es-CO")}${o.entrega ? ` · entrega ${o.entrega}` : ""}`,
+      ["Concepto", "Detalle"],
+      [
+        ["Servicio", o.servicio ?? "Lavado"],
+        ["Prendas", o.prendas],
+        ["Peso (kg)", String(o.peso_kg ?? 0)],
+        ["Estado", o.estado],
+        ["Abono", dinero(o.abono)],
+        ["Saldo", dinero(Math.max(o.total - o.abono, 0))],
+      ],
+      ["Total", dinero(o.total)],
+    );
+  };
 
   const cargar = useCallback(async () => {
     const { data } = await supabase.from("lav_ordenes").select("*").order("created_at", { ascending: false }).limit(80);
@@ -84,9 +104,10 @@ export function LavanderiaOrdenes() {
     const { error } = await supabase.from("lav_ordenes").insert({
       cliente: cliente.trim(), telefono: tel.trim() || null, prendas: prendas.trim(),
       total: Math.max(num(total), 0), entrega: entrega || null,
+      peso_kg: Math.max(num(peso), 0), servicio: servicio.trim() || null,
     });
     if (error) return toast.error(msg(error.message, "No se pudo guardar."));
-    setCliente(""); setTel(""); setPrendas(""); setTotal(""); setEntrega("");
+    setCliente(""); setTel(""); setPrendas(""); setTotal(""); setEntrega(""); setPeso("");
     toast.success("Orden de lavado creada.");
     void cargar();
   };
@@ -104,27 +125,38 @@ export function LavanderiaOrdenes() {
         <Campo etiqueta="Cliente"><input className={campo} value={cliente} onChange={(e) => setCliente(e.target.value)} /></Campo>
         <Campo etiqueta="Celular"><input className={campo} inputMode="tel" value={tel} onChange={(e) => setTel(e.target.value)} /></Campo>
         <Campo etiqueta="Prendas"><input className={campo} value={prendas} onChange={(e) => setPrendas(e.target.value)} placeholder="2 pantalones, 3 camisas…" /></Campo>
+        <Campo etiqueta="Servicio">
+          <select className={campo} value={servicio} onChange={(e) => setServicio(e.target.value)}>
+            {["Lavado y secado", "Lavado y planchado", "Solo planchado", "Lavado en seco", "Cobijas y edredones"].map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </Campo>
+        <Campo etiqueta="Peso (kg)"><input className={campo} inputMode="decimal" value={peso} onChange={(e) => setPeso(e.target.value)} /></Campo>
         <Campo etiqueta="Total"><input className={campo} inputMode="decimal" value={total} onChange={(e) => setTotal(e.target.value)} /></Campo>
         <Campo etiqueta="Entrega"><input type="date" className={campo} value={entrega} onChange={(e) => setEntrega(e.target.value)} /></Campo>
         <div className="flex items-end"><button type="button" className={boton} onClick={() => void crear()}>Recibir prendas</button></div>
       </div>
       <div className="mt-3 space-y-2">
-        {lista.filter((o) => o.estado !== "cobrado").map((o) => {
+        {lista.filter((o) => o.estado !== "entregado").map((o) => {
           const wa = aWhatsapp(o.telefono, `Hola ${o.cliente}, tus prendas (${o.prendas}) ya están listas. Total ${dinero(o.total)}, abono ${dinero(o.abono)}, saldo ${dinero(Math.max(o.total - o.abono, 0))}.`);
           return (
             <div key={o.id} className="rounded-xl border border-glass-border p-3">
               <p className="font-semibold">{o.cliente} <span className="text-xs text-muted-foreground">· {o.estado}{o.entrega ? ` · entrega ${o.entrega}` : ""}</span></p>
-              <p className="text-xs text-muted-foreground">{o.prendas} · total {dinero(o.total)} · abono {dinero(o.abono)} · saldo {dinero(Math.max(o.total - o.abono, 0))}</p>
+              <p className="text-xs text-muted-foreground">{o.servicio ?? "Lavado"} · {o.prendas}{o.peso_kg > 0 ? ` · ${o.peso_kg} kg` : ""} · total {dinero(o.total)} · abono {dinero(o.abono)} · saldo {dinero(Math.max(o.total - o.abono, 0))}</p>
               <div className="mt-1 flex flex-wrap gap-2">
-                {o.estado === "recibida" && <button type="button" className={botonSec} onClick={() => void avanzar(o, "en_proceso")}>A proceso</button>}
-                {o.estado === "en_proceso" && <button type="button" className={botonSec} onClick={() => void avanzar(o, "lista")}>Lista</button>}
+                {o.estado === "recibida" && <button type="button" className={botonSec} onClick={() => void avanzar(o, "en_proceso")}>Pasar a lavado</button>}
+                {o.estado === "en_proceso" && <button type="button" className={botonSec} onClick={() => void avanzar(o, "planchado")}>Pasar a planchado</button>}
+                {(o.estado === "en_proceso" || o.estado === "planchado") && <button type="button" className={botonSec} onClick={() => void avanzar(o, "lista")}>Marcar lista</button>}
+                {(o.estado === "lista" || o.estado === "cobrado") && (
+                  <button type="button" className={botonSec} onClick={() => (o.total - o.abono > 0 ? toast.error("Cobra el saldo antes de entregar.") : void avanzar(o, "entregado"))}>Entregar al cliente</button>
+                )}
+                <button type="button" className={botonSec} onClick={() => imprimirTicket(o)}>Imprimir ticket</button>
                 {wa && <a className={botonSec} href={wa} target="_blank" rel="noreferrer"><MessageCircle className="h-4 w-4" /> Avisar</a>}
               </div>
-              <Cobro tabla="lav_ordenes" id={o.id} onListo={() => void cargar()} />
+              {o.total - o.abono > 0 && <Cobro tabla="lav_ordenes" id={o.id} onListo={() => void cargar()} />}
             </div>
           );
         })}
-        {lista.filter((o) => o.estado !== "cobrado").length === 0 && <p className="text-sm text-muted-foreground">Sin órdenes abiertas.</p>}
+        {lista.filter((o) => o.estado !== "entregado").length === 0 && <p className="text-sm text-muted-foreground">Sin órdenes abiertas.</p>}
       </div>
     </GlassPanel>
   );
