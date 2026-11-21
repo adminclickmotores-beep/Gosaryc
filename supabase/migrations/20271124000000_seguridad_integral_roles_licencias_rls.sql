@@ -349,6 +349,7 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS public.aprobar_pago_licencia(uuid);
 CREATE OR REPLACE FUNCTION public.aprobar_pago_licencia(p_id uuid)
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -414,6 +415,7 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS public.aprobar_pase_dias_licencia(uuid);
 CREATE OR REPLACE FUNCTION public.aprobar_pase_dias_licencia(p_id uuid)
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -480,6 +482,7 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS public.admin_crear_licencia(text, text, text, text, integer);
 CREATE OR REPLACE FUNCTION public.admin_crear_licencia(
   p_cliente text,
   p_telefono text,
@@ -506,6 +509,7 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS public.admin_crear_pase_dias(text, text, text, integer);
 CREATE OR REPLACE FUNCTION public.admin_crear_pase_dias(
   p_cliente text,
   p_telefono text DEFAULT '',
@@ -557,6 +561,7 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS public.aprobar_solicitud_licencia(uuid, text);
 CREATE OR REPLACE FUNCTION public.aprobar_solicitud_licencia(p_id uuid, p_tipo text)
 RETURNS text
 LANGUAGE plpgsql
@@ -586,6 +591,7 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS public.aprobar_solicitud_pase_dias(uuid, integer);
 CREATE OR REPLACE FUNCTION public.aprobar_solicitud_pase_dias(p_id uuid, p_dias integer DEFAULT 1)
 RETURNS text
 LANGUAGE plpgsql
