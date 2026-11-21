@@ -2,6 +2,45 @@
 -- y Servicios Profesionales/Tecnología (tickets, contratos recurrentes, cobro con retenciones).
 -- Todo con owner_id = mi_negocio_id(), RLS activo y SET search_path = public. No borra datos.
 
+-- 0. Tablas base (idénticas a la migración 20271118120000; IF NOT EXISTS, no cambia nada si ya existen)
+CREATE TABLE IF NOT EXISTS public.inm_propiedades (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id uuid DEFAULT public.mi_negocio_id(),
+  tipo_negocio text DEFAULT public.tipo_negocio_actual(),
+  titulo text NOT NULL CHECK (length(trim(titulo)) >= 2),
+  matricula text,
+  direccion text,
+  modalidad text NOT NULL DEFAULT 'arriendo' CHECK (modalidad IN ('venta', 'arriendo')),
+  canon numeric NOT NULL DEFAULT 0 CHECK (canon >= 0),
+  administracion numeric NOT NULL DEFAULT 0 CHECK (administracion >= 0),
+  precio_venta numeric NOT NULL DEFAULT 0 CHECK (precio_venta >= 0),
+  propietario text,
+  telefono_prop text,
+  estado text NOT NULL DEFAULT 'disponible' CHECK (estado IN ('disponible', 'arrendado', 'mantenimiento', 'vendido')),
+  notas text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS inm_prop_owner_idx ON public.inm_propiedades (owner_id, estado);
+ALTER TABLE public.inm_propiedades ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS public.agr_lotes (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id uuid DEFAULT public.mi_negocio_id(),
+  tipo_negocio text DEFAULT public.tipo_negocio_actual(),
+  nombre text NOT NULL CHECK (length(trim(nombre)) >= 2),
+  cultivo text,
+  superficie numeric NOT NULL DEFAULT 0 CHECK (superficie >= 0),
+  unidad text NOT NULL DEFAULT 'ha',
+  stock numeric NOT NULL DEFAULT 0 CHECK (stock >= 0),
+  costo_acumulado numeric NOT NULL DEFAULT 0 CHECK (costo_acumulado >= 0),
+  estado text NOT NULL DEFAULT 'activo' CHECK (estado IN ('activo', 'cosechado', 'descanso')),
+  fecha_siembra date,
+  notas text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS agr_lotes_owner_idx ON public.agr_lotes (owner_id, nombre);
+ALTER TABLE public.agr_lotes ENABLE ROW LEVEL SECURITY;
+
 -- 1. Inmobiliaria
 ALTER TABLE public.inm_propiedades ADD COLUMN IF NOT EXISTS proyecto text;
 ALTER TABLE public.inm_propiedades ADD COLUMN IF NOT EXISTS torre text;
@@ -69,6 +108,10 @@ CREATE TABLE IF NOT EXISTS public.tec_contratos (
 CREATE INDEX IF NOT EXISTS tec_contratos_owner_idx ON public.tec_contratos (owner_id, activo);
 
 -- 4. RLS estricto + sin borrado físico
+ALTER TABLE public.inm_ventas ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.agr_labores ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.tec_tickets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.tec_contratos ENABLE ROW LEVEL SECURITY;
 DO $$
 DECLARE
   t text;
