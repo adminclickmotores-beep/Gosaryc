@@ -149,7 +149,7 @@ export function OrdenesTaller({ rubroFijo }: { rubroFijo?: string }) {
       identificador: ident.trim().toUpperCase(), marca: marca.trim() || null, modelo: modelo.trim() || null,
       kilometraje: km.trim() || null, clave_patron: clave.trim() || null, combustible,
       checklist: checks, tecnico: tecnico.trim() || null, mano_obra: num(mano),
-      total: num(mano), comision_pct: Math.min(Math.max(num(pct), 0), 100),
+      total: num(mano), comision_pct: esAdmin ? Math.min(Math.max(num(pct), 0), 100) : 0,
       dias_garantia: Math.max(Math.round(num(garantia)), 0), notas: notas.trim() || null,
     }).select("id").single();
     if (error || !data) {

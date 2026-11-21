@@ -1,15 +1,16 @@
--- Security hardening migration:
--- 1. verificar_mismo_dueno & registro_es_del_negocio: remove dynamic SQL injection from caller input, enforce auth.uid() server-side.
--- 2. Business subscriptions (suscripciones_negocio / pagos_licencia): restrict activation/modification to superadmin/service_role only.
--- 3. License expiry enforcement on sales: restrictive RLS + BEFORE INSERT trigger blocking sales when license is expired/inactive.
--- 4. Staff commission protection: server-side calculation, capping, and blocking non-admin commission inflation on insert/update.
--- 5. Desktop license codes: high-entropy generator, salted SHA-256 hash storage, constant-time verification, and rate limiting.
--- 6. Platform support access: server-side verified support role table (soporte_plataforma) + locked tickets_soporte RLS.
+-- Comprehensive Security Hardening Migration
+-- Fixes all 6 security findings with zero invalid column references and zero dynamic SQL injection:
+-- 1. Prevent users from awarding themselves a role, money, or a win (org_members, campaign_variants, equipo_negocio, claves_activacion, suscripciones_negocio, pagos_licencia).
+-- 2. Enforce license expiry on all sales tables (restrictive RLS + BEFORE INSERT trigger using real suscripciones_negocio columns).
+-- 3. Prevent staff from inflating commissions (server-side calculation/capping + locking bel_servicios/cl_servicios/cl_comisiones/tal_ordenes/bel_atenciones).
+-- 4. Prevent guessing desktop license codes (high-entropy 100-bit codes, salted SHA-256 hashes, constant-time compare, rate limiting, no unauthenticated code leaks).
+-- 5. Lock platform support access (server-verified soporte_plataforma table + locked tickets_soporte RLS + hardened reclamar_acceso).
+-- 6. Prevent workspace/business members from linking another business's customer, patient, lead, or org resource (static allowlist FK ownership triggers).
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- ============================================================================
--- 1. HARDEN verificar_mismo_dueno & registro_es_del_negocio (no caller-shaped SQL)
+-- 0. HARDEN registro_es_del_negocio & verificar_mismo_dueno (NO CALLER-SHAPED SQL)
 -- ============================================================================
 CREATE OR REPLACE FUNCTION public.registro_es_del_negocio(
   p_tabla text,
@@ -29,7 +30,6 @@ BEGIN
     RETURN false;
   END IF;
 
-  -- Verify server-side that the authenticated caller belongs to p_owner (or is superadmin)
   IF NOT public.es_superadmin() THEN
     v_caller_owner := public.mi_negocio_id();
     IF v_caller_owner IS NULL OR (v_caller_owner <> p_owner AND auth.uid() <> p_owner) THEN
@@ -37,10 +37,11 @@ BEGIN
     END IF;
   END IF;
 
-  -- Strictly static allowlist: caller input never shapes any SQL command
   CASE p_tabla
     WHEN 'negocio_config' THEN
       RETURN EXISTS (SELECT 1 FROM public.negocio_config WHERE id = p_id AND owner_id = p_owner);
+    WHEN 'restaurante_clientes' THEN
+      RETURN EXISTS (SELECT 1 FROM public.restaurante_clientes WHERE id = p_id AND owner_id = p_owner);
     WHEN 'restaurante_productos' THEN
       RETURN EXISTS (SELECT 1 FROM public.restaurante_productos WHERE id = p_id AND owner_id = p_owner);
     WHEN 'restaurante_pedidos' THEN
@@ -61,18 +62,25 @@ BEGIN
       RETURN EXISTS (SELECT 1 FROM public.bel_servicios WHERE id = p_id AND owner_id = p_owner);
     WHEN 'bel_citas' THEN
       RETURN EXISTS (SELECT 1 FROM public.bel_citas WHERE id = p_id AND owner_id = p_owner);
+    WHEN 'cl_pacientes' THEN
+      RETURN EXISTS (SELECT 1 FROM public.cl_pacientes WHERE id = p_id AND owner_id = p_owner);
     WHEN 'crm_leads' THEN
       RETURN EXISTS (SELECT 1 FROM public.crm_leads WHERE id = p_id AND owner_id = p_owner);
+    WHEN 'edu_estudiantes' THEN
+      RETURN EXISTS (SELECT 1 FROM public.edu_estudiantes WHERE id = p_id AND owner_id = p_owner);
+    WHEN 'sst_empresas' THEN
+      RETURN EXISTS (SELECT 1 FROM public.sst_empresas WHERE id = p_id AND owner_id = p_owner);
+    WHEN 'sst_trabajadores' THEN
+      RETURN EXISTS (SELECT 1 FROM public.sst_trabajadores WHERE id = p_id AND owner_id = p_owner);
     ELSE
       RETURN false;
   END CASE;
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.registro_es_del_negocio(text, uuid, uuid) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.registro_es_del_negocio(text, uuid, uuid) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.registro_es_del_negocio(text, uuid, uuid) TO authenticated;
 
--- Harden trigger function verificar_mismo_dueno() so TG_ARGV / caller input cannot inject SQL
 CREATE OR REPLACE FUNCTION public.verificar_mismo_dueno()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -82,13 +90,12 @@ AS $$
 DECLARE
   v_tabla text := lower(trim(COALESCE(TG_ARGV[0], '')));
   v_col text := lower(trim(COALESCE(TG_ARGV[1], '')));
-  v_row jsonb;
+  v_row jsonb := to_jsonb(NEW);
   v_ref_text text;
   v_ref_id uuid;
   v_owner uuid;
   v_caller_owner uuid;
 BEGIN
-  v_row := to_jsonb(NEW);
   IF jsonb_typeof(v_row) <> 'object' THEN
     RAISE EXCEPTION 'Registro inválido';
   END IF;
@@ -98,7 +105,6 @@ BEGIN
     RAISE EXCEPTION 'Falta el propietario del registro';
   END IF;
 
-  -- Enforce authenticated session ownership server-side
   IF auth.uid() IS NOT NULL AND NOT public.es_superadmin() THEN
     v_caller_owner := public.mi_negocio_id();
     IF v_caller_owner IS NULL OR (v_caller_owner <> v_owner AND auth.uid() <> v_owner) THEN
@@ -106,7 +112,6 @@ BEGIN
     END IF;
   END IF;
 
-  -- Validate column identifier strictly (plain snake_case only)
   IF v_col = '' OR v_col !~ '^[a-z][a-z0-9_]{0,62}$' THEN
     RAISE EXCEPTION 'Columna de referencia inválida';
   END IF;
@@ -130,7 +135,6 @@ BEGIN
 END;
 $$;
 
--- Revoke direct RPC execution of any verificar_mismo_dueno overload from anon/authenticated
 DO $$
 DECLARE
   r record;
@@ -146,8 +150,119 @@ BEGIN
 END $$;
 
 -- ============================================================================
--- 2. LOCK BUSINESS SUBSCRIPTION ACTIVATION TO SUPERADMIN / SERVICE_ROLE ONLY
+-- 1. PREVENT USERS FROM AWARDING THEMSELVES A ROLE, MONEY, OR A WIN
 -- ============================================================================
+-- 1a. Lock org_members so users cannot self-promote to owner/admin or join arbitrary orgs
+DO $$
+DECLARE
+  pol record;
+BEGIN
+  IF to_regclass('public.org_members') IS NOT NULL THEN
+    ALTER TABLE public.org_members ENABLE ROW LEVEL SECURITY;
+    FOR pol IN
+      SELECT policyname FROM pg_policies WHERE schemaname = 'public' AND tablename = 'org_members'
+    LOOP
+      EXECUTE format('DROP POLICY IF EXISTS %I ON public.org_members', pol.policyname);
+    END LOOP;
+
+    CREATE POLICY "org_members_select_member"
+      ON public.org_members
+      FOR SELECT
+      TO authenticated
+      USING (user_id = auth.uid() OR public.is_org_member(org_id));
+
+    CREATE POLICY "org_members_insert_owner_or_bootstrap"
+      ON public.org_members
+      FOR INSERT
+      TO authenticated
+      WITH CHECK (
+        public.has_org_role(org_id, 'owner'::public.org_role)
+        OR (
+          user_id = auth.uid()
+          AND role = 'owner'::public.org_role
+          AND NOT EXISTS (SELECT 1 FROM public.org_members om WHERE om.org_id = org_members.org_id)
+        )
+      );
+
+    CREATE POLICY "org_members_update_owner_only"
+      ON public.org_members
+      FOR UPDATE
+      TO authenticated
+      USING (public.has_org_role(org_id, 'owner'::public.org_role))
+      WITH CHECK (public.has_org_role(org_id, 'owner'::public.org_role));
+
+    CREATE POLICY "org_members_delete_owner_or_self"
+      ON public.org_members
+      FOR DELETE
+      TO authenticated
+      USING (public.has_org_role(org_id, 'owner'::public.org_role) OR user_id = auth.uid());
+  END IF;
+END $$;
+
+-- 1b. Prevent non-owners/non-admins from marking campaign_variants.is_winner = true
+CREATE OR REPLACE FUNCTION public.proteger_ganador_campana()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF auth.uid() IS NOT NULL AND NOT public.es_superadmin() THEN
+    IF (TG_OP = 'INSERT' AND NEW.is_winner = true)
+       OR (TG_OP = 'UPDATE' AND NEW.is_winner IS DISTINCT FROM OLD.is_winner) THEN
+      IF NOT public.has_org_role_any(NEW.org_id, ARRAY['owner'::public.org_role, 'admin'::public.org_role]) THEN
+        RAISE EXCEPTION 'Solo administradores de la organización pueden declarar una variante ganadora';
+      END IF;
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DO $$
+BEGIN
+  IF to_regclass('public.campaign_variants') IS NOT NULL THEN
+    DROP TRIGGER IF EXISTS trg_proteger_ganador_campana ON public.campaign_variants;
+    CREATE TRIGGER trg_proteger_ganador_campana
+      BEFORE INSERT OR UPDATE ON public.campaign_variants
+      FOR EACH ROW
+      EXECUTE FUNCTION public.proteger_ganador_campana();
+  END IF;
+END $$;
+
+-- 1c. Lock equipo_negocio so staff cannot edit their own modules/roles
+DO $$
+DECLARE
+  pol record;
+BEGIN
+  IF to_regclass('public.equipo_negocio') IS NOT NULL THEN
+    ALTER TABLE public.equipo_negocio ENABLE ROW LEVEL SECURITY;
+    FOR pol IN
+      SELECT policyname FROM pg_policies WHERE schemaname = 'public' AND tablename = 'equipo_negocio'
+    LOOP
+      EXECUTE format('DROP POLICY IF EXISTS %I ON public.equipo_negocio', pol.policyname);
+    END LOOP;
+
+    CREATE POLICY "equipo_negocio_select_own_or_admin"
+      ON public.equipo_negocio
+      FOR SELECT
+      TO authenticated
+      USING (
+        user_id = auth.uid()
+        OR public.es_superadmin()
+        OR public.es_dueno_o_admin_negocio(public.mi_negocio_id())
+      );
+
+    CREATE POLICY "equipo_negocio_manage_admin_only"
+      ON public.equipo_negocio
+      FOR ALL
+      TO authenticated
+      USING (public.es_superadmin() OR public.es_dueno_o_admin_negocio(public.mi_negocio_id()))
+      WITH CHECK (public.es_superadmin() OR public.es_dueno_o_admin_negocio(public.mi_negocio_id()));
+  END IF;
+END $$;
+
+-- 1d. Lock suscripciones_negocio, pagos_licencia, and claves_activacion
 DO $$
 DECLARE
   pol record;
@@ -155,9 +270,7 @@ BEGIN
   IF to_regclass('public.suscripciones_negocio') IS NOT NULL THEN
     ALTER TABLE public.suscripciones_negocio ENABLE ROW LEVEL SECURITY;
     FOR pol IN
-      SELECT policyname
-      FROM pg_policies
-      WHERE schemaname = 'public' AND tablename = 'suscripciones_negocio'
+      SELECT policyname FROM pg_policies WHERE schemaname = 'public' AND tablename = 'suscripciones_negocio'
     LOOP
       EXECUTE format('DROP POLICY IF EXISTS %I ON public.suscripciones_negocio', pol.policyname);
     END LOOP;
@@ -166,11 +279,7 @@ BEGIN
       ON public.suscripciones_negocio
       FOR SELECT
       TO authenticated
-      USING (
-        owner_id = auth.uid()
-        OR owner_id = public.mi_negocio_id()
-        OR public.es_superadmin()
-      );
+      USING (owner_id = auth.uid() OR owner_id = public.mi_negocio_id() OR public.es_superadmin());
 
     CREATE POLICY "suscripciones_negocio_admin_insert"
       ON public.suscripciones_negocio
@@ -195,9 +304,7 @@ BEGIN
   IF to_regclass('public.pagos_licencia') IS NOT NULL THEN
     ALTER TABLE public.pagos_licencia ENABLE ROW LEVEL SECURITY;
     FOR pol IN
-      SELECT policyname
-      FROM pg_policies
-      WHERE schemaname = 'public' AND tablename = 'pagos_licencia'
+      SELECT policyname FROM pg_policies WHERE schemaname = 'public' AND tablename = 'pagos_licencia'
     LOOP
       EXECUTE format('DROP POLICY IF EXISTS %I ON public.pagos_licencia', pol.policyname);
     END LOOP;
@@ -215,6 +322,7 @@ BEGIN
       WITH CHECK (
         owner_id = auth.uid()
         AND COALESCE(estado, 'pendiente') = 'pendiente'
+        AND COALESCE(monto, 0) >= 0
       );
 
     CREATE POLICY "pagos_licencia_admin_update"
@@ -230,9 +338,25 @@ BEGIN
       TO authenticated
       USING (public.es_superadmin());
   END IF;
+
+  IF to_regclass('public.claves_activacion') IS NOT NULL THEN
+    ALTER TABLE public.claves_activacion ENABLE ROW LEVEL SECURITY;
+    FOR pol IN
+      SELECT policyname FROM pg_policies WHERE schemaname = 'public' AND tablename = 'claves_activacion'
+    LOOP
+      EXECUTE format('DROP POLICY IF EXISTS %I ON public.claves_activacion', pol.policyname);
+    END LOOP;
+
+    CREATE POLICY "claves_activacion_superadmin_only"
+      ON public.claves_activacion
+      FOR ALL
+      TO authenticated
+      USING (public.es_superadmin())
+      WITH CHECK (public.es_superadmin());
+  END IF;
 END $$;
 
--- Ensure subscription-activating RPCs can never be called by anon
+-- Prevent anon from calling subscription RPCs
 DO $$
 DECLARE
   fn text;
@@ -258,7 +382,7 @@ BEGIN
 END $$;
 
 -- ============================================================================
--- 3. ENFORCE LICENSE EXPIRY ON ALL SALES (RLS + BEFORE INSERT TRIGGER)
+-- 2. ENFORCE LICENSE EXPIRY ON ALL SALES (STRICT EXPIRY CHECK + RLS + TRIGGER)
 -- ============================================================================
 CREATE OR REPLACE FUNCTION public.licencia_activa_para(p_owner uuid)
 RETURNS boolean
@@ -286,12 +410,9 @@ BEGIN
     FROM public.suscripciones_negocio s
     WHERE s.owner_id = p_owner
       AND s.estado = 'activo'
-      AND (
-        COALESCE(
-          s.vence_en,
-          (s.vence_el::timestamptz + interval '1 day' - interval '1 second')
-        ) + make_interval(days => COALESCE(s.dias_gracia, 0))
-      ) >= now()
+      AND (s.vence_en IS NULL OR s.vence_en >= now())
+      AND (s.vence_el IS NULL OR s.vence_el >= current_date)
+      AND (s.vence_en IS NOT NULL OR s.vence_el IS NOT NULL)
   )
   INTO v_activa;
 
@@ -327,12 +448,21 @@ DECLARE
   tablas_venta text[] := ARRAY[
     'restaurante_pedidos',
     'com_ventas',
-    'fac_facturas',
+    'fac_emitidas',
     'bel_atenciones',
     'far_ventas',
-    'pan_ventas',
+    'tal_ordenes',
+    'cl_cobros',
     'gim_membresias',
-    'tal_ordenes'
+    'hot_reservas',
+    'edu_pensiones',
+    'opt_ordenes',
+    'eve_abonos',
+    'agr_cosechas',
+    'lav_ordenes',
+    'lic_domicilios',
+    'parq_turnos',
+    'ventas_veh_registros'
   ];
 BEGIN
   FOREACH t IN ARRAY tablas_venta LOOP
@@ -340,7 +470,6 @@ BEGIN
       SELECT 1 FROM information_schema.columns
       WHERE table_schema = 'public' AND table_name = t AND column_name = 'owner_id'
     ) THEN
-      -- Restrictive RLS policy: blocks signed-in inserts when license is expired
       EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', 'restrict_licencia_activa_' || t, t);
       EXECUTE format(
         'CREATE POLICY %I ON public.%I AS RESTRICTIVE FOR INSERT TO authenticated WITH CHECK (public.licencia_activa_para(owner_id))',
@@ -348,7 +477,6 @@ BEGIN
         t
       );
 
-      -- Trigger enforcement: also blocks SECURITY DEFINER RPC inserts when license is expired
       EXECUTE format('DROP TRIGGER IF EXISTS %I ON public.%I', 'trg_licencia_activa_' || t, t);
       EXECUTE format(
         'CREATE TRIGGER %I BEFORE INSERT ON public.%I FOR EACH ROW EXECUTE FUNCTION public.exigir_licencia_activa_venta()',
@@ -360,7 +488,7 @@ BEGIN
 END $$;
 
 -- ============================================================================
--- 4. PREVENT STAFF FROM INFLATING COMMISSIONS (SERVER-SIDE CALC & CAP)
+-- 3. PREVENT STAFF FROM INFLATING COMMISSIONS (SERVER-SIDE CALC & CAP)
 -- ============================================================================
 CREATE OR REPLACE FUNCTION public.proteger_comision_staff()
 RETURNS trigger
@@ -384,18 +512,36 @@ BEGIN
 
   v_es_admin := public.es_superadmin() OR (v_owner IS NOT NULL AND public.es_dueno_o_admin_negocio(v_owner));
 
+  -- Non-admin staff can NEVER modify service commission rates
+  IF TG_TABLE_NAME IN ('bel_servicios', 'cl_servicios') THEN
+    IF NOT v_es_admin THEN
+      IF (TG_OP = 'INSERT' AND COALESCE(NULLIF(v_new ->> 'comision_pct', '')::numeric, 0) <> 0)
+         OR (TG_OP = 'UPDATE' AND (v_new ->> 'comision_pct') IS DISTINCT FROM (v_old ->> 'comision_pct')) THEN
+        RAISE EXCEPTION 'Solo el administrador del negocio puede configurar porcentajes de comisión';
+      END IF;
+    END IF;
+    RETURN NEW;
+  END IF;
+
+  -- Non-admin staff can NEVER directly insert/update commission ledger tables
+  IF TG_TABLE_NAME IN ('cl_comisiones', 'comisiones_registros') THEN
+    IF NOT v_es_admin AND auth.uid() IS NOT NULL THEN
+      RAISE EXCEPTION 'Solo el administrador del negocio puede registrar o modificar comisiones';
+    END IF;
+    RETURN NEW;
+  END IF;
+
   -- Non-admin staff can NEVER modify commission fields on UPDATE
   IF TG_OP = 'UPDATE' AND NOT v_es_admin THEN
     IF (v_new ? 'comision_pct' AND (v_new ->> 'comision_pct') IS DISTINCT FROM (v_old ->> 'comision_pct'))
        OR (v_new ? 'comision' AND (v_new ->> 'comision') IS DISTINCT FROM (v_old ->> 'comision'))
-       OR (v_new ? 'comision_valor' AND (v_new ->> 'comision_valor') IS DISTINCT FROM (v_old ->> 'comision_valor'))
+       OR (v_new ? 'comision_total' AND (v_new ->> 'comision_total') IS DISTINCT FROM (v_old ->> 'comision_total'))
        OR (v_new ? 'liquidada' AND (v_new ->> 'liquidada') IS DISTINCT FROM (v_old ->> 'liquidada')) THEN
       RAISE EXCEPTION 'Solo el administrador del negocio puede modificar comisiones';
     END IF;
     RETURN NEW;
   END IF;
 
-  -- On INSERT (or admin UPDATE), compute and cap commission strictly server-side
   IF TG_TABLE_NAME = 'bel_atenciones' THEN
     IF NOT v_es_admin THEN
       v_svc_id := NULLIF(v_new ->> 'servicio_id', '')::uuid;
@@ -418,28 +564,22 @@ BEGIN
 
   IF TG_TABLE_NAME = 'tal_ordenes' THEN
     IF NOT v_es_admin THEN
-      -- Staff cannot inflate commission above 30% on new work orders
-      v_pct := LEAST(GREATEST(COALESCE(NULLIF(v_new ->> 'comision_pct', '')::numeric, 0), 0), 30);
+      v_pct := 0;
     ELSE
       v_pct := LEAST(GREATEST(COALESCE(NULLIF(v_new ->> 'comision_pct', '')::numeric, 0), 0), 100);
     END IF;
     v_base := GREATEST(COALESCE(NULLIF(v_new ->> 'mano_obra', '')::numeric, 0), 0);
-    IF v_new ? 'comision' THEN
-      NEW := jsonb_populate_record(NEW, jsonb_build_object(
-        'comision_pct', v_pct,
-        'comision', ROUND(v_base * v_pct / 100.0, 2)
-      ));
-    ELSE
-      NEW := jsonb_populate_record(NEW, jsonb_build_object('comision_pct', v_pct));
-    END IF;
+    NEW := jsonb_populate_record(NEW, jsonb_build_object(
+      'comision_pct', v_pct,
+      'comision', ROUND(v_base * v_pct / 100.0, 2)
+    ));
     RETURN NEW;
   END IF;
 
-  -- Generic commission-bearing table fallback
   IF v_new ? 'comision_pct' THEN
     v_pct := CASE
       WHEN v_es_admin THEN LEAST(GREATEST(COALESCE(NULLIF(v_new ->> 'comision_pct', '')::numeric, 0), 0), 100)
-      ELSE LEAST(GREATEST(COALESCE(NULLIF(v_new ->> 'comision_pct', '')::numeric, 0), 0), 30)
+      ELSE 0
     END;
     NEW := jsonb_populate_record(NEW, jsonb_build_object('comision_pct', v_pct));
   END IF;
@@ -456,8 +596,11 @@ BEGIN
     SELECT DISTINCT table_name
     FROM information_schema.columns
     WHERE table_schema = 'public'
-      AND column_name IN ('comision_pct', 'comision', 'comision_valor')
-      AND table_name NOT IN ('bel_servicios', 'bel_liquidaciones', 'tal_liquidaciones')
+      AND (
+        column_name IN ('comision_pct', 'comision', 'comision_total')
+        OR table_name IN ('cl_comisiones', 'comisiones_registros')
+      )
+      AND table_name NOT IN ('bel_liquidaciones', 'tal_liquidaciones', 'inm_liquidaciones')
   LOOP
     EXECUTE format('DROP TRIGGER IF EXISTS %I ON public.%I', 'trg_proteger_comision_' || r.table_name, r.table_name);
     EXECUTE format(
@@ -469,7 +612,7 @@ BEGIN
 END $$;
 
 -- ============================================================================
--- 5. HARDEN DESKTOP LICENSE CODES (HIGH ENTROPY, SALTED HASH, RATE LIMITING)
+-- 4. HARDEN DESKTOP LICENSE CODES (HIGH ENTROPY, SALTED HASH, RATE LIMITING)
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS public.licencia_intentos (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -482,7 +625,6 @@ CREATE INDEX IF NOT EXISTS idx_licencia_intentos_origen_fecha
 
 ALTER TABLE public.licencia_intentos ENABLE ROW LEVEL SECURITY;
 
--- Constant-time string comparison helper
 CREATE OR REPLACE FUNCTION public.comparar_constante(a text, b text)
 RETURNS boolean
 LANGUAGE plpgsql
@@ -511,7 +653,6 @@ BEGIN
 END;
 $$;
 
--- High-entropy license code generator (20 random base32 chars = 100 bits of entropy)
 CREATE OR REPLACE FUNCTION public.generar_codigo_alta_entropia(p_prefijo text DEFAULT 'GOS')
 RETURNS text
 LANGUAGE plpgsql
@@ -536,7 +677,6 @@ BEGIN
 END;
 $$;
 
--- Add salted hash columns to licencias and lock direct table access to superadmin only
 DO $$
 DECLARE
   pol record;
@@ -545,7 +685,6 @@ BEGIN
     ALTER TABLE public.licencias ADD COLUMN IF NOT EXISTS codigo_salt text;
     ALTER TABLE public.licencias ADD COLUMN IF NOT EXISTS codigo_hash text;
 
-    -- Backfill salted SHA-256 hashes for existing license rows
     UPDATE public.licencias
     SET codigo_salt = encode(extensions.gen_random_bytes(16), 'hex')
     WHERE codigo_salt IS NULL;
@@ -556,15 +695,29 @@ BEGIN
 
     ALTER TABLE public.licencias ENABLE ROW LEVEL SECURITY;
     FOR pol IN
-      SELECT policyname
-      FROM pg_policies
-      WHERE schemaname = 'public' AND tablename = 'licencias'
+      SELECT policyname FROM pg_policies WHERE schemaname = 'public' AND tablename = 'licencias'
     LOOP
       EXECUTE format('DROP POLICY IF EXISTS %I ON public.licencias', pol.policyname);
     END LOOP;
 
     CREATE POLICY "licencias_superadmin_all"
       ON public.licencias
+      FOR ALL
+      TO authenticated
+      USING (public.es_superadmin())
+      WITH CHECK (public.es_superadmin());
+  END IF;
+
+  IF to_regclass('public.solicitudes_licencia') IS NOT NULL THEN
+    ALTER TABLE public.solicitudes_licencia ENABLE ROW LEVEL SECURITY;
+    FOR pol IN
+      SELECT policyname FROM pg_policies WHERE schemaname = 'public' AND tablename = 'solicitudes_licencia'
+    LOOP
+      EXECUTE format('DROP POLICY IF EXISTS %I ON public.solicitudes_licencia', pol.policyname);
+    END LOOP;
+
+    CREATE POLICY "solicitudes_licencia_superadmin_all"
+      ON public.solicitudes_licencia
       FOR ALL
       TO authenticated
       USING (public.es_superadmin())
@@ -601,7 +754,6 @@ BEGIN
   END IF;
 END $$;
 
--- Rate-limited, salted-hash, constant-time desktop license verification
 CREATE OR REPLACE FUNCTION public.verificar_licencia_equipo(
   p_codigo text,
   p_equipo text
@@ -620,10 +772,8 @@ DECLARE
   v_encontrada record;
   v_match boolean := false;
 BEGIN
-  -- Prune stale attempts older than 24 hours
   DELETE FROM public.licencia_intentos WHERE creado_en < now() - interval '24 hours';
 
-  -- Enforce strict rate limit: max 5 failed attempts per 15 minutes
   SELECT count(*) INTO v_intentos
   FROM public.licencia_intentos
   WHERE clave_origen = v_origen
@@ -638,7 +788,6 @@ BEGIN
     RETURN jsonb_build_object('valida', false, 'motivo', 'no_existe');
   END IF;
 
-  -- Constant-time salted hash match
   FOR v_rec IN
     SELECT id, estado, vence_el, equipo_id, codigo_salt, codigo_hash
     FROM public.licencias
@@ -691,7 +840,7 @@ BEGIN
 END;
 $$;
 
--- Prevent unauthenticated device-ID enumeration from leaking plaintext license codes
+-- Fixed: joins licencias via licencia_id (solicitudes_licencia has no codigo column) and requires authenticated matching email
 CREATE OR REPLACE FUNCTION public.consultar_licencia_equipo(p_equipo text)
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -717,11 +866,12 @@ BEGIN
     RETURN jsonb_build_object('estado', 'sin_solicitud');
   END IF;
 
-  SELECT estado, correo, codigo
+  SELECT s.estado, s.correo, l.codigo
   INTO v_sol
-  FROM public.solicitudes_licencia
-  WHERE equipo_id = v_eq
-  ORDER BY created_at DESC
+  FROM public.solicitudes_licencia s
+  LEFT JOIN public.licencias l ON l.id = s.licencia_id
+  WHERE s.equipo_id = v_eq
+  ORDER BY s.created_at DESC
   LIMIT 1;
 
   IF NOT FOUND THEN
@@ -729,8 +879,9 @@ BEGIN
     RETURN jsonb_build_object('estado', 'sin_solicitud');
   END IF;
 
-  -- Only return the code when authenticated as the approved requester email (or superadmin)
-  IF v_sol.estado = 'aprobada' AND (public.es_superadmin() OR (auth.uid() IS NOT NULL AND v_email <> '' AND lower(trim(COALESCE(v_sol.correo, ''))) = v_email)) THEN
+  IF v_sol.estado = 'aprobada'
+     AND v_sol.codigo IS NOT NULL
+     AND (public.es_superadmin() OR (auth.uid() IS NOT NULL AND v_email <> '' AND lower(trim(COALESCE(v_sol.correo, ''))) = v_email)) THEN
     RETURN jsonb_build_object('estado', 'aprobada', 'codigo', v_sol.codigo);
   END IF;
 
@@ -739,7 +890,7 @@ END;
 $$;
 
 -- ============================================================================
--- 6. LOCK PLATFORM SUPPORT ACCESS (SERVER-SIDE VERIFIED APPROVAL ONLY)
+-- 5. LOCK PLATFORM SUPPORT ACCESS (SERVER-SIDE VERIFIED APPROVAL ONLY)
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS public.soporte_plataforma (
   user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -781,7 +932,6 @@ $$;
 REVOKE ALL ON FUNCTION public.es_soporte_plataforma() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.es_soporte_plataforma() TO authenticated;
 
--- Lock tickets_soporte RLS so nobody can claim support access by email spoofing or self-elevation
 DO $$
 DECLARE
   pol record;
@@ -789,9 +939,7 @@ BEGIN
   IF to_regclass('public.tickets_soporte') IS NOT NULL THEN
     ALTER TABLE public.tickets_soporte ENABLE ROW LEVEL SECURITY;
     FOR pol IN
-      SELECT policyname
-      FROM pg_policies
-      WHERE schemaname = 'public' AND tablename = 'tickets_soporte'
+      SELECT policyname FROM pg_policies WHERE schemaname = 'public' AND tablename = 'tickets_soporte'
     LOOP
       EXECUTE format('DROP POLICY IF EXISTS %I ON public.tickets_soporte', pol.policyname);
     END LOOP;
@@ -827,7 +975,6 @@ BEGIN
   END IF;
 END $$;
 
--- Harden reclamar_acceso() so it only links pre-approved active team invitations using server-side auth.users email
 CREATE OR REPLACE FUNCTION public.reclamar_acceso()
 RETURNS void
 LANGUAGE plpgsql
@@ -862,3 +1009,142 @@ $$;
 
 REVOKE ALL ON FUNCTION public.reclamar_acceso() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.reclamar_acceso() TO authenticated;
+
+-- ============================================================================
+-- 6. PREVENT LINKING ANOTHER BUSINESS'S CUSTOMER / PATIENT / LEAD / RESOURCE
+-- ============================================================================
+CREATE OR REPLACE FUNCTION public.verificar_referencia_mismo_negocio()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_row jsonb := to_jsonb(NEW);
+  v_owner uuid := NULLIF(v_row ->> 'owner_id', '')::uuid;
+  v_org uuid := NULLIF(v_row ->> 'org_id', '')::uuid;
+  v_ref uuid;
+BEGIN
+  -- Business-scoped customer / patient / lead / student / worker FK checks
+  IF v_owner IS NOT NULL THEN
+    IF TG_TABLE_NAME = 'restaurante_pedidos' THEN
+      v_ref := NULLIF(v_row ->> 'cliente_id', '')::uuid;
+      IF v_ref IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.restaurante_clientes WHERE id = v_ref AND owner_id = v_owner) THEN
+        RAISE EXCEPTION 'El cliente indicado no pertenece a este negocio';
+      END IF;
+    ELSIF TG_TABLE_NAME IN ('bel_citas', 'bel_fichas', 'bel_atenciones') THEN
+      v_ref := NULLIF(v_row ->> 'cliente_id', '')::uuid;
+      IF v_ref IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.bel_clientes WHERE id = v_ref AND owner_id = v_owner) THEN
+        RAISE EXCEPTION 'El cliente indicado no pertenece a este negocio';
+      END IF;
+      v_ref := NULLIF(v_row ->> 'servicio_id', '')::uuid;
+      IF v_ref IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.bel_servicios WHERE id = v_ref AND owner_id = v_owner) THEN
+        RAISE EXCEPTION 'El servicio indicado no pertenece a este negocio';
+      END IF;
+    ELSIF TG_TABLE_NAME IN ('cl_historias', 'cl_notas_aclaratorias', 'cl_vacunas', 'cl_citas', 'cl_cobros') THEN
+      v_ref := NULLIF(v_row ->> 'paciente_id', '')::uuid;
+      IF v_ref IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.cl_pacientes WHERE id = v_ref AND owner_id = v_owner) THEN
+        RAISE EXCEPTION 'El paciente indicado no pertenece a este negocio';
+      END IF;
+    ELSIF TG_TABLE_NAME IN ('crm_pqrs', 'crm_mensajes') THEN
+      v_ref := NULLIF(v_row ->> 'lead_id', '')::uuid;
+      IF v_ref IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.crm_leads WHERE id = v_ref AND owner_id = v_owner) THEN
+        RAISE EXCEPTION 'El contacto indicado no pertenece a este negocio';
+      END IF;
+    ELSIF TG_TABLE_NAME IN ('edu_pensiones', 'edu_asistencia', 'edu_notas') THEN
+      v_ref := NULLIF(v_row ->> 'estudiante_id', '')::uuid;
+      IF v_ref IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.edu_estudiantes WHERE id = v_ref AND owner_id = v_owner) THEN
+        RAISE EXCEPTION 'El estudiante indicado no pertenece a este negocio';
+      END IF;
+    ELSIF TG_TABLE_NAME = 'sst_trabajadores' THEN
+      v_ref := NULLIF(v_row ->> 'empresa_id', '')::uuid;
+      IF v_ref IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.sst_empresas WHERE id = v_ref AND owner_id = v_owner) THEN
+        RAISE EXCEPTION 'La empresa indicada no pertenece a este negocio';
+      END IF;
+    ELSIF TG_TABLE_NAME = 'sst_evaluaciones' THEN
+      v_ref := NULLIF(v_row ->> 'trabajador_id', '')::uuid;
+      IF v_ref IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.sst_trabajadores WHERE id = v_ref AND owner_id = v_owner) THEN
+        RAISE EXCEPTION 'El trabajador indicado no pertenece a este negocio';
+      END IF;
+    END IF;
+  END IF;
+
+  -- Organization / workspace cross-tenant link checks
+  IF v_org IS NOT NULL THEN
+    v_ref := NULLIF(v_row ->> 'workspace_id', '')::uuid;
+    IF v_ref IS NOT NULL AND TG_TABLE_NAME <> 'workspaces' THEN
+      IF NOT EXISTS (SELECT 1 FROM public.workspaces WHERE id = v_ref AND org_id = v_org) THEN
+        RAISE EXCEPTION 'El espacio de trabajo indicado no pertenece a esta organización';
+      END IF;
+    END IF;
+
+    IF TG_TABLE_NAME = 'imported_contacts' THEN
+      v_ref := NULLIF(v_row ->> 'list_id', '')::uuid;
+      IF v_ref IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.imported_lists WHERE id = v_ref AND org_id = v_org) THEN
+        RAISE EXCEPTION 'La lista de contactos no pertenece a esta organización';
+      END IF;
+    ELSIF TG_TABLE_NAME = 'lead_referrals' THEN
+      v_ref := NULLIF(v_row ->> 'referral_link_id', '')::uuid;
+      IF v_ref IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.referral_links WHERE id = v_ref AND org_id = v_org) THEN
+        RAISE EXCEPTION 'El enlace de referido no pertenece a esta organización';
+      END IF;
+    ELSIF TG_TABLE_NAME = 'link_clicks' THEN
+      v_ref := NULLIF(v_row ->> 'short_link_id', '')::uuid;
+      IF v_ref IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.short_links WHERE id = v_ref AND org_id = v_org) THEN
+        RAISE EXCEPTION 'El enlace corto no pertenece a esta organización';
+      END IF;
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DO $$
+DECLARE
+  t text;
+  tablas_fk text[] := ARRAY[
+    'restaurante_pedidos',
+    'bel_citas',
+    'bel_fichas',
+    'bel_atenciones',
+    'cl_historias',
+    'cl_notas_aclaratorias',
+    'cl_vacunas',
+    'cl_citas',
+    'cl_cobros',
+    'crm_pqrs',
+    'crm_mensajes',
+    'edu_pensiones',
+    'edu_asistencia',
+    'edu_notas',
+    'sst_trabajadores',
+    'sst_evaluaciones',
+    'audiences',
+    'campaign_variants',
+    'imported_contacts',
+    'imported_lists',
+    'lead_referrals',
+    'link_clicks',
+    'short_links',
+    'utm_links',
+    'workspace_activity',
+    'workspace_assets',
+    'workspace_budget_lines',
+    'workspace_comments',
+    'workspace_kpis',
+    'workspace_retros',
+    'workspace_share_links'
+  ];
+BEGIN
+  FOREACH t IN ARRAY tablas_fk LOOP
+    IF to_regclass('public.' || t) IS NOT NULL THEN
+      EXECUTE format('DROP TRIGGER IF EXISTS %I ON public.%I', 'trg_ref_mismo_negocio_' || t, t);
+      EXECUTE format(
+        'CREATE TRIGGER %I BEFORE INSERT OR UPDATE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.verificar_referencia_mismo_negocio()',
+        'trg_ref_mismo_negocio_' || t,
+        t
+      );
+    END IF;
+  END LOOP;
+END $$;
