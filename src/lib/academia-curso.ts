@@ -208,6 +208,7 @@ export const CURSO_GOSARYC = {
             "Marca «Pasa a una persona» en lo que necesites atender tú. Si el cliente se molesta o pide un humano, la IA se pausa sola y te avisa en «Avisos del agente».",
             "Mira los «Chats en vivo» para responder tú cuando quieras y aprueba en «Lo que el agente aprendió» las respuestas que diste con tus palabras. Para cambiar de celular usa «Cambiar número / Vincular nuevo QR»: no se borra nada.",
             "En el programa de escritorio el agente queda en la bandeja del sistema atendiendo 24/7 aunque cierres la ventana, con inicio automático y reconexión sola. Para salir del todo usa clic derecho en el icono > Salir.",
+            "Usa el código único de 6 caracteres en la tarjeta de Conexión Híbrida para vincular tu PC local con la web: cada cambio de precios, platos, vehículos o preguntas frecuentes se sincroniza al instante, ves el monitor de salud en vivo y puedes responder urgencias de forma remota desde la web.",
           ],
           practica: { ruta: "/restaurante", etiqueta: "Ir a Mi negocio" },
         },

@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { Bot, CheckCircle2, Cloud, Copy, Eye, EyeOff, Link2, RefreshCw, Wifi, WifiOff, Zap } from "lucide-react";
 import { ProbadorAgenteVivo } from "@/components/restaurante/ProbadorAgenteVivo";
 import { CerebroEntrenamiento } from "@/components/restaurante/CerebroEntrenamiento";
+import { PuenteWhatsAppLocal } from "@/components/restaurante/PuenteWhatsAppLocal";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
@@ -298,6 +299,8 @@ function AgenteWhatsAppReal() {
   return (
     <div className="space-y-4">
       {probarVivo && <ProbadorAgenteVivo onCerrar={() => setProbarVivo(false)} />}
+
+      <PuenteWhatsAppLocal apiBase={apiBase} claveLocal={claveLocal} />
 
       <GlassPanel className="space-y-5 p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">

@@ -116,6 +116,7 @@ export const MANUAL_FIJO = `
 - Agenda general: cada cita se cobra con «Cobrar» (valor + medio de pago): el dinero entra al turno de caja abierto y la cita queda cumplida; si el título coincide con un producto comercial, descuenta 1 unidad del inventario. Cancelar no borra: queda en el historial.
 - Importador masivo: en Productos, «Importar desde Excel o CSV» con plantilla descargable, vista previa y validación de errores antes de guardar.
 - Resumen del día por WhatsApp: en Caja, Reportes, Configuración y el Agente, «Enviar cierre por WhatsApp» manda ventas, gastos, efectivo, créditos del día y stock crítico al WhatsApp del dueño.
+- Conexión Híbrida WhatsApp IA (PC Local ↔ Web): en el módulo de Agente WhatsApp hay un código único de 6 caracteres para vincular la app local de Windows en 1 paso, un monitor de salud en vivo (Piloto Automático 200%, última sincronización y mensajes resueltos hoy), sincronización automática de catálogo/precios/reglas y toma de control remota para responder urgencias desde la web.
 - Panadería: «Vender de vitrina» descuenta por la receta elegida (por su código interno, no por el nombre) y entra a Caja. Gimnasio: cada socio muestra su carnet con código QR para el check-in.
 - Instalar app (ruta Instalar): instrucciones para instalar en celular (Android: menú del navegador > Instalar aplicación; iPhone: Compartir > Agregar a pantalla de inicio) o computador. Existe también una versión de escritorio que se activa con un código de licencia.
 

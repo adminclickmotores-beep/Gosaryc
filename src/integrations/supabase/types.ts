@@ -49,6 +49,91 @@ export type Database = {
           },
         ]
       }
+      whatsapp_bridge: {
+        Row: {
+          id: string
+          business_id: string
+          pairing_code: string
+          status: string
+          last_heartbeat: string | null
+          auto_pilot_200: boolean
+          config_version: number
+          mensajes_hoy: number
+          mensajes_hoy_fecha: string
+          last_sync_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          business_id: string
+          pairing_code: string
+          status?: string
+          last_heartbeat?: string | null
+          auto_pilot_200?: boolean
+          config_version?: number
+          mensajes_hoy?: number
+          mensajes_hoy_fecha?: string
+          last_sync_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          business_id?: string
+          pairing_code?: string
+          status?: string
+          last_heartbeat?: string | null
+          auto_pilot_200?: boolean
+          config_version?: number
+          mensajes_hoy?: number
+          mensajes_hoy_fecha?: string
+          last_sync_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_bridge_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "negocio_config"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_outbox: {
+        Row: {
+          id: string
+          business_id: string
+          telefono: string
+          mensaje: string
+          estado: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          business_id: string
+          telefono: string
+          mensaje: string
+          estado?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          business_id?: string
+          telefono?: string
+          mensaje?: string
+          estado?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_outbox_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "negocio_config"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipo_negocio: {
         Row: {
           activo: boolean

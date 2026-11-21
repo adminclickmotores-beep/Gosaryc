@@ -55,6 +55,8 @@ const PAUSA_HUMANO_MS = Number(process.env.PAUSA_HORAS || 6) * 3600 * 1000;
 const ARCHIVO_COLA = path.join(CARPETA, "cola-mensajes.json");
 const ARCHIVO_AVISOS = path.join(CARPETA, "avisos.json");
 const ARCHIVO_APREND = path.join(CARPETA, "aprendizaje-pendiente.json");
+const ARCHIVO_PUENTE = path.join(CARPETA, "bridge.json");
+const URL_PUENTE_NUBE = process.env.BRIDGE_URL || "https://gosaryc.lovable.app/api/public/whatsapp-bridge";
 
 function leerJson(f, respaldo) {
   try {
@@ -269,6 +271,7 @@ async function atender(linea, jid, chat) {
     await esperar(Math.min(4000, 800 + texto.length * 15)); // se ve natural, como si escribiera una persona
     const enviado = await linea.cliente.sendMessage(jid, texto);
     if (enviado?.id?._serialized) linea.propios.add(enviado.id._serialized);
+    contarMensajeHoy();
     chat.historial.push({ role: "assistant", content: texto });
     chat.noLeidos = 0;
     // Escalado a humano: cliente molesto, pago con problema o el agente no supo responder.
@@ -282,6 +285,7 @@ async function atender(linea, jid, chat) {
       chat.pausadoHasta = Date.now() + PAUSA_HUMANO_MS;
       console.log(`[${linea.nombre}] ${enmascararNumero(jid)}: pasa a una persona del equipo (el agente se pausa ${PAUSA_HUMANO_MS / 3600000} h).`);
       registrarAviso(linea.id, linea.nombre, "espera_humano", `Cliente espera a una persona (${tel})`, extracto, tel);
+      void reportarUrgenciaPuente(tel, extracto);
     } else if (confirma) {
       registrarAviso(linea.id, linea.nombre, "nuevo_pedido", `Posible pedido o cita por confirmar (${tel})`, extracto, tel);
     } else if (escalar) {
@@ -667,6 +671,21 @@ const servidor = http.createServer(async (req, res) => {
       return responder(200, { cola: leerJson(ARCHIVO_COLA, []) });
     }
 
+    // GET /bridge/estado -> estado actual del puente híbrido con la web
+    if (ruta === "/bridge/estado" && req.method === "GET") {
+      return responder(200, { bridge: leerPuente() });
+    }
+
+    // POST /bridge/vincular { pairing_code } -> vincula este PC local en 1 paso con Supabase/Web
+    if (ruta === "/bridge/vincular" && req.method === "POST") {
+      const { pairing_code } = await leerCuerpo(req);
+      const codigo = String(pairing_code || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+      if (codigo.length !== 6) return responder(400, { error: "El código debe tener 6 caracteres" });
+      const resPuente = await vincularPuenteNube(codigo);
+      if (!resPuente.ok) return responder(400, { error: resPuente.error || "No se pudo vincular el código" });
+      return responder(200, { ok: true, bridge: leerPuente() });
+    }
+
     // POST /lineas { id, nombre, clave, agente, perfil, instrucciones } -> agrega o actualiza un número
     if (ruta === "/lineas" && req.method === "POST") {
       const { id, nombre, clave, agente, perfil, instrucciones } = await leerCuerpo(req);
@@ -751,7 +770,176 @@ process.on("unhandledRejection", (e) => {
   console.log("[Promesa rechazada]", enmascararNumero(e && e.stack ? e.stack : e));
 });
 
+// ---------- Puente Híbrido Cloud + Desktop Bridge (pairing_code, heartbeat, config_version, outbox) ----------
+function leerPuente() {
+  const b = leerJson(ARCHIVO_PUENTE, null);
+  return b && typeof b === "object" ? b : null;
+}
+
+function guardarPuente(b) {
+  escribirJson(ARCHIVO_PUENTE, b);
+}
+
+function contarMensajeHoy() {
+  const b = leerPuente();
+  if (!b || !b.pairing_code) return;
+  const hoy = new Date().toISOString().slice(0, 10);
+  if (b.mensajes_hoy_fecha !== hoy) {
+    b.mensajes_hoy_fecha = hoy;
+    b.mensajes_hoy = 0;
+  }
+  b.mensajes_hoy = (Number(b.mensajes_hoy) || 0) + 1;
+  guardarPuente(b);
+}
+
+async function llamarPuenteNube(payload) {
+  if (typeof fetch !== "function") return null;
+  const ctrl = new AbortController();
+  const corte = setTimeout(() => ctrl.abort(), 10000);
+  try {
+    const r = await fetch(URL_PUENTE_NUBE, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: ctrl.signal,
+    });
+    const j = await r.json().catch(() => ({}));
+    return { ok: r.ok, data: j };
+  } catch (_) {
+    return null;
+  } finally {
+    clearTimeout(corte);
+  }
+}
+
+function aplicarConfigPuente(cfg, b) {
+  const lineaId = String(cfg.business_id || "").slice(0, 8) || "negocio";
+  let linea = lineas.get(lineaId);
+  if (linea) {
+    if (typeof cfg.clave_agente === "string" && cfg.clave_agente) linea.clave = cfg.clave_agente;
+    if (typeof cfg.tipo_negocio === "string") linea.perfil = cfg.tipo_negocio.slice(0, 80);
+    if (typeof cfg.instrucciones === "string") linea.instrucciones = cfg.instrucciones.slice(0, 1000);
+    linea.agente = cfg.auto_pilot_200 !== false;
+  } else {
+    linea = crearLinea({
+      id: lineaId,
+      nombre: cfg.nombre || lineaId,
+      clave: cfg.clave_agente || "",
+      agente: cfg.auto_pilot_200 !== false,
+      perfil: cfg.tipo_negocio || "",
+      instrucciones: cfg.instrucciones || "",
+    });
+  }
+  guardarLineas();
+  if (cfg.respuestas && Array.isArray(cfg.respuestas.reglas)) {
+    fs.writeFileSync(archivoRespuestas(lineaId), JSON.stringify(limpiarRespuestas(cfg.respuestas), null, 2));
+  }
+  const actualizado = {
+    ...(b || {}),
+    pairing_code: (b && b.pairing_code) || "",
+    business_id: cfg.business_id || (b && b.business_id) || "",
+    linea_id: lineaId,
+    nombre: cfg.nombre || (b && b.nombre) || lineaId,
+    config_version: Number(cfg.config_version) || 1,
+    auto_pilot_200: cfg.auto_pilot_200 !== false,
+    mensajes_hoy: (b && b.mensajes_hoy) || 0,
+    mensajes_hoy_fecha: (b && b.mensajes_hoy_fecha) || new Date().toISOString().slice(0, 10),
+    ultima_sync: new Date().toISOString(),
+  };
+  guardarPuente(actualizado);
+  return actualizado;
+}
+
+async function vincularPuenteNube(pairingCode) {
+  const r = await llamarPuenteNube({ accion: "vincular", pairing_code: pairingCode });
+  if (!r || !r.ok || !r.data || !r.data.ok) {
+    return { ok: false, error: (r && r.data && r.data.error) || "No se pudo conectar con la nube" };
+  }
+  const previo = leerPuente() || {};
+  aplicarConfigPuente(r.data, { ...previo, pairing_code: pairingCode });
+  return { ok: true };
+}
+
+async function reportarUrgenciaPuente(telefono, resumen) {
+  const b = leerPuente();
+  if (!b || !b.pairing_code) return;
+  await llamarPuenteNube({
+    accion: "registrar_urgencia",
+    pairing_code: b.pairing_code,
+    telefono,
+    resumen,
+  });
+}
+
+let cicloPuenteActivo = false;
+async function ejecutarCicloPuente() {
+  if (cicloPuenteActivo) return;
+  const b = leerPuente();
+  if (!b || !b.pairing_code) return;
+  cicloPuenteActivo = true;
+  try {
+    const linea = (b.linea_id && lineas.get(b.linea_id)) || elegirLinea("");
+    const status = linea && linea.estado === "listo" ? "conectado" : "desconectado";
+    const hoy = new Date().toISOString().slice(0, 10);
+    const mensajesHoy = b.mensajes_hoy_fecha === hoy ? Number(b.mensajes_hoy) || 0 : 0;
+
+    const r = await llamarPuenteNube({
+      accion: "heartbeat",
+      pairing_code: b.pairing_code,
+      status,
+      mensajes_hoy: mensajesHoy,
+    });
+    if (!r || !r.ok || !r.data || !r.data.ok) return;
+
+    if (linea && typeof r.data.auto_pilot_200 === "boolean") {
+      linea.agente = r.data.auto_pilot_200;
+    }
+
+    // Descarga instantánea si el catálogo o reglas cambiaron en la web (config_version mayor)
+    const verRemota = Number(r.data.config_version) || 1;
+    if (verRemota > (Number(b.config_version) || 0)) {
+      const cfgRes = await llamarPuenteNube({ accion: "descargar_config", pairing_code: b.pairing_code });
+      if (cfgRes && cfgRes.ok && cfgRes.data && cfgRes.data.ok) {
+        aplicarConfigPuente(cfgRes.data, b);
+      }
+    }
+
+    // Despacho inmediato de mensajes urgentes encolados desde la web (whatsapp_outbox)
+    const outbox = Array.isArray(r.data.outbox) ? r.data.outbox : [];
+    if (outbox.length > 0 && linea && linea.estado === "listo") {
+      const enviadosIds = [];
+      for (const item of outbox) {
+        const num = numeroWa(item.telefono);
+        if (num.length < 10 || !item.mensaje) continue;
+        try {
+          const jid = `${num}@c.us`;
+          const env = await linea.cliente.sendMessage(jid, String(item.mensaje));
+          if (env && env.id && env.id._serialized) linea.propios.add(env.id._serialized);
+          let chat = linea.chats.get(jid);
+          if (!chat) {
+            chat = { historial: [], pausadoHasta: 0, ocupado: false, timer: null, avisoMedia: 0, noLeidos: 0 };
+            linea.chats.set(jid, chat);
+          }
+          chat.historial.push({ role: "assistant", content: String(item.mensaje) });
+          chat.pausadoHasta = Date.now() + PAUSA_HUMANO_MS;
+          enviadosIds.push(item.id);
+        } catch (_) {
+          /* se reintenta en el próximo latido */
+        }
+      }
+      if (enviadosIds.length > 0) {
+        await llamarPuenteNube({ accion: "confirmar_outbox", pairing_code: b.pairing_code, ids: enviadosIds });
+      }
+    }
+  } finally {
+    cicloPuenteActivo = false;
+  }
+}
+
 cargarLineas();
+setInterval(() => {
+  void ejecutarCicloPuente();
+}, 8000);
 servidor.listen(PUERTO, "127.0.0.1", () => {
   console.log(`API local de WhatsApp en http://localhost:${PUERTO}`);
   // La clave nunca se escribe en los registros: queda solo en el archivo token.txt de la carpeta de datos.
