@@ -67,7 +67,7 @@ const ESCENARIOS: Record<Sector, {
     preguntas: [
       "Hola, ¿tienen disponible la Yamaha MT-03 y cuánto piden de inicial?", "Quiero cotizar el Mazda CX-30 a crédito",
       "¿Reciben mi carro en retoma?", "¿Puedo hacer test drive esta semana?",
-      "Necesito cita en el taller para alineación", "Tengo un reclamo con mi pedido",
+      "Necesito cita en el taller para alineación", "Compré un vehículo y tengo un reclamo con la garantía",
     ],
   },
   rest: {
