@@ -615,9 +615,9 @@ function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <Link to={"/demo" as "/"} className="gs-cta mt-8 inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
+              <a href="/demo?sector=auto&tab=crm" className="gs-cta mt-8 inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
                 Probar Demo Interactiva del CRM <ArrowRight className="h-4 w-4" />
-              </Link>
+              </a>
             </Aparece>
             <Aparece retraso={0.1} className="relative min-w-0">
               <div className="absolute -inset-4 -z-10 rounded-[36px] opacity-20 blur-3xl" style={{ background: "linear-gradient(135deg, var(--gs-cobalto), var(--gs-esm))" }} />

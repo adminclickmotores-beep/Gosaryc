@@ -10,7 +10,6 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { imprimirFactura } from "@/lib/exportes";
 import type { DatosFactura } from "@/lib/exportes";
-import { activarDemoMemoria } from "@/lib/demo-memoria";
 
 /**
  * Demo interactiva: vive 100% en memoria del navegador.
@@ -194,6 +193,13 @@ function DemoPage() {
   const [listo, setListo] = useState(false);
 
   useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const qs = q.get("sector") as Sector | null;
+    if (qs && qs in ESCENARIOS) {
+      sessionStorage.setItem(CLAVE, qs);
+      const qt = q.get("tab");
+      if (qt) sessionStorage.setItem("gosaryc_demo_tab", qt);
+    }
     const g = sessionStorage.getItem(CLAVE) as Sector | null;
     if (g && g in ESCENARIOS) setSector(g);
     setListo(true);
@@ -225,18 +231,6 @@ function Selector({ onElegir }: { onElegir: (s: Sector) => void }) {
                 <p className="text-sm font-semibold text-primary">{e.negocio}</p>
                 <p className="mt-2 text-sm text-muted-foreground">{e.descripcion}</p>
                 <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold">Entrar ahora <ArrowRight className="h-4 w-4" /></span>
-                <span
-                  role="button"
-                  tabIndex={0}
-                  onClick={(ev) => {
-                    ev.stopPropagation();
-                    activarDemoMemoria(k);
-                    window.location.href = k === "rest" ? "/restaurante" : k === "auto" ? "/negocio/concesionario" : "/negocio/ferreteria";
-                  }}
-                  className="mt-3 flex items-center justify-center gap-1 rounded-lg border border-primary px-3 py-2 text-xs font-semibold text-primary"
-                >
-                  Probar con las pantallas reales del sistema
-                </span>
               </button>
             );
           })}
@@ -318,7 +312,11 @@ function Simulador({ sector, onSalir }: { sector: Sector; onSalir: () => void })
   const esc = ESCENARIOS[sector];
   const tabs = TABS[sector];
   const navigate = useNavigate();
-  const [tab, setTab] = useState<string>(tabs[0].id);
+  const [tab, setTab] = useState<string>(() => {
+    const t = typeof window !== "undefined" ? sessionStorage.getItem("gosaryc_demo_tab") : null;
+    if (t) sessionStorage.removeItem("gosaryc_demo_tab");
+    return t && tabs.some((x) => x.id === t) ? t : tabs[0].id;
+  });
   const [productos, setProductos] = useState<Prod[]>(esc.productos);
   const [ventas, setVentas] = useState<Venta[]>(() => ventasIniciales(sector));
   const [gastos, setGastos] = useState<Gasto[]>(sector === "rest"
