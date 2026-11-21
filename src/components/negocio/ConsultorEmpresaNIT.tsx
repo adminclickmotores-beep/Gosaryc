@@ -190,7 +190,14 @@ export function ConsultorEmpresaNIT({ modo, valor = "", cotizarSST = false }: Pr
     setConsultandoAbiertos(true);
     try {
       const url = `${URL_DATOS_ABIERTOS}?$q=${encodeURIComponent(termino)}&$limit=1`;
-      const resp = await fetch(url);
+      const ctrl = new AbortController();
+      const temporizador = setTimeout(() => ctrl.abort(), 8000);
+      let resp: Response;
+      try {
+        resp = await fetch(url, { signal: ctrl.signal });
+      } finally {
+        clearTimeout(temporizador);
+      }
       if (!resp.ok) throw new Error("http");
       const filas = (await resp.json()) as Record<string, unknown>[];
       const f = filas[0];
@@ -208,7 +215,7 @@ export function ConsultorEmpresaNIT({ modo, valor = "", cotizarSST = false }: Pr
       }));
       toast.success("Datos autocompletados desde Datos Abiertos.");
     } catch {
-      toast.error("No se pudo consultar Datos Abiertos. Usa los portales oficiales.");
+      toast.error("La consulta tardó o no respondió. Escribe los datos a mano en los campos de abajo y guárdalos, o usa los portales oficiales.");
     } finally {
       setConsultandoAbiertos(false);
     }

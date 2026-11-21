@@ -9,7 +9,7 @@ import { Campo, Cargando, Encabezado, boton, botonSec, campo, dinero, num } from
 import { exportarExcel, imprimirFactura, type DatosFactura, type FormatoFactura, type ItemFactura } from "@/lib/exportes";
 import { estadoApiLocal, fijarImpresionDirecta, guardarColaLocal, impresionDirectaActivada, imprimirTirillaLocal, leerImpresoraCaja } from "@/lib/impresion-local";
 import { ConsultorEmpresaNIT } from "@/components/negocio/ConsultorEmpresaNIT";
-import { calcularCufeSimulado, construirJsonFiscal, construirXmlDian, enlaceSolicitudDian, enviarFacturaDian, guardarCufeQr, marcarDianPendiente } from "@/lib/dian";
+import { calcularCufeSimulado, calcularRetenciones, construirJsonFiscal, construirXmlDian, enlaceSolicitudDian, enviarFacturaDian, guardarCufeQr, marcarDianPendiente } from "@/lib/dian";
 
 type Fac = Tables<"fac_emitidas">;
 
@@ -27,6 +27,9 @@ export function FacturaFiscal() {
   const [items, setItems] = useState<ItemFactura[]>([itemVacio()]);
   const [iva, setIva] = useState("");
   const [inc, setInc] = useState("0");
+  const [retefuente, setRetefuente] = useState("0");
+  const [reteiva, setReteiva] = useState("0");
+  const [reteica, setReteica] = useState("0");
   const [formato, setFormato] = useState<"58mm" | "80mm" | "carta">("80mm");
   const [directa, setDirecta] = useState(() => impresionDirectaActivada());
   const [apiMsg, setApiMsg] = useState("");
@@ -216,6 +219,9 @@ export function FacturaFiscal() {
               items: datos.items,
               ivaPct: datos.ivaPct ?? 0,
               incPct: incPctNum,
+              retefuentePct: Math.min(Math.max(num(retefuente), 0), 100),
+              reteivaPct: Math.min(Math.max(num(reteiva), 0), 100),
+              reteicaPorMil: Math.min(Math.max(num(reteica), 0), 30),
               ambiente: c.ambiente ?? negocio.dian_ambiente ?? "Pruebas",
             });
             const r = await enviarFacturaDian(c.proveedor_url, c.token_api, payload);
@@ -371,7 +377,29 @@ export function FacturaFiscal() {
         <button type="button" className={botonSec} onClick={() => setItems((ls) => [...ls, itemVacio()])}><Plus className="h-4 w-4" /> Ítem</button>
         <Campo etiqueta="IVA %"><input className={campo} inputMode="decimal" value={iva} onChange={(e) => setIva(e.target.value)} style={{ maxWidth: 92 }} /></Campo>
         <Campo etiqueta="INC %"><input className={campo} inputMode="decimal" value={inc} onChange={(e) => setInc(e.target.value)} style={{ maxWidth: 92 }} /></Campo>
-        <p className="text-sm">Total estimado: <strong>{dinero(Math.round(total * (1 + (Math.min(Math.max(num(iva), 0), 100) + Math.min(Math.max(num(inc), 0), 100)) / 100)))}</strong></p>
+        <Campo etiqueta="Retefuente %"><input className={campo} inputMode="decimal" value={retefuente} onChange={(e) => setRetefuente(e.target.value)} style={{ maxWidth: 92 }} /></Campo>
+        <Campo etiqueta="ReteIVA % del IVA"><input className={campo} inputMode="decimal" value={reteiva} onChange={(e) => setReteiva(e.target.value)} style={{ maxWidth: 92 }} /></Campo>
+        <Campo etiqueta="ReteICA ‰"><input className={campo} inputMode="decimal" value={reteica} onChange={(e) => setReteica(e.target.value)} style={{ maxWidth: 92 }} /></Campo>
+        <div className="text-sm">
+          {(() => {
+            const ivaP = Math.min(Math.max(num(iva), 0), 100);
+            const incP = Math.min(Math.max(num(inc), 0), 100);
+            const ivaV = Math.round(total * (ivaP / 100));
+            const incV = Math.round(total * (incP / 100));
+            const ret = calcularRetenciones(total, ivaV, Math.min(Math.max(num(retefuente), 0), 100), Math.min(Math.max(num(reteiva), 0), 100), Math.min(Math.max(num(reteica), 0), 30));
+            return (
+              <>
+                <p>Subtotal {dinero(Math.round(total))} · IVA {dinero(ivaV)} · INC {dinero(incV)}</p>
+                <p>Total estimado: <strong>{dinero(Math.round(total) + ivaV + incV)}</strong></p>
+                {ret.total_retenciones > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Retenciones: {dinero(ret.total_retenciones)} · Neto a recibir: <strong>{dinero(Math.round(total) + ivaV + incV - ret.total_retenciones)}</strong>
+                  </p>
+                )}
+              </>
+            );
+          })()}
+        </div>
         <button type="button" className={boton} onClick={() => void emitir()}>Emitir e imprimir</button>
       </div>
       <div className="mt-4 border-t border-glass-border pt-3">

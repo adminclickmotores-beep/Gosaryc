@@ -45,6 +45,9 @@ export function construirJsonFiscal(args: {
   items: ItemFiscal[];
   ivaPct: number;
   incPct?: number;
+  retefuentePct?: number;
+  reteivaPct?: number;
+  reteicaPorMil?: number;
   ambiente: string;
 }): Record<string, unknown> {
   const subtotal = Math.round(args.items.reduce((s, i) => s + i.cantidad * i.precio, 0) * 100) / 100;
@@ -86,7 +89,16 @@ export function construirJsonFiscal(args: {
     inc_pct: args.incPct ?? 0,
     inc,
     total: subtotal + iva + inc,
+    retenciones: calcularRetenciones(subtotal, iva, args.retefuentePct ?? 0, args.reteivaPct ?? 0, args.reteicaPorMil ?? 0),
   };
+}
+
+/** Retenciones que practica el cliente: Retefuente (% del subtotal), ReteIVA (% del IVA) y ReteICA (por mil del subtotal). */
+export function calcularRetenciones(subtotal: number, iva: number, retefuentePct: number, reteivaPct: number, reteicaPorMil: number) {
+  const retefuente = Math.round(subtotal * (retefuentePct / 100));
+  const reteiva = Math.round(iva * (reteivaPct / 100));
+  const reteica = Math.round(subtotal * (reteicaPorMil / 1000));
+  return { retefuente_pct: retefuentePct, retefuente, reteiva_pct: reteivaPct, reteiva, reteica_por_mil: reteicaPorMil, reteica, total_retenciones: retefuente + reteiva + reteica };
 }
 
 /** Calcula un CUFE determinístico SHA-384 (estándar DIAN Colombia) para pruebas/habilitación y genera el QR verificable. */
