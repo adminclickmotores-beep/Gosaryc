@@ -266,6 +266,7 @@ const TABS: Record<Sector, TabDef[]> = {
     { id: "ped", label: "Pedidos y envíos", icon: Truck, ayuda: "Despacha pedidos a domicilio con la tarifa por zona ya configurada." },
     { id: "caja", label: "Caja", icon: Wallet, ayuda: "Abre el turno, registra gastos, cuenta el efectivo y revisa la diferencia." },
     { id: "ventas", label: "Ventas", icon: Receipt, ayuda: "Todas las ventas del día con su medio de pago." },
+    { id: "devoluciones", label: "Devoluciones", icon: Receipt, ayuda: "Devuelve una venta con su motivo: el producto vuelve al inventario y el dinero sale de caja." },
     { id: "fin", label: "Finanzas y contabilidad", icon: TrendingUp, ayuda: "Utilidad del día, gastos y asientos contables automáticos." },
     { id: "wa", label: "WhatsApp IA", icon: MessageCircle, ayuda: "Consulta precios y pide por chat: el pedido llega a Pedidos y envíos." },
     { id: "nomina", label: "Nómina", icon: Landmark, ayuda: "Liquida el periodo y abre el desprendible de cada empleado." },
@@ -405,7 +406,8 @@ function Simulador({ sector, onSalir }: { sector: Sector; onSalir: () => void })
         {tab === "cierre" && <CierreAuto productos={productos} setProductos={setProductos} vehSel={vehSel} registrarVenta={registrarVenta} onEtapa={avanzarProspecto} />}
         {tab === "taller" && <Taller registrarVenta={registrarVenta} />}
         {tab === "compras" && <ComprasComercio productos={productos} setProductos={setProductos} setGastos={setGastos} />}
-        {tab === "cartera" && <CarteraComercio registrarVenta={registrarVenta} />}
+        {tab === "devoluciones" && <DevolucionesComercio ventas={ventas} setProductos={setProductos} registrarVenta={registrarVenta} />}
+        {tab === "cartera" &&<CarteraComercio registrarVenta={registrarVenta} />}
         {tab === "testdrive" && <TestDriveAuto vehiculos={productos.filter((p) => p.cat === "Vehículo")} prospectos={prospectos} onEtapa={avanzarProspecto} />}
         {tab === "postventa" && <PostventaAuto registrarVenta={registrarVenta} />}
         {tab === "ped" && <Domicilios pedidos={pedidos} setPedidos={setPedidos} tarifas={tarifas} setTarifas={setTarifas} registrarVenta={registrarVenta} />}
@@ -721,6 +723,62 @@ function ComprasComercio({ productos, setProductos, setGastos }: {
         </div>
       ))}
       {ordenes.length === 0 && <p className="text-sm text-muted-foreground">Aún no hay órdenes. Crea una y recíbela para ver subir el stock y el gasto en Finanzas.</p>}
+    </div>
+  );
+}
+
+/* ───────────── Devoluciones (comercio) ───────────── */
+
+function DevolucionesComercio({ ventas, setProductos, registrarVenta }: {
+  ventas: Venta[]; setProductos: React.Dispatch<React.SetStateAction<Prod[]>>; registrarVenta: (v: NuevaVenta) => void;
+}) {
+  const [hechas, setHechas] = useState<Record<string, string>>({});
+  const [abierta, setAbierta] = useState<string | null>(null);
+  const [motivo, setMotivo] = useState("");
+  const [error, setError] = useState("");
+  const candidatas = ventas.filter((v) => v.total > 0 && v.tipo !== "Abono" && v.tipo !== "Taller");
+
+  const devolver = (v: Venta) => {
+    if (motivo.trim().length < 3) { setError("Escribe el motivo de la devolución."); return; }
+    setError("");
+    for (const parte of v.detalle.split(", ")) {
+      const m = /^(\d+) x (.+)$/.exec(parte.trim());
+      if (!m) continue;
+      const cant = Number(m[1]);
+      const nombre = m[2];
+      setProductos((a) => a.map((p) => (p.nombre === nombre ? { ...p, stock: p.stock + cant } : p)));
+    }
+    registrarVenta({ detalle: "Devolución · " + v.detalle, total: -v.total, pago: v.pago, tipo: "Devolución", envio: 0 });
+    setHechas((h) => ({ ...h, [v.id]: motivo.trim().slice(0, 100) }));
+    setAbierta(null);
+    setMotivo("");
+  };
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-muted-foreground">La venta no se borra: se marca como devuelta, el producto regresa al inventario y la salida de dinero queda en Caja y Finanzas.</p>
+      {candidatas.length === 0 && <p className="text-sm text-muted-foreground">Aún no hay ventas para devolver. Cobra algo en el punto de venta.</p>}
+      {candidatas.map((v) => (
+        <div key={v.id} className="rounded-xl border border-border bg-card p-4">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <p className="font-bold">{v.hora} · {cop(v.total)} · {v.pago}</p>
+              <p className="text-sm text-muted-foreground">{v.detalle}</p>
+              {hechas[v.id] && <p className="mt-1 text-sm">Devuelta: <b>{hechas[v.id]}</b></p>}
+            </div>
+            {hechas[v.id]
+              ? <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold">Devuelta</span>
+              : <button onClick={() => { setAbierta(abierta === v.id ? null : v.id); setError(""); }} className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold">Devolver</button>}
+          </div>
+          {abierta === v.id && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              <input value={motivo} onChange={(e) => setMotivo(e.target.value)} maxLength={100} placeholder="Motivo (producto dañado, error de cobro...)" className="min-w-0 flex-1 rounded-lg border border-border bg-background px-2 py-2 text-base" />
+              <button onClick={() => devolver(v)} className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-primary-foreground">Confirmar devolución</button>
+            </div>
+          )}
+          {abierta === v.id && error && <p className="mt-2 text-sm font-semibold text-destructive">{error}</p>}
+        </div>
+      ))}
     </div>
   );
 }

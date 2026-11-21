@@ -2877,6 +2877,9 @@ export type Database = {
       }
       com_ventas: {
         Row: {
+          devuelta_en: string | null
+          devuelta_por: string | null
+          motivo_devolucion: string | null
           autorizado_por: string | null
           base: number
           cliente: string | null
@@ -2896,6 +2899,9 @@ export type Database = {
           total: number
         }
         Insert: {
+          devuelta_en?: string | null
+          devuelta_por?: string | null
+          motivo_devolucion?: string | null
           autorizado_por?: string | null
           base?: number
           cliente?: string | null
@@ -2915,6 +2921,9 @@ export type Database = {
           total?: number
         }
         Update: {
+          devuelta_en?: string | null
+          devuelta_por?: string | null
+          motivo_devolucion?: string | null
           autorizado_por?: string | null
           base?: number
           cliente?: string | null
@@ -8575,6 +8584,7 @@ export type Database = {
         Returns: Json
       }
       com_estado_credito: { Args: { p_cliente: string; p_telefono: string }; Returns: Json }
+      com_devolver_venta: { Args: { p_venta: string; p_motivo: string }; Returns: Json }
       com_ingresar_lote: {
         Args: { p_producto: string; p_lote: string; p_vence: string | null; p_cantidad: number; p_unidad: string; p_costo: number }
         Returns: string

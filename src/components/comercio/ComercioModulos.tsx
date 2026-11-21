@@ -936,6 +936,7 @@ export function PosComercial() {
           </button>
         </GlassPanel>
       </div>
+      <VentasRecientesDevolucion onCambio={recargar} />
       {crearCodigo !== null && (
         <ModalCrearProductoRapidoComercial
           codigoInicial={crearCodigo}
@@ -952,6 +953,78 @@ export function PosComercial() {
         />
       )}
     </div>
+  );
+}
+
+type VentaReciente = Pick<Tables<"com_ventas">, "id" | "cliente" | "metodo" | "total" | "created_at" | "fiado_id" | "devuelta_en" | "motivo_devolucion">;
+
+function VentasRecientesDevolucion({ onCambio }: { onCambio: () => Promise<void> | void }) {
+  const [abierto, setAbierto] = useState(false);
+  const [ventas, setVentas] = useState<VentaReciente[]>([]);
+  const [elegida, setElegida] = useState<string | null>(null);
+  const [motivo, setMotivo] = useState("");
+  const [trabajando, setTrabajando] = useState(false);
+
+  const cargar = useCallback(async () => {
+    const { data } = await supabase
+      .from("com_ventas")
+      .select("id, cliente, metodo, total, created_at, fiado_id, devuelta_en, motivo_devolucion")
+      .order("created_at", { ascending: false })
+      .limit(15);
+    setVentas(data ?? []);
+  }, []);
+  useEffect(() => {
+    if (abierto) void cargar();
+  }, [abierto, cargar]);
+
+  const devolver = async () => {
+    if (!elegida) return;
+    if (motivo.trim().length < 3) return toast.error("Escribe el motivo de la devolución.");
+    setTrabajando(true);
+    const { error } = await supabase.rpc("com_devolver_venta", { p_venta: elegida, p_motivo: motivo.trim() });
+    setTrabajando(false);
+    if (error) {
+      const m = error.message ?? "";
+      return toast.error(m.length > 0 && m.length < 200 ? m : "No se pudo registrar la devolución.");
+    }
+    toast.success("Devolución registrada: el producto volvió al inventario y la salida quedó en caja.");
+    setElegida(null);
+    setMotivo("");
+    await cargar();
+    await onCambio();
+  };
+
+  return (
+    <GlassPanel className="space-y-3 p-5">
+      <button className="flex w-full items-center justify-between text-left font-medium text-foreground" onClick={() => setAbierto((a) => !a)}>
+        <span>Ventas recientes y devoluciones</span>
+        <span className="text-xs text-muted-foreground">{abierto ? "Ocultar" : "Ver"}</span>
+      </button>
+      {abierto && (
+        <div className="space-y-2">
+          {ventas.length === 0 && <p className="text-sm text-muted-foreground">Aún no hay ventas.</p>}
+          {ventas.map((v) => (
+            <div key={v.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-glass-border p-3 text-sm">
+              <div className="min-w-0">
+                <p className="text-foreground">#{v.id.slice(0, 6).toUpperCase()} · {dinero(v.total)} · {v.metodo}{v.cliente ? ` · ${v.cliente}` : ""}</p>
+                <p className="text-xs text-muted-foreground">{new Date(v.created_at).toLocaleString("es-CO")}{v.devuelta_en ? ` · Devuelta: ${v.motivo_devolucion ?? ""}` : ""}</p>
+              </div>
+              {!v.devuelta_en && !v.fiado_id && (
+                <button className="rounded-lg border border-glass-border px-3 py-1.5 text-xs text-foreground" onClick={() => setElegida(elegida === v.id ? null : v.id)}>
+                  Devolver
+                </button>
+              )}
+              {elegida === v.id && (
+                <div className="flex w-full flex-wrap gap-2">
+                  <input className="min-w-0 flex-1 rounded-lg border border-glass-border bg-transparent px-3 py-2 text-base text-foreground" maxLength={200} placeholder="Motivo (producto dañado, error de cobro...)" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
+                  <button className="rounded-lg bg-primary px-3 py-2 text-xs font-medium text-primary-foreground disabled:opacity-50" disabled={trabajando} onClick={() => void devolver()}>Confirmar devolución</button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </GlassPanel>
   );
 }
 
