@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Bot, CheckCircle2, Cloud, Copy, Eye, EyeOff, Link2, RefreshCw, Wifi, WifiOff, Zap } from "lucide-react";
 import { ProbadorAgenteVivo } from "@/components/restaurante/ProbadorAgenteVivo";
+import { CerebroEntrenamiento } from "@/components/restaurante/CerebroEntrenamiento";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
@@ -387,6 +388,8 @@ function AgenteWhatsAppReal() {
             {probarVivo ? "Ocultar prueba en vivo" : "Probar Agente IA en Vivo"}
           </button>
         </div>
+
+        <CerebroEntrenamiento />
 
         {/* 2. Vinculación / QR 24/7 (Modo Dual: API Local / Túnel + Respaldo Web/Nube) */}
         <div className="space-y-3 border-t border-glass-border/60 pt-4">

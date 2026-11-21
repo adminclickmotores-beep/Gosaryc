@@ -88,6 +88,58 @@ const FAMILIA_POR_CLAVE: Record<string, keyof typeof FAMILIAS> = {
   educacion: "educacion",
 };
 
+/** Preguntas frecuentes precargadas (pregunta, respuesta ideal) según el tipo de negocio. */
+export function preguntasPrecargadas(tipoNegocio: string | null | undefined): Ejemplo[] {
+  const giro = resolverTipoNegocio(tipoNegocio ?? null);
+  const familia = FAMILIA_POR_CLAVE[giro.clave] ?? "comercio";
+  return [...(FAMILIAS[familia] ?? []), ...COMUNES];
+}
+
+const OBJETIVOS: Record<string, string[]> = {
+  vehiculos: [
+    "Preguntar si cuenta con cuota inicial y de cuánto",
+    "Preguntar si entrega un vehículo usado en retoma (marca, modelo, año)",
+    "Consultar actividad económica e ingresos mensuales para calcular el preaprobado rápido y crear la tarjeta en el CRM",
+    "Preguntar por experiencia crediticia y deudas actuales",
+    "Ofrecer prueba de manejo y agendarla",
+  ],
+  inmuebles: [
+    "Preguntar si busca vivienda propia o inversión",
+    "Preguntar cuota inicial, cesantías o subsidio",
+    "Consultar ingresos mensuales para estimar el preaprobado y crear la tarjeta en el CRM",
+    "Agendar visita al proyecto o inmueble",
+  ],
+  comida: [
+    "Exigir plato y acompañante o bebida",
+    "Pedir dirección completa o confirmar que recoge en el local",
+    "Calcular la tarifa de envío según el barrio o zona",
+    "Confirmar medio de pago y enviar la comanda directa a Cocina y Domicilios",
+  ],
+  citas: [
+    "Identificar el servicio o motivo de la cita",
+    "Proponer día y hora concretos y confirmar la cita",
+    "Preguntar si es la primera vez y pedir nombre y teléfono",
+  ],
+  taller: [
+    "Pedir marca, modelo, placa o referencia del equipo",
+    "Preguntar la falla y desde cuándo ocurre",
+    "Agendar el diagnóstico con día y hora",
+  ],
+  comercio: [
+    "Verificar stock real antes de ofrecer un producto",
+    "Ofrecer productos complementarios",
+    "Preguntar referencia, cantidad y si es envío o recogida",
+    "Generar cotización o pedido",
+  ],
+};
+
+/** Metas de captura sugeridas según el tipo de negocio. */
+export function objetivosSector(tipoNegocio: string | null | undefined): string[] {
+  const giro = resolverTipoNegocio(tipoNegocio ?? null);
+  const familia = FAMILIA_POR_CLAVE[giro.clave] ?? "comercio";
+  return OBJETIVOS[familia] ?? OBJETIVOS.comercio;
+}
+
 /** Conversaciones modelo del tipo de negocio, listas para pegar en las instrucciones del agente. */
 export function conversacionesModelo(tipoNegocio: string | null | undefined): string {
   const giro = resolverTipoNegocio(tipoNegocio ?? null);

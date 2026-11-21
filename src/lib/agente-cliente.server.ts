@@ -491,6 +491,28 @@ export async function responderComoAgente(clave: string, mensajes: MensajeClient
   const conocimientoSector =
     (sector ? `\nConocimiento del sector (preguntas frecuentes, objeciones, preguntas filtro y protocolo de garantías/PQRS; úsalo como guía, los datos reales del negocio mandan):\n${sector}\n` : "") +
     (reglasDueno ? `\nReglas propias del dueño (obligatorias):\n${reglasDueno}\n` : "");
+  const { data: cerebro } = await supabaseAdmin
+    .from("agente_memoria")
+    .select("tipo,contenido")
+    .eq("negocio_id", ag.negocio_id)
+    .eq("owner_id", ag.owner_id)
+    .in("tipo", ["faq", "objetivo", "politica", "identidad_pago"])
+    .order("created_at", { ascending: true })
+    .limit(150);
+  const faqs = (cerebro ?? []).filter((x) => x.tipo === "faq").map((x) => x.contenido.slice(0, 700));
+  const objetivosCaptura = (cerebro ?? []).filter((x) => x.tipo === "objetivo").map((x) => `- ${x.contenido.slice(0, 200)}`);
+  const politicaTxt = (cerebro ?? []).find((x) => x.tipo === "politica")?.contenido.slice(0, 1500) ?? "";
+  const pagoTxt = (cerebro ?? []).find((x) => x.tipo === "identidad_pago")?.contenido.slice(0, 400) ?? "";
+  const cerebroTxt =
+    (pagoTxt ? `\nMedios de pago aceptados (dato del dueño): ${pagoTxt}\n` : "") +
+    (politicaTxt ? `\nPolíticas del negocio (dato del dueño, obligatorias):\n${politicaTxt}\n` : "") +
+    (faqs.length
+      ? `\nPREGUNTAS FRECUENTES Y OBJECIONES con la respuesta ideal (cuando el cliente pregunte algo parecido, responde con ese criterio y ese tono, adaptando al caso; la parte de "Cliente → Agente" es un ejemplo, no lo copies literal):\n${faqs.map((f) => `- ${f}`).join("\n")}\n`
+      : conversacionesModelo(tipo)) +
+    (objetivosCaptura.length
+      ? `\nMETAS DE CAPTURA antes de cerrar o escalar (pídelas de a una por turno, solo las que falten):\n${objetivosCaptura.join("\n")}\n`
+      : "") +
+    "\nREGLA DE CERO INVENCIÓN: si el cliente pregunta por un producto, repuesto o dato que no está en el catálogo, inventario ni en estas bases, NO lo inventes: responde con naturalidad que lo vas a verificar con un asesor y añade [[ASESOR]]. Todo el análisis comercial (puntaje, preaprobado, etapa del CRM) es interno: el cliente solo recibe una conversación fluida. Si escribe «quiero hablar con un asesor», «ya hice la transferencia» o «tengo un reclamo», atiende con empatía y escala con [[ASESOR]].\n";
   const delDueno = (memoria ?? []).filter((x) => x.tipo === "respuesta_dueno").slice(0, 20).map((x) => `- ${x.contenido}`);
   const patrones = (memoria ?? []).filter((x) => x.tipo === "patron").slice(0, 15).map((x) => `- ${x.contenido}`);
   const aprendido =
@@ -536,7 +558,7 @@ ${perfil}
 
 Catálogo de productos y servicios con precios:
 ${catalogo}
-${domicilio ? `\n${domicilio}\n` : ""}${conocimientoSector}${conversacionesModelo(tipo)}${aprendido}${extra ? `\nInstrucciones propias del dueño (tienen prioridad en el estilo y las políticas):\n${extra}\n` : ""}
+${domicilio ? `\n${domicilio}\n` : ""}${conocimientoSector}${cerebroTxt}${aprendido}${extra ? `\nInstrucciones propias del dueño (tienen prioridad en el estilo y las políticas):\n${extra}\n` : ""}
 Reglas:
 - No inventes precios, horarios, direcciones, productos, promociones, descuentos ni disponibilidad. Si un dato dice NO CONFIGURADO o no está arriba, di que lo confirma una persona del equipo y usa [[ASESOR]] si es necesario para cerrar.
 - No prometas lo que no puedas cumplir (tiempos exactos, garantías, descuentos) si no está en los datos.
