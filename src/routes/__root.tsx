@@ -7,6 +7,7 @@ import {
   HeadContent,
   Scripts,
   Link,
+  type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -39,14 +40,15 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
+  const mensajeError = error instanceof Error ? error.message : String(error);
   const router = useRouter();
   return (
     <div className="relative flex min-h-screen items-center justify-center px-4">
       <div className="relative z-10 max-w-md text-center">
         <h1 className="font-display text-3xl text-foreground">Algo salió mal</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{mensajeError}</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {

@@ -5,7 +5,9 @@ import { useRouterState } from "@tanstack/react-router";
  * transitioning between routes.
  */
 export function RouteProgressBar() {
-  const isLoading = useRouterState({ select: (s) => s.isLoading || s.isTransitioning });
+  const isLoading = useRouterState({
+    select: (s): boolean => Boolean(s.isLoading) || Boolean(s.isTransitioning),
+  });
 
   return (
     <div
