@@ -26,9 +26,11 @@ type UrgenciaRow = Pick<Tables<"crm_pqrs">, "id" | "telefono" | "tipo" | "resume
 const ALFABETO_CODIGO = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 function generarCodigoEmparejamiento(): string {
+  const bytes = new Uint32Array(6);
+  crypto.getRandomValues(bytes);
   let out = "";
   for (let i = 0; i < 6; i++) {
-    out += ALFABETO_CODIGO[Math.floor(Math.random() * ALFABETO_CODIGO.length)];
+    out += ALFABETO_CODIGO[bytes[i] % ALFABETO_CODIGO.length];
   }
   return out;
 }

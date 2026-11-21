@@ -11,6 +11,37 @@ function limpiarCodigo(raw: unknown): string {
     .slice(0, 6);
 }
 
+// Límite de intentos fallidos por IP para impedir adivinar códigos de vinculación.
+const INTENTOS = new Map<string, { n: number; hasta: number }>();
+const MAX_FALLOS = 8;
+const VENTANA_MS = 10 * 60 * 1000;
+
+function ipDe(request: Request): string {
+  const h = request.headers.get("x-forwarded-for") ?? request.headers.get("cf-connecting-ip") ?? "";
+  return h.split(",")[0].trim().slice(0, 64) || "desconocida";
+}
+
+function bloqueada(ip: string): boolean {
+  const r = INTENTOS.get(ip);
+  if (!r) return false;
+  if (Date.now() > r.hasta) {
+    INTENTOS.delete(ip);
+    return false;
+  }
+  return r.n >= MAX_FALLOS;
+}
+
+function registrarFallo(ip: string): void {
+  const ahora = Date.now();
+  const r = INTENTOS.get(ip);
+  if (!r || ahora > r.hasta) {
+    if (INTENTOS.size > 5000) INTENTOS.clear();
+    INTENTOS.set(ip, { n: 1, hasta: ahora + VENTANA_MS });
+  } else {
+    r.n += 1;
+  }
+}
+
 type ReglaLocal = { palabras: string[]; respuesta: string; asesor: boolean };
 
 function armarRespuestasLocales(
@@ -71,6 +102,10 @@ export const Route = createFileRoute("/api/public/whatsapp-bridge")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const ip = ipDe(request);
+        if (bloqueada(ip)) {
+          return Response.json({ error: "Demasiados intentos. Espera unos minutos." }, { status: 429 });
+        }
         let cuerpo: {
           accion?: string;
           pairing_code?: string;
@@ -88,6 +123,7 @@ export const Route = createFileRoute("/api/public/whatsapp-bridge")({
 
         const codigo = limpiarCodigo(cuerpo.pairing_code);
         if (codigo.length !== 6) {
+          registrarFallo(ip);
           return Response.json({ error: "Código de vinculación inválido (debe tener 6 caracteres)" }, { status: 400 });
         }
 
@@ -100,6 +136,7 @@ export const Route = createFileRoute("/api/public/whatsapp-bridge")({
           .maybeSingle();
 
         if (errPuente || !puente) {
+          registrarFallo(ip);
           return Response.json({ error: "Código de vinculación no encontrado" }, { status: 404 });
         }
 

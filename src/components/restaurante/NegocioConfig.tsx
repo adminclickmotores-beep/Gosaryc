@@ -210,6 +210,14 @@ export function NegocioConfig() {
 
   const guardar = async () => {
     if (!form.nombre.trim()) return toast.error("El negocio necesita un nombre.");
+    const web = form.sitio_web.trim();
+    if (web && !/^https:\/\/[^\s<>"']+$/i.test(web)) {
+      return toast.error("La página web debe empezar con https:// y no puede tener espacios.");
+    }
+    const insta = form.instagram.trim();
+    if (insta && /^\s*(javascript|data|vbscript):/i.test(insta)) {
+      return toast.error("El Instagram no es válido.");
+    }
     setGuardando(true);
     const datos = {
       nombre: form.nombre.trim(),
