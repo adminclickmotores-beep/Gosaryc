@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AlertTriangle, Bot, Flame, Loader2, RotateCcw, Send, Snowflake, Sun, UserRound, X } from "lucide-react";
+import { AlertTriangle, Bot, Flame, Loader2, RotateCcw, Send, Snowflake, Sun, UserRound, X, Zap } from "lucide-react";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,9 +8,10 @@ import { asegurarConfiguracionAutomaticaAgente } from "@/lib/agente-autoconfig";
 
 type Lead = { temperatura?: string; puntaje?: number; interes?: string; capacidad_pago?: string; urgencia?: string; datos_confirmados?: string };
 type Pqrs = { tipo?: string; resumen?: string; urgencia?: string };
-type Respuesta = { texto: string; escalar: boolean; lead?: Lead | null; pqrs?: Pqrs | null; error?: string };
+type Rol = { rol: string; acciones: string[] };
+type Respuesta = { texto: string; escalar: boolean; lead?: Lead | null; pqrs?: Pqrs | null; rol?: Rol | null; error?: string };
 type Mensaje = { role: "user" | "assistant"; content: string };
-type Analisis = { lead: Lead | null; pqrs: Pqrs | null; escalar: boolean };
+type Analisis = { lead: Lead | null; pqrs: Pqrs | null; escalar: boolean; rol: Rol | null };
 
 const SUGERENCIAS: Record<string, string[]> = {
   concesionario: ["Hola, busco una camioneta 2022, ¿qué tienen?", "Tengo 20 millones de cuota inicial, ¿a cuántos meses?"],
@@ -87,7 +88,7 @@ export function ProbadorAgenteVivo({ onCerrar }: { onCerrar?: () => void }) {
       const j = (await r.json()) as Respuesta;
       if (!r.ok) throw new Error(j.error ?? "El agente no respondió");
       setMensajes([...historial, { role: "assistant", content: j.texto }]);
-      setAnalisis((a) => ({ lead: j.lead ?? a?.lead ?? null, pqrs: j.pqrs ?? a?.pqrs ?? null, escalar: j.escalar || (a?.escalar ?? false) }));
+      setAnalisis((a) => ({ lead: j.lead ?? a?.lead ?? null, pqrs: j.pqrs ?? a?.pqrs ?? null, escalar: j.escalar || (a?.escalar ?? false), rol: j.rol ?? a?.rol ?? null }));
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo conectar con el agente");
     } finally {
@@ -180,6 +181,21 @@ export function ProbadorAgenteVivo({ onCerrar }: { onCerrar?: () => void }) {
         </div>
 
         <div className="min-w-0 space-y-3 rounded-xl border border-glass-border bg-background/40 p-3 text-sm">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Lo que ve y ejecuta tu equipo</p>
+          <div className="space-y-2 rounded-lg border border-primary/40 bg-primary/10 p-2.5">
+            <p className="flex items-start gap-2 text-sm font-medium">
+              <Bot className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              <span className="min-w-0 break-words">Rol activo: {analisis?.rol?.rol ?? "Recepcionista y Servicio al Cliente"}</span>
+            </p>
+            {analisis?.rol && analisis.rol.acciones.length > 0 && (
+              <ul className="space-y-1 text-xs text-muted-foreground">
+                {analisis.rol.acciones.map((a) => (
+                  <li key={a} className="flex items-start gap-1.5"><Zap className="mt-0.5 h-3 w-3 shrink-0 text-primary" /><span className="min-w-0 break-words">{a}</span></li>
+                ))}
+              </ul>
+            )}
+            <p className="text-[11px] text-muted-foreground">Piloto automático 200 %: la IA resuelve, cotiza, agenda y registra sola; solo avisa a una persona en urgencias críticas.</p>
+          </div>
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Análisis en tiempo real</p>
           <div className="flex items-center gap-3">
             <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium ${temp.clase}`}>

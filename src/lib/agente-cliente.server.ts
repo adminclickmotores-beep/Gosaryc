@@ -51,7 +51,22 @@ export function obtenerPlaybookSector(tipoNegocio: string): string {
   return `PLAYBOOK DE CALIFICACIÓN (${tipoNegocio || "general"}): ${guion} PRINCIPIO GENERAL: actúas como un entrevistador experto de este tipo de negocio, no como un formulario. Antes de proponer precio, plan, cuota o fecha, entiende la situación del cliente; ofrece SIEMPRE opciones y nunca una sola cifra fija. Adáptate al cliente: si responde corto, pregunta simple; si se extiende, profundiza; si ya dio varios datos en un solo mensaje, no los repitas. Haz MÁXIMO UNA pregunta filtro por turno, en el orden que falte. Revisa los últimos 20 mensajes y NUNCA repitas un dato que el cliente ya respondió. Todo esto funciona solo, sin que el dueño tenga que configurar o entrenar nada.`;
 }
 export type PqrsAgente = { tipo: string; resumen: string; urgencia: string };
-export type RespuestaAgente = { texto: string; escalar: boolean; lead?: LeadAgente | null; pqrs?: PqrsAgente | null };
+export type RolAgente = { rol: string; acciones: string[] };
+export type RespuestaAgente = { texto: string; escalar: boolean; lead?: LeadAgente | null; pqrs?: PqrsAgente | null; rol?: RolAgente | null };
+
+/** Roles que el agente único asume solo según el sector y la intención de cada mensaje. */
+const ROLES_AGENTE = [
+  "Recepcionista y Servicio al Cliente: atención cordial 24/7, horarios, ubicación, seguimiento de pedidos y dudas generales.",
+  "Asesor Comercial + Preaprobado: cotizaciones inmediatas, cálculo de financiación, retoma de usados, preaprobado rápido, manejo de objeciones y cierre de ventas registrado en el CRM.",
+  "Asesor de Servicio y Taller: diagnóstico inicial, agendamiento de citas de mantenimiento o revisión y recordatorios preventivos.",
+  "Asesor de Constructora e Inmobiliaria: información por torre y piso, cuota inicial, subsidios y agendamiento de visitas a la sala de ventas.",
+  "Experto en Materiales y Repuestos: cálculo técnico de cantidades (metros, bultos, galones), compatibilidad de repuestos por marca, modelo y año, y consulta de stock real del inventario.",
+  "Experto en Tecnología: asesoría en equipos, software, especificaciones técnicas y soporte comercial.",
+  "Recepcionista y Despacho (Administrador): ejecución silenciosa en el sistema: descuenta stock, crea órdenes de despacho o cocina, registra abonos y programa seguimientos automáticos.",
+];
+const ROLES_BLOQUE = `ROLES ESPECIALIZADOS (eres UN solo agente que cambia de sombrero solo, sin perder el hilo ni avisar al cliente). Elige el rol según el tipo de negocio y la intención del ÚLTIMO mensaje:
+${ROLES_AGENTE.map((r) => `- ${r}`).join("\n")}
+MODO PILOTO AUTOMÁTICO 200 %: resuelve, cotiza, agenda y registra todo tú solo; usa [[ASESOR]] únicamente en urgencia crítica (reclamos graves, emergencias, amenaza legal o excepciones fuera de política). Al final de CADA turno añade la etiqueta oculta [[ROL:{"rol":"nombre del rol que usaste, p. ej. Experto en Materiales y Repuestos o Asesor Comercial + Preaprobado","acciones":["acción ejecutada en el sistema, p. ej. Stock consultado","Lead creado en el CRM"]}]] con 1 a 4 acciones cortas realmente hechas en esta respuesta (lista vacía si ninguna).`;
 
 /** Extrae una etiqueta oculta [[NOMBRE:{json}]] del texto del modelo. */
 function sacarEtiqueta<T>(texto: string, nombre: string): { limpio: string; valor: T | null } {
@@ -535,6 +550,8 @@ Objetivo de cierre del negocio: ${objetivo}. ${cierraSolo ? "Tienes AUTONOMÍA p
 Canal por el que llegó este cliente: ${canal}. En tu PRIMER mensaje adapta la bienvenida: si viene de Instagram o Facebook agradece que los siga o haya visto su publicación; si viene de la página web, agradece su visita; si es WhatsApp directo, saluda normal. No lo repitas después.
 
 ${obtenerPlaybookSector(tipo)}
+
+${ROLES_BLOQUE}
 ${canal === "WhatsApp Directo" ? "Este cliente entró como WhatsApp Directo sin origen detectado: después de resolver su primera duda, pregúntale de forma casual si nos vio por Instagram, Facebook o la página web, y cuando responda incluye \"canal_origen\" (Instagram, Facebook, Página Web, Google / Otro) en la etiqueta LEAD." : ""}
 
 MEMORIA DEL HILO (regla estricta): antes de responder, revisa TODO el historial de esta conversación. NUNCA vuelvas a preguntar un dato que el cliente ya entregó (nombre, presupuesto, cuota inicial, modelo, dirección, fecha, cantidad, etc.). Reutilízalo y pregunta solo lo que falta, una cosa a la vez.
@@ -589,7 +606,17 @@ Reglas:
   const sinAsesor = texto.replace(/\[\[ASESOR\]\]/gi, "").trim();
   const conLead = sacarEtiqueta<LeadAgente>(sinAsesor, "LEAD");
   const conPqrs = sacarEtiqueta<PqrsAgente>(conLead.limpio, "PQRS");
-  const limpio = conPqrs.limpio;
+  const conRol = sacarEtiqueta<{ rol?: unknown; acciones?: unknown }>(conPqrs.limpio, "ROL");
+  const limpio = conRol.limpio;
+  const rol: RolAgente | null =
+    conRol.valor && typeof conRol.valor === "object" && typeof conRol.valor.rol === "string" && conRol.valor.rol.trim()
+      ? {
+          rol: conRol.valor.rol.trim().slice(0, 80),
+          acciones: Array.isArray(conRol.valor.acciones)
+            ? conRol.valor.acciones.filter((a): a is string => typeof a === "string").map((a) => a.trim().slice(0, 100)).filter(Boolean).slice(0, 5)
+            : [],
+        }
+      : null;
   const lead = conLead.valor && typeof conLead.valor === "object" ? conLead.valor : null;
   const pqrs = conPqrs.valor && typeof conPqrs.valor === "object" ? conPqrs.valor : null;
   if (!esPrueba) {
@@ -615,5 +642,5 @@ Reglas:
       console.error("Agente: no se pudo aprender de la conversación", String(e instanceof Error ? e.message : "error").replace(/\d{7,15}/g, "***"));
     }
   }
-  return { texto: limpio || "Un momento, una persona del equipo te atiende enseguida.", escalar, lead, pqrs };
+  return { texto: limpio || "Un momento, una persona del equipo te atiende enseguida.", escalar, lead, pqrs, rol };
 }
