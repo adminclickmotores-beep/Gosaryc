@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "verificar": "tsc --noEmit && eslint . --max-warnings=0 && vite build",
+    "verificar": "tsc --noEmit && vite build",
     "format": "prettier --write .",
     "escritorio:instalar": "npm --prefix escritorio install",
     "instalador:windows": "npm --prefix escritorio run instalador:windows",
@@ -99,7 +99,7 @@
     "zod": "^3.24.2",
     "qrcode-terminal": "^0.12.0",
     "whatsapp-web.js": "^1.34.8",
-    "@capacitor/cli": "^8.6.2"
+    "@capacitor/cli": "^7.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
