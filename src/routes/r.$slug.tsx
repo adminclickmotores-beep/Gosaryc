@@ -1,6 +1,41 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { BRAND } from "@/lib/brand";
+
+const DOMINIOS_APROBADOS = new Set([
+  "gosaryc.lovable.app",
+  "wa.me",
+  "api.whatsapp.com",
+  "chat.whatsapp.com",
+  "instagram.com",
+  "www.instagram.com",
+  "facebook.com",
+  "www.facebook.com",
+  "m.facebook.com",
+  "fb.me",
+  "maps.google.com",
+  "goo.gl",
+  "maps.app.goo.gl",
+  "tiktok.com",
+  "www.tiktok.com",
+  "youtube.com",
+  "www.youtube.com",
+  "youtu.be",
+]);
+
+function esDestinoAprobado(url: URL): boolean {
+  if (url.protocol !== "https:") return false;
+  const host = url.hostname.toLowerCase();
+  if (DOMINIOS_APROBADOS.has(host) || host.endsWith(".gosaryc.lovable.app")) return true;
+  const dominioMarca = BRAND.domain.toLowerCase().split(":")[0];
+  if (dominioMarca && (host === dominioMarca || host.endsWith(`.${dominioMarca}`))) return true;
+  if (typeof window !== "undefined" && window.location?.hostname) {
+    const actual = window.location.hostname.toLowerCase();
+    if (host === actual) return true;
+  }
+  return false;
+}
 
 export const Route = createFileRoute("/r/$slug")({
   component: ShortLinkRedirect,
@@ -20,15 +55,15 @@ function ShortLinkRedirect() {
         setError("Este enlace no existe o fue eliminado.");
         return;
       }
-      // Solo se redirige a direcciones http(s): nunca javascript: ni otros esquemas.
+      // Solo se redirige a dominios HTTPS explícitamente aprobados.
       let destino: URL | null = null;
       try {
         destino = new URL(String(row.target_url));
       } catch {
         destino = null;
       }
-      if (!destino || (destino.protocol !== "https:" && destino.protocol !== "http:")) {
-        setError("Este enlace no es válido.");
+      if (!destino || !esDestinoAprobado(destino)) {
+        setError("Este enlace apunta a un destino no aprobado.");
         return;
       }
       // fire-and-forget click record

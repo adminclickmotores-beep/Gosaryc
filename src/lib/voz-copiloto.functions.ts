@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertAiQuota } from "@/lib/ai-quota.server";
+import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-2.5-flash";
@@ -134,21 +135,35 @@ const HERRAMIENTAS = [
   },
 ];
 
-/** Copiloto de voz: convierte lo dictado en llamadas a las 6 herramientas universales (se ejecutan en el navegador con los permisos del usuario). */
+/** Copiloto de voz: convierte lo dictado en llamadas a las 6 herramientas universales (rol, negocio y módulos se resuelven en el servidor). */
 export const interpretarVoz = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { texto: string; tipoNegocio: string; modulos: VozModulo[]; esAdmin: boolean }) => ({
+  .inputValidator((d: { texto: string; tipoNegocio?: string; modulos?: VozModulo[]; esAdmin?: boolean }) => ({
     texto: typeof d?.texto === "string" ? d.texto.replace(/[\u0000-\u001f\u007f<>]/g, " ").slice(0, 600) : "",
-    tipoNegocio: typeof d?.tipoNegocio === "string" ? d.tipoNegocio.replace(/[^\p{L}\p{N} _-]/gu, "").slice(0, 80) : "",
-    modulos: (Array.isArray(d?.modulos) ? d.modulos : [])
-      .filter((m) => m && typeof m.id === "string" && typeof m.titulo === "string")
-      .slice(0, 80)
-      .map((m) => ({ id: m.id.replace(/[^\w.-]/g, "").slice(0, 60), titulo: m.titulo.replace(/[\u0000-\u001f\u007f<>\n]/g, " ").slice(0, 80) })),
-    // Solo orienta a la IA: los permisos reales se aplican en el cliente y con las reglas de la base (RLS) por negocio.
-    esAdmin: d?.esAdmin === true,
   }))
   .handler(async ({ data, context }): Promise<VozRespuesta> => {
     await assertAiQuota(context.supabase, "voz-copiloto");
+
+    // Verificación de licencia, negocio y permisos exclusivamente en el servidor (nunca se confía en parámetros del navegador).
+    const [{ data: ownerId }, { data: accesoRaw }, { data: cfg }] = await Promise.all([
+      context.supabase.rpc("mi_negocio_id"),
+      context.supabase.rpc("mi_acceso"),
+      context.supabase.from("negocio_config").select("tipo_negocio").order("created_at").limit(1).maybeSingle(),
+    ]);
+    if (ownerId) {
+      const { data: licenciaActiva } = await context.supabase.rpc("licencia_activa_para", { p_owner: ownerId });
+      if (licenciaActiva === false) {
+        throw new Error("Tu licencia está vencida o suspendida. Renueva tu suscripción para usar el copiloto de voz.");
+      }
+    }
+
+    const acceso = (accesoRaw ?? {}) as { admin?: boolean; modulos?: string[] };
+    const esAdminServidor = acceso.admin === true;
+    const modulosPermitidos = new Set(Array.isArray(acceso.modulos) ? acceso.modulos : []);
+    const giro = resolverTipoNegocio(cfg?.tipo_negocio ?? null);
+    const modulosServidor = giro.modulos
+      .filter((m) => esAdminServidor || modulosPermitidos.has(m.id))
+      .slice(0, 80);
 
     const geminiKey = process.env.GEMINI_API_KEY;
     const lovableKey = process.env.LOVABLE_API_KEY;
@@ -159,16 +174,15 @@ export const interpretarVoz = createServerFn({ method: "POST" })
 
     const texto = typeof data.texto === "string" ? data.texto.trim().slice(0, 600) : "";
     if (!texto) return { respuesta: "No escuché nada. Intenta de nuevo.", llamadas: [] };
-    const modulos = (Array.isArray(data.modulos) ? data.modulos : []).slice(0, 80);
-    const lista = modulos.map((m) => `- ${String(m.id).slice(0, 60)}: ${String(m.titulo).slice(0, 80)}`).join("\n");
+    const lista = modulosServidor.map((m) => `- ${m.id}: ${m.titulo}`).join("\n");
 
-    const system = `Eres el Copiloto de Voz de Gosaryc. Controlas el programa de un negocio de tipo "${String(data.tipoNegocio).slice(0, 80)}" a partir de órdenes dictadas en español.
+    const system = `Eres el Copiloto de Voz de Gosaryc. Controlas el programa de un negocio de tipo "${giro.etiqueta}" a partir de órdenes dictadas en español.
 Siempre responde llamando a las herramientas necesarias (puedes llamar varias en orden). No inventes datos que el usuario no dijo: si falta un dato indispensable (por ejemplo el nombre del producto), no llames herramientas y pregunta en una frase corta.
 Para "navegar_a_modulo" usa el id exacto de esta lista de módulos habilitados del negocio:
 ${lista || "(sin módulos)"}
 Además existen destinos generales: finanzas, caja, reportes, punto de venta (pos), inventario/productos, nómina, CRM, agente virtual, configuración.
 Si la orden es solo una pregunta general sobre el programa, responde en texto breve sin herramientas.
-Responde en español de México, en una frase corta. No uses emojis. El rol del usuario es ${data.esAdmin ? "administrador" : "empleado"}.`;
+Responde en español de México, en una frase corta. No uses emojis. El rol del usuario es ${esAdminServidor ? "administrador" : "empleado"}.`;
 
     const body = (model: string) =>
       JSON.stringify({

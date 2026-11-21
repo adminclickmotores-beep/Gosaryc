@@ -1,6 +1,10 @@
-// Los teléfonos de clientes nunca se escriben completos en los registros.
+// Los teléfonos, códigos de vinculación y credenciales nunca se escriben completos en los registros.
 function enmascararNumero(t) {
-  return String(t == null ? "" : t).replace(/\d{7,15}/g, "***");
+  return String(t == null ? "" : t)
+    .replace(/Bearer\s+[A-Za-z0-9._-]+/gi, "Bearer ***")
+    .replace(/\b[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}\b/g, "****-****-****")
+    .replace(/\b[0-9a-f]{32,}\b/gi, "***")
+    .replace(/\d{7,15}/g, "***");
 }
 
 /**
@@ -671,19 +675,20 @@ const servidor = http.createServer(async (req, res) => {
       return responder(200, { cola: leerJson(ARCHIVO_COLA, []) });
     }
 
-    // GET /bridge/estado -> estado actual del puente híbrido con la web
+    // GET /bridge/estado -> estado actual del puente híbrido con la web (sin exponer secretos)
     if (ruta === "/bridge/estado" && req.method === "GET") {
-      return responder(200, { bridge: leerPuente() });
+      return responder(200, { bridge: resumenPuentePublico(leerPuente()) });
     }
 
     // POST /bridge/vincular { pairing_code } -> vincula este PC local en 1 paso con Supabase/Web
     if (ruta === "/bridge/vincular" && req.method === "POST") {
       const { pairing_code } = await leerCuerpo(req);
-      const codigo = String(pairing_code || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
-      if (codigo.length !== 6) return responder(400, { error: "El código debe tener 6 caracteres" });
+      const limpio = String(pairing_code || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
+      if (limpio.length !== 12) return responder(400, { error: "El código de vinculación debe tener 12 caracteres" });
+      const codigo = `${limpio.slice(0, 4)}-${limpio.slice(4, 8)}-${limpio.slice(8, 12)}`;
       const resPuente = await vincularPuenteNube(codigo);
       if (!resPuente.ok) return responder(400, { error: resPuente.error || "No se pudo vincular el código" });
-      return responder(200, { ok: true, bridge: leerPuente() });
+      return responder(200, { ok: true, bridge: resumenPuentePublico(leerPuente()) });
     }
 
     // POST /lineas { id, nombre, clave, agente, perfil, instrucciones } -> agrega o actualiza un número
@@ -770,10 +775,16 @@ process.on("unhandledRejection", (e) => {
   console.log("[Promesa rechazada]", enmascararNumero(e && e.stack ? e.stack : e));
 });
 
-// ---------- Puente Híbrido Cloud + Desktop Bridge (pairing_code, heartbeat, config_version, outbox) ----------
+// ---------- Puente Híbrido Cloud + Desktop Bridge (código de un solo uso + bridge_secret, heartbeat, config_version, outbox) ----------
 function leerPuente() {
   const b = leerJson(ARCHIVO_PUENTE, null);
   return b && typeof b === "object" ? b : null;
+}
+
+function resumenPuentePublico(b) {
+  if (!b || typeof b !== "object") return null;
+  const { bridge_secret: _s, pairing_code: _p, ...resto } = b;
+  return { ...resto, vinculado: Boolean(b.bridge_secret && b.business_id) };
 }
 
 function guardarPuente(b) {
@@ -782,7 +793,7 @@ function guardarPuente(b) {
 
 function contarMensajeHoy() {
   const b = leerPuente();
-  if (!b || !b.pairing_code) return;
+  if (!b || !b.bridge_secret || !b.business_id) return;
   const hoy = new Date().toISOString().slice(0, 10);
   if (b.mensajes_hoy_fecha !== hoy) {
     b.mensajes_hoy_fecha = hoy;
@@ -792,14 +803,16 @@ function contarMensajeHoy() {
   guardarPuente(b);
 }
 
-async function llamarPuenteNube(payload) {
+async function llamarPuenteNube(payload, bridgeSecret) {
   if (typeof fetch !== "function") return null;
   const ctrl = new AbortController();
   const corte = setTimeout(() => ctrl.abort(), 10000);
   try {
+    const headers = { "Content-Type": "application/json" };
+    if (bridgeSecret) headers.Authorization = `Bearer ${bridgeSecret}`;
     const r = await fetch(URL_PUENTE_NUBE, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(payload),
       signal: ctrl.signal,
     });
@@ -836,7 +849,8 @@ function aplicarConfigPuente(cfg, b) {
   }
   const actualizado = {
     ...(b || {}),
-    pairing_code: (b && b.pairing_code) || "",
+    pairing_code: "",
+    bridge_secret: cfg.bridge_secret || (b && b.bridge_secret) || "",
     business_id: cfg.business_id || (b && b.business_id) || "",
     linea_id: lineaId,
     nombre: cfg.nombre || (b && b.nombre) || lineaId,
@@ -852,30 +866,33 @@ function aplicarConfigPuente(cfg, b) {
 
 async function vincularPuenteNube(pairingCode) {
   const r = await llamarPuenteNube({ accion: "vincular", pairing_code: pairingCode });
-  if (!r || !r.ok || !r.data || !r.data.ok) {
+  if (!r || !r.ok || !r.data || !r.data.ok || !r.data.bridge_secret) {
     return { ok: false, error: (r && r.data && r.data.error) || "No se pudo conectar con la nube" };
   }
   const previo = leerPuente() || {};
-  aplicarConfigPuente(r.data, { ...previo, pairing_code: pairingCode });
+  aplicarConfigPuente(r.data, previo);
   return { ok: true };
 }
 
 async function reportarUrgenciaPuente(telefono, resumen) {
   const b = leerPuente();
-  if (!b || !b.pairing_code) return;
-  await llamarPuenteNube({
-    accion: "registrar_urgencia",
-    pairing_code: b.pairing_code,
-    telefono,
-    resumen,
-  });
+  if (!b || !b.bridge_secret || !b.business_id) return;
+  await llamarPuenteNube(
+    {
+      accion: "registrar_urgencia",
+      business_id: b.business_id,
+      telefono,
+      resumen,
+    },
+    b.bridge_secret,
+  );
 }
 
 let cicloPuenteActivo = false;
 async function ejecutarCicloPuente() {
   if (cicloPuenteActivo) return;
   const b = leerPuente();
-  if (!b || !b.pairing_code) return;
+  if (!b || !b.bridge_secret || !b.business_id) return;
   cicloPuenteActivo = true;
   try {
     const linea = (b.linea_id && lineas.get(b.linea_id)) || elegirLinea("");
@@ -883,12 +900,15 @@ async function ejecutarCicloPuente() {
     const hoy = new Date().toISOString().slice(0, 10);
     const mensajesHoy = b.mensajes_hoy_fecha === hoy ? Number(b.mensajes_hoy) || 0 : 0;
 
-    const r = await llamarPuenteNube({
-      accion: "heartbeat",
-      pairing_code: b.pairing_code,
-      status,
-      mensajes_hoy: mensajesHoy,
-    });
+    const r = await llamarPuenteNube(
+      {
+        accion: "heartbeat",
+        business_id: b.business_id,
+        status,
+        mensajes_hoy: mensajesHoy,
+      },
+      b.bridge_secret,
+    );
     if (!r || !r.ok || !r.data || !r.data.ok) return;
 
     if (linea && typeof r.data.auto_pilot_200 === "boolean") {
@@ -898,7 +918,10 @@ async function ejecutarCicloPuente() {
     // Descarga instantánea si el catálogo o reglas cambiaron en la web (config_version mayor)
     const verRemota = Number(r.data.config_version) || 1;
     if (verRemota > (Number(b.config_version) || 0)) {
-      const cfgRes = await llamarPuenteNube({ accion: "descargar_config", pairing_code: b.pairing_code });
+      const cfgRes = await llamarPuenteNube(
+        { accion: "descargar_config", business_id: b.business_id },
+        b.bridge_secret,
+      );
       if (cfgRes && cfgRes.ok && cfgRes.data && cfgRes.data.ok) {
         aplicarConfigPuente(cfgRes.data, b);
       }
@@ -928,7 +951,10 @@ async function ejecutarCicloPuente() {
         }
       }
       if (enviadosIds.length > 0) {
-        await llamarPuenteNube({ accion: "confirmar_outbox", pairing_code: b.pairing_code, ids: enviadosIds });
+        await llamarPuenteNube(
+          { accion: "confirmar_outbox", business_id: b.business_id, ids: enviadosIds },
+          b.bridge_secret,
+        );
       }
     }
   } finally {

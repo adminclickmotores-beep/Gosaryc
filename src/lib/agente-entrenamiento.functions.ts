@@ -29,10 +29,22 @@ export const entrenarSectorAgente = createServerFn({ method: "POST" })
       .select("id,owner_id,tipo_negocio,ciudad")
       .eq("id", data.negocioId)
       .maybeSingle();
-    if (!negocio) throw new Error("No se encontró tu negocio.");
+    if (!negocio || !negocio.owner_id) throw new Error("No se encontró tu negocio.");
 
-    const tipo = String(data.tipoNegocio || negocio.tipo_negocio || "comercio general").slice(0, 80);
-    const ciudad = String(data.ciudad || negocio.ciudad || "Colombia").slice(0, 80);
+    // Solo el dueño o administrador del negocio con licencia activa puede modificar el entrenamiento del agente.
+    const [{ data: esAdmin }, { data: licenciaActiva }] = await Promise.all([
+      context.supabase.rpc("es_dueno_o_admin_negocio", { p_owner_id: negocio.owner_id }),
+      context.supabase.rpc("licencia_activa_para", { p_owner: negocio.owner_id }),
+    ]);
+    if (esAdmin !== true) {
+      throw new Error("Solo el dueño o administrador del negocio puede modificar las instrucciones del asistente.");
+    }
+    if (licenciaActiva === false) {
+      throw new Error("Tu licencia está vencida o suspendida.");
+    }
+
+    const tipo = String(negocio.tipo_negocio || "comercio general").slice(0, 80);
+    const ciudad = String(negocio.ciudad || "Colombia").slice(0, 80);
 
     const res = await fetch(endpoint, {
       method: "POST",

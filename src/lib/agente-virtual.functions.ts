@@ -17,9 +17,20 @@ export type AgenteMensaje = { role: "user" | "assistant"; content: string };
 // Asistente virtual general: sirve para cualquier tipo de negocio.
 export const runAgenteVirtual = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { messages: AgenteMensaje[]; tipoNegocio?: string | null }) => d)
+  .inputValidator((d: { messages: AgenteMensaje[]; tipoNegocio?: string | null }) => ({
+    messages: Array.isArray(d?.messages) ? d.messages : [],
+  }))
   .handler(async ({ data, context }) => {
     await assertAiQuota(context.supabase, "agente-virtual");
+
+    // Verificación de licencia activa en servidor
+    const { data: ownerId } = await context.supabase.rpc("mi_negocio_id");
+    if (ownerId) {
+      const { data: activa } = await context.supabase.rpc("licencia_activa_para", { p_owner: ownerId });
+      if (activa === false) {
+        throw new Error("Tu licencia está vencida o suspendida. Renueva tu suscripción para usar el asistente virtual.");
+      }
+    }
 
     // Si hay llave gratuita de Google Gemini, se usa esa; si no, la IA integrada de Lovable.
     const geminiKey = process.env.GEMINI_API_KEY;
@@ -61,9 +72,8 @@ export const runAgenteVirtual = createServerFn({ method: "POST" })
       .limit(1)
       .maybeSingle();
 
-    const tipo = (cfg?.tipo_negocio || (typeof data.tipoNegocio === "string" ? data.tipoNegocio : "") || "general")
-      .trim()
-      .slice(0, 80);
+    const giro = resolverTipoNegocio(cfg?.tipo_negocio ?? null);
+    const tipo = giro.etiqueta;
     const dato = (etiqueta: string, v: string | null | undefined) =>
       `- ${etiqueta}: ${v && v.trim() ? v.trim().slice(0, 500) : "NO CONFIGURADO"}`;
     const perfil = [
@@ -92,7 +102,6 @@ ${tarifasComoTexto()}
       : "No hay tarifas de domicilio configuradas para este negocio.";
 
     // Qué hace este tipo de negocio (módulos activos), para responder con su vocabulario profesional.
-    const giro = resolverTipoNegocio(cfg?.tipo_negocio ?? data.tipoNegocio ?? null);
     const modulosTxt = giro.modulos
       .map((m) => m.titulo)
       .filter((t, i, a) => t && a.indexOf(t) === i)

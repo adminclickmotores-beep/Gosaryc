@@ -1,14 +1,33 @@
 // Puente híbrido Cloud + Desktop Bridge para WhatsApp IA Local.
-// Lo consume la app local de escritorio (whatsapp-local/server.js) autenticada por pairing_code.
+// Vinculación de un solo uso con código de alta entropía (12 caracteres con expiración de 15 min)
+// y autenticación posterior mediante Bearer token criptográfico (bridge_secret) verificado por hash SHA-256.
 import { createFileRoute } from "@tanstack/react-router";
 
 const ESTADOS_VALIDOS = new Set(["conectado", "desconectado", "sin_internet"]);
 
 function limpiarCodigo(raw: unknown): string {
-  return String(raw ?? "")
+  const limpio = String(raw ?? "")
     .toUpperCase()
     .replace(/[^A-Z0-9]/g, "")
-    .slice(0, 6);
+    .slice(0, 12);
+  if (limpio.length !== 12) return "";
+  return `${limpio.slice(0, 4)}-${limpio.slice(4, 8)}-${limpio.slice(8, 12)}`;
+}
+
+function bytesAHex(bytes: Uint8Array): string {
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function sha256Hex(valor: string): Promise<string> {
+  const dig = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(valor));
+  return bytesAHex(new Uint8Array(dig));
+}
+
+function compararSeguro(hashA: string, hashB: string): boolean {
+  if (!hashA || !hashB || hashA.length !== hashB.length) return false;
+  let diff = 0;
+  for (let i = 0; i < hashA.length; i++) diff |= hashA.charCodeAt(i) ^ hashB.charCodeAt(i);
+  return diff === 0;
 }
 
 // Límite de intentos fallidos por IP para impedir adivinar códigos de vinculación.
@@ -109,6 +128,7 @@ export const Route = createFileRoute("/api/public/whatsapp-bridge")({
         let cuerpo: {
           accion?: string;
           pairing_code?: string;
+          business_id?: string;
           status?: string;
           mensajes_hoy?: number;
           ids?: string[];
@@ -121,28 +141,76 @@ export const Route = createFileRoute("/api/public/whatsapp-bridge")({
           return Response.json({ error: "Cuerpo inválido" }, { status: 400 });
         }
 
-        const codigo = limpiarCodigo(cuerpo.pairing_code);
-        if (codigo.length !== 6) {
-          registrarFallo(ip);
-          return Response.json({ error: "Código de vinculación inválido (debe tener 6 caracteres)" }, { status: 400 });
-        }
-
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-        const { data: puente, error: errPuente } = await supabaseAdmin
-          .from("whatsapp_bridge")
-          .select("id,business_id,pairing_code,status,auto_pilot_200,config_version,mensajes_hoy,mensajes_hoy_fecha,last_sync_at")
-          .eq("pairing_code", codigo)
-          .maybeSingle();
-
-        if (errPuente || !puente) {
-          registrarFallo(ip);
-          return Response.json({ error: "Código de vinculación no encontrado" }, { status: 404 });
-        }
-
         const ahora = new Date().toISOString();
         const hoy = ahora.slice(0, 10);
         const accion = String(cuerpo.accion ?? "heartbeat");
+
+        type PuenteFila = {
+          id: string;
+          business_id: string;
+          pairing_code: string;
+          status: string;
+          auto_pilot_200: boolean;
+          config_version: number;
+          mensajes_hoy: number;
+          mensajes_hoy_fecha: string | null;
+          last_sync_at: string | null;
+          bridge_secret_hash?: string | null;
+          pairing_expires_at?: string | null;
+        };
+
+        let puente: PuenteFila | null = null;
+        let nuevoSecreto: string | null = null;
+
+        if (accion === "vincular") {
+          const codigo = limpiarCodigo(cuerpo.pairing_code);
+          if (!codigo) {
+            registrarFallo(ip);
+            return Response.json({ error: "Código de vinculación inválido (debe tener 12 caracteres)" }, { status: 400 });
+          }
+
+          const { data: encontrado, error: errPuente } = await supabaseAdmin
+            .from("whatsapp_bridge")
+            .select("id,business_id,pairing_code,status,auto_pilot_200,config_version,mensajes_hoy,mensajes_hoy_fecha,last_sync_at,bridge_secret_hash,pairing_expires_at")
+            .eq("pairing_code", codigo)
+            .maybeSingle();
+
+          const fila = encontrado as PuenteFila | null;
+          if (errPuente || !fila) {
+            registrarFallo(ip);
+            return Response.json({ error: "Código de vinculación no válido o expirado" }, { status: 401 });
+          }
+
+          if (!fila.pairing_expires_at || new Date(fila.pairing_expires_at).getTime() < Date.now()) {
+            registrarFallo(ip);
+            return Response.json({ error: "El código de vinculación expiró. Genera uno nuevo en tu panel." }, { status: 401 });
+          }
+
+          nuevoSecreto = bytesAHex(crypto.getRandomValues(new Uint8Array(32)));
+          puente = fila;
+        } else {
+          const authHeader = request.headers.get("authorization") ?? "";
+          const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+          const businessId = typeof cuerpo.business_id === "string" ? cuerpo.business_id.trim() : "";
+          if (token.length < 32 || !businessId) {
+            registrarFallo(ip);
+            return Response.json({ error: "Autorización del puente requerida" }, { status: 401 });
+          }
+
+          const { data: encontrado, error: errPuente } = await supabaseAdmin
+            .from("whatsapp_bridge")
+            .select("id,business_id,pairing_code,status,auto_pilot_200,config_version,mensajes_hoy,mensajes_hoy_fecha,last_sync_at,bridge_secret_hash,pairing_expires_at")
+            .eq("business_id", businessId)
+            .maybeSingle();
+
+          const fila = encontrado as PuenteFila | null;
+          if (errPuente || !fila || !fila.bridge_secret_hash || !compararSeguro(await sha256Hex(token), fila.bridge_secret_hash)) {
+            registrarFallo(ip);
+            return Response.json({ error: "Credencial del puente inválida" }, { status: 401 });
+          }
+          puente = fila;
+        }
 
         if (accion === "vincular" || accion === "descargar_config") {
           const [{ data: neg }, { data: ag }, { data: mems }] = await Promise.all([
@@ -168,14 +236,20 @@ export const Route = createFileRoute("/api/public/whatsapp-bridge")({
             return Response.json({ error: "Negocio no encontrado" }, { status: 404 });
           }
 
+          const updatePayload: Record<string, unknown> = {
+            status: accion === "vincular" ? "conectado" : puente.status,
+            last_heartbeat: ahora,
+            last_sync_at: ahora,
+            updated_at: ahora,
+          };
+          if (accion === "vincular" && nuevoSecreto) {
+            updatePayload.bridge_secret_hash = await sha256Hex(nuevoSecreto);
+            updatePayload.pairing_expires_at = ahora;
+          }
+
           await supabaseAdmin
             .from("whatsapp_bridge")
-            .update({
-              status: accion === "vincular" ? "conectado" : puente.status,
-              last_heartbeat: ahora,
-              last_sync_at: ahora,
-              updated_at: ahora,
-            })
+            .update(updatePayload as never)
             .eq("id", puente.id);
 
           const faqs = (mems ?? []).filter((m) => m.tipo === "faq").map((m) => m.contenido);
@@ -190,6 +264,7 @@ export const Route = createFileRoute("/api/public/whatsapp-bridge")({
           return Response.json({
             ok: true,
             business_id: puente.business_id,
+            ...(nuevoSecreto ? { bridge_secret: nuevoSecreto } : {}),
             nombre: neg.nombre || "Mi negocio",
             tipo_negocio: neg.tipo_negocio || "",
             clave_agente: ag?.clave || "",

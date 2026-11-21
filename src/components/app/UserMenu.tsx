@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { IconLogout, IconSettings } from "@/components/ui-custom/CustomIcon";
 import { KeyRound } from "lucide-react";
-import { esCuentaMaestra } from "@/lib/cuenta-maestra";
+import { esSuperadminServidor } from "@/lib/cuenta-maestra";
 
 function initialsFor(name: string | null | undefined, email: string | null | undefined) {
   const source = (name || "").trim();
@@ -38,6 +38,21 @@ export function UserMenu() {
     if (typeof window === "undefined" || !cacheKey) return null;
     return window.localStorage.getItem(cacheKey);
   });
+  const [esAdminPlataforma, setEsAdminPlataforma] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      setEsAdminPlataforma(false);
+      return;
+    }
+    let cancelled = false;
+    void esSuperadminServidor().then((ok) => {
+      if (!cancelled) setEsAdminPlataforma(ok);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     if (!user || !cacheKey) return;
@@ -104,7 +119,7 @@ export function UserMenu() {
             <span>Configuración</span>
           </Link>
         </DropdownMenuItem>
-        {esCuentaMaestra(user.email) && (
+        {esAdminPlataforma && (
           <DropdownMenuItem asChild className="cursor-pointer">
             <Link to={"/licencias" as never} className="flex items-center gap-2">
               <KeyRound size={14} />

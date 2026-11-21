@@ -18,22 +18,11 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
+import { usePermisos } from "@/hooks/use-permisos";
 
 type PuenteRow = Tables<"whatsapp_bridge">;
 type OutboxRow = Tables<"whatsapp_outbox">;
 type UrgenciaRow = Pick<Tables<"crm_pqrs">, "id" | "telefono" | "tipo" | "resumen" | "urgencia" | "estado" | "created_at">;
-
-const ALFABETO_CODIGO = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-
-function generarCodigoEmparejamiento(): string {
-  const bytes = new Uint32Array(6);
-  crypto.getRandomValues(bytes);
-  let out = "";
-  for (let i = 0; i < 6; i++) {
-    out += ALFABETO_CODIGO[bytes[i] % ALFABETO_CODIGO.length];
-  }
-  return out;
-}
 
 function formatearHoraCorta(iso: string | null): string {
   if (!iso) return "Aún sin sincronizar";
@@ -65,6 +54,7 @@ type Props = {
  */
 export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLocal = "" }: Props) {
   const { negocio } = useNegocio();
+  const { esAdmin } = usePermisos();
   const [puente, setPuente] = useState<PuenteRow | null>(null);
   const [outbox, setOutbox] = useState<OutboxRow[]>([]);
   const [urgencias, setUrgencias] = useState<UrgenciaRow[]>([]);
@@ -78,7 +68,10 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
   const [enviandoOutbox, setEnviandoOutbox] = useState(false);
 
   const cargarTodo = useCallback(async () => {
-    if (!negocio?.id) return;
+    if (!negocio?.id || !esAdmin) {
+      setCargando(false);
+      return;
+    }
     const { data: existente } = await supabase
       .from("whatsapp_bridge")
       .select("*")
@@ -87,19 +80,14 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
 
     let fila = existente;
     if (!fila) {
-      // Crea el puente automáticamente con un código único de 6 caracteres
-      for (let intento = 0; intento < 3 && !fila; intento++) {
-        const codigo = generarCodigoEmparejamiento();
+      const { error: errGen } = await supabase.rpc("generar_codigo_vinculacion_whatsapp", {
+        p_business_id: negocio.id,
+      });
+      if (!errGen) {
         const { data: creada } = await supabase
           .from("whatsapp_bridge")
-          .insert({
-            business_id: negocio.id,
-            pairing_code: codigo,
-            status: "desconectado",
-            auto_pilot_200: true,
-            config_version: 1,
-          })
           .select("*")
+          .eq("business_id", negocio.id)
           .maybeSingle();
         if (creada) fila = creada;
       }
@@ -126,7 +114,7 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
     setOutbox(cola ?? []);
     setUrgencias((alertas ?? []) as UrgenciaRow[]);
     setCargando(false);
-  }, [negocio?.id]);
+  }, [negocio?.id, esAdmin]);
 
   useEffect(() => {
     void cargarTodo();
@@ -183,27 +171,24 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
   };
 
   const regenerarCodigo = async () => {
-    if (!puente || !negocio?.id) return;
+    if (!negocio?.id || !esAdmin) return;
     setActualizando(true);
-    const nuevoCodigo = generarCodigoEmparejamiento();
-    const { data, error } = await supabase
-      .from("whatsapp_bridge")
-      .update({
-        pairing_code: nuevoCodigo,
-        status: "desconectado",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", puente.id)
-      .eq("business_id", negocio.id)
-      .select("*")
-      .maybeSingle();
-    setActualizando(false);
-    if (error || !data) {
-      toast.error("No se pudo generar un código nuevo");
+    const { error } = await supabase.rpc("generar_codigo_vinculacion_whatsapp", {
+      p_business_id: negocio.id,
+    });
+    if (error) {
+      setActualizando(false);
+      toast.error(error.message || "No se pudo generar un código nuevo");
       return;
     }
-    setPuente(data);
-    toast.success("Código nuevo generado. Pégalo en tu app local de Windows.");
+    const { data } = await supabase
+      .from("whatsapp_bridge")
+      .select("*")
+      .eq("business_id", negocio.id)
+      .maybeSingle();
+    setActualizando(false);
+    if (data) setPuente(data);
+    toast.success("Código seguro generado (válido por 15 minutos, uso único). Pégalo en tu app local.");
   };
 
   const alternarPiloto200 = async () => {
@@ -306,7 +291,7 @@ export function PuenteWhatsAppLocal({ apiBase = "http://localhost:3001", claveLo
     toast.success("Urgencia marcada como atendida");
   };
 
-  if (!negocio) return null;
+  if (!negocio || !esAdmin) return null;
 
   const online = estaEnLinea(puente);
   const sinInternet = puente?.status === "sin_internet";

@@ -9142,6 +9142,9 @@ export type Database = {
       accept_org_invite: { Args: { _token: string }; Returns: string }
       es_superadmin: { Args: never; Returns: boolean }
       es_soporte_plataforma: { Args: never; Returns: boolean }
+      admin_asignar_rol_plataforma: { Args: { p_user_id: string; p_rol: string; p_activo?: boolean }; Returns: undefined }
+      generar_codigo_vinculacion_whatsapp: { Args: { p_business_id: string }; Returns: Json }
+      url_destino_aprobada: { Args: { p_url: string }; Returns: boolean }
       licencia_activa_para: { Args: { p_owner: string }; Returns: boolean }
       generar_codigo_alta_entropia: { Args: { p_prefijo?: string }; Returns: string }
       verificar_licencia: { Args: { p_codigo: string }; Returns: Json }
