@@ -2541,9 +2541,9 @@ export type Database = {
         Relationships: []
       }
       edu_estudiantes: {
-        Row: { acudiente: string | null; created_at: string; documento: string | null; estado: string; grado: string; grupo: string | null; id: string; nombre: string; owner_id: string | null; telefono_acu: string | null; tipo_negocio: string | null }
-        Insert: { acudiente?: string | null; created_at?: string; documento?: string | null; estado?: string; grado?: string; grupo?: string | null; id?: string; nombre: string; owner_id?: string | null; telefono_acu?: string | null; tipo_negocio?: string | null }
-        Update: { acudiente?: string | null; created_at?: string; documento?: string | null; estado?: string; grado?: string; grupo?: string | null; id?: string; nombre?: string; owner_id?: string | null; telefono_acu?: string | null; tipo_negocio?: string | null }
+        Row: { acudiente: string | null; alergias: string | null; created_at: string; documento: string | null; eps: string | null; estado: string; grado: string; grupo: string | null; id: string; nombre: string; owner_id: string | null; programa: string | null; telefono_acu: string | null; tipo_negocio: string | null }
+        Insert: { acudiente?: string | null; alergias?: string | null; created_at?: string; documento?: string | null; eps?: string | null; estado?: string; grado?: string; grupo?: string | null; id?: string; nombre: string; owner_id?: string | null; programa?: string | null; telefono_acu?: string | null; tipo_negocio?: string | null }
+        Update: { acudiente?: string | null; alergias?: string | null; created_at?: string; documento?: string | null; eps?: string | null; estado?: string; grado?: string; grupo?: string | null; id?: string; nombre?: string; owner_id?: string | null; programa?: string | null; telefono_acu?: string | null; tipo_negocio?: string | null }
         Relationships: []
       }
       edu_pensiones: {
@@ -2553,9 +2553,15 @@ export type Database = {
         Relationships: []
       }
       edu_asistencia: {
-        Row: { created_at: string; estudiante_id: string; fecha: string; id: string; nota: string | null; owner_id: string | null; presente: boolean; tipo_negocio: string | null }
-        Insert: { created_at?: string; estudiante_id: string; fecha?: string; id?: string; nota?: string | null; owner_id?: string | null; presente?: boolean; tipo_negocio?: string | null }
-        Update: { created_at?: string; estudiante_id?: string; fecha?: string; id?: string; nota?: string | null; owner_id?: string | null; presente?: boolean; tipo_negocio?: string | null }
+        Row: { created_at: string; estudiante_id: string; fecha: string; hora_entrada: string | null; hora_salida: string | null; id: string; nota: string | null; owner_id: string | null; presente: boolean; recogido_por: string | null; tipo_negocio: string | null }
+        Insert: { created_at?: string; estudiante_id: string; fecha?: string; hora_entrada?: string | null; hora_salida?: string | null; id?: string; nota?: string | null; owner_id?: string | null; presente?: boolean; recogido_por?: string | null; tipo_negocio?: string | null }
+        Update: { created_at?: string; estudiante_id?: string; fecha?: string; hora_entrada?: string | null; hora_salida?: string | null; id?: string; nota?: string | null; owner_id?: string | null; presente?: boolean; recogido_por?: string | null; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      edu_reportes_diarios: {
+        Row: { actividad: string; comidas: string; created_at: string; estado_animo: string; estudiante_id: string; fecha: string; id: string; mensaje: string; owner_id: string | null; panales: string; profesora: string; siestas: string; tipo_negocio: string | null }
+        Insert: { actividad?: string; comidas?: string; created_at?: string; estado_animo?: string; estudiante_id: string; fecha?: string; id?: string; mensaje?: string; owner_id?: string | null; panales?: string; profesora?: string; siestas?: string; tipo_negocio?: string | null }
+        Update: { actividad?: string; comidas?: string; created_at?: string; estado_animo?: string; estudiante_id?: string; fecha?: string; id?: string; mensaje?: string; owner_id?: string | null; panales?: string; profesora?: string; siestas?: string; tipo_negocio?: string | null }
         Relationships: []
       }
       edu_notas: {
@@ -2730,6 +2736,18 @@ export type Database = {
         Row: { capacitacion_id: string | null; created_at: string; documento: string; id: string; nombre: string; owner_id: string | null }
         Insert: { capacitacion_id?: string | null; created_at?: string; documento?: string; id?: string; nombre?: string; owner_id?: string | null }
         Update: { capacitacion_id?: string | null; created_at?: string; documento?: string; id?: string; nombre?: string; owner_id?: string | null }
+        Relationships: []
+      }
+      sst_historias: {
+        Row: { antecedentes_laborales: string; antecedentes_personales: string; created_at: string; diagnostico: string; documento: string; empresa: string; examen_fisico: string; exposicion: string; fecha: string; id: string; owner_id: string | null; paraclinicos: string; recomendaciones: string; tipo_examen: string; tipo_negocio: string | null; trabajador: string; trabajador_id: string | null }
+        Insert: { antecedentes_laborales?: string; antecedentes_personales?: string; created_at?: string; diagnostico?: string; documento?: string; empresa?: string; examen_fisico?: string; exposicion?: string; fecha?: string; id?: string; owner_id?: string | null; paraclinicos?: string; recomendaciones?: string; tipo_examen?: string; tipo_negocio?: string | null; trabajador?: string; trabajador_id?: string | null }
+        Update: { antecedentes_laborales?: string; antecedentes_personales?: string; created_at?: string; diagnostico?: string; documento?: string; empresa?: string; examen_fisico?: string; exposicion?: string; fecha?: string; id?: string; owner_id?: string | null; paraclinicos?: string; recomendaciones?: string; tipo_examen?: string; tipo_negocio?: string | null; trabajador?: string; trabajador_id?: string | null }
+        Relationships: []
+      }
+      sst_ordenes_examen: {
+        Row: { codigo: string; created_at: string; documento: string; empresa: string; estado: string; examenes: string; fecha: string; id: string; laboratorio: string; owner_id: string | null; tipo: string; tipo_negocio: string | null; trabajador: string; trabajador_id: string | null }
+        Insert: { codigo?: string; created_at?: string; documento?: string; empresa?: string; estado?: string; examenes?: string; fecha?: string; id?: string; laboratorio?: string; owner_id?: string | null; tipo?: string; tipo_negocio?: string | null; trabajador?: string; trabajador_id?: string | null }
+        Update: { codigo?: string; created_at?: string; documento?: string; empresa?: string; estado?: string; examenes?: string; fecha?: string; id?: string; laboratorio?: string; owner_id?: string | null; tipo?: string; tipo_negocio?: string | null; trabajador?: string; trabajador_id?: string | null }
         Relationships: []
       }
       sst_novedades: {
@@ -3560,9 +3578,9 @@ export type Database = {
         Relationships: []
       }
       gim_socios: {
-        Row: { activo: boolean; codigo_qr: string; contacto_emergencia: string | null; correo: string | null; created_at: string; documento: string; id: string; nombre: string; owner_id: string | null; telefono: string | null; tipo_negocio: string | null }
-        Insert: { activo?: boolean; codigo_qr?: string; contacto_emergencia?: string | null; correo?: string | null; created_at?: string; documento: string; id?: string; nombre: string; owner_id?: string | null; telefono?: string | null; tipo_negocio?: string | null }
-        Update: { activo?: boolean; codigo_qr?: string; contacto_emergencia?: string | null; correo?: string | null; created_at?: string; documento?: string; id?: string; nombre?: string; owner_id?: string | null; telefono?: string | null; tipo_negocio?: string | null }
+        Row: { activo: boolean; codigo_qr: string; contacto_emergencia: string | null; correo: string | null; created_at: string; documento: string; foto_url: string | null; id: string; nombre: string; owner_id: string | null; telefono: string | null; tipo_negocio: string | null }
+        Insert: { activo?: boolean; codigo_qr?: string; contacto_emergencia?: string | null; correo?: string | null; created_at?: string; documento: string; foto_url?: string | null; id?: string; nombre: string; owner_id?: string | null; telefono?: string | null; tipo_negocio?: string | null }
+        Update: { activo?: boolean; codigo_qr?: string; contacto_emergencia?: string | null; correo?: string | null; created_at?: string; documento?: string; foto_url?: string | null; id?: string; nombre?: string; owner_id?: string | null; telefono?: string | null; tipo_negocio?: string | null }
         Relationships: []
       }
       gim_membresias: {
@@ -9043,6 +9061,7 @@ export type Database = {
       }
       ofi_cobrar: { Args: { p_tabla: string; p_id: string; p_valor: number; p_metodo: string }; Returns: Json }
       sst_cobrar: { Args: { p_tabla: string; p_id: string; p_valor: number; p_metodo: string }; Returns: Json }
+      sst_facturar_empresa: { Args: { p_empresa: string; p_metodo: string }; Returns: Json }
       sst_validar_certificado: { Args: { p_codigo: string }; Returns: Json }
       obr_registrar_vale: {
         Args: { p_obra: string; p_capitulo: string | null; p_items: Json; p_entregado: string | null }

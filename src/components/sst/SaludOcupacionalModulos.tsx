@@ -167,11 +167,21 @@ export function EmpresasSST() {
 }
 
 // ============ 2. Trabajadores + evaluaciones + certificado ============
+const NOTA_TIPO: Record<string, string> = {
+  Ingreso: "Examen médico ocupacional de ingreso (Res. 1843 de 2025 / Res. 2346 de 2007).",
+  Periodico: "Examen médico ocupacional periódico programado según el profesiograma de la empresa.",
+  Egreso: "Examen médico ocupacional de egreso o retiro.",
+  "Post-Incapacidad": "Examen de reintegro posterior a incapacidad.",
+  Alturas: "Concepto de aptitud para TRABAJO SEGURO EN ALTURAS (Res. 4272 de 2021). Incluye valoración de equilibrio, vértigo y cardiovascular.",
+  "Espacios Confinados": "Concepto de aptitud para TRABAJO EN ESPACIOS CONFINADOS (valoración respiratoria, cardiovascular y psicológica).",
+};
+
 function certificadoHTML(e: Eva): string {
+  const notaTipo = NOTA_TIPO[e.tipo] ?? "";
   return `<html><head><meta charset="utf-8"><title>Certificado de aptitud</title><style>body{font-family:Arial,sans-serif;padding:32px;color:#111}h1{font-size:20px}.box{border:2px solid #0e7490;border-radius:10px;padding:18px;margin-top:12px}.muted{color:#555;font-size:12px}</style></head><body>
 <h1>CERTIFICADO DE APTITUD LABORAL</h1><p>Medicina del trabajo · Enfermería laboral 4.0</p>
 <div class="box"><p><b>Trabajador:</b> ${esc(e.trabajador)}</p><p><b>Empresa:</b> ${esc(e.empresa)}</p>
-<p><b>Tipo de evaluación:</b> ${esc(e.tipo)}</p><p><b>Concepto:</b> ${esc(e.concepto)}</p>
+<p><b>Tipo de evaluación:</b> ${esc(e.tipo)}</p>${notaTipo ? `<p class="muted">${esc(notaTipo)}</p>` : ""}<p><b>Concepto:</b> ${esc(e.concepto)}</p>
 ${e.restricciones ? `<p><b>Restricciones:</b> ${esc(e.restricciones)}</p>` : ""}
 <p><b>Fecha:</b> ${esc(e.fecha)}${e.vence ? ` · <b>Vence:</b> ${esc(e.vence)}` : ""}</p>
 <p><b>Código de verificación:</b> ${esc(e.codigo_seguro)}</p>
@@ -218,7 +228,7 @@ export function TrabajadoresEvaluaciones() {
     const tr = trabs.find((x) => x.id === trabId);
     if (!tr) return toast.error("Elige el trabajador evaluado.");
     const { error } = await supabase.from("sst_evaluaciones").insert({
-      trabajador_id: tr.id, empresa: empresa.trim() || tr.cargo, trabajador: tr.nombre,
+      trabajador_id: tr.id, empresa: empresa.trim(), trabajador: tr.nombre,
       tipo, concepto, restricciones: restr.trim(), fecha: new Date().toISOString().slice(0, 10),
       vence: vence || hoyMas(365), valor: Math.max(num(valor), 0),
     });
@@ -231,6 +241,7 @@ export function TrabajadoresEvaluaciones() {
   if (cargando) return <Cargando />;
   const vencidos = trabs.filter((t) => t.examen_vence && t.examen_vence < new Date().toISOString().slice(0, 10));
   return (
+    <div className="space-y-6">
     <GlassPanel>
       <Encabezado titulo="Medicina del trabajo y enfermería laboral 4.0" texto="Registra al trabajador, guarda la evaluación (Ingreso, Periódico, Egreso, Post-Incapacidad, Alturas o Espacios Confinados) y emite el Certificado de Aptitud en PDF con código seguro. La historia clínica NUNCA se escribe aquí: solo el concepto de aptitud." />
       {vencidos.length > 0 && (
@@ -284,6 +295,243 @@ export function TrabajadoresEvaluaciones() {
           );
         })}
         {evas.length === 0 && <p className="text-sm text-muted-foreground">Aún no hay evaluaciones.</p>}
+      </div>
+    </GlassPanel>
+    <FacturacionEmpresas evas={evas} onListo={() => void cargar()} />
+    <OrdenesExamen trabs={trabs} />
+    <HistoriaOcupacional trabs={trabs} />
+    </div>
+  );
+}
+
+// ---- Órdenes de exámenes paraclínicos ----
+const PARACLINICOS = [
+  "Audiometría", "Visiometría", "Optometría", "Espirometría", "Electrocardiograma", "Cuadro hemático", "Glicemia", "Perfil lipídico",
+  "Examen de orina", "Rx de columna lumbar", "Rx de tórax (OIT)", "Valoración osteomuscular", "Prueba de equilibrio (alturas)",
+  "Test de vértigo (alturas)", "Prueba de claustrofobia", "Psicosensométrico", "Prueba de embarazo", "Perfil toxicológico",
+];
+const SUGERIDOS: Record<string, string[]> = {
+  Ingreso: ["Audiometría", "Visiometría", "Optometría", "Examen de orina"],
+  Periodico: ["Audiometría", "Visiometría", "Espirometría"],
+  Egreso: ["Audiometría", "Visiometría"],
+  "Post-Incapacidad": ["Valoración osteomuscular"],
+  Alturas: ["Audiometría", "Visiometría", "Electrocardiograma", "Glicemia", "Perfil lipídico", "Prueba de equilibrio (alturas)", "Test de vértigo (alturas)"],
+  "Espacios Confinados": ["Audiometría", "Visiometría", "Espirometría", "Electrocardiograma", "Prueba de claustrofobia"],
+};
+const TIPOS_EXAMEN = ["Ingreso", "Periodico", "Egreso", "Post-Incapacidad", "Alturas", "Espacios Confinados"] as const;
+type Orden = Tables<"sst_ordenes_examen">;
+type Historia = Tables<"sst_historias">;
+
+function ordenHTML(o: Orden): string {
+  const items = o.examenes.split(";").map((x) => x.trim()).filter((x) => x.length > 0);
+  return `<html><head><meta charset="utf-8"><title>Orden de exámenes</title><style>body{font-family:Arial,sans-serif;padding:32px;color:#111}h1{font-size:20px}.box{border:2px solid #0e7490;border-radius:10px;padding:18px;margin-top:12px}li{margin:4px 0}.muted{color:#555;font-size:12px}</style></head><body>
+<h1>ORDEN DE EXÁMENES PARACLÍNICOS</h1><p>Medicina del trabajo · Examen ocupacional ${esc(o.tipo)}</p>
+<div class="box"><p><b>Trabajador:</b> ${esc(o.trabajador)}${o.documento ? ` · Doc. ${esc(o.documento)}` : ""}</p><p><b>Empresa:</b> ${esc(o.empresa)}</p>
+<p><b>Fecha:</b> ${esc(o.fecha)}${o.laboratorio ? ` · <b>Laboratorio:</b> ${esc(o.laboratorio)}` : ""}</p>
+<p><b>Exámenes a realizar:</b></p><ul>${items.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+<p><b>Código de la orden:</b> ${esc(o.codigo)}</p>
+<p class="muted">Presente esta orden en el laboratorio o IPS. Los resultados se anexan a la historia ocupacional, que es reservada.</p></div></body></html>`;
+}
+
+function OrdenesExamen({ trabs }: { trabs: Trab[] }) {
+  const [lista, setLista] = useState<Orden[]>([]);
+  const [trabId, setTrabId] = useState("");
+  const [empresa, setEmpresa] = useState("");
+  const [tipo, setTipo] = useState<string>("Periodico");
+  const [sel, setSel] = useState<string[]>(SUGERIDOS.Periodico);
+  const [lab, setLab] = useState("");
+  const cargar = useCallback(async () => {
+    const { data } = await supabase.from("sst_ordenes_examen").select("*").order("created_at", { ascending: false }).limit(40);
+    setLista(data ?? []);
+  }, []);
+  useEffect(() => { void cargar(); }, [cargar]);
+  const alternar = (x: string) => setSel((p) => (p.includes(x) ? p.filter((y) => y !== x) : [...p, x]));
+  const guardar = async () => {
+    const tr = trabs.find((x) => x.id === trabId);
+    if (!tr) return toast.error("Elige el trabajador.");
+    if (sel.length === 0) return toast.error("Marca al menos un examen.");
+    const { error } = await supabase.from("sst_ordenes_examen").insert({
+      trabajador_id: tr.id, trabajador: tr.nombre, documento: tr.documento, empresa: empresa.trim(),
+      tipo, examenes: sel.join("; "), laboratorio: lab.trim(),
+    });
+    if (error) return toast.error(msg(error.message, "No se pudo guardar la orden."));
+    toast.success("Orden emitida. Ya puedes imprimirla.");
+    void cargar();
+  };
+  const realizada = async (o: Orden) => {
+    const { error } = await supabase.from("sst_ordenes_examen").update({ estado: "realizada" }).eq("id", o.id);
+    if (error) return toast.error(msg(error.message, "No se pudo actualizar."));
+    void cargar();
+  };
+  return (
+    <GlassPanel>
+      <Encabezado titulo="Órdenes de exámenes paraclínicos" texto="Elige al trabajador y el tipo de examen: el sistema sugiere los paraclínicos habituales (audiometría, visiometría, espirometría, alturas…). Imprime la orden para el laboratorio." />
+      <div className="grid gap-2 sm:grid-cols-3">
+        <Campo etiqueta="Trabajador">
+          <select className={campo} value={trabId} onChange={(e) => setTrabId(e.target.value)}>
+            <option value="">Elige…</option>
+            {trabs.map((t) => <option key={t.id} value={t.id}>{t.nombre} · {t.documento}</option>)}
+          </select>
+        </Campo>
+        <Campo etiqueta="Empresa"><input className={campo} value={empresa} onChange={(e) => setEmpresa(e.target.value)} /></Campo>
+        <Campo etiqueta="Tipo de examen">
+          <select className={campo} value={tipo} onChange={(e) => { setTipo(e.target.value); setSel(SUGERIDOS[e.target.value] ?? []); }}>
+            {TIPOS_EXAMEN.map((x) => <option key={x} value={x}>{x}</option>)}
+          </select>
+        </Campo>
+        <Campo etiqueta="Laboratorio o IPS"><input className={campo} value={lab} onChange={(e) => setLab(e.target.value)} /></Campo>
+      </div>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {PARACLINICOS.map((x) => (
+          <label key={x} className={`flex items-center gap-1 rounded-lg border px-2 py-1 text-xs ${sel.includes(x) ? "border-primary/60 bg-primary/10" : "border-glass-border"}`}>
+            <input type="checkbox" checked={sel.includes(x)} onChange={() => alternar(x)} /> {x}
+          </label>
+        ))}
+      </div>
+      <button type="button" className={`${boton} mt-3`} onClick={() => void guardar()}>Emitir orden</button>
+      <div className="mt-3 space-y-2">
+        {lista.map((o) => (
+          <div key={o.id} className="rounded-xl border border-glass-border p-3">
+            <p className="break-words font-semibold">{o.trabajador} <span className="text-xs text-muted-foreground">· {o.tipo} · {o.fecha} · {o.estado}</span></p>
+            <p className="break-words text-xs text-muted-foreground">{o.examenes}</p>
+            <div className="mt-1 flex flex-wrap gap-2">
+              <button type="button" className={botonSec} onClick={() => imprimirHTML(`Orden-${o.codigo}`, ordenHTML(o))}><Printer className="h-4 w-4" /> Imprimir orden</button>
+              {o.estado === "emitida" && <button type="button" className={botonSec} onClick={() => void realizada(o)}>Marcar realizada</button>}
+            </div>
+          </div>
+        ))}
+        {lista.length === 0 && <p className="text-sm text-muted-foreground">Aún no hay órdenes emitidas.</p>}
+      </div>
+    </GlassPanel>
+  );
+}
+
+// ---- Historia clínica ocupacional (reservada, solo personal autorizado) ----
+function historiaHTML(h: Historia): string {
+  const fila = (t: string, v: string) => (v ? `<p><b>${esc(t)}:</b> ${esc(v)}</p>` : "");
+  return `<html><head><meta charset="utf-8"><title>Historia ocupacional</title><style>body{font-family:Arial,sans-serif;padding:32px;color:#111}h1{font-size:20px}.box{border:2px solid #0e7490;border-radius:10px;padding:18px;margin-top:12px}.muted{color:#555;font-size:12px}</style></head><body>
+<h1>HISTORIA CLÍNICA OCUPACIONAL</h1><p class="muted">Documento con reserva legal (Res. 1995 de 1999). Entrégalo solo al trabajador o con su autorización.</p>
+<div class="box"><p><b>Trabajador:</b> ${esc(h.trabajador)}${h.documento ? ` · Doc. ${esc(h.documento)}` : ""}</p><p><b>Empresa:</b> ${esc(h.empresa)}</p>
+<p><b>Fecha:</b> ${esc(h.fecha)} · <b>Examen:</b> ${esc(h.tipo_examen)}</p>
+${fila("Antecedentes laborales", h.antecedentes_laborales)}${fila("Antecedentes personales", h.antecedentes_personales)}${fila("Exposición a factores de riesgo", h.exposicion)}
+${fila("Examen físico", h.examen_fisico)}${fila("Paraclínicos", h.paraclinicos)}${fila("Diagnóstico", h.diagnostico)}${fila("Recomendaciones", h.recomendaciones)}</div></body></html>`;
+}
+
+function HistoriaOcupacional({ trabs }: { trabs: Trab[] }) {
+  const [lista, setLista] = useState<Historia[]>([]);
+  const [trabId, setTrabId] = useState("");
+  const [empresa, setEmpresa] = useState("");
+  const [tipo, setTipo] = useState<string>("Periodico");
+  const [f, setF] = useState<Record<string, string>>({});
+  const cargar = useCallback(async () => {
+    const { data } = await supabase.from("sst_historias").select("*").order("created_at", { ascending: false }).limit(40);
+    setLista(data ?? []);
+  }, []);
+  useEffect(() => { void cargar(); }, [cargar]);
+  const k = (c: string) => f[c] ?? "";
+  const cambiar = (c: string, v: string) => setF((x) => ({ ...x, [c]: v }));
+  const guardar = async () => {
+    const tr = trabs.find((x) => x.id === trabId);
+    if (!tr) return toast.error("Elige el trabajador.");
+    if (!k("fisico").trim() && !k("diagnostico").trim()) return toast.error("Escribe al menos el examen físico o el diagnóstico.");
+    const { error } = await supabase.from("sst_historias").insert({
+      trabajador_id: tr.id, trabajador: tr.nombre, documento: tr.documento, empresa: empresa.trim(), tipo_examen: tipo,
+      antecedentes_laborales: k("lab").trim(), antecedentes_personales: k("per").trim(), exposicion: k("exp").trim(),
+      examen_fisico: k("fisico").trim(), paraclinicos: k("para").trim(), diagnostico: k("diagnostico").trim(), recomendaciones: k("rec").trim(),
+    });
+    if (error) return toast.error(msg(error.message, "No se pudo guardar la historia."));
+    setF({});
+    toast.success("Historia ocupacional guardada. No se edita ni se borra.");
+    void cargar();
+  };
+  const area = (c: string, etiqueta: string) => (
+    <Campo etiqueta={etiqueta}><textarea className={campo} rows={2} value={k(c)} onChange={(e) => cambiar(c, e.target.value)} /></Campo>
+  );
+  return (
+    <GlassPanel>
+      <Encabezado titulo="Historia clínica ocupacional" texto="Registro reservado del examen: antecedentes, exposición, examen físico, paraclínicos y diagnóstico. No se edita ni se borra; el certificado de aptitud no incluye estos datos." />
+      <div className="grid gap-2 sm:grid-cols-3">
+        <Campo etiqueta="Trabajador">
+          <select className={campo} value={trabId} onChange={(e) => setTrabId(e.target.value)}>
+            <option value="">Elige…</option>
+            {trabs.map((t) => <option key={t.id} value={t.id}>{t.nombre} · {t.documento}</option>)}
+          </select>
+        </Campo>
+        <Campo etiqueta="Empresa"><input className={campo} value={empresa} onChange={(e) => setEmpresa(e.target.value)} /></Campo>
+        <Campo etiqueta="Tipo de examen">
+          <select className={campo} value={tipo} onChange={(e) => setTipo(e.target.value)}>
+            {TIPOS_EXAMEN.map((x) => <option key={x} value={x}>{x}</option>)}
+          </select>
+        </Campo>
+      </div>
+      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+        {area("lab", "Antecedentes laborales")}{area("per", "Antecedentes personales y familiares")}
+        {area("exp", "Exposición a factores de riesgo")}{area("fisico", "Examen físico")}
+        {area("para", "Resultados de paraclínicos")}{area("diagnostico", "Diagnóstico")}
+      </div>
+      {area("rec", "Recomendaciones")}
+      <button type="button" className={`${boton} mt-3`} onClick={() => void guardar()}>Guardar historia</button>
+      <div className="mt-3 space-y-2">
+        {lista.map((h) => (
+          <div key={h.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-glass-border p-3">
+            <p className="min-w-0 break-words font-semibold">{h.trabajador} <span className="text-xs text-muted-foreground">· {h.tipo_examen} · {h.fecha}</span></p>
+            <button type="button" className={botonSec} onClick={() => imprimirHTML(`Historia-${h.trabajador}`, historiaHTML(h))}><Printer className="h-4 w-4" /> Imprimir</button>
+          </div>
+        ))}
+        {lista.length === 0 && <p className="text-sm text-muted-foreground">Aún no hay historias ocupacionales.</p>}
+      </div>
+    </GlassPanel>
+  );
+}
+
+// ---- Facturación consolidada por empresa cliente ----
+function FacturacionEmpresas({ evas, onListo }: { evas: Eva[]; onListo: () => void }) {
+  const [caps, setCaps] = useState<{ empresa: string; valor: number; abono: number; estado: string }[]>([]);
+  const [metodo, setMetodo] = useState("transferencia");
+  const [ocupado, setOcupado] = useState(false);
+  const cargarCaps = useCallback(async () => {
+    const { data } = await supabase.from("sst_capacitaciones").select("empresa,valor,abono,estado").limit(300);
+    setCaps(data ?? []);
+  }, []);
+  useEffect(() => { void cargarCaps(); }, [cargarCaps]);
+  const saldos = new Map<string, { saldo: number; n: number }>();
+  const sumar = (empresa: string, valor: number, abono: number, estado: string) => {
+    const nombre = empresa.trim();
+    if (!nombre || estado === "cobrada" || valor <= abono) return;
+    const a = saldos.get(nombre) ?? { saldo: 0, n: 0 };
+    saldos.set(nombre, { saldo: a.saldo + (valor - abono), n: a.n + 1 });
+  };
+  evas.forEach((e) => sumar(e.empresa, e.valor, e.abono, e.estado));
+  caps.forEach((c) => sumar(c.empresa, c.valor, c.abono, c.estado));
+  const filas = Array.from(saldos.entries()).sort((a, b) => b[1].saldo - a[1].saldo);
+  const facturar = async (empresa: string) => {
+    setOcupado(true);
+    const { error } = await supabase.rpc("sst_facturar_empresa", { p_empresa: empresa, p_metodo: metodo });
+    setOcupado(false);
+    if (error) return toast.error(msg(error.message, "No se pudo facturar."));
+    toast.success("Facturación consolidada cobrada. Entró a Caja y Contabilidad con un solo asiento.");
+    void cargarCaps();
+    onListo();
+  };
+  return (
+    <GlassPanel>
+      <Encabezado titulo="Facturación a empresas cliente" texto="Suma los exámenes y capacitaciones pendientes de cada empresa y cóbralos de una vez (consolidado). También puedes cobrar cada examen por separado arriba." />
+      <div className="mb-2 flex flex-wrap items-center gap-2">
+        <span className="text-xs text-muted-foreground">Método de pago:</span>
+        <select className={campo} value={metodo} onChange={(e) => setMetodo(e.target.value)} style={{ maxWidth: 170 }}>
+          <option value="efectivo">Efectivo</option>
+          <option value="transferencia">Transferencia</option>
+          <option value="tarjeta">Tarjeta</option>
+        </select>
+      </div>
+      <div className="space-y-2">
+        {filas.map(([empresa, d]) => (
+          <div key={empresa} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-glass-border p-3">
+            <p className="min-w-0 break-words font-semibold">{empresa} <span className="text-xs text-muted-foreground">· {d.n} servicio(s) · {dinero(d.saldo)}</span></p>
+            <button type="button" className={botonSec} disabled={ocupado} onClick={() => void facturar(empresa)}>Cobrar consolidado</button>
+          </div>
+        ))}
+        {filas.length === 0 && <p className="text-sm text-muted-foreground">No hay saldos pendientes por empresa. Escribe el nombre de la empresa al guardar cada evaluación para agruparlas.</p>}
       </div>
     </GlassPanel>
   );

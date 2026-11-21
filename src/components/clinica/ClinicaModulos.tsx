@@ -616,7 +616,7 @@ export function VacunasClinica() {
 // ============================================================
 // Servicios y tarifas
 // ============================================================
-const CATEGORIAS: Record<string, string> = { consulta: "Consulta", cirugia: "Cirugía", procedimiento: "Procedimiento", vacuna: "Vacunación", otro: "Otro" };
+const CATEGORIAS: Record<string, string> = { consulta: "Consulta", cirugia: "Cirugía", procedimiento: "Procedimiento", vacuna: "Vacunación", desparasitacion: "Desparasitación", hospitalizacion: "Hospitalización", peluqueria: "Peluquería y baño", otro: "Otro" };
 
 export function ServiciosClinica() {
   const { esAdmin, cargando: cargPermisos } = usePermisos();

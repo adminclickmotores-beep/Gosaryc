@@ -6,6 +6,23 @@ import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { usePermisos } from "@/hooks/use-permisos";
 import { Campo, Cargando, Encabezado, boton, botonSec, campo, dinero, num } from "@/components/comercio/ComercioModulos";
+import { escaparHtml } from "@/lib/exportes";
+
+const hoyIso = (): string => {
+  const d = new Date();
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+};
+const diasEntreIso = (desde: string, hasta: string): number =>
+  Math.round((new Date(`${hasta}T00:00:00`).getTime() - new Date(`${desde}T00:00:00`).getTime()) / 86400000);
+const abrirImpresion = (html: string): void => {
+  const w = window.open("", "_blank", "width=800,height=700");
+  if (!w) return;
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 400);
+};
 
 type Hab = Tables<"hot_habitaciones">;
 type Res = Tables<"hot_reservas">;
@@ -293,6 +310,10 @@ export function MatriculasEducacion() {
   const [grupo, setGrupo] = useState("");
   const [acudiente, setAcudiente] = useState("");
   const [tel, setTel] = useState("");
+  const [programa, setPrograma] = useState("");
+  const [documento, setDocumento] = useState("");
+  const [alergias, setAlergias] = useState("");
+  const [eps, setEps] = useState("");
 
   const cargar = useCallback(async () => {
     const { data } = await supabase.from("edu_estudiantes").select("*").order("nombre");
@@ -308,9 +329,11 @@ export function MatriculasEducacion() {
     const { error } = await supabase.from("edu_estudiantes").insert({
       nombre: nombre.trim(), grado, grupo: grupo.trim() || null,
       acudiente: acudiente.trim() || null, telefono_acu: tel.trim() || null,
+      programa: programa.trim() || null, documento: documento.trim() || null,
+      alergias: alergias.trim() || null, eps: eps.trim() || null,
     });
     if (error) return toast.error(msg(error.message, "No se pudo matricular."));
-    setNombre(""); setGrupo(""); setAcudiente(""); setTel("");
+    setNombre(""); setGrupo(""); setAcudiente(""); setTel(""); setPrograma(""); setDocumento(""); setAlergias(""); setEps("");
     toast.success("Matrícula guardada.");
     void cargar();
   };
@@ -325,8 +348,9 @@ export function MatriculasEducacion() {
       <div className="mt-2 space-y-2">
         {lista.slice(0, 60).map((e) => (
           <div key={e.id} className="rounded-xl border border-glass-border p-3">
-            <p className="font-semibold">{e.nombre} <span className="text-xs text-muted-foreground">{e.grado}{e.grupo ? ` · ${e.grupo}` : ""} · {e.estado}</span></p>
+            <p className="font-semibold">{e.nombre} <span className="text-xs text-muted-foreground">{e.grado}{e.grupo ? ` · ${e.grupo}` : ""}{e.programa ? ` · ${e.programa}` : ""} · {e.estado}</span></p>
             {e.acudiente && <p className="text-xs text-muted-foreground">Acudiente: {e.acudiente}{e.telefono_acu ? ` · ${e.telefono_acu}` : ""}</p>}
+            {(e.alergias || e.eps) && <p className="text-xs text-muted-foreground">{e.alergias ? `Alergias: ${e.alergias}` : ""}{e.alergias && e.eps ? " · " : ""}{e.eps ? `EPS: ${e.eps}` : ""}</p>}
           </div>
         ))}
         {lista.length === 0 && <p className="text-sm text-muted-foreground">Sin estudiantes todavía.</p>}
@@ -343,6 +367,10 @@ export function MatriculasEducacion() {
         <Campo etiqueta="Grupo"><input className={campo} value={grupo} onChange={(e) => setGrupo(e.target.value)} placeholder="A, B…" /></Campo>
         <Campo etiqueta="Acudiente"><input className={campo} value={acudiente} onChange={(e) => setAcudiente(e.target.value)} placeholder="Mamá, papá…" /></Campo>
         <Campo etiqueta="Celular del acudiente"><input className={campo} inputMode="tel" value={tel} onChange={(e) => setTel(e.target.value)} placeholder="300…" /></Campo>
+        <Campo etiqueta="Programa o jornada"><input className={campo} value={programa} onChange={(e) => setPrograma(e.target.value)} placeholder="Jornada mañana, Inglés, Técnico…" /></Campo>
+        <Campo etiqueta="Documento"><input className={campo} value={documento} onChange={(e) => setDocumento(e.target.value)} /></Campo>
+        <Campo etiqueta="Alergias o condiciones"><input className={campo} value={alergias} onChange={(e) => setAlergias(e.target.value)} /></Campo>
+        <Campo etiqueta="EPS"><input className={campo} value={eps} onChange={(e) => setEps(e.target.value)} /></Campo>
         <div className="flex items-end"><button type="button" className={boton} onClick={() => void crear()}>Matricular</button></div>
       </div>
     </GlassPanel>
@@ -389,11 +417,28 @@ export function PensionesEducacion() {
   const cobrar = async (p: Pen) => {
     const { error } = await supabase.rpc("edu_cobrar_pension", { p_pension: p.id, p_metodo: metodo });
     if (error) return toast.error(msg(error.message, "No se pudo cobrar."));
-    toast.success("Pensión cobrada. Entró a Caja.");
+    toast.success("Pensión cobrada. Entró a Caja y Contabilidad.");
+    imprimirRecibo(p, metodo);
     void cargar();
   };
 
-  const mora = pens.filter((p) => p.estado === "pendiente");
+  const imprimirRecibo = (p: Pen, met: string) => {
+    const e = ests.find((x) => x.id === p.estudiante_id);
+    abrirImpresion(`<html><head><meta charset="utf-8"><title>Recibo de caja</title><style>body{font-family:Arial,sans-serif;padding:28px;color:#111;max-width:420px}h1{font-size:18px}.box{border:2px dashed #555;border-radius:10px;padding:14px;margin-top:10px}.g{font-size:22px;font-weight:bold}.m{color:#555;font-size:12px}</style></head><body>
+<h1>RECIBO DE CAJA</h1><p class="m">Fecha: ${escaparHtml(hoyIso())} · N.º ${escaparHtml(p.id.slice(0, 8).toUpperCase())}</p>
+<div class="box"><p><b>Estudiante:</b> ${escaparHtml(e?.nombre ?? "")}</p><p><b>Acudiente:</b> ${escaparHtml(e?.acudiente ?? "")}</p>
+<p><b>Concepto:</b> ${escaparHtml(p.concepto)} (${escaparHtml(p.periodo)})</p><p><b>Forma de pago:</b> ${escaparHtml(met)}</p>
+<p class="g">Valor recibido: ${escaparHtml(dinero(p.valor))}</p></div><p class="m">Gracias por su pago puntual.</p></body></html>`);
+  };
+
+  const hoy = hoyIso();
+  const mora = pens
+    .filter((p) => p.estado === "pendiente")
+    .sort((a, b) => (a.fecha_vence ?? "9999-12-31").localeCompare(b.fecha_vence ?? "9999-12-31"));
+  const enMora = mora.filter((p) => p.fecha_vence !== null && p.fecha_vence < hoy);
+  const totalMora = enMora.reduce((a, p) => a + p.valor, 0);
+  const totalPendiente = mora.reduce((a, p) => a + p.valor, 0);
+  const pagadas = pens.filter((p) => p.estado === "pagada").slice(0, 8);
 
   if (cargando) return <Cargando />; // pensiones
   return (
@@ -413,25 +458,41 @@ export function PensionesEducacion() {
           <option value="tarjeta">Tarjeta</option>
         </select>
       </div>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <div className="rounded-xl border border-glass-border p-3"><p className="text-xs text-muted-foreground">Por cobrar</p><p className="font-display text-xl">{dinero(totalPendiente)}</p></div>
+        <div className={`rounded-xl border p-3 ${enMora.length > 0 ? "border-destructive/60 bg-destructive/10" : "border-glass-border"}`}><p className="text-xs text-muted-foreground">En mora ({enMora.length})</p><p className="font-display text-xl">{dinero(totalMora)}</p></div>
+      </div>
       <div className="mt-3 space-y-2">
         {mora.slice(0, 80).map((p) => {
           const e = ests.find((x) => x.id === p.estudiante_id);
-          const wa = aWhatsapp(e?.telefono_acu, `Hola ${e?.acudiente ?? "acudiente"}, la pensión de ${e?.nombre} (${p.periodo}, ${dinero(p.valor)}) está pendiente. ¿Te ayudamos con el pago?`);
+          const dMora = p.fecha_vence && p.fecha_vence < hoy ? diasEntreIso(p.fecha_vence, hoy) : 0;
+          const wa = aWhatsapp(e?.telefono_acu, `Hola ${e?.acudiente ?? "acudiente"}, la pensión de ${e?.nombre} (${p.periodo}, ${dinero(p.valor)}) ${dMora > 0 ? `está vencida hace ${dMora} día(s)` : "está pendiente"}. ¿Te ayudamos con el pago?`);
           return (
-            <div key={p.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-glass-border p-3">
-              <div>
-                <p className="font-semibold">{e?.nombre ?? "Estudiante"} · {p.periodo}</p>
-                <p className="text-xs text-muted-foreground">{p.concepto} · {dinero(p.valor)}{p.fecha_vence ? ` · vence ${p.fecha_vence}` : ""}</p>
+            <div key={p.id} className={`flex flex-wrap items-center justify-between gap-2 rounded-xl border p-3 ${dMora > 0 ? "border-destructive/60 bg-destructive/10" : "border-glass-border"}`}>
+              <div className="min-w-0">
+                <p className="break-words font-semibold">{e?.nombre ?? "Estudiante"} · {p.periodo}</p>
+                <p className="text-xs text-muted-foreground">{p.concepto} · {dinero(p.valor)}{p.fecha_vence ? ` · vence ${p.fecha_vence}` : ""}{dMora > 0 ? ` · EN MORA ${dMora} día(s)` : ""}</p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {wa && <a className={botonSec} href={wa} target="_blank" rel="noreferrer"><MessageCircle className="h-4 w-4" /> Cobrar</a>}
-                <button type="button" className={botonSec} onClick={() => void cobrar(p)}>Marcar pagada</button>
+                <button type="button" className={botonSec} onClick={() => void cobrar(p)}>Cobrar y dar recibo</button>
               </div>
             </div>
           );
         })}
         {mora.length === 0 && <p className="text-sm text-muted-foreground">Sin pensiones pendientes. Genera el mes arriba.</p>}
       </div>
+      {pagadas.length > 0 && (
+        <div className="mt-4 space-y-1">
+          <p className="text-sm font-medium">Últimos pagos</p>
+          {pagadas.map((p) => (
+            <div key={p.id} className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+              <span className="min-w-0 break-words">{ests.find((x) => x.id === p.estudiante_id)?.nombre ?? "Estudiante"} · {p.periodo} · {dinero(p.valor)}</span>
+              <button type="button" className={botonSec} onClick={() => imprimirRecibo(p, metodo)}>Reimprimir recibo</button>
+            </div>
+          ))}
+        </div>
+      )}
     </GlassPanel>
   );
 }
@@ -494,6 +555,9 @@ export function AcademicoEducacion() {
 
   if (cargando) return <Cargando />; // académico
   return (
+    <div className="space-y-6">
+    <PaseDeLista ests={ests} />
+    <ReporteDiarioAcudiente ests={ests} />
     <GlassPanel>
       <Encabezado titulo="Asistencia y boletín" texto="Llama a lista cada día y lleva las notas por periodo." />
       <Campo etiqueta="Estudiante">
@@ -528,6 +592,174 @@ export function AcademicoEducacion() {
             <p key={n.id} className="text-sm">{n.periodo} · <strong>{n.area}</strong> · {n.valoracion}{n.logro ? ` · ${n.logro}` : ""}</p>
           ))}
         </div>
+      )}
+    </GlassPanel>
+    </div>
+  );
+}
+
+// ------------------------------------------------------------
+// Pase de lista diario con hora de entrada, salida y quién recoge
+// ------------------------------------------------------------
+type FilaLista = { presente: boolean; entrada: string; salida: string; recoge: string; nota: string };
+
+function PaseDeLista({ ests }: { ests: Est[] }) {
+  const hoy = hoyIso();
+  const [hechos, setHechos] = useState<Asi[]>([]);
+  const [filas, setFilas] = useState<Record<string, FilaLista>>({});
+  const cargar = useCallback(async () => {
+    const { data } = await supabase.from("edu_asistencia").select("*").eq("fecha", hoy);
+    setHechos(data ?? []);
+  }, [hoy]);
+  useEffect(() => { void cargar(); }, [cargar]);
+
+  const valorDe = (e: Est): FilaLista => {
+    const h = hechos.find((x) => x.estudiante_id === e.id);
+    return filas[e.id] ?? {
+      presente: h ? h.presente : true, entrada: h?.hora_entrada ?? "", salida: h?.hora_salida ?? "",
+      recoge: h?.recogido_por ?? "", nota: h?.nota ?? "",
+    };
+  };
+  const cambiar = (e: Est, parcial: Partial<FilaLista>) => setFilas((p) => ({ ...p, [e.id]: { ...valorDe(e), ...parcial } }));
+
+  const guardar = async (e: Est) => {
+    const v = valorDe(e);
+    const h = hechos.find((x) => x.estudiante_id === e.id);
+    const datos = {
+      presente: v.presente, hora_entrada: v.entrada || null, hora_salida: v.salida || null,
+      recogido_por: v.recoge.trim() || null, nota: v.nota.trim() || null,
+    };
+    const { error } = h
+      ? await supabase.from("edu_asistencia").update(datos).eq("id", h.id)
+      : await supabase.from("edu_asistencia").insert({ estudiante_id: e.id, fecha: hoy, ...datos });
+    if (error) return toast.error(msg(error.message, "No se pudo guardar la asistencia."));
+    toast.success(`Asistencia de ${e.nombre} guardada.`);
+    setFilas((p) => { const { [e.id]: _quitar, ...resto } = p; return resto; });
+    void cargar();
+  };
+
+  const presentes = ests.filter((e) => hechos.find((x) => x.estudiante_id === e.id)?.presente).length;
+  const ausentes = ests.filter((e) => hechos.find((x) => x.estudiante_id === e.id)?.presente === false).length;
+  return (
+    <GlassPanel>
+      <Encabezado titulo="Asistencia de hoy" texto="Marca presente o ausente, la hora de entrada y salida y quién recoge. Si falta, avisa al acudiente por WhatsApp." />
+      <p className="mb-2 text-sm text-muted-foreground">{hoy} · Presentes {presentes} · Ausentes {ausentes} · Sin registrar {Math.max(ests.length - presentes - ausentes, 0)}</p>
+      <div className="space-y-2">
+        {ests.map((e) => {
+          const v = valorDe(e);
+          const guardado = hechos.some((x) => x.estudiante_id === e.id);
+          const wa = !v.presente ? aWhatsapp(e.telefono_acu, `Hola ${e.acudiente ?? "acudiente"}, hoy ${e.nombre} no asistió. ¿Está todo bien? Cuéntanos si necesita algo.`) : null;
+          return (
+            <div key={e.id} className={`space-y-2 rounded-xl border p-3 ${guardado ? "border-primary/40" : "border-glass-border"}`}>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="min-w-0 break-words font-semibold">{e.nombre} <span className="text-xs text-muted-foreground">{e.grado}{e.grupo ? ` · ${e.grupo}` : ""}</span></p>
+                <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={v.presente} onChange={(ev) => cambiar(e, { presente: ev.target.checked })} /> Presente</label>
+              </div>
+              {v.presente && (
+                <div className="grid gap-2 sm:grid-cols-4">
+                  <Campo etiqueta="Entrada"><input type="time" className={campo} value={v.entrada} onChange={(ev) => cambiar(e, { entrada: ev.target.value })} /></Campo>
+                  <Campo etiqueta="Salida"><input type="time" className={campo} value={v.salida} onChange={(ev) => cambiar(e, { salida: ev.target.value })} /></Campo>
+                  <Campo etiqueta="Lo recoge"><input className={campo} value={v.recoge} onChange={(ev) => cambiar(e, { recoge: ev.target.value })} placeholder="Nombre y parentesco" /></Campo>
+                  <Campo etiqueta="Novedad"><input className={campo} value={v.nota} onChange={(ev) => cambiar(e, { nota: ev.target.value })} placeholder="Fiebre, golpe, medicamento…" /></Campo>
+                </div>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <button type="button" className={botonSec} onClick={() => void guardar(e)}>{guardado ? "Actualizar" : "Guardar"}</button>
+                {wa && <a className={botonSec} href={wa} target="_blank" rel="noreferrer"><MessageCircle className="h-4 w-4" /> Avisar ausencia</a>}
+              </div>
+            </div>
+          );
+        })}
+        {ests.length === 0 && <p className="text-sm text-muted-foreground">Matricula primero a los estudiantes o niños.</p>}
+      </div>
+    </GlassPanel>
+  );
+}
+
+// ------------------------------------------------------------
+// Reporte diario al acudiente (comidas, siestas, pañales, actividades)
+// ------------------------------------------------------------
+type Reporte = Tables<"edu_reportes_diarios">;
+
+function ReporteDiarioAcudiente({ ests }: { ests: Est[] }) {
+  const [sel, setSel] = useState("");
+  const [lista, setLista] = useState<Reporte[]>([]);
+  const [f, setF] = useState<Record<string, string>>({ comidas: "Comió todo", animo: "Feliz" });
+  const cargar = useCallback(async () => {
+    if (!sel) return setLista([]);
+    const { data } = await supabase.from("edu_reportes_diarios").select("*").eq("estudiante_id", sel).order("fecha", { ascending: false }).order("created_at", { ascending: false }).limit(10);
+    setLista(data ?? []);
+  }, [sel]);
+  useEffect(() => { void cargar(); }, [cargar]);
+  const k = (c: string) => f[c] ?? "";
+  const cambiar = (c: string, v: string) => setF((x) => ({ ...x, [c]: v }));
+
+  const guardar = async () => {
+    if (!sel) return toast.error("Elige al niño o estudiante.");
+    if (!k("actividad").trim() && !k("mensaje").trim()) return toast.error("Cuéntale algo al acudiente: actividad o mensaje.");
+    const { error } = await supabase.from("edu_reportes_diarios").insert({
+      estudiante_id: sel, comidas: k("comidas"), siestas: k("siestas").trim(), panales: k("panales").trim(),
+      estado_animo: k("animo"), actividad: k("actividad").trim(), mensaje: k("mensaje").trim(), profesora: k("profesora").trim(),
+    });
+    if (error) return toast.error(msg(error.message, "No se pudo guardar el reporte."));
+    toast.success("Reporte guardado. Ya puedes enviarlo por WhatsApp.");
+    setF({ comidas: "Comió todo", animo: "Feliz" });
+    void cargar();
+  };
+
+  const textoWa = (r: Reporte, e: Est | undefined): string =>
+    `Reporte del día de ${e?.nombre ?? ""} (${r.fecha}): comidas: ${r.comidas || "—"}; siestas: ${r.siestas || "—"}; pañales/baño: ${r.panales || "—"}; ánimo: ${r.estado_animo || "—"}. Actividad: ${r.actividad || "—"}. ${r.mensaje ? `Mensaje: ${r.mensaje}` : ""}${r.profesora ? ` — ${r.profesora}` : ""}`;
+  const imprimir = (r: Reporte, e: Est | undefined) =>
+    abrirImpresion(`<html><head><meta charset="utf-8"><title>Reporte diario</title><style>body{font-family:Arial,sans-serif;padding:28px;color:#111}h1{font-size:18px}.box{border:2px solid #0e7490;border-radius:10px;padding:16px;margin-top:10px}</style></head><body>
+<h1>REPORTE DIARIO · ${escaparHtml(e?.nombre ?? "")}</h1><p>${escaparHtml(r.fecha)}</p><div class="box"><p><b>Comidas:</b> ${escaparHtml(r.comidas)}</p><p><b>Siestas:</b> ${escaparHtml(r.siestas)}</p><p><b>Pañales o baño:</b> ${escaparHtml(r.panales)}</p><p><b>Estado de ánimo:</b> ${escaparHtml(r.estado_animo)}</p><p><b>Actividad:</b> ${escaparHtml(r.actividad)}</p><p><b>Mensaje:</b> ${escaparHtml(r.mensaje)}</p><p><b>Profesora:</b> ${escaparHtml(r.profesora)}</p></div></body></html>`);
+
+  const est = ests.find((x) => x.id === sel);
+  return (
+    <GlassPanel>
+      <Encabezado titulo="Reporte diario al acudiente" texto="Comidas, siestas, pañales, ánimo y actividades del día. Guárdalo y envíalo por WhatsApp o imprímelo para la agenda." />
+      <Campo etiqueta="Niño o estudiante">
+        <select className={campo} value={sel} onChange={(e) => setSel(e.target.value)}>
+          <option value="">Elige…</option>
+          {ests.map((e) => <option key={e.id} value={e.id}>{e.nombre} · {e.grado}</option>)}
+        </select>
+      </Campo>
+      {sel && (
+        <>
+          <div className="mt-2 grid gap-2 sm:grid-cols-3">
+            <Campo etiqueta="Comidas">
+              <select className={campo} value={k("comidas")} onChange={(e) => cambiar("comidas", e.target.value)}>
+                <option>Comió todo</option><option>Comió poco</option><option>No comió</option>
+              </select>
+            </Campo>
+            <Campo etiqueta="Estado de ánimo">
+              <select className={campo} value={k("animo")} onChange={(e) => cambiar("animo", e.target.value)}>
+                <option>Feliz</option><option>Tranquilo</option><option>Inquieto</option><option>Triste o llorón</option>
+              </select>
+            </Campo>
+            <Campo etiqueta="Siestas"><input className={campo} value={k("siestas")} onChange={(e) => cambiar("siestas", e.target.value)} placeholder="1 h 30 min" /></Campo>
+            <Campo etiqueta="Pañales o baño"><input className={campo} value={k("panales")} onChange={(e) => cambiar("panales", e.target.value)} placeholder="3 pañales, fue al baño 2 veces" /></Campo>
+            <Campo etiqueta="Actividad del día"><input className={campo} value={k("actividad")} onChange={(e) => cambiar("actividad", e.target.value)} /></Campo>
+            <Campo etiqueta="Profesora a cargo"><input className={campo} value={k("profesora")} onChange={(e) => cambiar("profesora", e.target.value)} /></Campo>
+          </div>
+          <Campo etiqueta="Mensaje para el acudiente"><input className={campo} value={k("mensaje")} onChange={(e) => cambiar("mensaje", e.target.value)} /></Campo>
+          <button type="button" className={`${boton} mt-2`} onClick={() => void guardar()}>Guardar reporte</button>
+          <div className="mt-3 space-y-2">
+            {lista.map((r) => {
+              const wa = aWhatsapp(est?.telefono_acu, textoWa(r, est));
+              return (
+                <div key={r.id} className="rounded-xl border border-glass-border p-3 text-sm">
+                  <p className="break-words font-medium">{r.fecha} · {r.comidas} · ánimo {r.estado_animo}</p>
+                  <p className="break-words text-xs text-muted-foreground">{r.actividad}{r.mensaje ? ` · ${r.mensaje}` : ""}</p>
+                  <div className="mt-1 flex flex-wrap gap-2">
+                    {wa && <a className={botonSec} href={wa} target="_blank" rel="noreferrer"><MessageCircle className="h-4 w-4" /> Enviar por WhatsApp</a>}
+                    <button type="button" className={botonSec} onClick={() => imprimir(r, est)}>Imprimir</button>
+                  </div>
+                </div>
+              );
+            })}
+            {lista.length === 0 && <p className="text-sm text-muted-foreground">Sin reportes todavía.</p>}
+          </div>
+        </>
       )}
     </GlassPanel>
   );

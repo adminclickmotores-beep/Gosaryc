@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { MessageCircle, Plus, ScanLine, Snowflake } from "lucide-react";
+import { MessageCircle, Plus, Printer, ScanLine, Snowflake } from "lucide-react";
+import { escaparHtml } from "@/lib/exportes";
+import { MiniFoto, SubirFotos } from "@/components/negocios/FotosPrivadas";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -62,6 +64,20 @@ function usarGimnasio() {
   const ultima = (socioId: string) => membresias.find((m) => m.socio_id === socioId);
   return { socios, planes, membresias, cargando, recargar: cargar, ultima };
 }
+
+/** Carnet imprimible con el código QR que se escanea en el check-in. */
+const imprimirCarnet = (s: Socio, plan: string | undefined, vence: string | undefined): void => {
+  const w = window.open("", "_blank", "width=420,height=560");
+  if (!w) return;
+  const qr = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(s.codigo_qr)}`;
+  w.document.write(`<html><head><meta charset="utf-8"><title>Carnet</title><style>body{font-family:Arial,sans-serif;padding:20px}.c{width:320px;border:2px solid #4f46e5;border-radius:14px;padding:16px;text-align:center}h2{margin:4px 0}.m{color:#555;font-size:12px}img{max-width:100%}</style></head><body>
+<div class="c"><p class="m">CARNET DE SOCIO</p><h2>${escaparHtml(s.nombre)}</h2><p class="m">Cédula ${escaparHtml(s.documento)}</p>
+<img src="${escaparHtml(qr)}" alt="QR" width="180" height="180"/><p class="m">Código ${escaparHtml(s.codigo_qr)}</p>
+${plan ? `<p><b>${escaparHtml(plan)}</b>${vence ? ` · vence ${escaparHtml(vence)}` : ""}</p>` : ""}</div></body></html>`);
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 500);
+};
 
 const textoCobro = (nombre: string, plan: string | undefined, vence: string | undefined) =>
   `Hola ${nombre}, te escribimos del gimnasio. Tu membresía${plan ? ` ${plan}` : ""} ${vence ? (diasHasta(vence) < 0 ? `venció el ${vence}` : `vence el ${vence}`) : "no está activa"}. ¿Quieres renovarla hoy? Te esperamos.`;
@@ -229,6 +245,7 @@ export function SociosGimnasio() {
   const [documento, setDocumento] = useState("");
   const [telefono, setTelefono] = useState("");
   const [emergencia, setEmergencia] = useState("");
+  const [fotos, setFotos] = useState<string[]>([]);
   const [buscar, setBuscar] = useState("");
   const [vendiendo, setVendiendo] = useState<string | null>(null);
   const [planId, setPlanId] = useState("");
@@ -239,10 +256,11 @@ export function SociosGimnasio() {
     if (documento.trim().length < 3) return toast.error("Escribe la cédula.");
     const { error } = await supabase.from("gim_socios").insert({
       nombre: nombre.trim(), documento: documento.trim(), telefono: telefono.trim() || null, contacto_emergencia: emergencia.trim() || null,
+      foto_url: fotos[0] ?? null,
     });
     if (error) return toast.error(error.message.includes("duplicate") ? "Ya existe un socio con esa cédula." : msg(error.message, "No se pudo guardar el socio."));
     toast.success("Socio guardado.");
-    setNombre(""); setDocumento(""); setTelefono(""); setEmergencia("");
+    setNombre(""); setDocumento(""); setTelefono(""); setEmergencia(""); setFotos([]);
     void recargar();
   };
 
@@ -286,6 +304,9 @@ export function SociosGimnasio() {
           <Campo etiqueta="Cédula *"><input className={campo} value={documento} onChange={(e) => setDocumento(e.target.value)} /></Campo>
           <Campo etiqueta="Teléfono (WhatsApp)"><input className={campo} inputMode="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} /></Campo>
           <Campo etiqueta="Contacto de emergencia"><input className={campo} value={emergencia} onChange={(e) => setEmergencia(e.target.value)} /></Campo>
+          <div className="sm:col-span-2 lg:col-span-4">
+            <Campo etiqueta="Foto del socio (opcional)"><SubirFotos carpeta="socios" rutas={fotos} onChange={setFotos} max={1} /></Campo>
+          </div>
         </div>
         <button className={boton} onClick={crear}><Plus className="h-4 w-4" /> Guardar socio</button>
       </GlassPanel>
@@ -300,6 +321,7 @@ export function SociosGimnasio() {
             <div key={s.id} className={`space-y-2 rounded-xl border p-4 ${est.clase}`}>
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
+                  {s.foto_url && <MiniFoto ruta={s.foto_url} />}
                   <p className="break-words font-medium text-foreground">{s.nombre}</p>
                   <p className="text-xs text-muted-foreground">Cédula {s.documento} · Código {s.codigo_qr}{s.telefono ? ` · ${s.telefono}` : ""}</p>
                 </div>
@@ -315,7 +337,8 @@ export function SociosGimnasio() {
               </div>
               {m && <p className="text-xs text-muted-foreground">{m.plan_nombre} · {m.inicio} a {m.vence}{m.sesiones_restantes !== null ? ` · ${m.sesiones_restantes} sesiones` : ""}{m.dias_congelados > 0 ? ` · ${m.dias_congelados} día(s) congelados` : ""}</p>}
               <div className="flex flex-wrap gap-2">
-                <button className={botonSec} onClick={() => { setVendiendo(vendiendo === s.id ? null : s.id); setPlanId(""); }}>Vender plan</button>
+                <button className={botonSec} onClick={() => { setVendiendo(vendiendo === s.id ? null : s.id); setPlanId(""); }}>{m ? "Renovar plan" : "Vender plan"}</button>
+                <button className={botonSec} onClick={() => imprimirCarnet(s, m?.plan_nombre, m?.vence)}><Printer className="h-4 w-4" /> Carnet</button>
                 {m && m.estado === "activa" && diasHasta(m.vence) >= 0 && <button className={botonSec} onClick={() => congelar(m)}><Snowflake className="h-4 w-4" /> Congelar</button>}
                 {m && m.estado === "congelada" && <button className={botonSec} onClick={() => descongelar(m)}>Reactivar</button>}
                 {wa && <a className={botonSec} href={wa} target="_blank" rel="noreferrer"><MessageCircle className="h-4 w-4" /> Cobrar por WhatsApp</a>}
