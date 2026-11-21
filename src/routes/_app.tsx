@@ -26,6 +26,7 @@ import { VoiceCopilotProvider } from "@/components/app/VoiceCopilotProvider";
 import { RouteProgressBar } from "@/components/app/RouteProgressBar";
 import { BrandHexLogo } from "@/components/app/BrandHexLogo";
 import { EstadoSinConexion } from "@/components/app/EstadoSinConexion";
+import { BarraDemoMemoria } from "@/components/app/BarraDemoMemoria";
 import { LicenciaNegocio } from "@/components/app/LicenciaNegocio";
 import { RespaldoTotal } from "@/components/negocio/RespaldoTotal";
 import { evaluarVigenciaLicencia, guardarTokenLicenciaOffline, leerTokenLicenciaOffline } from "@/lib/licencia-offline";
@@ -511,6 +512,7 @@ function AppShell() {
 
       {!completaFinal && <BottomNav />}
       <RouteProgressBar />
+      <BarraDemoMemoria />
       <EstadoSinConexion />
       <GuidedTour />
       {!bloqueo && !cargandoPermisos && (

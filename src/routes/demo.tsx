@@ -10,6 +10,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { imprimirFactura } from "@/lib/exportes";
 import type { DatosFactura } from "@/lib/exportes";
+import { activarDemoMemoria } from "@/lib/demo-memoria";
 
 /**
  * Demo interactiva: vive 100% en memoria del navegador.
@@ -224,6 +225,18 @@ function Selector({ onElegir }: { onElegir: (s: Sector) => void }) {
                 <p className="text-sm font-semibold text-primary">{e.negocio}</p>
                 <p className="mt-2 text-sm text-muted-foreground">{e.descripcion}</p>
                 <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold">Entrar ahora <ArrowRight className="h-4 w-4" /></span>
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={(ev) => {
+                    ev.stopPropagation();
+                    activarDemoMemoria(k);
+                    window.location.href = k === "rest" ? "/restaurante" : k === "auto" ? "/negocio/concesionario" : "/negocio/ferreteria";
+                  }}
+                  className="mt-3 flex items-center justify-center gap-1 rounded-lg border border-primary px-3 py-2 text-xs font-semibold text-primary"
+                >
+                  Probar con las pantallas reales del sistema
+                </span>
               </button>
             );
           })}

@@ -2,6 +2,7 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { brokeredPreviewStorage } from './previewAuthStorage';
+import { crearClienteDemo, sectorDemoActivo } from '@/lib/demo-memoria';
 
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
@@ -89,8 +90,16 @@ let _supabase: ReturnType<typeof createSupabaseClient> | undefined;
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
+let _demo: ReturnType<typeof crearClienteDemo> | undefined;
+
 export const supabase = new Proxy({} as ReturnType<typeof createSupabaseClient>, {
   get(_, prop, receiver) {
+    // Modo demostración: las pantallas reales leen y escriben en un almacén local en memoria.
+    if (sectorDemoActivo()) {
+      if (!_demo) _demo = crearClienteDemo();
+      return Reflect.get(_demo, prop);
+    }
+    _demo = undefined;
     if (!_supabase) _supabase = createSupabaseClient();
     return Reflect.get(_supabase, prop, receiver);
   },
