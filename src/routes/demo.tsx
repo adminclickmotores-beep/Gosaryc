@@ -1801,6 +1801,7 @@ function WhatsApp({ sector, productos, tarifas, onLead, onPedido, onPqrs }: {
   const [texto, setTexto] = useState("");
   const fin = useRef<HTMLDivElement | null>(null);
   const pendiente = useRef<{ p: Prod; c: number } | null>(null);
+  const entrevista = useRef<{ v: Prod; paso: number; inicial: number; retoma: string; actividad: string; ingreso: number; deudas: number; perfil: string } | null>(null);
   const contador = useRef(0);
   const leadId = useRef("w" + Date.now());
   useEffect(() => { fin.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }); }, [msgs]);
@@ -1862,12 +1863,73 @@ function WhatsApp({ sector, productos, tarifas, onLead, onPedido, onPqrs }: {
     if (/medios de pago|como pago|nequi|tarjeta|efectivo|transferencia|datafono|pago/.test(m)) return `Aceptamos efectivo, Nequi, tarjeta débito y crédito${sector === "auto" ? ", transferencia y crédito con las principales entidades financieras" : ""}.`;
 
     if (sector === "auto") {
+      const ent = entrevista.current;
+      if (ent) {
+        const valor = (t: string, ref: number): number => {
+          const n = t.match(/(\d+(?:[.,]\d+)?)\s*(%|por ciento|millon|millones|mill|m\b|mil\b)?/);
+          if (!n) return 0;
+          const x = Number(n[1].replace(",", ".").replace(/\.(?=\d{3}\b)/g, ""));
+          if (n[2] === "%" || n[2] === "por ciento") return (ref * x) / 100;
+          if (n[2] && /^m/.test(n[2]) && n[2] !== "mil") return x * 1_000_000;
+          if (n[2] === "mil") return x * 1_000;
+          return x < 1000 ? x * 1_000_000 : x;
+        };
+        const v = ent.v;
+        if (ent.paso === 1) {
+          const sinInicial = /\bno\b|ninguna|nada|sin inicial|no tengo/.test(m) && !/\d/.test(m);
+          ent.inicial = sinInicial ? 0 : valor(m, v.precio);
+          ent.paso = 2;
+          return sinInicial
+            ? "Gracias por contarme. Hay opciones con poca o ninguna inicial, pero la cuota sube. ¿Tienes un carro o moto usado para dar como parte de pago? Cuéntame marca, modelo y año, o dime «no»."
+            : `Perfecto, tomo ${cop(ent.inicial)} como cuota inicial (${Math.round((ent.inicial / v.precio) * 100)} % del vehículo). ¿Tienes un carro o moto usado para dar como parte de pago? Cuéntame marca, modelo y año, o dime «no».`;
+        }
+        if (ent.paso === 2) {
+          const tiene = !/^\s*(no|nop|ninguno|no tengo)\b/.test(m);
+          ent.retoma = tiene ? limpio : "";
+          if (tiene) setEventos((a) => [{ tipo: "cita", texto: `Retoma ofrecida: ${limpio}. Se pidió avalúo.` }, ...a]);
+          ent.paso = 3;
+          return `${tiene ? "Anotado, lo avaluamos con peritaje y se suma a tu inicial. " : "Sin problema. "}Ahora, ¿a qué te dedicas? Por ejemplo: empleado con contrato, independiente, dueño de negocio, pensionado.`;
+        }
+        if (ent.paso === 3) {
+          ent.actividad = limpio;
+          ent.paso = 4;
+          return "Gracias. ¿Cuánto es tu ingreso mensual aproximado y cuánto pagas al mes en deudas o cuotas (tarjetas, créditos)? Si es independiente, dime un promedio.";
+        }
+        if (ent.paso === 4) {
+          const nums = m.match(/\d+(?:[.,]\d+)?\s*(?:millon(?:es)?|mill|m\b|mil\b)?/g) ?? [];
+          ent.ingreso = nums[0] ? valor(nums[0], 0) : 0;
+          ent.deudas = nums[1] ? valor(nums[1], 0) : 0;
+          ent.paso = 5;
+          return "Entendido. ¿Has tenido créditos antes (tarjeta, banco, vehículo) y los pagaste al día? ¿O estás reportado en centrales de riesgo? Con eso busco la mejor opción para ti.";
+        }
+        if (ent.paso === 5) {
+          const reportado = /reportad|mora|datacredito|castigad|atrasad/.test(m) && !/no (estoy|tengo)|sin report/.test(m);
+          const sinHistorial = /nunca|ninguno|no he|primer|sin historial/.test(m);
+          ent.perfil = reportado ? "Reportado" : sinHistorial ? "Sin historial" : "Al día";
+          entrevista.current = null;
+          const ini = Math.min(ent.inicial + 0, v.precio);
+          const base = Math.max(0, v.precio - ini);
+          const capacidad = Math.max(0, ent.ingreso * 0.35 - ent.deudas);
+          const tasa = reportado ? 2.1 : sinHistorial ? 1.9 : 1.6;
+          const opc = [36, 48, 72].map((n) => ({ n, c: cuotaMensual(base, tasa, n) }));
+          const viable = opc.filter((o) => ent.ingreso > 0 && o.c <= capacidad);
+          setEventos((a) => [{ tipo: "lead", texto: `Entrevista de crédito completa para ${v.nombre}: inicial ${cop(ini)}, ${ent.actividad || "actividad sin definir"}, perfil ${ent.perfil}. Prospecto CALIENTE en el CRM.` }, ...a]);
+          onLead({ id: leadId.current, nombre: "Cliente WhatsApp", interes: `Financiar ${v.nombre} · inicial ${cop(ini)} · ${ent.perfil}`, nivel: "CALIENTE", etapa: "Nuevo" });
+          const lineas = opc.map((o) => `• ${o.n} meses: ${cop(o.c)}/mes${ent.ingreso > 0 ? (o.c <= capacidad ? " (cabe en tu capacidad)" : " (muy ajustada)") : ""}`).join("\n");
+          const cierre = ent.ingreso > 0 && viable.length === 0
+            ? "Con esos ingresos conviene subir la inicial, sumar la retoma o aplicar con un codeudor. Puedo mostrarte esas variantes."
+            : reportado
+              ? "Al estar reportado hay entidades flexibles, pero la tasa es mayor. Un asesor revisa tu caso con respeto y sin compromiso."
+              : "¿Cuál plazo te acomoda más? También puedo simular con más o menos inicial.";
+          return `Con lo que me cuentas, para el ${v.nombre} (${cop(v.precio)}) y ${cop(ini)} de inicial, financiando ${cop(base)}, estas son tus opciones (tasa de referencia ${tasa} % mensual):\n${lineas}\n${cierre} La tasa y el monto finales dependen del estudio de la entidad financiera.`;
+        }
+      }
       if (/financ|credito|cuota|inicial|plazo|meses/.test(m)) {
         const v = prod ?? productos[0];
-        const cuota = cuotaMensual(v.precio * 0.7, 1.6, 60);
+        entrevista.current = { v, paso: 1, inicial: 0, retoma: "", actividad: "", ingreso: 0, deudas: 0, perfil: "" };
         setEventos((a) => [{ tipo: "lead", texto: `Interesado en financiación de ${v.nombre}. Nuevo prospecto en el CRM.` }, ...a]);
         onLead({ id: leadId.current, nombre: "Cliente WhatsApp", interes: `Financiar ${v.nombre}`, nivel: "CALIENTE", etapa: "Nuevo" });
-        return `Para el ${v.nombre} (${cop(v.precio)}) con 30 % de inicial (${cop(v.precio * 0.3)}) a 60 meses la cuota queda cerca de ${cop(cuota)} al mes. La tasa final depende del estudio de crédito. ¿Quieres que un asesor te lo prepare con tus datos?`;
+        return `Con gusto te ayudo a financiar el ${v.nombre} (${cop(v.precio)}). Para darte opciones reales y no una cifra al aire, te hago unas preguntas cortas. Primero: ¿cuentas con cuota inicial? Si sí, ¿de cuánto (en pesos o en %)?`;
       }
       if (/retoma|permuta|recib\w* mi|cambio mi|vender mi/.test(m)) {
         setEventos((a) => [{ tipo: "cita", texto: "Solicitud de retoma: se pidió avalúo del vehículo del cliente." }, ...a]);
