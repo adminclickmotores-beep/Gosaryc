@@ -479,6 +479,12 @@ function LandingPage() {
                 <Download className="h-4 w-4" /> Descargar App Android / PC
               </Link>
             </div>
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+              <span className="gs-muted font-medium">Abre directo:</span>
+              <Link to="/demo" search={{ sector: "auto" }} className="gs-sec inline-flex rounded-full px-3 py-1.5 font-semibold">AutoElite Colombia</Link>
+              <Link to="/demo" search={{ sector: "rest" }} className="gs-sec inline-flex rounded-full px-3 py-1.5 font-semibold">Sabores del Valle</Link>
+              <Link to="/demo" search={{ sector: "comercio" }} className="gs-sec inline-flex rounded-full px-3 py-1.5 font-semibold">MultiComercio POS</Link>
+            </div>
             <p className="gs-card mt-6 flex items-start gap-3 rounded-2xl px-4 py-3 text-sm font-medium">
               <Mic className="gs-verde mt-0.5 h-5 w-5 shrink-0" />
               <span className="min-w-0 break-words">Controla todo tu negocio por voz: factura, crea inventario, modifica precios y consulta reportes hablando</span>
