@@ -8,6 +8,8 @@ import {
   Truck, FileText, Handshake, CheckCircle2, Bot, UserRound, Boxes, Landmark, Pizza,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { imprimirFactura } from "@/lib/exportes";
+import type { DatosFactura } from "@/lib/exportes";
 
 /**
  * Demo interactiva: vive 100% en memoria del navegador.
@@ -1485,6 +1487,7 @@ function MesasDemo({ productos, registrarVenta, onComanda }: { productos: Prod[]
   const [efectivo, setEfectivo] = useState("0");
   const [otro, setOtro] = useState("Nequi");
   const [msg, setMsg] = useState("");
+  const [comprobante, setComprobante] = useState<{ mesa: number; total: number; pago: string; datos: DatosFactura } | null>(null);
   const m = mesas.find((x) => x.n === sel) ?? null;
   const cambiar = (n: number, f: (x: MesaEstado) => MesaEstado) => setMesas((a) => a.map((x) => (x.n === n ? f(x) : x)));
   const subtotal = m ? m.items.reduce((s, i) => s + i.precio * i.c, 0) : 0;
@@ -1504,12 +1507,33 @@ function MesasDemo({ productos, registrarVenta, onComanda }: { productos: Prod[]
   };
   const cobrar = () => {
     if (!m || !m.items.length) return;
-    registrarVenta({ detalle: m.items.map((i) => `${i.c} x ${i.nombre}`).join(", ") + (propina ? " (+ propina 10 %)" : ""), total, pago: ef > 0 && ef < total ? "Mixto" : ef >= total ? "Efectivo" : otro, tipo: `Mesa ${m.n}`, envio: 0 });
+    const pago = ef > 0 && ef < total ? "Mixto" : ef >= total ? "Efectivo" : otro;
+    registrarVenta({ detalle: m.items.map((i) => `${i.c} x ${i.nombre}`).join(", ") + (propina ? " (+ propina 10 %)" : ""), total, pago, tipo: `Mesa ${m.n}`, envio: 0 });
+    const items = m.items.map((i) => ({ descripcion: i.nombre, cantidad: i.c, precio: i.precio }));
+    if (valorPropina > 0) items.push({ descripcion: "Propina voluntaria 10 %", cantidad: 1, precio: valorPropina });
+    setComprobante({
+      mesa: m.n, total, pago,
+      datos: { negocio: "Sabores del Valle", nit: "900.123.456-7", numero: String(1000 + Math.floor(Math.random() * 9000)), prefijo: "POS", metodoPago: pago, cliente: "Consumidor Final", items, piePagina: "¡Gracias por visitarnos!" },
+    });
     cambiar(m.n, (x) => ({ ...x, estado: "Libre", items: [] }));
     setMsg(`Mesa ${m.n} cobrada y liberada.`); setSel(null); setEfectivo("0");
   };
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+      {comprobante && (
+        <Modal onClose={() => setComprobante(null)}>
+          <h3 className="text-lg font-bold">Comprobante emitido · Mesa {comprobante.mesa}</h3>
+          <p className="mt-1 text-muted-foreground">Cobro de {cop(comprobante.total)} por {comprobante.pago}. La mesa ya quedó libre.</p>
+          <ul className="my-3 divide-y divide-border">
+            {comprobante.datos.items.map((i) => <li key={i.descripcion} className="flex justify-between py-1"><span>{i.cantidad} x {i.descripcion}</span><b>{cop(i.cantidad * i.precio)}</b></li>)}
+          </ul>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <button onClick={() => imprimirFactura(comprobante.datos, "80mm")} className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2 font-bold text-primary-foreground"><Printer className="h-4 w-4" /> Imprimir factura</button>
+            <button onClick={() => imprimirFactura(comprobante.datos, "carta")} className="rounded-lg border border-border px-3 py-2 font-semibold">Factura tamaño carta</button>
+          </div>
+          <button onClick={() => setComprobante(null)} className="mt-3 w-full rounded-lg bg-muted px-3 py-2 font-semibold">Cerrar sin imprimir</button>
+        </Modal>
+      )}
       <section>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {mesas.map((x) => (
