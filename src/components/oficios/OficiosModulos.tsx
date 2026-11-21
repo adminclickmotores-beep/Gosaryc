@@ -38,12 +38,41 @@ async function cobrar(tabla: string, id: string, valorTxt: string, metodo: strin
   return true;
 }
 
-function Cobro({ tabla, id, onListo }: { tabla: string; id: string; onListo: () => void }) {
+// Cobro con retenciones a favor (cuenta 1355): la caja recibe el valor menos lo retenido.
+async function cobrarConRetencion(tabla: string, id: string, valorTxt: string, metodo: string, rfPct: string, riPct: string): Promise<boolean> {
+  const valor = num(valorTxt);
+  if (valor <= 0) {
+    toast.error("Escribe el valor del abono o cobro.");
+    return false;
+  }
+  const rf = Math.round((valor * Math.min(Math.max(num(rfPct), 0), 100)) / 100);
+  const ri = Math.round((valor * Math.min(Math.max(num(riPct), 0), 100)) / 100);
+  const { error } = await supabase.rpc("ofi_cobrar_retencion", {
+    p_tabla: tabla, p_id: id, p_valor: valor, p_metodo: metodo, p_retefuente: rf, p_reteica: ri,
+  });
+  if (error) {
+    toast.error(msg(error.message, "No se pudo cobrar."));
+    return false;
+  }
+  toast.success(`Cobro registrado: a Caja entraron ${dinero(valor - rf - ri)} y ${dinero(rf + ri)} quedaron como retención a favor.`);
+  return true;
+}
+
+function Cobro({ tabla, id, onListo, retenciones = false }: { tabla: string; id: string; onListo: () => void; retenciones?: boolean }) {
   const [valor, setValor] = useState("");
   const [metodo, setMetodo] = useState("efectivo");
+  const [rf, setRf] = useState("");
+  const [ri, setRi] = useState("");
+  const reten = retenciones && (num(rf) > 0 || num(ri) > 0);
   return (
     <div className="mt-2 flex flex-wrap items-end gap-2">
       <Campo etiqueta="Abono o cobro"><input className={campo} inputMode="decimal" value={valor} onChange={(e) => setValor(e.target.value)} style={{ maxWidth: 130 }} /></Campo>
+      {retenciones && (
+        <>
+          <Campo etiqueta="Retefuente %"><input className={campo} inputMode="decimal" value={rf} onChange={(e) => setRf(e.target.value)} style={{ maxWidth: 100 }} /></Campo>
+          <Campo etiqueta="ReteICA %"><input className={campo} inputMode="decimal" value={ri} onChange={(e) => setRi(e.target.value)} style={{ maxWidth: 100 }} /></Campo>
+        </>
+      )}
       <Campo etiqueta="Método">
         <select className={campo} value={metodo} onChange={(e) => setMetodo(e.target.value)} style={{ maxWidth: 150 }}>
           <option value="efectivo">Efectivo</option>
@@ -51,7 +80,7 @@ function Cobro({ tabla, id, onListo }: { tabla: string; id: string; onListo: () 
           <option value="tarjeta">Tarjeta</option>
         </select>
       </Campo>
-      <button type="button" className={botonSec} onClick={() => void cobrar(tabla, id, valor, metodo).then((ok) => { if (ok) { setValor(""); onListo(); } })}>
+      <button type="button" className={botonSec} onClick={() => void (reten ? cobrarConRetencion(tabla, id, valor, metodo, rf, ri) : cobrar(tabla, id, valor, metodo)).then((ok) => { if (ok) { setValor(""); setRf(""); setRi(""); onListo(); } })}>
         Cobrar
       </button>
     </div>
@@ -216,7 +245,7 @@ export function ProfesionalCasos() {
               <p className="font-semibold">{c.cliente} · {c.asunto} <span className="text-xs text-muted-foreground">({c.estado}{c.vence ? ` · vence ${c.vence}` : ""})</span></p>
               <p className="text-xs text-muted-foreground">Honorarios {dinero(c.honorarios)} · abono {dinero(c.abono)} · saldo {dinero(Math.max(c.honorarios - c.abono, 0))}</p>
               {wa && <a className={`${botonSec} mt-1`} href={wa} target="_blank" rel="noreferrer"><MessageCircle className="h-4 w-4" /> Cobrar por WhatsApp</a>}
-              <Cobro tabla="prof_casos" id={c.id} onListo={() => void cargar()} />
+              <Cobro tabla="prof_casos" id={c.id} onListo={() => void cargar()} retenciones />
             </div>
           );
         })}
@@ -238,12 +267,67 @@ export function TecnologiaProyectos() {
   const [valor, setValor] = useState("");
   const [horas, setHoras] = useState("");
   const [entrega, setEntrega] = useState("");
+  const [tickets, setTickets] = useState<Tables<"tec_tickets">[]>([]);
+  const [contratos, setContratos] = useState<Tables<"tec_contratos">[]>([]);
+  const [tCliente, setTCliente] = useState("");
+  const [tAsunto, setTAsunto] = useState("");
+  const [tTipo, setTTipo] = useState("soporte");
+  const [tPrioridad, setTPrioridad] = useState("media");
+  const [tVence, setTVence] = useState("");
+  const [cCliente, setCCliente] = useState("");
+  const [cTel, setCTel] = useState("");
+  const [cConcepto, setCConcepto] = useState("");
+  const [cValor, setCValor] = useState("");
+  const [periodo, setPeriodo] = useState(() => new Date().toISOString().slice(0, 7));
 
   const cargar = useCallback(async () => {
-    const { data } = await supabase.from("tec_proyectos").select("*").order("created_at", { ascending: false }).limit(80);
+    const [{ data }, tk, ct] = await Promise.all([
+      supabase.from("tec_proyectos").select("*").order("created_at", { ascending: false }).limit(80),
+      supabase.from("tec_tickets").select("*").order("created_at", { ascending: false }).limit(60),
+      supabase.from("tec_contratos").select("*").eq("activo", true).order("created_at", { ascending: false }),
+    ]);
     setLista(data ?? []);
+    setTickets(tk.data ?? []);
+    setContratos(ct.data ?? []);
     setCargando(false);
   }, []);
+
+  const crearTicket = async () => {
+    if (tCliente.trim().length < 2) return toast.error("Escribe el cliente.");
+    if (tAsunto.trim().length < 3) return toast.error("Describe el ticket.");
+    const { error } = await supabase.from("tec_tickets").insert({
+      cliente: tCliente.trim(), asunto: tAsunto.trim(), tipo: tTipo, prioridad: tPrioridad, vence: tVence || null,
+    });
+    if (error) return toast.error(msg(error.message, "No se pudo guardar el ticket."));
+    setTCliente(""); setTAsunto(""); setTVence("");
+    toast.success("Ticket creado.");
+    void cargar();
+  };
+
+  const estadoTicket = async (t: Tables<"tec_tickets">, estado: string) => {
+    await supabase.from("tec_tickets").update({ estado }).eq("id", t.id);
+    void cargar();
+  };
+
+  const crearContrato = async () => {
+    if (cCliente.trim().length < 2) return toast.error("Escribe el cliente.");
+    if (cConcepto.trim().length < 3) return toast.error("Describe el servicio recurrente.");
+    if (num(cValor) <= 0) return toast.error("Escribe el valor mensual.");
+    const { error } = await supabase.from("tec_contratos").insert({
+      cliente: cCliente.trim(), telefono: cTel.trim() || null, concepto: cConcepto.trim(), valor_mensual: num(cValor),
+    });
+    if (error) return toast.error(msg(error.message, "No se pudo guardar el contrato."));
+    setCCliente(""); setCTel(""); setCConcepto(""); setCValor("");
+    toast.success("Contrato recurrente creado.");
+    void cargar();
+  };
+
+  const facturarContrato = async (c: Tables<"tec_contratos">) => {
+    const { error } = await supabase.rpc("tec_facturar_contrato", { p_contrato: c.id, p_periodo: periodo });
+    if (error) return toast.error(msg(error.message, "No se pudo generar el cobro del mes."));
+    toast.success("Cobro del mes generado: aparece abajo en proyectos para cobrarlo con retenciones.");
+    void cargar();
+  };
   useEffect(() => {
     void cargar();
   }, [cargar]);
@@ -288,10 +372,59 @@ export function TecnologiaProyectos() {
               {p.estado === "cotizado" && <button type="button" className={botonSec} onClick={() => void avanzar(p, "en_proceso")}>Iniciar</button>}
               {p.estado === "en_proceso" && <button type="button" className={botonSec} onClick={() => void avanzar(p, "entregado")}>Entregar</button>}
             </div>
-            <Cobro tabla="tec_proyectos" id={p.id} onListo={() => void cargar()} />
+            <Cobro tabla="tec_proyectos" id={p.id} onListo={() => void cargar()} retenciones />
           </div>
         ))}
         {lista.filter((p) => p.estado !== "cobrado").length === 0 && <p className="text-sm text-muted-foreground">Sin proyectos abiertos.</p>}
+      </div>
+
+      <h3 className="mt-6 font-medium text-foreground">Contratos recurrentes</h3>
+      <div className="mt-2 grid gap-2 sm:grid-cols-3">
+        <Campo etiqueta="Cliente"><input className={campo} value={cCliente} onChange={(e) => setCCliente(e.target.value)} /></Campo>
+        <Campo etiqueta="Celular"><input className={campo} inputMode="tel" value={cTel} onChange={(e) => setCTel(e.target.value)} /></Campo>
+        <Campo etiqueta="Servicio"><input className={campo} value={cConcepto} onChange={(e) => setCConcepto(e.target.value)} placeholder="Hosting, soporte mensual, licencia…" /></Campo>
+        <Campo etiqueta="Valor mensual"><input className={campo} inputMode="decimal" value={cValor} onChange={(e) => setCValor(e.target.value)} /></Campo>
+        <Campo etiqueta="Periodo a facturar (AAAA-MM)"><input className={campo} value={periodo} onChange={(e) => setPeriodo(e.target.value)} /></Campo>
+        <div className="flex items-end"><button type="button" className={boton} onClick={() => void crearContrato()}>Crear contrato</button></div>
+      </div>
+      <div className="mt-2 space-y-2">
+        {contratos.map((c) => (
+          <div key={c.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-glass-border p-3 text-sm">
+            <span className="min-w-0 break-words">{c.cliente} · {c.concepto} · {dinero(c.valor_mensual)}/mes{c.ultimo_periodo ? ` · último cobro ${c.ultimo_periodo}` : ""}</span>
+            <button type="button" className={botonSec} onClick={() => void facturarContrato(c)}>Generar cobro del mes</button>
+          </div>
+        ))}
+        {contratos.length === 0 && <p className="text-sm text-muted-foreground">Sin contratos recurrentes.</p>}
+      </div>
+
+      <h3 className="mt-6 font-medium text-foreground">Tickets de soporte y licencias</h3>
+      <div className="mt-2 grid gap-2 sm:grid-cols-3">
+        <Campo etiqueta="Cliente"><input className={campo} value={tCliente} onChange={(e) => setTCliente(e.target.value)} /></Campo>
+        <Campo etiqueta="Asunto"><input className={campo} value={tAsunto} onChange={(e) => setTAsunto(e.target.value)} /></Campo>
+        <Campo etiqueta="Tipo">
+          <select className={campo} value={tTipo} onChange={(e) => setTTipo(e.target.value)}>
+            <option value="soporte">Soporte</option><option value="licencia">Licencia</option>
+          </select>
+        </Campo>
+        <Campo etiqueta="Prioridad">
+          <select className={campo} value={tPrioridad} onChange={(e) => setTPrioridad(e.target.value)}>
+            <option value="baja">Baja</option><option value="media">Media</option><option value="alta">Alta</option>
+          </select>
+        </Campo>
+        <Campo etiqueta="Vence (licencias)"><input type="date" className={campo} value={tVence} onChange={(e) => setTVence(e.target.value)} /></Campo>
+        <div className="flex items-end"><button type="button" className={boton} onClick={() => void crearTicket()}>Crear ticket</button></div>
+      </div>
+      <div className="mt-2 space-y-2">
+        {tickets.filter((t) => t.estado !== "resuelto").map((t) => (
+          <div key={t.id} className="rounded-xl border border-glass-border p-3 text-sm">
+            <p className="break-words font-semibold">{t.cliente} · {t.asunto} <span className="text-xs text-muted-foreground">({t.tipo} · prioridad {t.prioridad} · {t.estado}{t.vence ? ` · vence ${t.vence}` : ""})</span></p>
+            <div className="mt-1 flex flex-wrap gap-2">
+              {t.estado === "abierto" && <button type="button" className={botonSec} onClick={() => void estadoTicket(t, "en_proceso")}>Atender</button>}
+              <button type="button" className={botonSec} onClick={() => void estadoTicket(t, "resuelto")}>Marcar resuelto</button>
+            </div>
+          </div>
+        ))}
+        {tickets.filter((t) => t.estado !== "resuelto").length === 0 && <p className="text-sm text-muted-foreground">Sin tickets abiertos.</p>}
       </div>
     </GlassPanel>
   );

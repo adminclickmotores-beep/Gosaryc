@@ -30,7 +30,32 @@ const IDS_DEDICADOS = new Set<string>([
   "ordenes_moto", "repuestos_moto",
 ]);
 
+/** Rutas reales de la app, leídas de los archivos de src/routes (fijas y con parámetro). */
+const ARCHIVOS_RUTAS = Object.keys(import.meta.glob("/src/routes/**/*.{ts,tsx}"));
+const RUTAS_FIJAS = new Set<string>();
+const PREFIJOS_DINAMICOS: string[] = [];
+for (const archivo of ARCHIVOS_RUTAS) {
+  let r = archivo.replace("/src/routes/", "").replace(/\.(tsx|ts)$/, "").replace(/^_app\//, "").replace(/^_app$/, "");
+  r = r.replace(/\./g, "/");
+  r = r.replace(/(^|\/)index$/, "");
+  const partes = r.split("/").filter(Boolean);
+  const iDin = partes.findIndex((p) => p.startsWith("$"));
+  if (iDin >= 0) {
+    if (iDin > 0) PREFIJOS_DINAMICOS.push(`/${partes.slice(0, iDin).join("/")}/`);
+  } else {
+    RUTAS_FIJAS.add(`/${partes.join("/")}`);
+  }
+}
+
+/** Una ruta es válida si existe como archivo de ruta o cuelga de una ruta dinámica (modulos/$id, negocio/$tipo...). */
+export function rutaExiste(ruta: string): boolean {
+  const limpia = ruta.split("?")[0].split("#")[0].replace(/\/$/, "") || "/";
+  if (RUTAS_FIJAS.has(limpia)) return true;
+  return PREFIJOS_DINAMICOS.some((p) => limpia.startsWith(p));
+}
+
 export type FilaAuditoria = {
+  rutasRotas: string[];
   numero: number;
   clave: string;
   nombre: string;
@@ -57,7 +82,9 @@ export function auditoriaNegocios(): FilaAuditoria[] {
     // Los módulos "de apoyo" (clientes, pagos, metas, personal, reseñas...) usan formularios propios del negocio.
     const nucleoGenerico = gen.filter((m) => !/^(clientes|pagos|resenas|personal|metas|cuentas|caja|proveedores|finanzas|fidelizacion|garantias|agenda|cotizaciones)_/.test(m.id));
     const logica: FilaAuditoria["logica"] = nucleoGenerico.length === 0 ? "Dedicada" : dedic.length >= 3 ? "Mixta" : "Plantilla genérica";
+    const rotas = activos.filter((m) => !!m.ruta && m.ruta.startsWith("/") && !rutaExiste(m.ruta)).map((m) => `${m.titulo} (${m.ruta})`);
     return {
+      rutasRotas: rotas,
       numero: i + 1,
       clave: t.clave,
       nombre: t.etiqueta,

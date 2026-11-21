@@ -2439,9 +2439,9 @@ export type Database = {
         Relationships: []
       }
       inm_propiedades: {
-        Row: { administracion: number; canon: number; created_at: string; direccion: string | null; estado: string; id: string; matricula: string | null; modalidad: string; notas: string | null; owner_id: string | null; precio_venta: number; propietario: string | null; telefono_prop: string | null; tipo_negocio: string | null; titulo: string }
-        Insert: { administracion?: number; canon?: number; created_at?: string; direccion?: string | null; estado?: string; id?: string; matricula?: string | null; modalidad?: string; notas?: string | null; owner_id?: string | null; precio_venta?: number; propietario?: string | null; telefono_prop?: string | null; tipo_negocio?: string | null; titulo: string }
-        Update: { administracion?: number; canon?: number; created_at?: string; direccion?: string | null; estado?: string; id?: string; matricula?: string | null; modalidad?: string; notas?: string | null; owner_id?: string | null; precio_venta?: number; propietario?: string | null; telefono_prop?: string | null; tipo_negocio?: string | null; titulo?: string }
+        Row: { piso: string | null; proyecto: string | null; torre: string | null; administracion: number; canon: number; created_at: string; direccion: string | null; estado: string; id: string; matricula: string | null; modalidad: string; notas: string | null; owner_id: string | null; precio_venta: number; propietario: string | null; telefono_prop: string | null; tipo_negocio: string | null; titulo: string }
+        Insert: { piso?: string | null; proyecto?: string | null; torre?: string | null; administracion?: number; canon?: number; created_at?: string; direccion?: string | null; estado?: string; id?: string; matricula?: string | null; modalidad?: string; notas?: string | null; owner_id?: string | null; precio_venta?: number; propietario?: string | null; telefono_prop?: string | null; tipo_negocio?: string | null; titulo: string }
+        Update: { piso?: string | null; proyecto?: string | null; torre?: string | null; administracion?: number; canon?: number; created_at?: string; direccion?: string | null; estado?: string; id?: string; matricula?: string | null; modalidad?: string; notas?: string | null; owner_id?: string | null; precio_venta?: number; propietario?: string | null; telefono_prop?: string | null; tipo_negocio?: string | null; titulo?: string }
         Relationships: []
       }
       inm_contratos: {
@@ -2466,6 +2466,30 @@ export type Database = {
         Row: { cobros: number; comision: number; contrato_id: string; created_at: string; gastos: number; id: string; metodo: string; neto: number; owner_id: string | null; tipo_negocio: string | null; total_cobrado: number }
         Insert: { cobros?: number; comision?: number; contrato_id: string; created_at?: string; gastos?: number; id?: string; metodo?: string; neto?: number; owner_id?: string | null; tipo_negocio?: string | null; total_cobrado?: number }
         Update: { cobros?: number; comision?: number; contrato_id?: string; created_at?: string; gastos?: number; id?: string; metodo?: string; neto?: number; owner_id?: string | null; tipo_negocio?: string | null; total_cobrado?: number }
+        Relationships: []
+      }
+      inm_ventas: {
+        Row: { comision: number; comision_pct: number; comprador: string; created_at: string; id: string; metodo: string; owner_id: string | null; precio: number; propiedad_id: string; telefono: string | null; tipo_negocio: string | null }
+        Insert: { comision?: number; comision_pct?: number; comprador: string; created_at?: string; id?: string; metodo?: string; owner_id?: string | null; precio: number; propiedad_id: string; telefono?: string | null; tipo_negocio?: string | null }
+        Update: { comision?: number; comision_pct?: number; comprador?: string; created_at?: string; id?: string; metodo?: string; owner_id?: string | null; precio?: number; propiedad_id?: string; telefono?: string | null; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      agr_labores: {
+        Row: { cantidad: number; costo: number; created_at: string; descripcion: string | null; fecha: string; id: string; lote_id: string; owner_id: string | null; tipo: string; tipo_negocio: string | null }
+        Insert: { cantidad?: number; costo?: number; created_at?: string; descripcion?: string | null; fecha?: string; id?: string; lote_id: string; owner_id?: string | null; tipo?: string; tipo_negocio?: string | null }
+        Update: { cantidad?: number; costo?: number; created_at?: string; descripcion?: string | null; fecha?: string; id?: string; lote_id?: string; owner_id?: string | null; tipo?: string; tipo_negocio?: string | null }
+        Relationships: []
+      }
+      tec_tickets: {
+        Row: { asunto: string; cliente: string; created_at: string; estado: string; horas: number; id: string; owner_id: string | null; prioridad: string; telefono: string | null; tipo: string; tipo_negocio: string | null; vence: string | null }
+        Insert: { asunto: string; cliente: string; created_at?: string; estado?: string; horas?: number; id?: string; owner_id?: string | null; prioridad?: string; telefono?: string | null; tipo?: string; tipo_negocio?: string | null; vence?: string | null }
+        Update: { asunto?: string; cliente?: string; created_at?: string; estado?: string; horas?: number; id?: string; owner_id?: string | null; prioridad?: string; telefono?: string | null; tipo?: string; tipo_negocio?: string | null; vence?: string | null }
+        Relationships: []
+      }
+      tec_contratos: {
+        Row: { activo: boolean; cliente: string; concepto: string; created_at: string; id: string; owner_id: string | null; telefono: string | null; tipo_negocio: string | null; ultimo_periodo: string | null; valor_mensual: number }
+        Insert: { activo?: boolean; cliente: string; concepto: string; created_at?: string; id?: string; owner_id?: string | null; telefono?: string | null; tipo_negocio?: string | null; ultimo_periodo?: string | null; valor_mensual: number }
+        Update: { activo?: boolean; cliente?: string; concepto?: string; created_at?: string; id?: string; owner_id?: string | null; telefono?: string | null; tipo_negocio?: string | null; ultimo_periodo?: string | null; valor_mensual?: number }
         Relationships: []
       }
       agr_lotes: {
@@ -9060,6 +9084,19 @@ export type Database = {
         Returns: Json
       }
       ofi_cobrar: { Args: { p_tabla: string; p_id: string; p_valor: number; p_metodo: string }; Returns: Json }
+      ofi_cobrar_retencion: {
+        Args: { p_tabla: string; p_id: string; p_valor: number; p_metodo: string; p_retefuente: number; p_reteica: number }
+        Returns: Json
+      }
+      inm_vender: {
+        Args: { p_propiedad: string; p_comprador: string; p_telefono: string | null; p_precio: number; p_comision_pct: number; p_metodo: string }
+        Returns: Json
+      }
+      agr_registrar_labor: {
+        Args: { p_lote: string; p_tipo: string; p_descripcion: string | null; p_cantidad: number; p_costo: number }
+        Returns: Json
+      }
+      tec_facturar_contrato: { Args: { p_contrato: string; p_periodo: string }; Returns: Json }
       sst_cobrar: { Args: { p_tabla: string; p_id: string; p_valor: number; p_metodo: string }; Returns: Json }
       sst_facturar_empresa: { Args: { p_empresa: string; p_metodo: string }; Returns: Json }
       sst_validar_certificado: { Args: { p_codigo: string }; Returns: Json }

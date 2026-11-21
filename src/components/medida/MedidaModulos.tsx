@@ -16,6 +16,8 @@ type Contrato = Tables<"inm_contratos">;
 type Cobro = Tables<"inm_cobros">;
 type InmGasto = Tables<"inm_gastos">;
 type InmLiq = Tables<"inm_liquidaciones">;
+type InmVenta = Tables<"inm_ventas">;
+type Labor = Tables<"agr_labores">;
 type Lote = Tables<"agr_lotes">;
 type AgrInsumo = Tables<"agr_insumos">;
 type Cosecha = Tables<"agr_cosechas">;
@@ -282,6 +284,39 @@ export function ObrasConstructora() {
   );
 }
 
+// Simulación de crédito hipotecario / subsidio (cuota fija, sistema francés)
+function SimuladorCreditoInmueble({ precioInicial }: { precioInicial: number }) {
+  const [precio, setPrecio] = useState(precioInicial > 0 ? String(precioInicial) : "");
+  const [inicialPct, setInicialPct] = useState("30");
+  const [subsidio, setSubsidio] = useState("0");
+  const [tasa, setTasa] = useState("12");
+  const [anios, setAnios] = useState("15");
+  useEffect(() => {
+    if (precioInicial > 0) setPrecio(String(precioInicial));
+  }, [precioInicial]);
+  const p = num(precio);
+  const inicial = p * Math.min(Math.max(num(inicialPct), 0), 100) / 100;
+  const financiado = Math.max(p - inicial - Math.max(num(subsidio), 0), 0);
+  const n = Math.max(Math.round(num(anios) * 12), 1);
+  const i = Math.max(num(tasa), 0) / 100 / 12;
+  const cuota = financiado <= 0 ? 0 : i === 0 ? financiado / n : (financiado * i) / (1 - Math.pow(1 + i, -n));
+  return (
+    <GlassPanel className="space-y-3 p-5">
+      <h2 className="font-medium text-foreground">Simulador de crédito y subsidio</h2>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <Campo etiqueta="Precio del inmueble"><input className={campo} inputMode="decimal" value={precio} onChange={(e) => setPrecio(e.target.value)} /></Campo>
+        <Campo etiqueta="Cuota inicial (%)"><input className={campo} inputMode="decimal" value={inicialPct} onChange={(e) => setInicialPct(e.target.value)} /></Campo>
+        <Campo etiqueta="Subsidio (valor)"><input className={campo} inputMode="decimal" value={subsidio} onChange={(e) => setSubsidio(e.target.value)} /></Campo>
+        <Campo etiqueta="Tasa anual (%)"><input className={campo} inputMode="decimal" value={tasa} onChange={(e) => setTasa(e.target.value)} /></Campo>
+        <Campo etiqueta="Plazo (años)"><input className={campo} inputMode="numeric" value={anios} onChange={(e) => setAnios(e.target.value)} /></Campo>
+      </div>
+      <p className="text-sm text-foreground">
+        Cuota inicial {dinero(inicial)} · a financiar {dinero(financiado)} · cuota mensual {dinero(Math.round(cuota))} · total de intereses {dinero(Math.max(Math.round(cuota * n - financiado), 0))}
+      </p>
+    </GlassPanel>
+  );
+}
+
 // ============================================================
 // Inmobiliaria: portafolio, contratos, cobro y liquidación
 // ============================================================
@@ -312,8 +347,20 @@ export function PropiedadesInmobiliaria() {
   const [gastoValor, setGastoValor] = useState("");
   const [gastoCont, setGastoCont] = useState("");
   const [metodo, setMetodo] = useState("transferencia");
+  const [proyecto, setProyecto] = useState("");
+  const [torre, setTorre] = useState("");
+  const [piso, setPiso] = useState("");
+  const [filtroProy, setFiltroProy] = useState("");
+  const [ventas, setVentas] = useState<InmVenta[]>([]);
+  const [selVenta, setSelVenta] = useState("");
+  const [comprador, setComprador] = useState("");
+  const [telComprador, setTelComprador] = useState("");
+  const [precioVenta, setPrecioVenta] = useState("");
+  const [comVenta, setComVenta] = useState("3");
 
   const cargar = useCallback(async () => {
+    const vq = await supabase.from("inm_ventas").select("*").order("created_at", { ascending: false }).limit(40);
+    setVentas(vq.data ?? []);
     const [p, c, b, g, l] = await Promise.all([
       supabase.from("inm_propiedades").select("*").order("created_at", { ascending: false }),
       supabase.from("inm_contratos").select("*").order("created_at", { ascending: false }),
@@ -338,9 +385,11 @@ export function PropiedadesInmobiliaria() {
       titulo: titulo.trim(), matricula: matricula.trim() || null, direccion: direccion.trim() || null,
       modalidad, canon: num(canon), administracion: num(admon), precio_venta: num(precio),
       propietario: propietario.trim() || null, telefono_prop: telProp.trim() || null,
+      proyecto: proyecto.trim() || null, torre: torre.trim() || null, piso: piso.trim() || null,
     });
     if (error) return toast.error(msg(error.message, "No se pudo guardar la propiedad."));
     toast.success("Propiedad agregada al portafolio.");
+    setProyecto(""); setTorre(""); setPiso("");
     setTitulo(""); setMatricula(""); setDireccion(""); setCanon(""); setAdmon(""); setPrecio(""); setPropietario(""); setTelProp("");
     void cargar();
   };
@@ -403,6 +452,24 @@ export function PropiedadesInmobiliaria() {
     void cargar();
   };
 
+  const vender = async () => {
+    if (!selVenta) return toast.error("Elige la propiedad en venta.");
+    if (comprador.trim().length < 2) return toast.error("Escribe el nombre del comprador.");
+    if (num(precioVenta) <= 0) return toast.error("Escribe el precio de la venta.");
+    const { error } = await supabase.rpc("inm_vender", {
+      p_propiedad: selVenta, p_comprador: comprador.trim(), p_telefono: telComprador.trim() || null,
+      p_precio: num(precioVenta), p_comision_pct: Math.min(Math.max(num(comVenta), 0), 100), p_metodo: metodo,
+    });
+    if (error) return toast.error(msg(error.message, "No se pudo registrar la venta."));
+    toast.success("Venta registrada: la comisión entró a Caja y Contabilidad.");
+    setSelVenta(""); setComprador(""); setTelComprador(""); setPrecioVenta("");
+    void cargar();
+  };
+
+  const proyectos = useMemo(() => Array.from(new Set(props.map((x) => x.proyecto).filter((x): x is string => !!x))), [props]);
+  const propsVisibles = props.filter((x) => !filtroProy || x.proyecto === filtroProy);
+  const enVenta = props.filter((x) => x.modalidad === "venta" && x.estado !== "vendido");
+
   const pendPorContrato = useMemo(() => {
     const g = new Map<string, { pagados: number; n: number; gastos: number }>();
     for (const b of cobros) {
@@ -428,6 +495,9 @@ export function PropiedadesInmobiliaria() {
           <Campo etiqueta="Título *"><input className={campo} value={titulo} onChange={(e) => setTitulo(e.target.value)} /></Campo>
           <Campo etiqueta="Matrícula inmobiliaria"><input className={campo} value={matricula} onChange={(e) => setMatricula(e.target.value)} /></Campo>
           <Campo etiqueta="Dirección"><input className={campo} value={direccion} onChange={(e) => setDireccion(e.target.value)} /></Campo>
+          <Campo etiqueta="Proyecto"><input className={campo} value={proyecto} onChange={(e) => setProyecto(e.target.value)} /></Campo>
+          <Campo etiqueta="Torre"><input className={campo} value={torre} onChange={(e) => setTorre(e.target.value)} /></Campo>
+          <Campo etiqueta="Piso"><input className={campo} value={piso} onChange={(e) => setPiso(e.target.value)} /></Campo>
           <Campo etiqueta="Modalidad">
             <select className={campo} value={modalidad} onChange={(e) => setModalidad(e.target.value)}>
               <option value="arriendo">Arriendo</option><option value="venta">Venta</option>
@@ -442,17 +512,30 @@ export function PropiedadesInmobiliaria() {
         <button className={boton} onClick={crearProp}><Plus className="h-4 w-4" /> Guardar propiedad</button>
       </GlassPanel>
 
+      {proyectos.length > 0 && (
+        <Campo etiqueta="Filtrar por proyecto">
+          <select className={campo} value={filtroProy} onChange={(e) => setFiltroProy(e.target.value)}>
+            <option value="">Todos los proyectos</option>
+            {proyectos.map((x) => <option key={x} value={x}>{x}</option>)}
+          </select>
+        </Campo>
+      )}
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {props.map((p) => (
+        {propsVisibles.map((p) => (
           <GlassPanel key={p.id} className="space-y-2 p-4">
             <p className="break-words font-medium text-foreground">{p.titulo}</p>
+            {(p.proyecto || p.torre || p.piso) && (
+              <p className="text-xs text-muted-foreground">
+                {[p.proyecto, p.torre ? `Torre ${p.torre}` : null, p.piso ? `Piso ${p.piso}` : null].filter(Boolean).join(" · ")}
+              </p>
+            )}
             <p className="text-xs text-muted-foreground">
               {p.matricula ? `Matrícula ${p.matricula} · ` : ""}{p.modalidad} · {p.estado}
               {p.modalidad === "arriendo" ? ` · canon ${dinero(p.canon)}` : ` · ${dinero(p.precio_venta)}`}
             </p>
             {p.propietario && <p className="text-xs text-muted-foreground">Propietario: {p.propietario}</p>}
             <div className="flex flex-wrap gap-2">
-              {(["disponible", "arrendado", "mantenimiento"] as const).map((e) => (
+              {(["disponible", "arrendado", "mantenimiento"] as const).filter(() => p.estado !== "vendido").map((e) => (
                 <button key={e} className={p.estado === e ? boton : botonSec} onClick={() => cambiarEstadoProp(p, e)}>{e}</button>
               ))}
             </div>
@@ -460,6 +543,36 @@ export function PropiedadesInmobiliaria() {
         ))}
         {props.length === 0 && <p className="text-sm text-muted-foreground">Aún no hay propiedades.</p>}
       </div>
+
+      <SimuladorCreditoInmueble precioInicial={num(precioVenta)} />
+
+      <GlassPanel className="space-y-3 p-5">
+        <h2 className="font-medium text-foreground">Venta de inmueble y comisión</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <Campo etiqueta="Propiedad en venta *">
+            <select className={campo} value={selVenta} onChange={(e) => { setSelVenta(e.target.value); const pr = props.find((x) => x.id === e.target.value); if (pr && Number(pr.precio_venta) > 0) setPrecioVenta(String(pr.precio_venta)); }}>
+              <option value="">Elige una propiedad</option>
+              {enVenta.map((x) => <option key={x.id} value={x.id}>{x.titulo} · {dinero(x.precio_venta)}</option>)}
+            </select>
+          </Campo>
+          <Campo etiqueta="Comprador *"><input className={campo} value={comprador} onChange={(e) => setComprador(e.target.value)} /></Campo>
+          <Campo etiqueta="Teléfono"><input className={campo} inputMode="tel" value={telComprador} onChange={(e) => setTelComprador(e.target.value)} /></Campo>
+          <Campo etiqueta="Precio de venta *"><input className={campo} inputMode="decimal" value={precioVenta} onChange={(e) => setPrecioVenta(e.target.value)} /></Campo>
+          <Campo etiqueta="Tu comisión (%)"><input className={campo} inputMode="decimal" value={comVenta} onChange={(e) => setComVenta(e.target.value)} /></Campo>
+          <Campo etiqueta="Método de cobro">
+            <select className={campo} value={metodo} onChange={(e) => setMetodo(e.target.value)}>
+              <option value="transferencia">Transferencia</option><option value="efectivo">Efectivo</option>
+            </select>
+          </Campo>
+        </div>
+        <p className="text-sm text-muted-foreground">Comisión a cobrar: {dinero(Math.round(num(precioVenta) * Math.min(Math.max(num(comVenta), 0), 100) / 100))}</p>
+        <button className={boton} onClick={vender}>Registrar venta y cobrar comisión</button>
+        {ventas.map((v) => (
+          <p key={v.id} className="text-sm text-muted-foreground">
+            {v.created_at.slice(0, 10)} · {props.find((x) => x.id === v.propiedad_id)?.titulo ?? "Propiedad"} · {v.comprador} · {dinero(v.precio)} · comisión {dinero(v.comision)}
+          </p>
+        ))}
+      </GlassPanel>
 
       <GlassPanel className="space-y-3 p-5">
         <h2 className="font-medium text-foreground">Nuevo contrato de arriendo</h2>
@@ -553,16 +666,20 @@ export function AgroLotes() {
   const [iCosto, setICosto] = useState("");
   const [apl, setApl] = useState<Record<string, { insumo: string; cantidad: string; dosis: string }>>({});
   const [ven, setVen] = useState<Record<string, { cantidad: string; precio: string; cliente: string; metodo: string }>>({});
+  const [labores, setLabores] = useState<Labor[]>([]);
+  const [lab, setLab] = useState<Record<string, { tipo: string; descripcion: string; cantidad: string; costo: string }>>({});
 
   const cargar = useCallback(async () => {
-    const [l, i, c] = await Promise.all([
+    const [l, i, c, lb] = await Promise.all([
       supabase.from("agr_lotes").select("*").order("nombre"),
       supabase.from("agr_insumos").select("*").eq("activo", true).order("nombre"),
-      supabase.from("agr_cosechas").select("*").order("created_at", { ascending: false }).limit(40),
+      supabase.from("agr_cosechas").select("*").order("created_at", { ascending: false }).limit(200),
+      supabase.from("agr_labores").select("*").order("fecha", { ascending: false }).limit(300),
     ]);
     setLotes(l.data ?? []);
     setInsumos(i.data ?? []);
     setCosechas(c.data ?? []);
+    setLabores(lb.data ?? []);
     setCargando(false);
   }, []);
   useEffect(() => {
@@ -596,6 +713,20 @@ export function AgroLotes() {
     if (error) return toast.error(msg(error.message, "No se pudo registrar la aplicación."));
     toast.success("Aplicación registrada: descontó del inventario y sumó al costo del lote.");
     setApl((x) => ({ ...x, [l.id]: { insumo: "", cantidad: "", dosis: "" } }));
+    void cargar();
+  };
+
+  const registrarLabor = async (l: Lote) => {
+    const x = lab[l.id];
+    if (!x) return toast.error("Elige el tipo de labor.");
+    if (x.tipo === "cosecha" && num(x.cantidad) <= 0) return toast.error("Escribe la cantidad cosechada.");
+    const { error } = await supabase.rpc("agr_registrar_labor", {
+      p_lote: l.id, p_tipo: x.tipo, p_descripcion: x.descripcion.trim() || null,
+      p_cantidad: Math.max(num(x.cantidad), 0), p_costo: Math.max(num(x.costo), 0),
+    });
+    if (error) return toast.error(msg(error.message, "No se pudo registrar la labor."));
+    toast.success(x.tipo === "cosecha" ? "Cosecha registrada: sumó a la producción del lote." : "Labor registrada y su costo sumó al lote.");
+    setLab((y) => ({ ...y, [l.id]: { tipo: "riego", descripcion: "", cantidad: "", costo: "" } }));
     void cargar();
   };
 
@@ -647,9 +778,30 @@ export function AgroLotes() {
           const a = apl[l.id] ?? { insumo: "", cantidad: "", dosis: "" };
           const v = ven[l.id] ?? { cantidad: "", precio: "", cliente: "", metodo: "efectivo" };
           const costoUnit = l.stock > 0 ? Number(l.costo_acumulado) / Number(l.stock) : 0;
+          const lb = lab[l.id] ?? { tipo: "riego", descripcion: "", cantidad: "", costo: "" };
+          const susLabores = labores.filter((x) => x.lote_id === l.id);
+          const cosechado = susLabores.filter((x) => x.tipo === "cosecha").reduce((s, x) => s + Number(x.cantidad), 0);
+          const utilLote = cosechas.filter((x) => x.lote_id === l.id).reduce((s, x) => s + Number(x.utilidad), 0);
           return (
             <GlassPanel key={l.id} className="space-y-2 p-4">
               <p className="break-words font-medium text-foreground">{l.nombre}{l.cultivo ? ` · ${l.cultivo}` : ""}</p>
+              <p className="text-xs text-muted-foreground">
+                Cosechado {cosechado} {l.unidad === "ha" ? "kg" : l.unidad}
+                {Number(l.superficie) > 0 && cosechado > 0 ? ` · rendimiento ${Math.round(cosechado / Number(l.superficie))} por ha` : ""}
+                {` · utilidad de ventas ${dinero(utilLote)}`}
+              </p>
+              <div className="flex flex-wrap items-end gap-2 rounded-lg border border-glass-border p-2">
+                <select className={`${campo} w-auto`} value={lb.tipo} onChange={(e) => setLab((x) => ({ ...x, [l.id]: { ...lb, tipo: e.target.value } }))}>
+                  {["siembra", "riego", "fumigacion", "poda", "deshierbe", "cosecha", "otra"].map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+                <input className={`${campo} flex-1`} placeholder="Descripción de la labor" value={lb.descripcion} onChange={(e) => setLab((x) => ({ ...x, [l.id]: { ...lb, descripcion: e.target.value } }))} />
+                <input className={`${campo} w-28`} inputMode="decimal" placeholder={lb.tipo === "cosecha" ? "Cantidad cosechada" : "Cantidad"} value={lb.cantidad} onChange={(e) => setLab((x) => ({ ...x, [l.id]: { ...lb, cantidad: e.target.value } }))} />
+                <input className={`${campo} w-28`} inputMode="decimal" placeholder="Costo mano de obra" value={lb.costo} onChange={(e) => setLab((x) => ({ ...x, [l.id]: { ...lb, costo: e.target.value } }))} />
+                <button className={botonSec} onClick={() => registrarLabor(l)}>Registrar labor</button>
+              </div>
+              {susLabores.slice(0, 3).map((x) => (
+                <p key={x.id} className="text-xs text-muted-foreground">{x.fecha} · {x.tipo}{x.descripcion ? ` · ${x.descripcion}` : ""}{x.cantidad > 0 ? ` · ${x.cantidad}` : ""}{x.costo > 0 ? ` · ${dinero(x.costo)}` : ""}</p>
+              ))}
               <p className="text-sm text-muted-foreground">
                 Producción {l.stock} {l.unidad} · costo acumulado {dinero(l.costo_acumulado)}
                 {l.stock > 0 && <> · costo por {l.unidad} {dinero(costoUnit)}</>}
