@@ -942,7 +942,25 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
           </select>
           <input className={campo} placeholder="Recibido" inputMode="decimal" value={recibido} onChange={(e) => setRecibido(e.target.value)} />
         </div>
-        {cambio > 0 && <p className="text-sm text-foreground">Devuelta: {dinero(cambio)}</p>}
+        {metodo === "efectivo" && (
+          <div className="flex flex-wrap gap-2">
+            {[0, 10000, 20000, 50000, 100000].map((b) => (
+              <button
+                key={b}
+                type="button"
+                onClick={() => setRecibido(String(b === 0 ? Math.round(total) : b))}
+                className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm font-bold tabular-nums text-foreground transition-all duration-150 active:scale-[0.97] hover:bg-emerald-500/20"
+              >
+                {b === 0 ? "Exacto" : dinero(b)}
+              </button>
+            ))}
+          </div>
+        )}
+        {cambio > 0 && (
+          <p className="rounded-2xl bg-gradient-to-r from-emerald-500/20 to-sky-500/15 px-4 py-3 text-center text-sm text-foreground">
+            Vueltas: <span className="block text-3xl font-extrabold tabular-nums">{dinero(cambio)}</span>
+          </p>
+        )}
 
         <div className="grid grid-cols-2 items-center gap-2">
           <input className={campo} placeholder="Dividir entre (personas)" inputMode="numeric" value={personas} onChange={(e) => setPersonas(e.target.value.replace(/\D/g, ""))} aria-label="Número de personas" />

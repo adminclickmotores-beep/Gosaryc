@@ -1064,6 +1064,17 @@ html.light .menu-card-icon {
   box-shadow: 0 6px 14px -8px oklch(0.55 0.15 var(--tono) / 0.7);
 }
 
+/* Respuesta táctil: botones y tarjetas pulsables */
+button:not(:disabled),
+[role="button"],
+.card-modern.card-lift {
+  transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease, border-color 150ms ease;
+}
+button:not(:disabled):active,
+[role="button"]:active {
+  transform: scale(0.98);
+}
+
 /* Cabecera destacada de la pantalla de inicio */
 .hero-panel {
   background:
