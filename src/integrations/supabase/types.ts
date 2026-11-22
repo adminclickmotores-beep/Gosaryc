@@ -2780,6 +2780,12 @@ export type Database = {
         Update: { aplicada?: boolean; created_at?: string; fuente?: string; id?: string; resumen?: string; titulo?: string; vigencia_desde?: string | null }
         Relationships: []
       }
+      sst_normas: {
+        Row: { codigo: string; created_at: string; estado: string; fuente: string; id: string; nota: string | null; origen: string; owner_id: string | null; resumen: string; tema: string; titulo: string; ultima_actualizacion: string }
+        Insert: { codigo: string; created_at?: string; estado?: string; fuente?: string; id?: string; nota?: string | null; origen?: string; owner_id?: string | null; resumen?: string; tema?: string; titulo: string; ultima_actualizacion?: string }
+        Update: { codigo?: string; created_at?: string; estado?: string; fuente?: string; id?: string; nota?: string | null; origen?: string; owner_id?: string | null; resumen?: string; tema?: string; titulo?: string; ultima_actualizacion?: string }
+        Relationships: []
+      }
       srv_citas: {
         Row: { cobrada: boolean; comision: number; comision_pct: number; created_at: string; duracion_min: number; ficha: string | null; fecha: string; hora: string; id: string; cliente: string; estado: string; liquidacion_id: string | null; liquidada: boolean; metodo: string | null; owner_id: string | null; precio: number; profesional: string; servicio: string; telefono: string | null; tipo_negocio: string | null }
         Insert: { cobrada?: boolean; comision?: number; comision_pct?: number; created_at?: string; duracion_min?: number; ficha?: string | null; fecha?: string; hora?: string; id?: string; cliente: string; estado?: string; liquidacion_id?: string | null; liquidada?: boolean; metodo?: string | null; owner_id?: string | null; precio?: number; profesional: string; servicio: string; telefono?: string | null; tipo_negocio?: string | null }

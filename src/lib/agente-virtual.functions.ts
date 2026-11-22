@@ -4,6 +4,7 @@ import { assertAiQuota } from "@/lib/ai-quota.server";
 import { tarifasComoTexto } from "@/lib/tarifas-domicilio";
 import { resolverTipoNegocio, TIPOS_NEGOCIO } from "@/lib/modulos-negocio";
 import { GUIAS_NEGOCIO, PASOS_GENERALES } from "@/lib/guia-negocio";
+import { textoMatrizNormativa } from "@/lib/sst-normativa";
 import { CURSO_GOSARYC } from "@/lib/academia-curso";
 import { MANUAL_FIJO, textoInstructivos, textoModulos } from "@/lib/conocimiento-programa";
 
@@ -149,6 +150,18 @@ ${tarifasComoTexto()}
           "\n"
         : "";
 
+    // Negocios de salud/SST: se inyecta la matriz normativa vigente guardada (o el catálogo base).
+    let normativaSst = "";
+    if (giro.clave === "salud") {
+      const { data: normas } = await context.supabase
+        .from("sst_normas")
+        .select("codigo,titulo,resumen,estado,ultima_actualizacion")
+        .eq("estado", "Vigente")
+        .order("codigo")
+        .limit(60);
+      normativaSst = "\n" + textoMatrizNormativa(normas) + "\n";
+    }
+
     const system = `Eres el asistente de ayuda de Gosaryc, el programa con el que "${cfg?.nombre || "este negocio"}" (tipo: ${tipo}) administra su negocio. Hablas con quienes USAN el programa (dueño y equipo): tu trabajo principal es resolver sus dudas de uso y guiarlos paso a paso en la configuración.
 Tu negocio es del tipo "${giro.panel}". Habla con el vocabulario profesional propio de ese tipo de negocio (no de restaurante a menos que lo sea).
 Responde en español de México, con tono amable y directo, en frases cortas y con pasos numerados cuando expliques cómo hacer algo.
@@ -216,7 +229,7 @@ Cómo ayudar:
 - Si el problema parece un error del programa, pide qué estaba haciendo y qué mensaje vio, y sugiere recargar la página; si persiste, crear un ticket en Soporte.
 Usa EXCLUSIVAMENTE la información configurada del negocio que aparece abajo cuando hables de sus datos. Mantén siempre el mismo nombre, horarios, precios y tarifas en toda la conversación.
 
-${aprendido}
+${aprendido}${normativaSst}
 Datos configurados del negocio:
 ${perfil}
 

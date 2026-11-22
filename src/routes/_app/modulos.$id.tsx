@@ -72,7 +72,7 @@ const CapacitacionesBrigadasLazy = lazy(() =>
   import("@/components/sst/SaludOcupacionalModulos").then((m) => ({ default: m.CapacitacionesBrigadas })),
 );
 const NormativaSSTLazy = lazy(() =>
-  import("@/components/sst/SaludOcupacionalModulos").then((m) => ({ default: m.NormativaSST })),
+  import("@/components/sst/NormativaSSTPanel").then((m) => ({ default: m.NormativaSSTPanel })),
 );
 const CajaTurnosLazy = lazy(() =>
   import("@/components/caja/CajaTurnos").then((m) => ({ default: m.CajaTurnos })),
