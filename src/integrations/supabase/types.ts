@@ -5410,6 +5410,93 @@ export type Database = {
         }
         Relationships: []
       }
+      agente_conocimiento: {
+        Row: {
+          created_at: string
+          estado: string
+          fuente: string | null
+          id: string
+          negocio_id: string
+          origen: string
+          owner_id: string
+          pregunta: string
+          respuesta: string
+          tipo: string
+          verificado_en: string
+          veces: number
+        }
+        Insert: {
+          created_at?: string
+          estado?: string
+          fuente?: string | null
+          id?: string
+          negocio_id: string
+          origen?: string
+          owner_id: string
+          pregunta?: string
+          respuesta: string
+          tipo?: string
+          verificado_en?: string
+          veces?: number
+        }
+        Update: {
+          created_at?: string
+          estado?: string
+          fuente?: string | null
+          id?: string
+          negocio_id?: string
+          origen?: string
+          owner_id?: string
+          pregunta?: string
+          respuesta?: string
+          tipo?: string
+          verificado_en?: string
+          veces?: number
+        }
+        Relationships: []
+      }
+      normativa_colombia_vigente: {
+        Row: {
+          area: string
+          clave: string
+          created_at: string
+          fuente: string | null
+          id: string
+          origen: string
+          resumen: string
+          titulo: string
+          valor: string | null
+          verificado_en: string
+          vigencia_desde: string | null
+        }
+        Insert: {
+          area: string
+          clave: string
+          created_at?: string
+          fuente?: string | null
+          id?: string
+          origen?: string
+          resumen?: string
+          titulo: string
+          valor?: string | null
+          verificado_en?: string
+          vigencia_desde?: string | null
+        }
+        Update: {
+          area?: string
+          clave?: string
+          created_at?: string
+          fuente?: string | null
+          id?: string
+          origen?: string
+          resumen?: string
+          titulo?: string
+          valor?: string | null
+          verificado_en?: string
+          vigencia_desde?: string | null
+        }
+        Relationships: []
+      }
       agente_whatsapp: {
         Row: {
           activo: boolean

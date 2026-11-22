@@ -7,6 +7,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { exportarExcel, imprimirReporte } from "@/lib/exportes";
 import { useNegocio } from "@/hooks/use-negocio";
+import { BadgeNormativa } from "@/components/fiscal/BadgeNormativa";
 import { actualizarParametrosNomina } from "@/lib/nomina-ia.functions";
 import { esSuperadminServidor } from "@/lib/cuenta-maestra";
 
@@ -122,6 +123,7 @@ function EquipoNominaPage() {
         </>
       )}
 
+      <BadgeNormativa />
       <MotorNominaDinamica />
       <LiquidadorNomina />
       <CalendarioLaboral />

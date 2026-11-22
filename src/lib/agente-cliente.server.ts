@@ -6,6 +6,7 @@ import { conversacionesModelo } from "@/lib/agente-conversaciones";
 import { tarifasComoTexto } from "@/lib/tarifas-domicilio";
 
 import { chatConRespaldo, normalizarPerfil, type PerfilIA, type UsoIA } from "@/lib/ia-motores";
+import { buscarEnInternet } from "@/lib/ia-internet.server";
 
 export type MensajeCliente = { role: "user" | "assistant"; content: string };
 export type LeadAgente = {
@@ -230,6 +231,113 @@ async function guardarMemoria(ag: DuenoMemoria, tipo: "respuesta_dueno" | "patro
   }
 }
 
+type ReglaAuto = { tipo: string; pregunta: string; respuesta: string; origen: string; fuente: string | null; verificado_en: string };
+
+/** Guarda una regla aprendida sola (internet, dueño o venta cerrada). Si ya existe, solo suma una vez. */
+async function guardarConocimiento(
+  ag: DuenoMemoria,
+  r: { tipo: string; pregunta: string; respuesta: string; origen: "auto_internet" | "dueno" | "venta_cerrada"; fuente?: string | null },
+): Promise<ReglaAuto | null> {
+  const respuesta = r.respuesta.trim().slice(0, 1200);
+  const pregunta = r.pregunta.trim().slice(0, 400);
+  if (respuesta.length < 8) return null;
+  const { data: previo } = await supabaseAdmin
+    .from("agente_conocimiento")
+    .select("id,veces")
+    .eq("negocio_id", ag.negocio_id)
+    .eq("owner_id", ag.owner_id)
+    .eq("origen", r.origen)
+    .eq("respuesta", respuesta)
+    .maybeSingle();
+  if (previo) {
+    await supabaseAdmin
+      .from("agente_conocimiento")
+      .update({ veces: previo.veces + 1, verificado_en: new Date().toISOString() })
+      .eq("id", previo.id)
+      .eq("owner_id", ag.owner_id);
+    return null;
+  }
+  const ahora = new Date().toISOString();
+  const { error } = await supabaseAdmin.from("agente_conocimiento").insert({
+    negocio_id: ag.negocio_id,
+    owner_id: ag.owner_id,
+    tipo: r.tipo,
+    pregunta,
+    respuesta,
+    origen: r.origen,
+    estado: r.origen === "auto_internet" ? "verificada" : "aprendida",
+    fuente: r.fuente ? r.fuente.slice(0, 300) : null,
+    verificado_en: ahora,
+  });
+  if (error) return null;
+  // Máximo 150 reglas por origen: se olvidan las más viejas.
+  const { data: sobrantes } = await supabaseAdmin
+    .from("agente_conocimiento")
+    .select("id")
+    .eq("negocio_id", ag.negocio_id)
+    .eq("owner_id", ag.owner_id)
+    .eq("origen", r.origen)
+    .order("created_at", { ascending: false })
+    .range(150, 400);
+  const ids = (sobrantes ?? []).map((s) => s.id);
+  if (ids.length > 0) {
+    await supabaseAdmin.from("agente_conocimiento").delete().in("id", ids).eq("owner_id", ag.owner_id);
+  }
+  return { tipo: r.tipo, pregunta, respuesta, origen: r.origen, fuente: r.fuente ?? null, verificado_en: ahora };
+}
+
+/** Temas donde conviene verificar en internet: leyes, tarifas, normas y fichas técnicas. */
+const REGEX_INTERNET =
+  /\b(ley |leyes|decreto|resoluci|normativ|reglament|uvt|salario m|dian|soat|simit|tecnomec|pico y placa|ficha t|especificaci|compatible con|torque|cilindraje|legal)/i;
+
+const palabrasClave = (t: string): string[] =>
+  Array.from(new Set(t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").split(/[^a-z0-9]+/).filter((w) => w.length >= 5)));
+
+/** ¿Ya hay una regla guardada que cubra esta pregunta? Evita repetir búsquedas. */
+function yaSabe(reglas: ReglaAuto[], mensaje: string): boolean {
+  const claves = palabrasClave(mensaje);
+  if (claves.length === 0) return true;
+  return reglas.some((r) => {
+    const base = `${r.pregunta} ${r.respuesta}`.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    return claves.filter((c) => base.includes(c)).length >= 2;
+  });
+}
+
+/** Busca el dato en internet (Google Search Grounding) y lo guarda con su fuente y fecha de verificación. */
+async function investigarYGuardar(
+  ag: DuenoMemoria,
+  mensaje: string,
+  tipo: string,
+  motor: MotorNegocio,
+  esPrueba: boolean,
+): Promise<ReglaAuto | null> {
+  // Nunca viajan datos personales a la búsqueda.
+  const limpio = mensaje.replace(/\S+@\S+/g, "").replace(/\d{6,}/g, "").trim().slice(0, 300);
+  if (limpio.length < 8) return null;
+  const h = await buscarEnInternet(
+    `Un cliente de un negocio de tipo "${tipo}" en Colombia pregunta: "${limpio}". Busca en internet fuentes oficiales o del fabricante y responde en máximo 3 frases con el dato verificado vigente y la fuente que lo respalda. Si no puedes verificarlo, responde solo NO VERIFICADO.`,
+    { llave: motor.llave || undefined, expertos: false, timeoutMs: 12000, sistema: "Eres un verificador riguroso. No inventas datos." },
+  );
+  if (!h || /NO VERIFICADO/i.test(h.texto)) return null;
+  const fuente = h.fuentes.slice(0, 2).map((f) => `${f.titulo} (${f.url})`).join(" | ") || "Internet";
+  const regla: ReglaAuto = {
+    tipo: "internet",
+    pregunta: limpio.slice(0, 200),
+    respuesta: h.texto.slice(0, 700),
+    origen: "auto_internet",
+    fuente,
+    verificado_en: new Date().toISOString(),
+  };
+  if (!esPrueba) {
+    try {
+      await guardarConocimiento(ag, { tipo: regla.tipo, pregunta: regla.pregunta, respuesta: regla.respuesta, origen: "auto_internet", fuente });
+    } catch {
+      // aun sin guardar, la respuesta sirve para este turno
+    }
+  }
+  return regla;
+}
+
 /** El dueño respondió desde su celular: esa respuesta real se guarda como ejemplo de cómo atiende el negocio. */
 export async function aprenderRespuestaDueno(clave: string, pregunta: string, respuesta: string): Promise<void> {
   const ag = await buscarAgente(clave);
@@ -237,10 +345,40 @@ export async function aprenderRespuestaDueno(clave: string, pregunta: string, re
   const r = String(respuesta || "").trim().slice(0, 350);
   if (p.length < 3 || r.length < 3) return;
   await guardarMemoria(ag, "respuesta_dueno", `Cliente: ${p} → Dueño: ${r}`);
+  // Gemini deja la pregunta y la respuesta como regla reutilizable, sin datos personales.
+  let pregunta2 = p;
+  let respuesta2 = r;
+  try {
+    const motor = await cargarMotorNegocio(ag.negocio_id, ag.owner_id);
+    const salida = await llamarIA(
+      [
+        {
+          role: "system",
+          content:
+            'Conviertes un intercambio real entre un cliente y el dueño de un negocio en una regla reutilizable. Devuelve SOLO un objeto JSON {"pregunta":"...","respuesta":"..."}: la pregunta generalizada y la respuesta del dueño conservando sus precios, políticas y tono. Prohibido incluir nombres, teléfonos, direcciones o datos personales. Si no sirve como regla general devuelve {}.',
+        },
+        { role: "user", content: `Cliente: ${p}\nDueño: ${r}` },
+      ],
+      { uso: "whatsapp", perfil: motor.perfil, llave: motor.llave },
+    );
+    const m = salida.match(/\{[\s\S]*\}/);
+    if (m) {
+      const o = JSON.parse(m[0]) as { pregunta?: unknown; respuesta?: unknown };
+      if (typeof o.pregunta === "string" && typeof o.respuesta === "string" && o.pregunta.trim().length >= 3 && o.respuesta.trim().length >= 3) {
+        pregunta2 = o.pregunta;
+        respuesta2 = o.respuesta;
+      } else if (m[0].replace(/\s/g, "") === "{}") {
+        return;
+      }
+    }
+  } catch {
+    // se guarda tal cual
+  }
+  await guardarConocimiento(ag, { tipo: "respuesta_dueno", pregunta: pregunta2, respuesta: respuesta2, origen: "dueno" });
 }
 
 /** Saca de una conversación terminada pistas generales (dudas frecuentes, objeciones, lo que ayudó a cerrar). */
-async function aprenderPatrones(ag: DuenoMemoria, historial: MensajeCliente[], motor: MotorNegocio): Promise<void> {
+async function aprenderPatrones(ag: DuenoMemoria, historial: MensajeCliente[], motor: MotorNegocio, cerrada = false): Promise<void> {
   const conversacion = historial
     .slice(-16)
     .map((m) => `${m.role === "user" ? "Cliente" : "Agente"}: ${m.content.slice(0, 300)}`)
@@ -267,6 +405,8 @@ async function aprenderPatrones(ag: DuenoMemoria, historial: MensajeCliente[], m
     const t = item.trim();
     if (t.length < 10 || t.length > 200 || /\d{6,}/.test(t)) continue;
     await guardarMemoria(ag, "patron", t);
+    // Venta, cita o lead ganado: la mejor respuesta a la objeción queda como regla del negocio.
+    if (cerrada) await guardarConocimiento(ag, { tipo: "objecion_venta", pregunta: "", respuesta: t, origen: "venta_cerrada" });
   }
 }
 
@@ -584,6 +724,38 @@ export async function responderComoAgente(clave: string, mensajes: MensajeClient
       ? `\nPatrones observados en conversaciones anteriores (son solo pistas para atender mejor; NO son datos del negocio ni sustituyen precios, horarios o políticas):\n${patrones.join("\n")}\n`
       : "");
 
+  // Conocimiento que el agente aprendió solo (internet verificado, respuestas del dueño, ventas cerradas).
+  const ultimoMsg = String(mensajes?.[mensajes.length - 1]?.content ?? "").slice(0, 400);
+  const { data: conocAuto } = await supabaseAdmin
+    .from("agente_conocimiento")
+    .select("tipo,pregunta,respuesta,origen,fuente,verificado_en")
+    .eq("negocio_id", ag.negocio_id)
+    .eq("owner_id", ag.owner_id)
+    .order("veces", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(40);
+  let reglasAuto: ReglaAuto[] = conocAuto ?? [];
+  if (ultimoMsg && REGEX_INTERNET.test(ultimoMsg) && !yaSabe(reglasAuto, ultimoMsg)) {
+    try {
+      const nueva = await investigarYGuardar(ag, ultimoMsg, tipo, motor, esPrueba);
+      if (nueva) reglasAuto = [nueva, ...reglasAuto];
+    } catch {
+      // sin internet el agente sigue con lo que ya sabe
+    }
+  }
+  const lineasAuto = reglasAuto.slice(0, 25).map((r) => {
+    const etiqueta =
+      r.origen === "auto_internet"
+        ? `Verificado en internet${r.fuente ? ` — ${r.fuente.slice(0, 120)}` : ""}, ${r.verificado_en.slice(0, 10)}`
+        : r.origen === "dueno"
+          ? "Respuesta real del dueño"
+          : "Lección de venta cerrada";
+    return `- [${etiqueta}] ${r.pregunta ? `${r.pregunta.slice(0, 200)}: ` : ""}${r.respuesta.slice(0, 450)}`;
+  });
+  const autoTxt = lineasAuto.length
+    ? `\nCONOCIMIENTO APRENDIDO AUTOMÁTICAMENTE (úsalo cuando se parezca la pregunta; lo verificado en internet vale para leyes, tarifas y datos técnicos, pero los precios, horarios y políticas del negocio mandan siempre):\n${lineasAuto.join("\n")}\n`
+    : "";
+
   const autoSector = generarConfiguracionAutomaticaSector(tipo, cfg?.nombre);
   const personalidad = (esPrueba ? autoSector.personalidad : ag.personalidad || autoSector.personalidad).slice(0, 160);
   const objetivo = (esPrueba ? autoSector.objetivo_cierre : ag.objetivo_cierre || autoSector.objetivo_cierre).slice(0, 180);
@@ -621,7 +793,7 @@ ${perfil}
 
 Catálogo de productos y servicios con precios:
 ${catalogo}
-${domicilio ? `\n${domicilio}\n` : ""}${conocimientoSector}${cerebroTxt}${aprendido}${extra ? `\nInstrucciones propias del dueño (tienen prioridad en el estilo y las políticas):\n${extra}\n` : ""}
+${domicilio ? `\n${domicilio}\n` : ""}${conocimientoSector}${cerebroTxt}${aprendido}${autoTxt}${extra ? `\nInstrucciones propias del dueño (tienen prioridad en el estilo y las políticas):\n${extra}\n` : ""}
 Reglas:
 - No inventes precios, horarios, direcciones, productos, promociones, descuentos ni disponibilidad. Si un dato dice NO CONFIGURADO o no está arriba, di que lo confirma una persona del equipo y usa [[ASESOR]] si es necesario para cerrar.
 - No prometas lo que no puedas cumplir (tiempos exactos, garantías, descuentos) si no está en los datos.
@@ -686,7 +858,8 @@ Reglas:
   // Aprende de la conversación al terminar (pasa a una persona) o cada cierto número de mensajes.
   if (!esPrueba && (escalar || (historial.length >= 8 && historial.length % 8 < 2))) {
     try {
-      await aprenderPatrones(ag, [...historial, { role: "assistant", content: limpio }], motor);
+      const cerrada = Boolean(lead && lead.temperatura === "CALIENTE" && Number(lead.puntaje) >= 70);
+      await aprenderPatrones(ag, [...historial, { role: "assistant", content: limpio }], motor, cerrada);
     } catch (e) {
       console.error("Agente: no se pudo aprender de la conversación", String(e instanceof Error ? e.message : "error").replace(/\d{7,15}/g, "***"));
     }

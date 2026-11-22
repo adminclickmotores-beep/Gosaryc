@@ -172,6 +172,12 @@ export const MANUAL_FIJO = `
 - Fundación: donantes, donaciones en dinero o especie con certificado imprimible, proyectos con ejecución presupuestal (no deja gastar más del presupuesto), beneficiarios y voluntarios con certificado.
 - Iglesia: miembros y familias, ministerios, diezmos, ofrendas, primicias y eventos separados por fondo (un egreso no puede superar el saldo del fondo), obra social y cierre por culto o periodo que bloquea más movimientos.
 - Parqueadero: turnos por hora y abonados mensuales con vigencia, aviso por WhatsApp y cobro a Caja con recibo.
+
+# 20. APRENDIZAJE AUTOMÁTICO E INTERNET EN TIEMPO REAL
+- El agente de WhatsApp verifica en internet (Google Search Grounding con Gemini) leyes, tarifas y fichas técnicas cuando el cliente pregunta algo que no está en el catálogo, y guarda el hallazgo con su fuente y fecha para no repetir la búsqueda.
+- Aprende solo de las respuestas reales del dueño a sus clientes y de las conversaciones que terminan en pedido, cita o cliente ganado (mejores respuestas a objeciones). Los cambios en productos, precios, servicios y vehículos los ve el agente al instante.
+- En WhatsApp IA hay un visor con el contador de reglas aprendidas (de internet, del dueño y de ventas cerradas); solo se pueden quitar las que no se quieran.
+- Normativa de Colombia (UVT, SMMLV, auxilio de transporte, recargos, PILA, Decreto 1072, Res. 0312, 1843, 4272, Ley 675, SIMIT) se verifica sola cada 7 días; Nómina, Contabilidad y Salud/SST muestran «Normativa Colombia verificada en internet • Última actualización» con botón «Verificar ahora». No cambia las fórmulas ya configuradas.
 `;
 
 const RUTAS_INSTRUCTIVO = [

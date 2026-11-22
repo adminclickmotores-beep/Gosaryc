@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Suspense, lazy, type ReactElement } from "react";
 import { Loader2, Lock } from "lucide-react";
 import { ModuloOperativo } from "@/components/modulos/ModuloOperativo";
+import { BadgeNormativa } from "@/components/fiscal/BadgeNormativa";
 import { InventarioVehiculos } from "@/components/vehiculos/InventarioVehiculos";
 import { SeparacionesVehiculos } from "@/components/vehiculos/SeparacionesVehiculos";
 import { ComprasVehiculos } from "@/components/vehiculos/ComprasVehiculos";
@@ -180,7 +181,7 @@ function ModuloPage() {
   if (id === "opt_formulas") return <FormulasOptica />;
   if (id === "eve_eventos") return <EventosSalon />;
   if (id === "lav_ordenes") return <LavanderiaOrdenes />;
-  if (id === "sst_empresas") return (<Suspense fallback={<CargaModulo />}><EmpresasSSTLazy /></Suspense>);
+  if (id === "sst_empresas") return (<div className="space-y-3"><BadgeNormativa /><Suspense fallback={<CargaModulo />}><EmpresasSSTLazy /></Suspense></div>);
   if (id === "sst_evaluaciones") return (<Suspense fallback={<CargaModulo />}><TrabajadoresEvaluacionesLazy /></Suspense>);
   if (id === "sst_profesiograma") return (<Suspense fallback={<CargaModulo />}><ProfesiogramaMatrizLazy /></Suspense>);
   if (id === "sst_estandares") return (<Suspense fallback={<CargaModulo />}><EstandaresSSTLazy /></Suspense>);
@@ -191,7 +192,7 @@ function ModuloPage() {
   if (id === "sst_alertas") return (<Suspense fallback={<CargaModulo />}><AlertasSSTLazy /></Suspense>);
   if (id === "sst_psicosocial") return (<Suspense fallback={<CargaModulo />}><BateriaPsicosocialLazy /></Suspense>);
   if (id === "sst_restricciones") return (<Suspense fallback={<CargaModulo />}><RestriccionesPlanSSTLazy /></Suspense>);
-  if (id === "sst_normativa") return (<Suspense fallback={<CargaModulo />}><NormativaSSTLazy /></Suspense>);
+  if (id === "sst_normativa") return (<div className="space-y-3"><BadgeNormativa /><Suspense fallback={<CargaModulo />}><NormativaSSTLazy /></Suspense></div>);
   if (id === "prof_casos") return <ProfesionalCasos />;
   if (id === "tec_proyectos") return <TecnologiaProyectos />;
   if (id === "pap_encargos") return <PapeleriaEncargos />;

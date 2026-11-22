@@ -7,6 +7,7 @@ import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 import { CargaModulo } from "@/components/carga/CargaModulo";
+import { BadgeNormativa } from "@/components/fiscal/BadgeNormativa";
 import { LIMITE_CONSULTA } from "@/lib/rendimiento";
 
 // Contabilidad pesa (libros + Contador Pro): se carga solo cuando se ve.
@@ -117,6 +118,8 @@ function FinanzasPage() {
           </GlassPanel>
         </div>
       )}
+
+      <BadgeNormativa />
 
       <Suspense fallback={<CargaModulo texto="Cargando contabilidad…" />}>
         <Contabilidad />

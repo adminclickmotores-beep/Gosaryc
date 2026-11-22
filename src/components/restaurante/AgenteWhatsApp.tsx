@@ -8,6 +8,7 @@ import { MetaCloudConfig } from "@/components/restaurante/MetaCloudConfig";
 import { SelectorMotorIA } from "@/components/ia/SelectorMotorIA";
 import { AvisosWhatsApp } from "@/components/restaurante/AvisosWhatsApp";
 import { ComandosWhatsApp } from "@/components/restaurante/ComandosWhatsApp";
+import { AprendizajeAutomatico } from "@/components/restaurante/AprendizajeAutomatico";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
@@ -313,6 +314,8 @@ function AgenteWhatsAppReal() {
       <AvisosWhatsApp />
 
       <ComandosWhatsApp />
+
+      <AprendizajeAutomatico />
 
       <GlassPanel className="space-y-5 p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
