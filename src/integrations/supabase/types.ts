@@ -5284,6 +5284,39 @@ export type Database = {
         }
         Relationships: []
       }
+      integraciones_negocio: {
+        Row: {
+          activo: boolean
+          created_at: string
+          id: string
+          owner_id: string
+          proveedor: string
+          token: string | null
+          updated_at: string
+          url_api: string | null
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string
+          id?: string
+          owner_id?: string
+          proveedor: string
+          token?: string | null
+          updated_at?: string
+          url_api?: string | null
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string
+          id?: string
+          owner_id?: string
+          proveedor?: string
+          token?: string | null
+          updated_at?: string
+          url_api?: string | null
+        }
+        Relationships: []
+      }
       secop_perfiles: {
         Row: {
           activo: boolean

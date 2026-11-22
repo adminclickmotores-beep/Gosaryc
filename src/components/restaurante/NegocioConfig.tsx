@@ -147,6 +147,7 @@ const AJUSTES: Record<string, Partial<Record<keyof Form, Ajuste>>> = {
 };
 
 import { SecopInterruptor } from "@/components/secop/SecopRadar";
+import { IntegracionesExternas } from "@/components/integraciones/IntegracionesExternas";
 
 export function NegocioConfig() {
   const { negocio, recargar } = useNegocio();
@@ -589,6 +590,7 @@ export function NegocioConfig() {
     <AgenteWhatsApp />
     <MenuQR />
     <SecopInterruptor />
+    <IntegracionesExternas />
     <SucursalesTraslados />
     <RespaldoTotal />
     </div>

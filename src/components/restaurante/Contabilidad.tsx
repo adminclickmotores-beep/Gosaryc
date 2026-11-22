@@ -64,6 +64,8 @@ const num = (s: string) => {
   return Number.isFinite(v) && v > 0 ? v : 0;
 };
 
+import { TrmDelDia } from "@/components/integraciones/IntegracionesExternas";
+
 export function Contabilidad() {
   const [cuentas, setCuentas] = useState<Cuenta[]>([]);
   const [filas, setFilas] = useState<Asiento[]>([]);
@@ -321,6 +323,7 @@ export function Contabilidad() {
       <h2 className="flex items-center gap-2 font-display text-2xl text-foreground">
         <BookOpen className="h-6 w-6 text-primary" /> Registro contable
       </h2>
+      <TrmDelDia />
 
       {/* Filtros */}
       <GlassPanel className="grid grid-cols-2 gap-3 p-4 lg:grid-cols-4">

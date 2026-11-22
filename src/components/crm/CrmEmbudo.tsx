@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Json, Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
+import { ModoRiesgo } from "@/components/integraciones/IntegracionesExternas";
 import { useAuth } from "@/contexts/AuthContext";
 import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 import { limpiarTexto, limpiarTelefono } from "@/lib/validacion-publica";
@@ -1947,6 +1948,7 @@ function Panel360({
             );
             return (
               <div className="space-y-3">
+                <ModoRiesgo />
                 {campo("Ingresos mensuales del cliente (COP)", preIngresos, setPreIngresos)}
                 {campo("Obligaciones / deudas mensuales actuales (COP)", preDeudas, setPreDeudas)}
                 {campo("Cuota inicial + Retoma disponible (COP)", preInicial, setPreInicial)}
