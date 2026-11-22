@@ -9290,6 +9290,7 @@ export type Database = {
         Returns: Json
       }
       aprobar_solicitud_licencia: { Args: { p_id: string; p_tipo: string }; Returns: string }
+      iniciar_prueba_equipo: { Args: { p_equipo: string; p_cliente?: string }; Returns: Json }
       aprobar_solicitud_pase_dias: { Args: { p_id: string; p_dias?: number }; Returns: string }
       aprobar_pago_licencia: { Args: { p_id: string }; Returns: Json }
       aprobar_pase_dias_licencia: { Args: { p_id: string }; Returns: Json }

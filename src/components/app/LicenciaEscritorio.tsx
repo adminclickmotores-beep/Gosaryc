@@ -57,6 +57,16 @@ async function consultarLicencia(codigo: string, equipo: string): Promise<Result
   return { valida: d.valida === true, motivo: d.motivo ?? "no_existe" };
 }
 
+// Si la persona ya inició sesión en el instalador, se le crea la prueba de 30 días sin aprobación manual.
+async function pruebaAutomatica(equipo: string): Promise<string | null> {
+  const { data: sesion } = await supabase.auth.getSession();
+  if (!sesion.session) return null;
+  const { data, error } = await supabase.rpc("iniciar_prueba_equipo", { p_equipo: equipo });
+  if (error || !data) return null;
+  const d = data as { estado?: string; codigo?: string };
+  return d.estado === "creada" && d.codigo ? d.codigo : null;
+}
+
 async function consultarEquipo(equipo: string): Promise<{ estado: string; codigo?: string }> {
   const { data, error } = await supabase.rpc("consultar_licencia_equipo", { p_equipo: equipo });
   if (error || !data) return { estado: "sin_conexion" };
@@ -120,10 +130,16 @@ export function LicenciaEscritorio() {
         if (r.estado === "aprobada" && r.codigo) {
           guardado = r.codigo;
         } else {
-          if (r.estado === "sin_conexion") setError(MENSAJES.sin_conexion);
-          setSolicitud(r.estado === "pendiente" ? "pendiente" : r.estado === "rechazada" ? "rechazada" : "ninguna");
-          setEstado("bloqueada");
-          return;
+          const automatica = r.estado === "sin_conexion" ? null : await pruebaAutomatica(info.id);
+          if (!vivo) return;
+          if (automatica) {
+            guardado = automatica;
+          } else {
+            if (r.estado === "sin_conexion") setError(MENSAJES.sin_conexion);
+            setSolicitud(r.estado === "pendiente" ? "pendiente" : r.estado === "rechazada" ? "rechazada" : "ninguna");
+            setEstado("bloqueada");
+            return;
+          }
         }
       }
 
