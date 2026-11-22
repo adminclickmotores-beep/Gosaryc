@@ -17,6 +17,7 @@ import { ResumenCierreWhatsApp } from "@/components/restaurante/Reportes";
 import { ThemeToggle } from "@/components/ui-custom/ThemeToggle";
 import { SelectorMotorIA } from "@/components/ia/SelectorMotorIA";
 import { BRAND } from "@/lib/brand";
+import { CambiarNegocioEquipo } from "@/components/app/SelectorNegocioInstalacion";
 import { autoComandaActivada, estadoApiLocal, fijarAutoComanda, fijarImpresionDirecta, fijarImpresoraCaja, fijarImpresoraCocina, guardarConfigImpresoras, impresionDirectaActivada, imprimirTirillaLocal, fijarAnchoPapel, leerAnchoPapel, imprimirTirillaPruebaNavegador, type AnchoPapel, leerImpresoraCaja, leerImpresoraCocina } from "@/lib/impresion-local";
 
 export const Route = createFileRoute("/_app/settings")({
@@ -155,6 +156,7 @@ function Settings() {
         <div className="space-y-6">
           <PublicUrlCard orgId={orgId} />
           <TarjetaImpresion />
+          <CambiarNegocioEquipo />
           <ResumenCierreWhatsApp />
           <SelectorMotorIA />
         </div>

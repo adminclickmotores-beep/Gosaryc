@@ -186,6 +186,27 @@ function codigoEquipo() {
   return hash.slice(0, 16).toUpperCase().match(/.{4}/g).join("-");
 }
 
+// Perfil de negocio del equipo (config-negocio.json en la carpeta de datos de la app).
+const archivoPerfil = () => path.join(app.getPath("userData"), "config-negocio.json");
+ipcMain.handle("gosaryc:perfil-leer", () => {
+  try {
+    const p = JSON.parse(fs.readFileSync(archivoPerfil(), "utf8"));
+    return typeof p.negocio === "string" && p.negocio ? p.negocio : null;
+  } catch {
+    return null;
+  }
+});
+ipcMain.handle("gosaryc:perfil-guardar", (_e, perfil) => {
+  try {
+    const limpio = String(perfil || "").replace(/[^a-z0-9_]/gi, "").slice(0, 40);
+    if (!limpio) return false;
+    fs.writeFileSync(archivoPerfil(), JSON.stringify({ negocio: limpio, actualizado: new Date().toISOString() }, null, 2));
+    return true;
+  } catch {
+    return false;
+  }
+});
+
 ipcMain.handle("gosaryc:id-equipo", () => codigoEquipo());
 ipcMain.handle("gosaryc:info-equipo", () => ({
   id: codigoEquipo(),

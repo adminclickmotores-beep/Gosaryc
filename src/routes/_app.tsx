@@ -30,6 +30,8 @@ import { EstadoSinConexion } from "@/components/app/EstadoSinConexion";
 import { BarraDemoMemoria } from "@/components/app/BarraDemoMemoria";
 import { LicenciaNegocio } from "@/components/app/LicenciaNegocio";
 import { RespaldoTotal } from "@/components/negocio/RespaldoTotal";
+import { SelectorNegocioInstalacion } from "@/components/app/SelectorNegocioInstalacion";
+import { EVENTO_PERFIL, PERFIL_MULTI, esAppInstalada, leerPerfilEquipo } from "@/lib/perfil-equipo";
 import { evaluarVigenciaLicencia, guardarTokenLicenciaOffline, leerTokenLicenciaOffline } from "@/lib/licencia-offline";
 import { BRAND } from "@/lib/brand";
 import { useNegocio } from "@/hooks/use-negocio";
@@ -61,7 +63,24 @@ function AppShell() {
   const completa = (loc.search as Record<string, unknown> | undefined)?.ventana === "completa";
   const pathnameRef = useRef(loc.pathname);
   const { negocio, recargar: recargarNegocio } = useNegocio();
-  const tipoNegocio = resolverTipoNegocio(negocio?.tipo_negocio);
+  // Perfil local del equipo (instalador/APK): solo se cargan los módulos del negocio elegido.
+  const [perfilEquipo, setPerfilEquipo] = useState<string | null>(null);
+  const [pedirPerfil, setPedirPerfil] = useState(false);
+  useEffect(() => {
+    let vivo = true;
+    void leerPerfilEquipo().then((p) => {
+      if (!vivo) return;
+      setPerfilEquipo(p);
+      setPedirPerfil(!p && esAppInstalada());
+    });
+    const alCambiar = (e: Event) => setPerfilEquipo((e as CustomEvent<string>).detail ?? null);
+    window.addEventListener(EVENTO_PERFIL, alCambiar);
+    return () => {
+      vivo = false;
+      window.removeEventListener(EVENTO_PERFIL, alCambiar);
+    };
+  }, []);
+  const tipoNegocio = resolverTipoNegocio(perfilEquipo && perfilEquipo !== PERFIL_MULTI ? perfilEquipo : negocio?.tipo_negocio);
   const { esAdmin, puede, cargando: cargandoPermisos, error: errorPermisos, recargar: recargarPermisos } = usePermisos();
   useAnunciarPresencia(user?.id, negocio?.nombre ?? "Sin nombre", tipoNegocio.etiqueta);
   const [bloqueo, setBloqueo] = useState<"suspendido" | "vencido" | null>(null);
@@ -313,6 +332,7 @@ function AppShell() {
   return (
     <div className="relative min-h-screen bg-[color:var(--color-ink)] text-foreground">
       <GradientMesh />
+      {pedirPerfil && <SelectorNegocioInstalacion onElegido={() => setPedirPerfil(false)} />}
       <div className="relative z-10 flex min-h-screen">
         {/* Sidebar (desktop) — sticky + collapsible */}
         <aside

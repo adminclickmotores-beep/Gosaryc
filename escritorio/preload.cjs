@@ -18,5 +18,7 @@ contextBridge.exposeInMainWorld("gosarycEscritorio", {
     ipcRenderer.on("gosaryc:nueva-version", listener);
     return () => ipcRenderer.removeListener("gosaryc:nueva-version", listener);
   },
+  leerPerfil: () => ipcRenderer.invoke("gosaryc:perfil-leer"),
+  guardarPerfil: (perfil) => ipcRenderer.invoke("gosaryc:perfil-guardar", String(perfil || "")),
   instalarActualizacion: () => ipcRenderer.invoke("gosaryc:instalar-ahora"),
 });
