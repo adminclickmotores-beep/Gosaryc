@@ -118,6 +118,11 @@ const VACIO: DatosEmpresa = { razonSocial: "", estado: "", ciiu: "", ciudad: "",
 /** Conjunto de datos abiertos de matrículas mercantiles (RUES) en datos.gov.co. */
 const URL_DATOS_ABIERTOS = "https://www.datos.gov.co/resource/c82u-588k.json";
 
+/** Otras bases públicas (datos.gov.co) que se cruzan por NIT. */
+const FUENTES_EXTRA: { titulo: string; url: string; campo: string }[] = [
+  { titulo: "Contratos con el Estado (SECOP II)", url: "https://www.datos.gov.co/resource/p6dx-8zbt.json", campo: "documento_proveedor" },
+];
+
 const PORTALES: { nombre: string; url: string }[] = [
   { nombre: "Consulta RUT DIAN", url: "https://muisca.dian.gov.co/WebRutMuisca/DefConsultaEstadoRUT.faces" },
   { nombre: "RUES", url: "https://www.rues.org.co/" },
@@ -168,6 +173,7 @@ export function ConsultorEmpresaNIT({ modo, valor = "", cotizarSST = false }: Pr
   const [guardando, setGuardando] = useState(false);
   const refArchivo = useRef<HTMLInputElement | null>(null);
   const [filaRues, setFilaRues] = useState<Record<string, unknown> | null>(null);
+  const [fuentesExtra, setFuentesExtra] = useState<{ titulo: string; filas: Record<string, unknown>[] }[]>([]);
 
   if (modo === "rapido") {
     const r = analizarNIT(valor);
@@ -192,6 +198,24 @@ export function ConsultorEmpresaNIT({ modo, valor = "", cotizarSST = false }: Pr
     }
     setConsultandoAbiertos(true);
     setFilaRues(null);
+    setFuentesExtra([]);
+    if (r) {
+      // Fuentes adicionales de Datos Abiertos: contratos con el Estado (SECOP II). Si una no responde, se omite sin error.
+      const extras = FUENTES_EXTRA.map(async (fu) => {
+        try {
+          const ctrl = new AbortController();
+          const t = setTimeout(() => ctrl.abort(), 8000);
+          const resp = await fetch(`${fu.url}?${fu.campo}=${encodeURIComponent(r.base)}&$limit=5`, { signal: ctrl.signal });
+          clearTimeout(t);
+          if (!resp.ok) return null;
+          const filas = (await resp.json()) as Record<string, unknown>[];
+          return filas.length ? { titulo: fu.titulo, filas } : null;
+        } catch {
+          return null;
+        }
+      });
+      void Promise.all(extras).then((res) => setFuentesExtra(res.filter((x): x is { titulo: string; filas: Record<string, unknown>[] } => x !== null)));
+    }
     try {
       const url = `${URL_DATOS_ABIERTOS}?$q=${encodeURIComponent(termino)}&$limit=1`;
       const ctrl = new AbortController();
@@ -424,6 +448,26 @@ export function ConsultorEmpresaNIT({ modo, valor = "", cotizarSST = false }: Pr
           </dl>
         </details>
       )}
+      {fuentesExtra.map((fu) => (
+        <details key={fu.titulo} className="mt-2 rounded-lg border border-glass-border bg-glass/40 px-3 py-2 text-xs">
+          <summary className="cursor-pointer font-medium">{fu.titulo}: {fu.filas.length} registro(s) encontrados</summary>
+          <div className="mt-2 space-y-2">
+            {fu.filas.map((f, i) => (
+              <dl key={i} className="grid gap-x-4 gap-y-1 rounded border border-glass-border p-2 sm:grid-cols-2">
+                {Object.entries(f)
+                  .filter(([, v]) => typeof v === "string" || typeof v === "number")
+                  .slice(0, 16)
+                  .map(([k, v]) => (
+                    <div key={k} className="min-w-0 break-words">
+                      <dt className="text-muted-foreground">{k.replace(/_/g, " ")}</dt>
+                      <dd>{String(v)}</dd>
+                    </div>
+                  ))}
+              </dl>
+            ))}
+          </div>
+        </details>
+      ))}
       {clasif && (
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <ClasificacionEmpleados cantidad={datos.empleados} />
