@@ -112,7 +112,7 @@ export async function rastrearLicitaciones(opts: {
   const ids = [...unicas.keys()];
   let existentes = new Set<string>();
   if (ids.length > 0) {
-    const { data } = await supabase.from("secop_oportunidades").select("proceso_id").in("proceso_id", ids);
+    const { data } = await supabase.from("secop_oportunidades").select("proceso_id").eq("owner_id", ownerId).in("proceso_id", ids);
     existentes = new Set((data ?? []).map((x) => x.proceso_id));
   }
   let nuevas = 0;
@@ -140,19 +140,7 @@ export async function rastrearLicitaciones(opts: {
     if (error) continue;
     nuevas += 1;
 
-    // Tarjeta caliente en el CRM (si falla, la oportunidad igual queda guardada).
-    await supabase.from("crm_leads").insert({
-      negocio_id: negocioId,
-      owner_id: ownerId,
-      nombre: entidad.slice(0, 80) || "Entidad pública",
-      telefono: "",
-      interes: objeto.slice(0, 300),
-      valor_estimado: cuantia,
-      canal_origen: "SECOP II",
-      temperatura: "Caliente",
-      datos_extra: { url_proceso: url, fecha_cierre: cierre, proceso_id: id, origen: "SECOP II" },
-      atendido_por_humano: true,
-    });
+    // Las licitaciones viven solo en el Radar de Licitaciones; nunca se mezclan con el CRM.
 
     if (perfil.notificar_whatsapp && telefonoAdmin) {
       const cop = new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(cuantia);

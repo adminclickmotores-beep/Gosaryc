@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, GraduationCap, LifeBuoy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { GradientMesh } from "@/components/ui-custom/GradientMesh";
 import { ThemeToggle } from "@/components/ui-custom/ThemeToggle";
@@ -84,6 +85,29 @@ function AppShell() {
   }, [recargarNegocio]);
   const crmVisible = CRM_AUTOMATICO.includes(tipoNegocio.clave) || crmManual;
   const secopVisible = SECOP_AUTOMATICO.includes(tipoNegocio.clave) || negocio?.secop_activo === true;
+  // Aviso cuando hay licitaciones nuevas en el Radar (solo negocios con el radar activo).
+  const ownerSecop = negocio?.owner_id ?? null;
+  useEffect(() => {
+    if (!secopVisible || !ownerSecop) return;
+    let cancelado = false;
+    void supabase
+      .from("secop_oportunidades")
+      .select("id", { count: "exact", head: true })
+      .eq("owner_id", ownerSecop)
+      .eq("estado_interno", "Nueva")
+      .then(({ count }) => {
+        if (cancelado || !count || count < 1) return;
+        const clave = `secop_aviso_${ownerSecop}`;
+        if (window.sessionStorage.getItem(clave) === String(count)) return;
+        window.sessionStorage.setItem(clave, String(count));
+        toast.info(`Tienes ${count} licitación(es) nueva(s) en el Radar de Licitaciones`, {
+          action: { label: "Ver", onClick: () => nav({ to: "/modulos/$id", params: { id: "secop_radar" } }) },
+        });
+      });
+    return () => {
+      cancelado = true;
+    };
+  }, [secopVisible, ownerSecop, nav]);
   const modulosVisibles = tipoNegocio.modulos.filter(
     (m) => (m.id !== MODULO_CRM.id || crmVisible) && (m.id !== MODULO_SECOP.id || secopVisible),
   );

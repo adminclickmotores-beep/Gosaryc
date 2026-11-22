@@ -240,6 +240,7 @@ export function CrmEmbudo() {
         .from("crm_leads")
         .select("*")
         .eq("negocio_id", negocio.id)
+        .neq("canal_origen", "SECOP II")
         .order("numero_turno", { ascending: true })
         .limit(500),
       supabase

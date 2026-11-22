@@ -59,17 +59,19 @@ export function SecopRadar() {
   };
 
   const cargarOps = useCallback(async () => {
+    if (!negocio?.owner_id) return;
     const { data } = await supabase
       .from("secop_oportunidades")
       .select("*")
+      .eq("owner_id", negocio.owner_id)
       .order("fecha_cierre", { ascending: true, nullsFirst: false })
       .limit(200);
     setOps(data ?? []);
-  }, []);
+  }, [negocio?.owner_id]);
 
   const iniciar = useCallback(async () => {
     if (!negocio) return;
-    const { data } = await supabase.from("secop_perfiles").select("*").limit(1);
+    const { data } = await supabase.from("secop_perfiles").select("*").eq("owner_id", negocio.owner_id ?? "").limit(1);
     if (data && data[0]) {
       aplicarPerfil(data[0]);
     } else {
@@ -109,7 +111,7 @@ export function SecopRadar() {
         else if (!silencioso || r.nuevas > 0)
           toast.success(r.nuevas > 0 ? `${r.nuevas} licitación(es) nueva(s) encontrada(s)` : `Sin licitaciones nuevas (${r.revisadas} revisadas)`);
         await cargarOps();
-        const { data } = await supabase.from("secop_perfiles").select("*").limit(1);
+        const { data } = await supabase.from("secop_perfiles").select("*").eq("owner_id", negocio.owner_id ?? "").limit(1);
         if (data && data[0]) setPerfil(data[0]);
       } catch {
         toast.error("No se pudo consultar SECOP II. Intenta de nuevo en un momento.");
