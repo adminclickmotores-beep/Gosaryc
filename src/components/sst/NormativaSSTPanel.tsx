@@ -5,7 +5,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { Cargando, Encabezado, boton, botonSec, campo } from "@/components/comercio/ComercioModulos";
 import { exportarExcel } from "@/lib/exportes";
-import { SECTORIALES_SST } from "@/lib/sst-normativa";
+import { SECTORIALES_SST, FUENTES_OFICIALES_SST } from "@/lib/sst-normativa";
 import { sstNormativaActualizar } from "@/lib/sst-normativa.functions";
 
 type Norma = Tables<"sst_normas">;
@@ -88,6 +88,15 @@ export function NormativaSSTPanel() {
           <button type="button" className={botonSec} disabled={propiaCodigo.trim().length < 3 || propiaTitulo.trim().length < 4} onClick={() => {
             void agregar({ codigo: propiaCodigo.trim().toUpperCase(), titulo: propiaTitulo.trim(), tema: "Sectorial", resumen: "Norma sectorial agregada por el usuario.", fuente: "Agregada manualmente" }).then(() => { setPropiaCodigo(""); setPropiaTitulo(""); });
           }}>Agregar otra</button>
+        </div>
+      </div>
+
+      <div className="mt-4 rounded-xl border border-glass-border p-3">
+        <p className="mb-2 text-sm font-semibold">Verifica actualizaciones en los sitios oficiales</p>
+        <div className="flex flex-wrap gap-2">
+          {FUENTES_OFICIALES_SST.map((f) => (
+            <a key={f.url} href={f.url} target="_blank" rel="noopener noreferrer" className="rounded-full border border-glass-border px-3 py-1 text-xs text-primary hover:bg-primary/10">{f.nombre}</a>
+          ))}
         </div>
       </div>
 
