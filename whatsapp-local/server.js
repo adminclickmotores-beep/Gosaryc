@@ -337,11 +337,87 @@ function detectarCanal(msg) {
   return "WhatsApp Directo";
 }
 
+// ---------- Modo Comandos Operativos (solo números autorizados por el dueño) ----------
+let numerosComando = new Set();
+const colaComandos = new Map();
+const ESPERA_COMANDO_MS = 6000;
+
+function esNumeroComando(jid) {
+  if (numerosComando.size === 0) return false;
+  const n = String(jid || "").replace(/@c\.us$/, "").replace(/\D/g, "").slice(-10);
+  return n.length >= 7 && numerosComando.has(n);
+}
+
+async function recogerComando(linea, jid, msg) {
+  let item = colaComandos.get(jid);
+  if (!item) {
+    item = { textos: [], imagenes: [], audios: [], timer: null, nombre: "" };
+    colaComandos.set(jid, item);
+  }
+  try { if (msg._data && msg._data.notifyName) item.nombre = String(msg._data.notifyName).slice(0, 60); } catch (_) {}
+  if (msg.body && (msg.type === "chat" || msg.type === "image")) item.textos.push(String(msg.body));
+  try {
+    if (msg.hasMedia && (msg.type === "image" || msg.type === "ptt" || msg.type === "audio")) {
+      const media = await msg.downloadMedia();
+      if (media && media.data) {
+        const mime = String(media.mimetype || "");
+        if (mime.startsWith("image/") && item.imagenes.length < 6) item.imagenes.push({ mime, base64: media.data });
+        else if (mime.startsWith("audio/") && item.audios.length < 2) item.audios.push({ mime, base64: media.data });
+      }
+    }
+  } catch (e) {
+    console.log(`[comandos] No se pudo descargar el archivo adjunto: ${e.message}`);
+  }
+  clearTimeout(item.timer);
+  item.timer = setTimeout(() => void enviarComando(linea, jid), ESPERA_COMANDO_MS);
+}
+
+async function enviarComando(linea, jid) {
+  const item = colaComandos.get(jid);
+  colaComandos.delete(jid);
+  const b = leerPuente();
+  if (!item || !b || !b.bridge_secret || !b.business_id) return;
+  const r = await llamarPuenteNube(
+    {
+      accion: "comando",
+      business_id: b.business_id,
+      telefono: String(jid).replace(/@c\.us$/, ""),
+      nombre: item.nombre,
+      texto: item.textos.join("\n"),
+      imagenes: item.imagenes,
+      audios: item.audios,
+    },
+    b.bridge_secret,
+  );
+  if (!r || !r.ok || !r.data || !r.data.ok) {
+    try { await linea.cliente.sendMessage(jid, "No pude procesar tu comando ahora (sin conexión con el sistema). Intenta de nuevo en un momento."); } catch (_) {}
+    return;
+  }
+  if (r.data.modo !== "comando" || !r.data.respuesta) {
+    // No era una orden operativa: se atiende como un cliente normal.
+    const chat = linea.chats.get(jid) || { historial: [], pausadoHasta: 0, ocupado: false, timer: null, avisoMedia: 0, nombre: String(jid).replace(/@c\.us$/, ""), noLeidos: 0, visto: "" };
+    linea.chats.set(jid, chat);
+    chat.historial.push({ role: "user", content: item.textos.join("\n") || "[mensaje sin texto]" });
+    if (chat.historial.length > 40) chat.historial.splice(0, chat.historial.length - 40);
+    clearTimeout(chat.timer);
+    chat.timer = setTimeout(() => atender(linea, jid, chat), 500);
+    return;
+  }
+  try {
+    const env = await linea.cliente.sendMessage(jid, String(r.data.respuesta));
+    if (env && env.id && env.id._serialized) linea.propios.add(env.id._serialized);
+    contarMensajeHoy();
+  } catch (e) {
+    console.log(`[comandos] No se pudo responder: ${e.message}`);
+  }
+}
+
 function alMensaje(linea, msg) {
   if (!linea.agente) return;
   if (msg.fromMe || msg.isStatus || msg.from === "status@broadcast" || msg.from.endsWith("@g.us")) return;
   if (yaProcesado(msg.id && msg.id._serialized)) return;
   const jid = msg.from;
+  if (esNumeroComando(jid)) { void recogerComando(linea, jid, msg); return; }
   const chat = linea.chats.get(jid) || { historial: [], pausadoHasta: 0, ocupado: false, timer: null, avisoMedia: 0, nombre: String(jid).replace(/@c\.us$/, ""), noLeidos: 0, visto: "" };
   linea.chats.set(jid, chat);
   // Canal de origen: solo se fija con el primer mensaje del contacto.
@@ -910,6 +986,10 @@ async function ejecutarCicloPuente() {
       b.bridge_secret,
     );
     if (!r || !r.ok || !r.data || !r.data.ok) return;
+
+    if (Array.isArray(r.data.numeros_comandos)) {
+      numerosComando = new Set(r.data.numeros_comandos.map((x) => String(x).replace(/\D/g, "").slice(-10)).filter((x) => x.length >= 7));
+    }
 
     if (linea && typeof r.data.auto_pilot_200 === "boolean") {
       linea.agente = r.data.auto_pilot_200;

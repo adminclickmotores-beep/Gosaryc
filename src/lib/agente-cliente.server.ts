@@ -153,7 +153,7 @@ async function buscarAgente(clave: string) {
 }
 
 /** Llama a la IA (Gemini si hay llave, si no la IA integrada) y devuelve el texto. */
-async function llamarIA(messages: Array<{ role: string; content: string }>): Promise<string> {
+export async function llamarIA(messages: Array<{ role: string; content: string }>): Promise<string> {
   const proveedores: Array<{ endpoint: string; key: string; model: string }> = [];
   const geminiKey = process.env.GEMINI_API_KEY;
   if (geminiKey) proveedores.push({ endpoint: GEMINI_ENDPOINT, key: geminiKey, model: GEMINI_MODEL });

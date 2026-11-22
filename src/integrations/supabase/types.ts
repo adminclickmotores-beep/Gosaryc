@@ -117,6 +117,90 @@ export type Database = {
           },
         ]
       }
+      whatsapp_comandos_autorizados: {
+        Row: {
+          id: string
+          owner_id: string | null
+          telefono: string
+          nombre: string
+          puede_inventario: boolean
+          puede_facturar: boolean
+          puede_pedidos: boolean
+          puede_reportes: boolean
+          activo: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          owner_id?: string | null
+          telefono: string
+          nombre?: string
+          puede_inventario?: boolean
+          puede_facturar?: boolean
+          puede_pedidos?: boolean
+          puede_reportes?: boolean
+          activo?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          owner_id?: string | null
+          telefono?: string
+          nombre?: string
+          puede_inventario?: boolean
+          puede_facturar?: boolean
+          puede_pedidos?: boolean
+          puede_reportes?: boolean
+          activo?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      whatsapp_comandos_ejecutados: {
+        Row: {
+          id: string
+          owner_id: string | null
+          telefono: string
+          nombre: string
+          accion: string
+          texto_original: string
+          entidades: Json
+          vista_previa: string
+          estado: string
+          resultado: string
+          created_at: string
+          ejecutado_en: string | null
+        }
+        Insert: {
+          id?: string
+          owner_id?: string | null
+          telefono?: string
+          nombre?: string
+          accion?: string
+          texto_original?: string
+          entidades?: Json
+          vista_previa?: string
+          estado?: string
+          resultado?: string
+          created_at?: string
+          ejecutado_en?: string | null
+        }
+        Update: {
+          id?: string
+          owner_id?: string | null
+          telefono?: string
+          nombre?: string
+          accion?: string
+          texto_original?: string
+          entidades?: Json
+          vista_previa?: string
+          estado?: string
+          resultado?: string
+          created_at?: string
+          ejecutado_en?: string | null
+        }
+        Relationships: []
+      }
       whatsapp_outbox: {
         Row: {
           id: string

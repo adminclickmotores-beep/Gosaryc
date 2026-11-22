@@ -134,6 +134,10 @@ export const Route = createFileRoute("/api/public/whatsapp-bridge")({
           ids?: string[];
           telefono?: string;
           resumen?: string;
+          texto?: string;
+          nombre?: string;
+          imagenes?: Array<{ mime?: string; base64?: string }>;
+          audios?: Array<{ mime?: string; base64?: string }>;
         } = {};
         try {
           cuerpo = (await request.json()) as typeof cuerpo;
@@ -304,12 +308,57 @@ export const Route = createFileRoute("/api/public/whatsapp-bridge")({
             .order("created_at", { ascending: true })
             .limit(20);
 
+          // Números autorizados para comandos remotos (últimos 10 dígitos) para que el PC local los distinga de los clientes.
+          const { data: neg } = await supabaseAdmin
+            .from("negocio_config")
+            .select("owner_id")
+            .eq("id", puente.business_id)
+            .maybeSingle();
+          let numerosComandos: string[] = [];
+          if (neg?.owner_id) {
+            const { data: autorizados } = await supabaseAdmin
+              .from("whatsapp_comandos_autorizados")
+              .select("telefono")
+              .eq("owner_id", neg.owner_id)
+              .eq("activo", true)
+              .limit(50);
+            numerosComandos = (autorizados ?? []).map((a) => a.telefono.replace(/\D/g, "").slice(-10)).filter((n) => n.length >= 7);
+          }
+
           return Response.json({
             ok: true,
             auto_pilot_200: puente.auto_pilot_200,
             config_version: puente.config_version,
             outbox: outbox ?? [],
+            numeros_comandos: numerosComandos,
           });
+        }
+
+        if (accion === "comando") {
+          const texto = String(cuerpo.texto ?? "").slice(0, 4000);
+          const telefono = String(cuerpo.telefono ?? "").replace(/[^\d+]/g, "").slice(0, 30);
+          const aArchivos = (lista: Array<{ mime?: string; base64?: string }> | undefined, max: number) =>
+            (Array.isArray(lista) ? lista : [])
+              .filter((a) => typeof a?.base64 === "string" && a.base64.length > 0 && a.base64.length < 8_000_000)
+              .slice(0, max)
+              .map((a) => ({ mime: String(a.mime ?? "application/octet-stream").slice(0, 60), base64: String(a.base64) }));
+          const imagenes = aArchivos(cuerpo.imagenes, 6).filter((a) => a.mime.startsWith("image/"));
+          const audios = aArchivos(cuerpo.audios, 2).filter((a) => a.mime.startsWith("audio/"));
+          if (telefono.length < 7) return Response.json({ error: "Falta el teléfono" }, { status: 400 });
+          try {
+            const { procesarComando } = await import("@/lib/comandos-whatsapp.server");
+            const salida = await procesarComando({
+              negocioId: puente.business_id,
+              telefono,
+              nombreContacto: String(cuerpo.nombre ?? "").slice(0, 80),
+              texto,
+              imagenes,
+              audios,
+            });
+            return Response.json({ ok: true, modo: salida.modo, respuesta: salida.respuesta });
+          } catch {
+            return Response.json({ ok: true, modo: "comando", respuesta: "No pude procesar el comando ahora. Intenta de nuevo en un momento." });
+          }
         }
 
         if (accion === "confirmar_outbox") {

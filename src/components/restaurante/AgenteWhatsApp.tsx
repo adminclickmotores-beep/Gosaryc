@@ -5,6 +5,7 @@ import { ProbadorAgenteVivo } from "@/components/restaurante/ProbadorAgenteVivo"
 import { CerebroEntrenamiento } from "@/components/restaurante/CerebroEntrenamiento";
 import { PuenteWhatsAppLocal } from "@/components/restaurante/PuenteWhatsAppLocal";
 import { AvisosWhatsApp } from "@/components/restaurante/AvisosWhatsApp";
+import { ComandosWhatsApp } from "@/components/restaurante/ComandosWhatsApp";
 import { supabase } from "@/integrations/supabase/client";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
@@ -304,6 +305,8 @@ function AgenteWhatsAppReal() {
       <PuenteWhatsAppLocal apiBase={apiBase} claveLocal={claveLocal} />
 
       <AvisosWhatsApp />
+
+      <ComandosWhatsApp />
 
       <GlassPanel className="space-y-5 p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
