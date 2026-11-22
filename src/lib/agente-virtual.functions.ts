@@ -8,10 +8,7 @@ import { textoMatrizNormativa } from "@/lib/sst-normativa";
 import { CURSO_GOSARYC } from "@/lib/academia-curso";
 import { MANUAL_FIJO, textoInstructivos, textoModulos } from "@/lib/conocimiento-programa";
 
-const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const MODEL = "google/gemini-2.5-flash";
-const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-const GEMINI_MODEL = "gemini-2.5-flash";
+import { chatConRespaldo } from "@/lib/ia-motores";
 
 export type AgenteMensaje = { role: "user" | "assistant"; content: string };
 
@@ -37,8 +34,6 @@ export const runAgenteVirtual = createServerFn({ method: "POST" })
     const geminiKey = process.env.GEMINI_API_KEY;
     const apiKey = geminiKey || process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("El asistente todavía no está configurado.");
-    const endpoint = geminiKey ? GEMINI_ENDPOINT : GATEWAY;
-    const modelo = geminiKey ? GEMINI_MODEL : MODEL;
 
     // Catálogo real del negocio (RLS aplica: solo lo que este usuario puede ver).
     const [{ data: productos }, { data: categorias }] = await Promise.all([
@@ -141,6 +136,7 @@ ${tarifasComoTexto()}
     const { data: memoria } = await context.supabase
       .from("agente_memoria")
       .select("tipo,contenido")
+      .in("tipo", ["respuesta_dueno", "patron", "regla_dueno"])
       .order("veces", { ascending: false })
       .limit(20);
     const aprendido =
@@ -260,33 +256,23 @@ Reglas:
 
     // Proveedores en orden: si la llave de Gemini falla (llave inválida, modelo no disponible),
     // se prueba la IA integrada de Lovable antes de rendirse.
-    const proveedores: Array<{ endpoint: string; key: string; model: string }> = [];
-    if (geminiKey) proveedores.push({ endpoint: GEMINI_ENDPOINT, key: geminiKey, model: GEMINI_MODEL });
-    if (process.env.LOVABLE_API_KEY) proveedores.push({ endpoint: GATEWAY, key: process.env.LOVABLE_API_KEY, model: MODEL });
-    if (proveedores.length === 0) proveedores.push({ endpoint, key: apiKey, model: modelo });
-
+    // Cerebro administrativo: Gemini 2.5 Pro con respaldo automático entre modelos y luego la IA integrada.
     let res: Response | null = null;
     let ultimoEstado = 0;
     let detalle = "";
-    for (const p of proveedores) {
-      try {
-        const r = await fetch(p.endpoint, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${p.key}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ model: p.model, messages }),
-        });
-        if (r.ok) {
-          res = r;
-          break;
-        }
-        ultimoEstado = r.status;
-        const cuerpo = (await r.text()).slice(0, 200).replace(/\s+/g, " ");
-        detalle = `${p.model} → ${r.status} ${cuerpo}`;
+    try {
+      const r = await chatConRespaldo({ geminiKey, lovableKey: process.env.LOVABLE_API_KEY, uso: "admin", body: { messages } });
+      if (r.res?.ok) {
+        res = r.res;
+      } else if (r.res) {
+        ultimoEstado = r.res.status;
+        const cuerpo = (await r.res.text()).slice(0, 200).replace(/\s+/g, " ");
+        detalle = `${r.modelo} → ${r.res.status} ${cuerpo}`;
         console.error("Asistente virtual: proveedor falló", detalle);
-      } catch (e) {
-        detalle = `${p.model} → sin conexión`;
-        console.error("Asistente virtual: error de red", e);
       }
+    } catch (e) {
+      detalle = "sin conexión";
+      console.error("Asistente virtual: error de red", e);
     }
     if (!res) {
       if (ultimoEstado === 429) throw new Error("El asistente está ocupado o llegó al límite gratuito de hoy. Intenta de nuevo en un momento.");

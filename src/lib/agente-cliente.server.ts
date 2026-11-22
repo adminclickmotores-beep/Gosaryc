@@ -5,10 +5,7 @@ import { resolverTipoNegocio } from "@/lib/modulos-negocio";
 import { conversacionesModelo } from "@/lib/agente-conversaciones";
 import { tarifasComoTexto } from "@/lib/tarifas-domicilio";
 
-const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const MODEL = "google/gemini-2.5-flash";
-const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-const GEMINI_MODEL = "gemini-2.5-flash";
+import { chatConRespaldo, normalizarPerfil, type PerfilIA, type UsoIA } from "@/lib/ia-motores";
 
 export type MensajeCliente = { role: "user" | "assistant"; content: string };
 export type LeadAgente = {
@@ -152,29 +149,41 @@ async function buscarAgente(clave: string) {
   return ag;
 }
 
-/** Llama a la IA (Gemini si hay llave, si no la IA integrada) y devuelve el texto. */
-export async function llamarIA(messages: Array<{ role: string; content: string }>): Promise<string> {
-  const proveedores: Array<{ endpoint: string; key: string; model: string }> = [];
-  const geminiKey = process.env.GEMINI_API_KEY;
-  if (geminiKey) proveedores.push({ endpoint: GEMINI_ENDPOINT, key: geminiKey, model: GEMINI_MODEL });
-  if (process.env.LOVABLE_API_KEY) proveedores.push({ endpoint: GATEWAY, key: process.env.LOVABLE_API_KEY, model: MODEL });
-  if (proveedores.length === 0) throw new ErrorAgente(503, "El agente todavía no está configurado");
-  for (const p of proveedores) {
-    try {
-      const r = await fetch(p.endpoint, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${p.key}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ model: p.model, messages }),
-      });
-      if (!r.ok) continue;
-      const json = (await r.json()) as { choices?: Array<{ message?: { content?: string } }> };
-      const t = json.choices?.[0]?.message?.content?.trim() ?? "";
-      if (t) return t;
-    } catch {
-      // se prueba el siguiente proveedor
-    }
+export type MotorNegocio = { perfil: PerfilIA; llave: string };
+
+/** Perfil de potencia y llave propia de Gemini que el dueño dejó guardados para su negocio. */
+export async function cargarMotorNegocio(negocioId: string, ownerId: string): Promise<MotorNegocio> {
+  const { data } = await supabaseAdmin
+    .from("agente_memoria")
+    .select("tipo,contenido")
+    .eq("negocio_id", negocioId)
+    .eq("owner_id", ownerId)
+    .in("tipo", ["motor_ia", "llave_gemini"])
+    .limit(4);
+  const perfil = normalizarPerfil((data ?? []).find((x) => x.tipo === "motor_ia")?.contenido?.trim());
+  const llave = (data ?? []).find((x) => x.tipo === "llave_gemini")?.contenido?.trim() ?? "";
+  return { perfil, llave };
+}
+
+/**
+ * Llama a la IA y devuelve el texto. Motor principal Gemini 2.5 Flash (Turbo) o Pro (Experto),
+ * con respaldo automático entre modelos y luego la IA integrada si se alcanza el límite por minuto.
+ */
+export async function llamarIA(
+  messages: Array<{ role: string; content: string }>,
+  opciones: { uso?: UsoIA; perfil?: PerfilIA; llave?: string } = {},
+): Promise<string> {
+  const geminiKey = opciones.llave || process.env.GEMINI_API_KEY;
+  const lovableKey = process.env.LOVABLE_API_KEY;
+  if (!geminiKey && !lovableKey) throw new ErrorAgente(503, "El agente todavía no está configurado");
+  try {
+    const r = await chatConRespaldo({ geminiKey, lovableKey, perfil: opciones.perfil, uso: opciones.uso ?? "whatsapp", body: { messages } });
+    if (!r.res || !r.res.ok) return "";
+    const json = (await r.res.json()) as { choices?: Array<{ message?: { content?: string } }> };
+    return json.choices?.[0]?.message?.content?.trim() ?? "";
+  } catch {
+    return "";
   }
-  return "";
 }
 
 type DuenoMemoria = { negocio_id: string; owner_id: string };
@@ -231,7 +240,7 @@ export async function aprenderRespuestaDueno(clave: string, pregunta: string, re
 }
 
 /** Saca de una conversación terminada pistas generales (dudas frecuentes, objeciones, lo que ayudó a cerrar). */
-async function aprenderPatrones(ag: DuenoMemoria, historial: MensajeCliente[]): Promise<void> {
+async function aprenderPatrones(ag: DuenoMemoria, historial: MensajeCliente[], motor: MotorNegocio): Promise<void> {
   const conversacion = historial
     .slice(-16)
     .map((m) => `${m.role === "user" ? "Cliente" : "Agente"}: ${m.content.slice(0, 300)}`)
@@ -243,7 +252,7 @@ async function aprenderPatrones(ag: DuenoMemoria, historial: MensajeCliente[]): 
         "Analizas conversaciones de ventas por WhatsApp. Devuelve SOLO un arreglo JSON con 0 a 2 textos cortos en español (máx. 160 caracteres cada uno) con lecciones GENERALES y útiles para atender mejor la próxima vez: tipo de duda frecuente, objeción y cómo se resolvió, o qué ayudó a cerrar. Prohibido incluir nombres, teléfonos, direcciones, precios o datos personales. Si no hay nada útil devuelve [].",
     },
     { role: "user", content: conversacion },
-  ]);
+  ], { uso: "whatsapp", perfil: motor.perfil, llave: motor.llave });
   const m = salida.match(/\[[\s\S]*\]/);
   if (!m) return;
   let lista: unknown;
@@ -386,7 +395,7 @@ async function guardarMensajesCrm(ag: DuenoMemoria, leadId: string, telefono: st
 }
 
 /** Resumen automático de la conversación para la ficha 360° (se guarda en datos_extra.resumen_ia). */
-async function resumirConversacion(ag: DuenoMemoria, leadId: string, historial: MensajeCliente[]): Promise<void> {
+async function resumirConversacion(ag: DuenoMemoria, leadId: string, historial: MensajeCliente[], motor: MotorNegocio): Promise<void> {
   const texto = historial
     .slice(-30)
     .map((m) => `${m.role === "assistant" ? "Agente" : "Cliente"}: ${m.content}`)
@@ -399,7 +408,7 @@ async function resumirConversacion(ag: DuenoMemoria, leadId: string, historial: 
         "Resume en español, máximo 6 líneas, la conversación de ventas por WhatsApp: qué busca el cliente, presupuesto o forma de pago, objeciones, qué respondió el agente y el próximo paso sugerido. No inventes datos que no aparezcan en el chat.",
     },
     { role: "user", content: texto },
-  ]);
+  ], { uso: "whatsapp", perfil: motor.perfil, llave: motor.llave });
   if (!resumen) return;
   const { data: previo } = await supabaseAdmin
     .from("crm_leads")
@@ -421,6 +430,7 @@ export async function responderComoAgente(clave: string, mensajes: MensajeClient
   const esPrueba = sectorPrueba.trim().length > 0;
   const canal = CANALES.includes(canalOrigen) ? canalOrigen : "WhatsApp Directo";
   const ag = await buscarAgente(clave);
+  const motor = await cargarMotorNegocio(ag.negocio_id, ag.owner_id);
 
   const { data: cfg } = await supabaseAdmin
     .from("negocio_config")
@@ -635,7 +645,7 @@ Reglas:
     throw new ErrorAgente(400, "Falta el mensaje del cliente");
   }
 
-  const texto = await llamarIA([{ role: "system", content: system }, ...historial]);
+  const texto = await llamarIA([{ role: "system", content: system }, ...historial], { uso: "whatsapp", perfil: motor.perfil, llave: motor.llave });
   if (!texto) throw new ErrorAgente(502, "El agente no pudo responder en este momento");
 
   const escalar = /\[\[ASESOR\]\]/i.test(texto);
@@ -666,7 +676,7 @@ Reglas:
       const leadId = await sincronizarCrm(ag, telefono, canal, lead, pqrs, escalar);
       if (leadId) await guardarMensajesCrm(ag, leadId, telefono, historial[historial.length - 1].content, limpio);
       if (leadId && !esPrueba && (escalar || (historial.length >= 8 && historial.length % 8 < 2))) {
-        await resumirConversacion(ag, leadId, [...historial, { role: "assistant", content: limpio }]);
+        await resumirConversacion(ag, leadId, [...historial, { role: "assistant", content: limpio }], motor);
       }
     } catch (e) {
       console.error("Agente: no se pudo sincronizar el CRM", String(e instanceof Error ? e.message : "error").replace(/\d{7,15}/g, "***"));
@@ -676,7 +686,7 @@ Reglas:
   // Aprende de la conversación al terminar (pasa a una persona) o cada cierto número de mensajes.
   if (!esPrueba && (escalar || (historial.length >= 8 && historial.length % 8 < 2))) {
     try {
-      await aprenderPatrones(ag, [...historial, { role: "assistant", content: limpio }]);
+      await aprenderPatrones(ag, [...historial, { role: "assistant", content: limpio }], motor);
     } catch (e) {
       console.error("Agente: no se pudo aprender de la conversación", String(e instanceof Error ? e.message : "error").replace(/\d{7,15}/g, "***"));
     }

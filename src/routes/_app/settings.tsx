@@ -15,6 +15,7 @@ import { Users as IconUsers } from "lucide-react";
 import { EquipoPermisos } from "@/components/settings/EquipoPermisos";
 import { ResumenCierreWhatsApp } from "@/components/restaurante/Reportes";
 import { ThemeToggle } from "@/components/ui-custom/ThemeToggle";
+import { SelectorMotorIA } from "@/components/ia/SelectorMotorIA";
 import { BRAND } from "@/lib/brand";
 import { autoComandaActivada, estadoApiLocal, fijarAutoComanda, fijarImpresionDirecta, fijarImpresoraCaja, fijarImpresoraCocina, guardarConfigImpresoras, impresionDirectaActivada, imprimirTirillaLocal, fijarAnchoPapel, leerAnchoPapel, imprimirTirillaPruebaNavegador, type AnchoPapel, leerImpresoraCaja, leerImpresoraCocina } from "@/lib/impresion-local";
 
@@ -155,6 +156,7 @@ function Settings() {
           <PublicUrlCard orgId={orgId} />
           <TarjetaImpresion />
           <ResumenCierreWhatsApp />
+          <SelectorMotorIA />
         </div>
       ) : tab === "team" ? (
         <EquipoPermisos />

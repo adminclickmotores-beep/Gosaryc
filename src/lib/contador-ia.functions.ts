@@ -6,21 +6,14 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertAiQuota } from "@/lib/ai-quota.server";
 
-const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const MODEL = "google/gemini-2.5-flash";
-const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-const GEMINI_MODEL = "gemini-2.5-flash";
+import { chatConRespaldo } from "@/lib/ia-motores";
 
 type Novedad = { titulo: string; resumen: string; fuente: string; vigencia: string | null };
 
-const destino = () => {
-  const geminiKey = process.env.GEMINI_API_KEY;
-  return {
-    endpoint: geminiKey ? GEMINI_ENDPOINT : GATEWAY,
-    modelo: geminiKey ? GEMINI_MODEL : MODEL,
-    llave: geminiKey || process.env.LOVABLE_API_KEY,
-  };
-};
+// Contador Pro: razonamiento experto (Gemini 2.5 Pro) con respaldo automático.
+const llamarContador = (body: Record<string, unknown>) =>
+  chatConRespaldo({ geminiKey: process.env.GEMINI_API_KEY, lovableKey: process.env.LOVABLE_API_KEY, uso: "contador", body });
+const hayLlave = () => Boolean(process.env.GEMINI_API_KEY || process.env.LOVABLE_API_KEY);
 
 /** Consulta cambios recientes (UVT, decretos, topes, resoluciones DIAN) y los guarda. */
 export const actualizarNormativa = createServerFn({ method: "POST" })
@@ -28,15 +21,10 @@ export const actualizarNormativa = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }): Promise<{ uvt: number | null; total: number; novedades: Novedad[] }> => {
     await assertAiQuota(context.supabase, "contador-normativa");
-    const { endpoint, modelo, llave } = destino();
-    if (!llave) throw new Error("La IA todavía no está configurada.");
+    if (!hayLlave()) throw new Error("La IA todavía no está configurada.");
 
     const anio = data.anio ?? new Date().getFullYear();
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${llave}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: modelo,
+    const { res: resp } = await llamarContador({
         messages: [
           {
             role: "system",
@@ -80,8 +68,9 @@ export const actualizarNormativa = createServerFn({ method: "POST" })
           },
         ],
         tool_choice: { type: "function", function: { name: "return_normativa" } },
-      }),
     });
+    if (!resp) throw new Error("No se pudo conectar con el servicio de IA.");
+    const res = resp;
     if (!res.ok) {
       if (res.status === 429) throw new Error("Hay muchas solicitudes. Intenta de nuevo en un momento.");
       if (res.status === 402) throw new Error("Se agotó el saldo de IA. Intenta más tarde.");
@@ -117,14 +106,9 @@ export const asesorContable = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }): Promise<{ respuesta: string }> => {
     await assertAiQuota(context.supabase, "contador-asesor");
-    const { endpoint, modelo, llave } = destino();
-    if (!llave) throw new Error("La IA todavía no está configurada.");
+    if (!hayLlave()) throw new Error("La IA todavía no está configurada.");
 
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${llave}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: modelo,
+    const { res: resp } = await llamarContador({
         messages: [
           {
             role: "system",
@@ -145,8 +129,9 @@ Reglas:
             }))
             .slice(-10),
         ],
-      }),
     });
+    if (!resp) throw new Error("No se pudo conectar con el servicio de IA.");
+    const res = resp;
     if (!res.ok) {
       if (res.status === 429) throw new Error("Hay muchas solicitudes. Intenta de nuevo en un momento.");
       if (res.status === 402) throw new Error("Se agotó el saldo de IA. Intenta más tarde.");

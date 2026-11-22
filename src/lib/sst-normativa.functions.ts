@@ -7,10 +7,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertAiQuota } from "@/lib/ai-quota.server";
 import { CATALOGO_SST_2026 } from "@/lib/sst-normativa";
 
-const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const MODEL = "google/gemini-2.5-flash";
-const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-const GEMINI_MODEL = "gemini-2.5-flash";
+import { chatConRespaldo } from "@/lib/ia-motores";
 
 type Verificacion = { codigo: string; resumen?: string; nota?: string };
 
@@ -36,11 +33,12 @@ export const sstNormativaActualizar = createServerFn({ method: "POST" })
     if (llave) {
       try {
         await assertAiQuota(context.supabase, "sst-normativa");
-        const res = await fetch(geminiKey ? GEMINI_ENDPOINT : GATEWAY, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${llave}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: geminiKey ? GEMINI_MODEL : MODEL,
+        // Salud y SST: razonamiento experto (Gemini 2.5 Pro) con respaldo automático.
+        const { res } = await chatConRespaldo({
+          geminiKey,
+          lovableKey: process.env.LOVABLE_API_KEY,
+          uso: "sst",
+          body: {
             messages: [
               { role: "system", content: "Eres un asesor experto en Seguridad y Salud en el Trabajo en Colombia. Devuelves SOLO datos estructurados con la función return_normas." },
               {
@@ -73,9 +71,9 @@ export const sstNormativaActualizar = createServerFn({ method: "POST" })
               },
             ],
             tool_choice: { type: "function", function: { name: "return_normas" } },
-          }),
+          },
         });
-        if (res.ok) {
+        if (res?.ok) {
           const json = (await res.json()) as { choices?: Array<{ message?: { tool_calls?: Array<{ function?: { arguments?: string } }> } }> };
           const args = json.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
           if (args) {

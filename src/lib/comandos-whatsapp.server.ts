@@ -3,6 +3,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { Json } from "@/integrations/supabase/types";
 import { llamarIA } from "@/lib/agente-cliente.server";
+import { cadenaModelos, conRespaldoDeModelos } from "@/lib/ia-motores";
 
 export type ArchivoComando = { mime: string; base64: string };
 export type EntradaComando = {
@@ -113,21 +114,25 @@ async function transcribir(audio: ArchivoComando): Promise<string> {
   const llave = process.env.GEMINI_API_KEY;
   if (!llave) return "";
   try {
-    const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": llave },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: "Transcribe literalmente este audio en español. Responde solo con la transcripción." },
-              { inline_data: { mime_type: audio.mime.split(";")[0] || "audio/ogg", data: audio.base64 } },
-            ],
-          },
-        ],
-      }),
+    const cuerpo = JSON.stringify({
+      contents: [
+        {
+          parts: [
+            { text: "Transcribe literalmente este audio en español. Responde solo con la transcripción." },
+            { inline_data: { mime_type: audio.mime.split(";")[0] || "audio/ogg", data: audio.base64 } },
+          ],
+        },
+      ],
     });
-    if (!r.ok) return "";
+    // Gemini 2.5 Flash entiende audio al instante; si llega al límite por minuto pasa solo al siguiente modelo.
+    const { res: r } = await conRespaldoDeModelos(cadenaModelos("turbo", "voz"), (modelo) =>
+      fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": llave },
+        body: cuerpo,
+      }),
+    );
+    if (!r || !r.ok) return "";
     const j = (await r.json()) as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
     return (j.candidates?.[0]?.content?.parts?.[0]?.text ?? "").trim().slice(0, 2000);
   } catch {
@@ -149,7 +154,7 @@ Reglas: crear_inventario = agregar productos/mercancía (nombre, cantidad, costo
   const salida = await llamarIA([
     { role: "system", content: sistema },
     { role: "user", content: texto.slice(0, 3000) },
-  ]);
+  ], { uso: "comandos" });
   return salida ? leerJson(salida) : null;
 }
 

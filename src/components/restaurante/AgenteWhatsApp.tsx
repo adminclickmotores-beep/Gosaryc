@@ -5,6 +5,7 @@ import { ProbadorAgenteVivo } from "@/components/restaurante/ProbadorAgenteVivo"
 import { CerebroEntrenamiento } from "@/components/restaurante/CerebroEntrenamiento";
 import { PuenteWhatsAppLocal } from "@/components/restaurante/PuenteWhatsAppLocal";
 import { MetaCloudConfig } from "@/components/restaurante/MetaCloudConfig";
+import { SelectorMotorIA } from "@/components/ia/SelectorMotorIA";
 import { AvisosWhatsApp } from "@/components/restaurante/AvisosWhatsApp";
 import { ComandosWhatsApp } from "@/components/restaurante/ComandosWhatsApp";
 import { supabase } from "@/integrations/supabase/client";
@@ -304,6 +305,8 @@ function AgenteWhatsAppReal() {
       {probarVivo && <ProbadorAgenteVivo onCerrar={() => setProbarVivo(false)} />}
 
       <PuenteWhatsAppLocal apiBase={apiBase} claveLocal={claveLocal} />
+
+      <SelectorMotorIA />
 
       <MetaCloudConfig />
 

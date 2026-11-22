@@ -3,10 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertAiQuota } from "@/lib/ai-quota.server";
 
-const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const MODEL = "google/gemini-2.5-flash";
-const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-const GEMINI_MODEL = "gemini-2.5-flash";
+import { chatConRespaldo } from "@/lib/ia-motores";
 
 export type ItemChecklistSecop = { documento: string; detalle: string };
 
@@ -19,11 +16,12 @@ export const secopChecklistIA = createServerFn({ method: "POST" })
     const llave = geminiKey || process.env.LOVABLE_API_KEY;
     if (!llave) throw new Error("La IA todavía no está configurada.");
 
-    const res = await fetch(geminiKey ? GEMINI_ENDPOINT : GATEWAY, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${llave}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: geminiKey ? GEMINI_MODEL : MODEL,
+    // Licitaciones SECOP: razonamiento experto (Gemini 2.5 Pro) con respaldo automático.
+    const { res: resp } = await chatConRespaldo({
+      geminiKey,
+      lovableKey: process.env.LOVABLE_API_KEY,
+      uso: "secop",
+      body: {
         messages: [
           {
             role: "system",
@@ -61,8 +59,10 @@ export const secopChecklistIA = createServerFn({ method: "POST" })
           },
         ],
         tool_choice: { type: "function", function: { name: "return_checklist" } },
-      }),
+      },
     });
+    if (!resp) throw new Error("No se pudo conectar con el servicio de IA.");
+    const res = resp;
     if (!res.ok) {
       if (res.status === 429) throw new Error("Hay muchas solicitudes. Intenta de nuevo en un momento.");
       if (res.status === 402) throw new Error("Se agotó el saldo de IA. Intenta más tarde.");
