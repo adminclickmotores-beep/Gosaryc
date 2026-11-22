@@ -1,4 +1,4 @@
-import { buscarModulo } from "@/lib/modulos-negocio";
+import { buscarModulo, TIPOS_NEGOCIO } from "@/lib/modulos-negocio";
 import { configModulo } from "@/lib/modulos-config";
 
 export type Instructivo = {
@@ -638,11 +638,69 @@ const VENTAJA_PREFIJO: Array<[string, string]> = [
   ["facturas", "Facturación con consecutivo, CUFE y QR oficial cuando se activa la DIAN, y tirilla o carta en tu impresora. La venta nunca se bloquea."],
 ];
 
+/** Mensaje propio por tipo de negocio: se usa en los módulos que no tienen uno específico. */
+const VENTAJA_TIPO: Record<string, string> = {
+  restaurante: "Pedidos del POS, mesas, menú QR y WhatsApp llegan a cocina con comanda automática; las recetas descuentan el inventario y sabes tu utilidad real por plato.",
+  panaderia: "Producción por receta, vitrina y pedidos por encargo: cada venta descuenta insumos y te dice cuánto ganas por producto.",
+  cafeteria: "Cobro rápido en caja, recetas con costo por bebida y fidelización con puntos: más rotación sin perder el control del margen.",
+  comida_rapida: "Pedidos de mostrador, domicilio y WhatsApp en una sola fila hacia cocina, con tiempos y cobro directo a caja.",
+  catering: "Cotiza por número de invitados, aparta la fecha y controla anticipos, menú e insumos de cada evento en un solo lugar.",
+  concesionario: "Inventario con fotos, tasador de mercado, cotización con crédito y ventas con comisiones: todo el ciclo del vehículo sin hojas de cálculo.",
+  taller_motos: "Órdenes de trabajo con repuestos, mecánico y cobro directo a caja con asiento contable; avisas al cliente por WhatsApp cuando su moto está lista.",
+  tienda: "Inventario con escáner de barras, lotes y precios sugeridos; cada venta actualiza stock, caja y contabilidad al instante.",
+  supermercado: "Escáner de barras, vencimientos y reposición automática: no pierdes plata por productos vencidos ni por quedarte sin stock.",
+  carniceria: "Despostes con rendimiento por corte, lotes y vencimientos: sabes cuánto ganas realmente por kilo.",
+  licorera: "Venta y domicilios con verificación de mayoría de edad y control de inventario por lote, sin bloquear tu caja.",
+  ferreteria: "Cotizador por unidades y conversión de medidas, inventario con ubicación y precios al día según tus costos.",
+  papeleria: "Catálogo grande con escáner, fotocopias y servicios en la misma caja, y reposición sugerida de lo que más se vende.",
+  moda: "Matriz de tallas y colores, temporadas y cambios controlados: ves qué se vende y qué se queda en el inventario.",
+  joyeria: "Piezas con material, peso y apartados con saldo; cada abono queda en caja y contabilidad.",
+  celulares: "Equipos con IMEI y garantía, reparaciones por orden y venta de accesorios con el mismo inventario y caja.",
+  tecnologia: "Equipos, seriales y garantías, soporte por orden de servicio y cobro directo: cada cliente con su historial completo.",
+  floristeria: "Arreglos con receta de flores, encargos con fecha de entrega y stock fresco que se descuenta solo.",
+  distribuidora: "Pedidos por ruta, listas de precio por cliente y cartera con cobro por WhatsApp: vendes más y cobras a tiempo.",
+  compraventa: "Empeños y compras a particulares con contrato, intereses y tasación; el inventario quedado se reprecia con inteligencia de mercado.",
+  servicios: "Agenda de citas con recordatorio por WhatsApp, cobro en un clic y comisiones del equipo calculadas solas.",
+  belleza: "Agenda, ficha de cada cliente, comisiones del equipo y cobro en un solo flujo, con recordatorios por WhatsApp.",
+  profesional: "Honorarios, cuentas por cobrar y agenda de clientes con cotización enviada por WhatsApp y cobro registrado en contabilidad.",
+  lavanderia: "Órdenes por prenda con estado y aviso por WhatsApp cuando está lista; cobras al entregar y todo queda en caja.",
+  salud: "Pacientes, historias, agenda y facturación con datos protegidos por negocio; recordatorios y cobro en un solo lugar.",
+  mascotas: "Ficha de cada mascota con vacunas y recordatorios por WhatsApp, agenda de citas y venta de productos en la misma caja.",
+  farmacia: "Control de lotes, vencimientos y refrigerados con alertas, fórmulas y venta en caja sin llevar papeles.",
+  optica: "Fórmulas por paciente, pedidos de laboratorio y venta de monturas con saldo y entrega controlados.",
+  educacion: "Matrículas, pensiones y notas con cobro automático y avisos a acudientes por WhatsApp.",
+  guarderia: "Fichas de niños y acudientes, asistencia diaria, pensiones y avisos por WhatsApp a los padres.",
+  hospedaje: "Rack de habitaciones por colores, cuenta única del huésped y liquidación al check-out, con reservas sin cruces.",
+  gimnasio: "Socios con carnet QR, check-in rápido, planes con vencimiento y cobro automático con avisos por WhatsApp.",
+  construccion: "Obras con presupuesto, vales de materiales y cortes de obra: ves el costo real contra lo cotizado.",
+  inmobiliaria: "Propiedades, contratos, cánones y liquidación al propietario con cobro y comisión calculados solos.",
+  agro: "Lotes, aplicaciones e insumos con costo por cosecha y ventas registradas: sabes qué lote te deja más.",
+  ganaderia: "Control por animal, pesajes, sanidad y producción, con costos de insumos y ventas ligadas al libro contable.",
+  transporte: "Manifiestos, anticipos, fletes y liquidación al conductor con cobro directo y contabilidad al día.",
+  alquiler_vehiculos: "Flota, reservas y contratos con entrega y devolución documentadas; multas y daños se cobran en el mismo flujo.",
+  parqueadero: "Entrada y salida por placa con cobro por tiempo, abonados mensuales y cierre de caja sin diferencias.",
+  taller: "Órdenes de trabajo con repuestos, comisiones del técnico y cobro directo a caja con asiento contable.",
+  textil: "Órdenes de confección, cortes de tela e insumos con costo real por prenda y entregas con saldo.",
+  eventos: "Salones, cotizaciones y fechas bloqueadas para que no se crucen, con abonos que entran a caja y contabilidad.",
+  condominio: "Unidades, cuotas de administración y cartera con cobro por WhatsApp y estado de cuenta por residente.",
+  prestamos: "Cronograma de cuotas, cobranza diaria y mora calculada sola; cada abono queda en caja y contabilidad.",
+  seguridad_aseo: "Contratos por puesto, facturación mensual y personal asignado con cartera por cliente.",
+  fundacion: "Donaciones con certificado, proyectos, beneficiarios y voluntarios con control transparente de ingresos y gastos.",
+  iglesia: "Miembros, aportes y egresos con cierre por culto y reportes claros para la junta, con total reserva de los datos.",
+};
+
+function tipoDelModulo(id: string): string | undefined {
+  const base = id.replace(/^(tipo_)/, "");
+  return TIPOS_NEGOCIO.find((t) => t.modulos.some((m) => m.id === base))?.clave;
+}
+
 function conVentaja(g: Instructivo, pathname: string, id?: string): Instructivo {
   if (g.ventaja) return g;
   const ruta = Object.keys(VENTAJA_RUTA).find((r) => (r === "/" ? pathname === "/" : pathname === r || pathname.startsWith(`${r}/`)));
   const pref = id ? VENTAJA_PREFIJO.find(([p]) => id.startsWith(p)) : undefined;
-  return { ...g, ventaja: (ruta && VENTAJA_RUTA[ruta]) || (pref && pref[1]) || VENTAJA_GENERAL };
+  const clave = id ? tipoDelModulo(id) : undefined;
+  const deTipo = clave ? VENTAJA_TIPO[clave] : undefined;
+  return { ...g, ventaja: (ruta && VENTAJA_RUTA[ruta]) || (pref && pref[1]) || deTipo || VENTAJA_GENERAL };
 }
 
 /** Devuelve el instructivo de la pantalla actual, o null si no hay uno. */
