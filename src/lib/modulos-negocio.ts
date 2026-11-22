@@ -1345,6 +1345,8 @@ const MODULOS_SST: ModuloNegocio[] = [
   m("sst_capacitaciones", "Capacitaciones y brigadas", "Cronograma por temas, asistencia digital y certificados en PDF.", GraduationCap),
   m("sst_normativa", "Normativa SST Colombia (IA)", "Decreto 1072, Res. 0312, alturas y GTC 45 con actualización automática.", Scale),
   m("sst_matriz_legal", "Matriz legal SST", "Cada norma con estado de cumplimiento, responsable, evidencia y fecha de revisión.", Scale),
+  m("sst_psicosocial", "Batería de riesgo psicosocial", "Aplicación interna o externa, nivel de riesgo (intralaboral, extralaboral, estrés) y plan de intervención sugerido.", ShieldCheck),
+  m("sst_restricciones", "Restricciones y plan de control", "Clasifica quién tiene restricciones laborales, de qué tipo y el plan recomendado según la normativa.", ClipboardList),
   m("sst_alertas", "Alertas SST", "Exámenes vencidos, capacitaciones, ATEL, estándares, comités y ausentismo en un solo lugar.", Bell),
 ];
 for (const t of TIPOS_NEGOCIO) {

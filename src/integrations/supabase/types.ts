@@ -2786,6 +2786,18 @@ export type Database = {
         Update: { codigo?: string; created_at?: string; estado?: string; evidencia?: string; id?: string; owner_id?: string | null; proxima_revision?: string | null; responsable?: string }
         Relationships: []
       }
+      sst_psicosocial: {
+        Row: { aplicacion: string; cargo: string; control: number; created_at: string; demandas: number; empresa: string; estado: string; estres: number; evaluador: string; extralaboral: number; fecha: string; forma: string; id: string; liderazgo: number; nivel_estres: string; nivel_extralaboral: string; nivel_global: string; nivel_intralaboral: string; owner_id: string | null; plan: string; recompensas: number; seguimiento: string | null; trabajador: string }
+        Insert: { aplicacion?: string; cargo?: string; control?: number; created_at?: string; demandas?: number; empresa?: string; estado?: string; estres?: number; evaluador?: string; extralaboral?: number; fecha?: string; forma?: string; id?: string; liderazgo?: number; nivel_estres?: string; nivel_extralaboral?: string; nivel_global?: string; nivel_intralaboral?: string; owner_id?: string | null; plan?: string; recompensas?: number; seguimiento?: string | null; trabajador?: string }
+        Update: { aplicacion?: string; cargo?: string; control?: number; created_at?: string; demandas?: number; empresa?: string; estado?: string; estres?: number; evaluador?: string; extralaboral?: number; fecha?: string; forma?: string; id?: string; liderazgo?: number; nivel_estres?: string; nivel_extralaboral?: string; nivel_global?: string; nivel_intralaboral?: string; owner_id?: string | null; plan?: string; recompensas?: number; seguimiento?: string | null; trabajador?: string }
+        Relationships: []
+      }
+      sst_restricciones: {
+        Row: { cargo: string; categoria: string; concepto: string; created_at: string; descripcion: string; duracion: string; empresa: string; estado: string; evaluacion_id: string | null; id: string; owner_id: string | null; plan: string; seguimiento: string | null; trabajador: string; vence: string | null }
+        Insert: { cargo?: string; categoria?: string; concepto?: string; created_at?: string; descripcion?: string; duracion?: string; empresa?: string; estado?: string; evaluacion_id?: string | null; id?: string; owner_id?: string | null; plan?: string; seguimiento?: string | null; trabajador?: string; vence?: string | null }
+        Update: { cargo?: string; categoria?: string; concepto?: string; created_at?: string; descripcion?: string; duracion?: string; empresa?: string; estado?: string; evaluacion_id?: string | null; id?: string; owner_id?: string | null; plan?: string; seguimiento?: string | null; trabajador?: string; vence?: string | null }
+        Relationships: []
+      }
       sst_normas: {
         Row: { codigo: string; created_at: string; estado: string; fuente: string; id: string; nota: string | null; origen: string; owner_id: string | null; resumen: string; tema: string; titulo: string; ultima_actualizacion: string }
         Insert: { codigo: string; created_at?: string; estado?: string; fuente?: string; id?: string; nota?: string | null; origen?: string; owner_id?: string | null; resumen?: string; tema?: string; titulo: string; ultima_actualizacion?: string }

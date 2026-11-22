@@ -576,6 +576,16 @@ const POR_MODULO: Record<string, Instructivo> = {
     paraQue: "Saber qué normas cumples, quién responde por cada una y con qué evidencia.",
     pasos: ["Para cada norma elige el estado: cumple, parcial, no cumple o no aplica.", "Anota responsable, evidencia y la fecha de la próxima revisión.", "Exporta la matriz a Excel para auditorías."],
   },
+  sst_psicosocial: {
+    titulo: "Batería de riesgo psicosocial",
+    paraQue: "Registrar la aplicación de la batería (interna o externa) y obtener el nivel de riesgo con su plan de intervención.",
+    pasos: ["Elige si la aplicó un psicólogo de la empresa (interna) o un profesional externo con licencia SST.", "Escribe los puntajes 0 a 100 de cada dominio, del extralaboral y del estrés.", "Revisa el nivel y el plan sugerido, y guarda.", "Cambia el estado a «En intervención» o «Cerrado» según avance."],
+  },
+  sst_restricciones: {
+    titulo: "Restricciones y plan de control",
+    paraQue: "Saber qué trabajadores tienen restricciones, de qué tipo y qué plan seguir en los exámenes de control.",
+    pasos: ["Los exámenes con concepto distinto de «Apto» aparecen por clasificar.", "Elige la categoría y si es temporal o permanente, y pulsa «Clasificar y generar plan».", "Filtra por vigentes, permanentes o control del próximo mes.", "Las recomendaciones son una guía: confírmalas con el médico laboral."],
+  },
   sst_alertas: {
     titulo: "Alertas SST",
     paraQue: "Ver en un solo lugar lo vencido o en riesgo.",

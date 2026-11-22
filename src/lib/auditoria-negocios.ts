@@ -9,7 +9,7 @@ const IDS_DEDICADOS = new Set<string>([
   "obr_obras", "inm_propiedades", "agr_lotes", "tra_manifiestos",
   "hot_habitaciones", "hot_reservas", "edu_matriculas", "edu_pensiones", "edu_academico",
   "mod_matriz", "far_control", "opt_formulas", "eve_eventos", "lav_ordenes",
-  "sst_empresas", "sst_evaluaciones", "sst_profesiograma", "sst_estandares", "sst_sve", "sst_capacitaciones", "sst_normativa", "sst_matriz_legal", "sst_alertas",
+  "sst_empresas", "sst_evaluaciones", "sst_profesiograma", "sst_estandares", "sst_sve", "sst_capacitaciones", "sst_normativa", "sst_matriz_legal", "sst_alertas", "sst_psicosocial", "sst_restricciones",
   "prof_casos", "tec_proyectos", "pap_encargos", "joy_apartados", "lic_domicilios", "parq_turnos",
   "gim_checkin", "gim_socios", "gim_planes", "gim_valoracion",
   "cl_agenda", "cl_pacientes", "cl_historias", "cl_vacunas", "cl_alertas", "cl_caja", "cl_servicios", "cl_insumos", "cl_comisiones",
