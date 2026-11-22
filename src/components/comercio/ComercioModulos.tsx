@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
+import { ModuleHeader } from "@/components/ui-custom/ModuleHeader";
+import { identidadRubro, resolverTipoNegocio } from "@/lib/modulos-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { useBarcodeScanner } from "@/hooks/use-barcode-scanner";
 import { descontarStockOffline, evitarSubmitConEnter, generarEAN13, reproducirBeep, stockEfectivoOffline } from "@/lib/escaner-barras";
@@ -95,12 +97,9 @@ function calcular(l: Linea, tipo: string, permitirNegativo = false, stockDisp?: 
 }
 
 export function Encabezado({ titulo, texto }: { titulo: string; texto: string }) {
-  return (
-    <div className="mb-5">
-      <h1 className="font-display text-2xl text-foreground">{titulo}</h1>
-      <p className="mt-1 text-sm text-muted-foreground">{texto}</p>
-    </div>
-  );
+  const { negocio } = useNegocio();
+  const familia = identidadRubro(resolverTipoNegocio(negocio?.tipo_negocio).clave).familia;
+  return <ModuleHeader titulo={titulo} descripcion={texto} familia={familia} />;
 }
 
 export function Campo({ etiqueta, children }: { etiqueta: string; children: ReactNode }) {

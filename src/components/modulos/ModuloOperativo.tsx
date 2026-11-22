@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json, Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { ModuleHeader } from "@/components/ui-custom/ModuleHeader";
 import { buscarModulo, identidadRubro, resolverTipoNegocio } from "@/lib/modulos-negocio";
 import { useNegocio } from "@/hooks/use-negocio";
 import { configModulo } from "@/lib/modulos-config";
@@ -552,19 +553,13 @@ export function ModuloOperativo({ id }: { id: string }) {
         <Link to="/restaurante" className="inline-flex items-center gap-1 text-xs text-muted-foreground">
           <ArrowLeft className="h-3 w-3" /> Volver al panel
         </Link>
-        <h1 className="flex items-center gap-2 font-display text-3xl text-foreground">
-          <modulo.Icon className="h-7 w-7 text-primary" /> {modulo.titulo}
-        </h1>
-        <p className="text-sm text-muted-foreground">{modulo.descripcion}</p>
-        <p>
-          <span
-            className="inline-flex items-center rounded-full border border-glass-border px-2.5 py-0.5 text-xs"
-            style={{ color: identidadRubro(resolverTipoNegocio(negocio?.tipo_negocio).clave).acento }}
-          >
-            Rubro {identidadRubro(resolverTipoNegocio(negocio?.tipo_negocio).clave).familia}
-          </span>
-        </p>
-        <div className="h-1 w-24 rounded-full" style={{ background: identidadRubro(resolverTipoNegocio(negocio?.tipo_negocio).clave).acento }} />
+        <ModuleHeader
+          titulo={modulo.titulo}
+          descripcion={modulo.descripcion}
+          familia={identidadRubro(resolverTipoNegocio(negocio?.tipo_negocio).clave).familia}
+          Icon={modulo.Icon}
+          className="mb-0 mt-2"
+        />
       </div>
 
       <div className={`grid gap-3 ${tarjetas.length === 4 ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-3"}`}>

@@ -35,13 +35,13 @@ export function SelectorMetodo({ valor, onChange }: { valor: string; onChange: (
 
 export function Pestanas<T extends string>({ items, valor, onChange }: { items: { clave: T; texto: string }[]; valor: T; onChange: (v: T) => void }) {
   return (
-    <div className="mb-5 flex flex-wrap gap-2">
+    <div className="mb-5 inline-flex max-w-full flex-wrap gap-1 rounded-2xl border border-glass-border bg-glass/30 p-1">
       {items.map((i) => (
         <button
           key={i.clave}
           type="button"
           onClick={() => onChange(i.clave)}
-          className={`rounded-full border px-4 py-1.5 text-sm ${valor === i.clave ? "border-primary bg-primary text-primary-foreground" : "border-glass-border text-foreground hover:bg-glass/40"}`}
+          className={`rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200 ${valor === i.clave ? "bg-gradient-to-r from-indigo-600 to-emerald-500 text-white shadow-md" : "text-foreground hover:bg-glass/60"}`}
         >
           {i.texto}
         </button>
@@ -52,18 +52,19 @@ export function Pestanas<T extends string>({ items, valor, onChange }: { items: 
 
 export function Indicador({ titulo, valor, nota, alerta }: { titulo: string; valor: ReactNode; nota?: string; alerta?: boolean }) {
   return (
-    <div className={`rounded-xl border p-3 ${alerta ? "border-destructive/50" : "border-glass-border"}`}>
-      <p className="text-xs text-muted-foreground">{titulo}</p>
-      <p className={`mt-1 font-display text-xl ${alerta ? "text-destructive" : "text-foreground"}`}>{valor}</p>
-      {nota && <p className="mt-0.5 text-xs text-muted-foreground">{nota}</p>}
+    <div className={`relative overflow-hidden rounded-2xl border p-4 transition-all duration-200 hover:shadow-lg ${alerta ? "border-destructive/50 bg-destructive/5" : "border-glass-border bg-gradient-to-br from-emerald-500/10 via-sky-500/5 to-transparent"}`}>
+      <span className={`absolute left-0 top-0 h-full w-1 ${alerta ? "bg-destructive" : "bg-gradient-to-b from-emerald-500 to-sky-500"}`} />
+      <p className="text-xs font-medium text-muted-foreground">{titulo}</p>
+      <p className={`mt-1 text-xl font-extrabold tabular-nums ${alerta ? "text-destructive" : "text-foreground"}`}>{valor}</p>
+      {nota && <p className="mt-1 inline-block rounded-full bg-glass/60 px-2 py-0.5 text-xs text-muted-foreground">{nota}</p>}
     </div>
   );
 }
 
 export function Etiqueta({ texto, tono = "neutro" }: { texto: string; tono?: "neutro" | "ok" | "alerta" | "info" }) {
   const clase =
-    tono === "ok" ? "bg-primary/15 text-primary" : tono === "alerta" ? "bg-destructive/15 text-destructive" : tono === "info" ? "bg-accent/30 text-foreground" : "bg-glass/60 text-muted-foreground";
-  return <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs ${clase}`}>{texto}</span>;
+    tono === "ok" ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : tono === "alerta" ? "bg-destructive/15 text-destructive" : tono === "info" ? "bg-sky-500/15 text-sky-600 dark:text-sky-400" : "bg-glass/60 text-muted-foreground";
+  return <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${clase}`}>{texto}</span>;
 }
 
 export const aWhatsapp = (tel: string | null | undefined, texto: string): string | null => {
