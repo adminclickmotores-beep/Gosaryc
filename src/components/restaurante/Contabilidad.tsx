@@ -391,11 +391,11 @@ export function Contabilidad() {
 
       {/* Exportar la vista actual */}
       <div className="flex flex-wrap gap-2 text-sm">
-        <button onClick={exportarVistaExcel} className="rounded-full border border-glass-border px-4 py-1.5 text-muted-foreground">
-          Exportar a Excel
+        <button onClick={exportarVistaExcel} className="rounded-lg bg-emerald-600 px-4 py-1.5 font-semibold text-white hover:bg-emerald-700">
+          Excel (.xlsx)
         </button>
-        <button onClick={exportarVistaPdf} className="rounded-full border border-glass-border px-4 py-1.5 text-muted-foreground">
-          Exportar a PDF
+        <button onClick={exportarVistaPdf} className="rounded-lg bg-rose-600 px-4 py-1.5 font-semibold text-white hover:bg-rose-700">
+          PDF
         </button>
       </div>
 

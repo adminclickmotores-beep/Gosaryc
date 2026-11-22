@@ -76,17 +76,17 @@ function EquipoNominaPage() {
           <button
             onClick={() => exportarExcel("liquidacion-nomina", ["Persona", "Por pagar", "Pagado"],
               porPersona.map((p) => [p.nombre, p.porPagar, p.pagado]))}
-            className="rounded-full border border-glass-border px-4 py-1.5 text-sm text-muted-foreground"
+            className="rounded-lg bg-emerald-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-emerald-700"
           >
-            Exportar a Excel
+            Excel (.xlsx)
           </button>
           <button
             onClick={() => imprimirReporte("Liquidación de nómina", "Por persona", ["Persona", "Por pagar", "Pagado"],
               porPersona.map((p) => [p.nombre, dinero(p.porPagar), dinero(p.pagado)]),
               [`Total por pagar: ${dinero(totalPorPagar)} · Total pagado: ${dinero(totalPagado)}`])}
-            className="rounded-full border border-glass-border px-4 py-1.5 text-sm text-muted-foreground"
+            className="rounded-lg bg-rose-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-rose-700"
           >
-            Exportar a PDF
+            PDF
           </button>
         </div>
       </div>

@@ -14,6 +14,7 @@ import { useNegocio } from "@/hooks/use-negocio";
 import { configModulo } from "@/lib/modulos-config";
 import { TABLAS_SIN_BORRADO, tablaDeModulo } from "@/lib/tablas-modulo";
 import { escaparCelda, escaparHtml } from "@/lib/exportes";
+import { BarraExportar } from "@/components/comercio/BarraExportar";
 import { LIMITES, MAX_DINERO, limpiarTelefono, limpiarTexto, telefonoValido } from "@/lib/validacion-publica";
 import {
   alertaRubro, calcularRubro, camposDelModulo, useEsquemaRubro, validarCamposRubro, vocabulario,
@@ -679,9 +680,30 @@ export function ModuloOperativo({ id }: { id: string }) {
                 <LayoutGrid className="h-3.5 w-3.5" /> Tablero
               </button>
             </div>
-            <button onClick={exportar} disabled={visibles.length === 0} className={botonSec}>
-              <Download className="h-3.5 w-3.5" /> Exportar
-            </button>
+            <BarraExportar
+              titulo={modulo.titulo}
+              subtitulo={`${visibles.length} registros`}
+              columnas={[
+                { titulo: "Título" }, { titulo: "Contacto" }, { titulo: "Teléfono" }, { titulo: "Fecha" }, { titulo: "Estado" },
+                { titulo: "Valor", tipo: "moneda" }, { titulo: "Abonado", tipo: "moneda" }, { titulo: "Saldo", tipo: "moneda" },
+                { titulo: "Cantidad", tipo: "numero" },
+              ]}
+              filas={visibles.map((r) => [
+                r.titulo, r.contacto, r.telefono, r.fecha, r.anulado ? "Anulado" : textoEstado(r.estado),
+                r.monto, r.abonado, r.monto - r.abonado, r.cantidad,
+              ])}
+              filaTotales={[
+                "Totales", "", "", "", "",
+                visibles.reduce((s, r) => s + (r.anulado ? 0 : r.monto), 0),
+                visibles.reduce((s, r) => s + (r.anulado ? 0 : r.abonado), 0),
+                visibles.reduce((s, r) => s + (r.anulado ? 0 : r.monto - r.abonado), 0),
+                "",
+              ]}
+              resumenTotales={[
+                { etiqueta: "Total valor", valor: visibles.reduce((s, r) => s + (r.anulado ? 0 : r.monto), 0), moneda: true },
+                { etiqueta: "Total abonado", valor: visibles.reduce((s, r) => s + (r.anulado ? 0 : r.abonado), 0), moneda: true },
+              ]}
+            />
           </div>
           <div className="flex flex-wrap gap-2 text-sm">
             {filtros.map((e) => (

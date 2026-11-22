@@ -22,17 +22,33 @@ export const escaparCelda = (v: string | number): string => {
 
 /** Descarga los datos como .xls (hoja compatible con Excel) con el nombre dado. */
 export function exportarExcel(nombre: string, columnas: string[], filas: (string | number)[][]): void {
-  const linea = (cs: (string | number)[]): string => cs.map(escaparCelda).join(";");
-  const contenido = `﻿${linea(columnas)}\n${filas.map(linea).join("\n")}`;
-  const blob = new Blob([contenido], { type: "application/vnd.ms-excel;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${nombre}-${fechaHoy()}.xls`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  // Excel real (.xlsx) con anchos autoajustados y totales; si falla, cae al CSV de antes.
+  const respaldoCsv = (): void => {
+    const linea = (cs: (string | number)[]): string => cs.map(escaparCelda).join(";");
+    const contenido = `﻿${linea(columnas)}\n${filas.map(linea).join("\n")}`;
+    const blob = new Blob([contenido], { type: "application/vnd.ms-excel;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${nombre}-${fechaHoy()}.xls`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  };
+  void import("@/lib/exportar-reportes")
+    .then(({ exportarAExcel }) =>
+      exportarAExcel({
+        nombreArchivo: nombre,
+        nombreHoja: nombre,
+        columnas: columnas.map((titulo, i) => ({
+          titulo,
+          tipo: filas.length > 0 && filas.every((f) => typeof f[i] === "number") ? ("numero" as const) : ("texto" as const),
+        })),
+        filas,
+      }),
+    )
+    .catch(respaldoCsv);
 }
 
 /** Convierte cualquier texto escrito por usuarios en texto plano seguro para HTML (nunca se ejecuta como código). */
@@ -70,6 +86,26 @@ export function imprimirReporte(titulo: string, subtitulo: string, encabezados: 
   // Solo web/celular (sin .exe): usa el diálogo limpio del navegador; si bloquea la ventana, descarga el archivo.
   const w = window.open("", "_blank", "width=900,height=700");
   if (!w) return;
+  // PDF corporativo con membrete (logo, razón social, NIT, dirección, teléfono) y pie numerado.
+  void import("@/lib/exportar-reportes")
+    .then(async ({ empresaActiva, escribirPDF }) => {
+      const empresa = await empresaActiva();
+      escribirPDF(w, {
+        tituloReporte: titulo,
+        subtituloPeriodo: subtitulo,
+        empresa,
+        columnas: encabezados.map((t, i) => ({
+          titulo: t,
+          tipo: i > 0 && filas.length > 0 && filas.every((f) => /^\$?\s*-?[\d.,]+$/.test(String(f[i] ?? "").trim())) ? ("numero" as const) : ("texto" as const),
+        })),
+        filas,
+        resumenTotales: (totales ?? []).map((t) => ({ etiqueta: t, valor: "" })),
+      });
+    })
+    .catch(() => imprimirReporteSimple(w, titulo, subtitulo, encabezados, filas, totales));
+}
+
+function imprimirReporteSimple(w: Window, titulo: string, subtitulo: string, encabezados: string[], filas: string[][], totales?: string[]): void {
   const e = escaparHtml;
   const filasHtml = filas
     .map((f) => `<tr>${f.map((c, i) => `<td class="${i > 0 && /[$\d]/.test(String(c)) ? "num" : ""}">${e(c)}</td>`).join("")}</tr>`)
