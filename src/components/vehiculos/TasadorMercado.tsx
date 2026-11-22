@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from "react";
-import { ChevronDown, ChevronUp, ExternalLink, Gauge, Loader2, Search } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
+import { ChevronDown, ChevronUp, ExternalLink, Gauge, Loader2, MessageCircle, Search } from "lucide-react";
 import { toast } from "sonner";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { tasarVehiculo, type TasacionVehiculo } from "@/lib/precios-ia.functions";
@@ -8,6 +8,10 @@ const dinero = (n: number) =>
   new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
 const campo =
   "w-full rounded-lg border border-glass-border bg-glass/40 px-3 py-2.5 text-base text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-primary/50";
+/** Reajuste anual aplicado a las tarifas desde el 1 de enero de 2027 (IPC/SMMLV aproximado). */
+const IPC_REAJUSTE = 0.05;
+const NOTA_PERITAJE =
+  "⚠️ Oferta preliminar de compra para reventa sujeta a peritaje mecánico, estructural, de chasis/motor y verificación jurídica. El cierre final se realiza una vez aprobado el peritaje.";
 const num = (s: string) => {
   const n = Number(s.replace(/[^\d.]/g, ""));
   return Number.isFinite(n) ? n : 0;
@@ -27,8 +31,14 @@ export function TasadorMercado({ abierto = false }: { abierto?: boolean }) {
   const [visible, setVisible] = useState(abierto);
   const [f, setF] = useState({
     tipo: "carro", marca: "", linea: "", anio: "", cilindraje: "", km: "", precio: "",
-    traspaso: "", soat: "", alistamiento: "", margen: "10",
+    derechos: "", alistamiento: "", margen: "12", modoMargen: "pct",
+    soatFecha: "", tecnoFecha: "", soatTarifa: "", tecnoTarifa: "", tecnoExento: false,
+    certificado: false, prenda: false,
   });
+  // Fecha y año actual se leen en el navegador (evita diferencias entre servidor y cliente).
+  const [hoy, setHoy] = useState<number | null>(null);
+  useEffect(() => { setHoy(Date.now()); }, []);
+  const anioActual = hoy ? new Date(hoy).getFullYear() : 2026;
   const [cargando, setCargando] = useState(false);
   const [r, setR] = useState<TasacionVehiculo | null>(null);
   const set = (k: keyof typeof f, v: string) => setF((p) => ({ ...p, [k]: v }));
@@ -60,10 +70,65 @@ export function TasadorMercado({ abierto = false }: { abierto?: boolean }) {
           : { t: "Costoso (riesgo de quedarse en vitrina)", c: "border-red-500/50 bg-red-500/10", d: "Está por encima del mercado; tardará en rotar." };
   }
 
-  // Calculadora de compra / retoma segura: reventa al promedio menos gastos y margen esperado.
-  const gastos = num(f.traspaso) + num(f.soat) + num(f.alistamiento);
-  const margenPesos = r ? (r.promedio * Math.min(60, num(f.margen))) / 100 : 0;
-  const maximo = r ? Math.max(0, r.promedio - gastos - margenPesos) : 0;
+  // ---- Tarifas oficiales 2026 (reajuste automático desde el 1 de enero de 2027) ----
+  const esMoto = f.tipo === "moto";
+  const factor = anioActual >= 2027 ? Math.pow(1 + IPC_REAJUSTE, anioActual - 2026) : 1;
+  const redondear = (n: number) => Math.round(n / 100) * 100;
+  const cc = num(f.cilindraje);
+  const soatBase = esMoto
+    ? cc > 0 && cc < 100 ? 256200 : cc > 200 ? 761400 : 343300
+    : cc > 2500 ? 677400 : cc >= 1500 ? 611050 : 520100;
+  const tecnoBase = esMoto ? 233500 : 335000;
+  const derechosDef = redondear((esMoto ? 145500 : 260400) * factor);
+  const alistDef = redondear((esMoto ? 140000 : 380000) * factor);
+  const soatDef = redondear(soatBase * factor);
+  const tecnoDef = redondear(tecnoBase * factor);
+  const pick = (v: string, def: number) => (v.trim() === "" ? def : num(v));
+
+  const derechos = pick(f.derechos, derechosDef);
+  const alistamiento = pick(f.alistamiento, alistDef);
+  const soatAnual = pick(f.soatTarifa, soatDef);
+  const tecnoAnual = pick(f.tecnoTarifa, tecnoDef);
+  const avaluo = r ? r.promedio : 0;
+  const retefuente = Math.round(avaluo * 0.01);
+  const certificado = f.certificado ? redondear(58400 * factor) : 0;
+  const prenda = f.prenda ? redondear(206900 * factor) : 0;
+  const traspasoTotal = derechos + certificado + prenda;
+
+  const prorrateo = (fecha: string, anual: number): { dias: number | null; valor: number } => {
+    if (!fecha || !hoy) return { dias: null, valor: 0 };
+    const dias = Math.ceil((new Date(`${fecha}T23:59:59`).getTime() - hoy) / 86400000);
+    if (dias >= 180) return { dias, valor: 0 };
+    if (dias <= 0) return { dias, valor: anual };
+    return { dias, valor: Math.round(((180 - dias) / 365) * anual) };
+  };
+  const pSoat = prorrateo(f.soatFecha, soatAnual);
+  const pTecno = f.tecnoExento ? { dias: null, valor: 0 } : prorrateo(f.tecnoFecha, tecnoAnual);
+  const papeles = pSoat.valor + pTecno.valor;
+
+  const margenPesos = r
+    ? f.modoMargen === "pesos" ? num(f.margen) : (r.promedio * Math.min(60, num(f.margen))) / 100
+    : 0;
+  const descuentos = traspasoTotal + retefuente + papeles + alistamiento + Math.round(margenPesos);
+  const maximo = r ? Math.max(0, Math.round(r.promedio - descuentos)) : 0;
+  const inicial = Math.round((maximo * 0.9) / 100) * 100;
+
+  const copiarWhatsApp = async () => {
+    if (!r) return;
+    const t = [
+      `Oferta de compra - ${f.marca} ${f.linea} ${f.anio}`.trim(),
+      `Oferta inicial sugerida: ${dinero(inicial)}`,
+      `Oferta tope máxima: ${dinero(maximo)}`,
+      `Descuentos: traspaso ${dinero(traspasoTotal)}, retefuente 1 % ${dinero(retefuente)}, SOAT/Tecnomecánica ${dinero(papeles)}, alistamiento y peritaje ${dinero(alistamiento)}, utilidad esperada ${dinero(Math.round(margenPesos))}`,
+      NOTA_PERITAJE,
+    ].join("\n");
+    try {
+      await navigator.clipboard.writeText(t);
+      toast.success("Oferta copiada para WhatsApp.");
+    } catch {
+      window.open(`https://wa.me/?text=${encodeURIComponent(t)}`, "_blank", "noopener,noreferrer");
+    }
+  };
 
   return (
     <GlassPanel className="mb-4 space-y-3 p-4">
@@ -120,26 +185,68 @@ export function TasadorMercado({ abierto = false }: { abierto?: boolean }) {
               )}
 
               <div className="space-y-3 rounded-lg border border-glass-border bg-glass/30 p-3">
-                <p className="font-medium">Calculadora de compra / retoma segura</p>
+                <p className="font-medium">Oferta de compra para reventa (tarifas Colombia 2026{factor > 1 ? `, reajustadas a ${anioActual}` : ", reajuste automático en 2027"})</p>
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                  <Entrada t="Traspaso ($)"><input className={campo} inputMode="numeric" value={f.traspaso} onChange={(e) => set("traspaso", e.target.value)} /></Entrada>
-                  <Entrada t="SOAT / Tecnomecánica ($)"><input className={campo} inputMode="numeric" value={f.soat} onChange={(e) => set("soat", e.target.value)} /></Entrada>
-                  <Entrada t="Alistamiento ($)"><input className={campo} inputMode="numeric" value={f.alistamiento} onChange={(e) => set("alistamiento", e.target.value)} /></Entrada>
-                  <Entrada t="Ganancia esperada (%)"><input className={campo} inputMode="decimal" value={f.margen} onChange={(e) => set("margen", e.target.value)} /></Entrada>
+                  <Entrada t={`Derechos de tránsito + MinTransporte + RUNT ($)`}><input className={campo} inputMode="numeric" value={f.derechos} onChange={(e) => set("derechos", e.target.value)} placeholder={String(derechosDef)} /></Entrada>
+                  <Entrada t="Alistamiento y peritaje interno ($)"><input className={campo} inputMode="numeric" value={f.alistamiento} onChange={(e) => set("alistamiento", e.target.value)} placeholder={String(alistDef)} /></Entrada>
+                  <Entrada t="Fecha vencimiento SOAT"><input type="date" className={campo} value={f.soatFecha} onChange={(e) => set("soatFecha", e.target.value)} /></Entrada>
+                  <Entrada t="Fecha vencimiento Tecnomecánica">
+                    <input type="date" className={campo} value={f.tecnoFecha} disabled={f.tecnoExento} onChange={(e) => set("tecnoFecha", e.target.value)} />
+                  </Entrada>
+                  <Entrada t="Tarifa anual SOAT ($)"><input className={campo} inputMode="numeric" value={f.soatTarifa} onChange={(e) => set("soatTarifa", e.target.value)} placeholder={String(soatDef)} /></Entrada>
+                  <Entrada t="Tarifa Tecnomecánica ($)"><input className={campo} inputMode="numeric" value={f.tecnoTarifa} onChange={(e) => set("tecnoTarifa", e.target.value)} placeholder={String(tecnoDef)} /></Entrada>
+                  <Entrada t="Ganancia de la compraventa">
+                    <div className="flex gap-2">
+                      <input className={campo} inputMode="decimal" value={f.margen} onChange={(e) => set("margen", e.target.value)} />
+                      <select className={`${campo} w-24`} value={f.modoMargen} onChange={(e) => set("modoMargen", e.target.value)}>
+                        <option value="pct">%</option>
+                        <option value="pesos">$</option>
+                      </select>
+                    </div>
+                  </Entrada>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Reventa al promedio {dinero(r.promedio)} − gastos {dinero(gastos)} − ganancia {dinero(Math.round(margenPesos))}
-                </p>
-                <p className="text-lg">
-                  Valor máximo que debes ofrecer: <b>{dinero(Math.round(maximo))}</b>
-                </p>
+                <div className="flex flex-wrap gap-4 text-sm">
+                  <label className="flex items-center gap-2"><input type="checkbox" className="h-4 w-4" checked={f.tecnoExento} onChange={(e) => setF((p) => ({ ...p, tecnoExento: e.target.checked }))} /> Tecnomecánica exenta por modelo nuevo</label>
+                  <label className="flex items-center gap-2"><input type="checkbox" className="h-4 w-4" checked={f.certificado} onChange={(e) => setF((p) => ({ ...p, certificado: e.target.checked }))} /> Certificado de tradición ({dinero(redondear(58400 * factor))})</label>
+                  <label className="flex items-center gap-2"><input type="checkbox" className="h-4 w-4" checked={f.prenda} onChange={(e) => setF((p) => ({ ...p, prenda: e.target.checked }))} /> Levantamiento de prenda ({dinero(redondear(206900 * factor))})</label>
+                </div>
+
+                <div className="grid gap-2 md:grid-cols-2">
+                  <div className="rounded-lg border border-primary/50 bg-primary/10 p-3 text-center">
+                    <p className="text-xs text-muted-foreground">Oferta inicial de compra sugerida</p>
+                    <p className="text-xl font-semibold">{dinero(inicial)}</p>
+                    <p className="text-xs text-muted-foreground">Para abrir la negociación</p>
+                  </div>
+                  <div className="rounded-lg border border-emerald-500/50 bg-emerald-500/10 p-3 text-center">
+                    <p className="text-xs text-muted-foreground">Oferta tope máxima de compra</p>
+                    <p className="text-xl font-semibold">{dinero(maximo)}</p>
+                    <p className="text-xs text-muted-foreground">Sin sacrificar tu ganancia mínima</p>
+                  </div>
+                </div>
+
+                <ul className="space-y-1 text-sm text-muted-foreground">
+                  <li>Valor de mercado consultado: {dinero(r.promedio)}</li>
+                  <li>− Traspaso total: {dinero(traspasoTotal)}</li>
+                  <li>− Retención en la fuente 1 %: {dinero(retefuente)}</li>
+                  <li>
+                    − Prorrateo SOAT/Tecnomecánica: {dinero(papeles)}
+                    {pSoat.dias !== null && ` (SOAT: ${pSoat.dias <= 0 ? "vencido" : `${pSoat.dias} días`})`}
+                    {pTecno.dias !== null && ` (Tecno: ${pTecno.dias <= 0 ? "vencida" : `${pTecno.dias} días`})`}
+                  </li>
+                  <li>− Alistamiento y peritaje interno: {dinero(alistamiento)}</li>
+                  <li>− Utilidad esperada: {dinero(Math.round(margenPesos))}</li>
+                </ul>
                 {precio > 0 && (
                   <p className={`text-sm ${precio <= maximo ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
                     {precio <= maximo
                       ? "El precio pedido está dentro de lo seguro."
-                      : `El precio pedido supera lo seguro por ${dinero(Math.round(precio - maximo))}. Negocia.`}
+                      : `El precio pedido supera la oferta tope por ${dinero(Math.round(precio - maximo))}. Negocia.`}
                   </p>
                 )}
+                <p className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 text-sm font-medium">{NOTA_PERITAJE}</p>
+                <button type="button" onClick={() => void copiarWhatsApp()} className="inline-flex items-center gap-2 rounded-lg border border-glass-border px-3 py-2 text-sm">
+                  <MessageCircle className="h-4 w-4" /> Copiar oferta para WhatsApp
+                </button>
               </div>
 
               {r.fuentes.length > 0 && (
