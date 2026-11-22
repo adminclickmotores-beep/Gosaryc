@@ -178,6 +178,12 @@ export const MANUAL_FIJO = `
 - Aprende solo de las respuestas reales del dueño a sus clientes y de las conversaciones que terminan en pedido, cita o cliente ganado (mejores respuestas a objeciones). Los cambios en productos, precios, servicios y vehículos los ve el agente al instante.
 - En WhatsApp IA hay un visor con el contador de reglas aprendidas (de internet, del dueño y de ventas cerradas); solo se pueden quitar las que no se quieran.
 - Normativa de Colombia (UVT, SMMLV, auxilio de transporte, recargos, PILA, Decreto 1072, Res. 0312, 1843, 4272, Ley 675, SIMIT) se verifica sola cada 7 días; Nómina, Contabilidad y Salud/SST muestran «Normativa Colombia verificada en internet • Última actualización» con botón «Verificar ahora». No cambia las fórmulas ya configuradas.
+
+# 21. PRECIOS INTELIGENTES, INVENTARIO QUEDADO Y TASADOR DE VEHÍCULOS
+- Productos tiene las pestañas «Rentabilidad y precios sugeridos» (semáforo rojo/ámbar/verde con costo real e inflación de internet, precio de equilibrio, precio sugerido y botón para aplicarlo en 1 clic) e «Inventario quedado y ofertas sugeridas».
+- Tasador de vehículos usados (carros y motos): precarga traspaso, retención 1 %, certificado de tradición, levantamiento de prenda y alistamiento con tarifas de Colombia del año (tabla que se actualiza sola con IA e internet cada año o cada 30 días). Considera SOAT y Tecnomecánica con descuento proporcional, combustible (GNV con alerta), dueños, color, ciudad, kilometraje alto, impuestos pendientes y tendencia del modelo.
+- El tasador muestra solo oferta inicial, oferta tope, desglose y cláusula de peritaje; no muestra precio de venta ni consulta placas.
+- Inventario de vehículos: botón «Revisar Precios de mi Vitrina vs. Mercado del Mes» (hasta 8 vehículos disponibles).
 `;
 
 const RUTAS_INSTRUCTIVO = [
