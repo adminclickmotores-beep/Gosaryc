@@ -101,6 +101,14 @@ const ESTILOS = `
 .gs-land input.gs-input{background:var(--gs-card);border:1px solid var(--gs-borde);color:var(--gs-texto);font-size:16px}
 .gs-land input.gs-input:focus{outline:none;border-color:var(--gs-cobalto);box-shadow:0 0 0 3px color-mix(in srgb,var(--gs-cobalto) 25%,transparent)}
 .gs-land .gs-final{background:linear-gradient(135deg,#172554,#0f172a 55%,#000)}
+.gs-land h1.gs-grad-titulo{background:linear-gradient(90deg,#020617,#065f46 55%,#0d9488);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.gs-land.gs-dark h1.gs-grad-titulo{background:linear-gradient(90deg,#fff,#a7f3d0 55%,#67e8f9);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.gs-land .gs-cta-esm{background:linear-gradient(135deg,#10b981,#06b6d4);color:#fff;font-weight:700;box-shadow:0 10px 30px -8px rgba(16,185,129,.55);transition:transform .15s,box-shadow .15s}
+.gs-land .gs-cta-esm:hover{transform:translateY(-1px);box-shadow:0 14px 36px -8px rgba(6,182,212,.6)}
+.gs-land .gs-cristal{background:var(--gs-glass);border:1px solid var(--gs-borde);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+@keyframes gs-flota{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.gs-land .gs-flota{animation:gs-flota 5s ease-in-out infinite}
+.gs-land .gs-flota-2{animation:gs-flota 6s ease-in-out infinite reverse}
 @keyframes gs-barra{from{transform:scaleY(.2)}to{transform:scaleY(1)}}
 .gs-land .gs-barra{transform-origin:bottom;animation:gs-barra .9s cubic-bezier(.2,.8,.2,1) both}
 `;
@@ -440,6 +448,12 @@ function LandingPage() {
             <img src="/icono-app.svg" alt={`Logo de ${BRAND.name}`} className="h-9 w-9 rounded-xl object-cover" />
             <span className="gs-titulo truncate text-xl">{BRAND.name}</span>
           </Link>
+          <nav className="gs-muted hidden items-center gap-1 text-sm font-medium lg:flex" aria-label="Principal">
+            <a href="#sectores" className="rounded-full px-3 py-2 hover:opacity-80">Soluciones por Sector</a>
+            <a href="#conocer" className="rounded-full px-3 py-2 hover:opacity-80">CRM Inteligente</a>
+            <a href="#crm-ia" className="rounded-full px-3 py-2 hover:opacity-80">WhatsApp IA 24/7</a>
+            <Link to="/demo" className="rounded-full px-3 py-2 hover:opacity-80">Demostración en Vivo</Link>
+          </nav>
           <div className="flex shrink-0 items-center gap-2">
             <button type="button" onClick={cambiarTema} aria-label={oscuro ? "Activar modo claro" : "Activar modo oscuro"} className="gs-sec grid h-10 w-10 place-items-center rounded-full">
               {oscuro ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -448,7 +462,7 @@ function LandingPage() {
             {session ? (
               <Link to="/restaurante" className="gs-cta inline-flex rounded-full px-5 py-2.5 text-sm">Ir a mi panel</Link>
             ) : (
-              <Link to="/login" search={{ mode: "signin" }} className="gs-cta inline-flex rounded-full px-5 py-2.5 text-sm">Iniciar sesión</Link>
+              <Link to="/login" search={{ mode: "signin" }} className="gs-cta-esm inline-flex rounded-full px-5 py-2.5 text-sm">Iniciar sesión</Link>
             )}
           </div>
         </div>
@@ -458,27 +472,32 @@ function LandingPage() {
         {/* A. HERO */}
         <section className="grid items-center gap-10 pb-6 pt-12 sm:pt-20 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
           <div className="min-w-0">
-            <p className="gs-card inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium">
+            <p className="gs-cristal inline-flex max-w-full flex-wrap items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium" style={{ boxShadow: "0 0 0 1px color-mix(in srgb, var(--gs-esm) 35%, transparent), 0 0 24px -6px color-mix(in srgb, var(--gs-esm) 55%, transparent)" }}>
               <span className="h-2 w-2 animate-pulse rounded-full" style={{ background: "var(--gs-esm)" }} />
-              Multiplataforma · Web, Android y PC · Hecho en Colombia
+              Multiplataforma • Web, Android y PC • +48 Sectores en Colombia
             </p>
-            <h1 className="gs-titulo mt-6 break-words text-4xl leading-[1.05] sm:text-6xl">
+            <h1 className="gs-titulo gs-grad-titulo mt-6 break-words pb-1 text-4xl leading-[1.05] sm:text-6xl">
               Controla cada peso, cada venta y cada turno de tu negocio.
             </h1>
-            <p className="gs-muted mt-6 max-w-xl text-base sm:text-lg">
+            <p className="gs-muted mt-6 max-w-xl text-base leading-relaxed sm:text-lg">
               El sistema POS y administrativo todo-en-uno para restaurantes, compraventas, talleres, tiendas y +50 sectores en Colombia. Escanea códigos de barras con tu celular o pistola, imprime tirillas térmicas 58mm/80mm y comandas, factura con la DIAN, liquida nómina legal y vende 24/7 con Agente WhatsApp IA + CRM y bandeja PQRS, incluso sin internet.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link to="/login" search={{ mode: "signup" }} className="gs-cta inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
-                Empieza 30 días gratis sin compromiso <ArrowRight className="h-4 w-4" />
+              <Link to="/demo" className="gs-cta-esm inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
+                Probar Demo Interactiva <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link to="/demo" className="gs-sec inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-bold">
-                ▶ Probar Demo Interactiva en Vivo (Sin registro)
+              <Link to="/login" search={{ mode: "signup" }} className="gs-cristal inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-bold">
+                Crear Cuenta / 30 Días Gratis
               </Link>
-              <Link to="/instalar" className="gs-sec inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
-                <Download className="h-4 w-4" /> Descargar App Android / PC
+              <Link to="/instalar" className="gs-cristal inline-flex items-center justify-center gap-2 rounded-full px-5 py-3.5 text-sm sm:hidden">
+                <Download className="h-4 w-4" /> Descargar App
               </Link>
             </div>
+            <ul className="gs-muted mt-4 flex flex-wrap gap-x-5 gap-y-1 text-xs font-semibold">
+              {["Sin tarjeta", "Facturación DIAN", "Funciona sin internet"].map((t) => (
+                <li key={t} className="inline-flex items-center gap-1.5"><Check className="gs-verde h-4 w-4" /> {t}</li>
+              ))}
+            </ul>
             <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
               <span className="gs-muted font-medium">Abre directo:</span>
               <Link to="/demo" search={{ sector: "auto" }} className="gs-sec inline-flex rounded-full px-3 py-1.5 font-semibold">AutoElite Colombia</Link>
@@ -497,8 +516,14 @@ function LandingPage() {
           </div>
 
           <div className="relative min-w-0" aria-hidden="true">
-            <div className="absolute -inset-6 -z-10 rounded-[40px] opacity-20 blur-3xl" style={{ background: "linear-gradient(135deg, var(--gs-cobalto), var(--gs-esm))" }} />
-            <div className="gs-card space-y-4 p-5" style={{ boxShadow: "0 24px 60px -30px color-mix(in srgb, var(--gs-cobalto) 60%, transparent)" }}>
+            <div className="absolute -inset-8 -z-10 rounded-full bg-emerald-500/20 blur-3xl" />
+            <div className="gs-flota absolute -top-4 right-2 z-20 inline-flex max-w-[85%] items-center gap-2 rounded-full px-3 py-2 text-[11px] font-bold shadow-lg gs-cristal">
+              <MessageCircle className="gs-verde h-4 w-4 shrink-0" /> <span className="truncate">WhatsApp IA • Pedido tomado ($84.000)</span>
+            </div>
+            <div className="gs-flota-2 absolute -bottom-4 left-2 z-20 inline-flex max-w-[85%] items-center gap-2 rounded-full px-3 py-2 text-[11px] font-bold shadow-lg gs-cristal">
+              <TrendingUp className="gs-azul h-4 w-4 shrink-0" /> <span className="truncate">CRM • Lead Score 94 pts • Preaprobado</span>
+            </div>
+            <div className="gs-card mt-4 space-y-4 rounded-3xl p-5 backdrop-blur-xl" style={{ boxShadow: "0 24px 60px -30px color-mix(in srgb, var(--gs-esm) 70%, transparent)" }}>
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="gs-muted text-xs">Ventas de hoy</p>
@@ -509,7 +534,7 @@ function LandingPage() {
               </div>
               <div className="flex h-24 items-end gap-2">
                 {[38, 55, 42, 70, 52, 88, 64].map((h, i) => (
-                  <div key={i} className="gs-barra flex-1 rounded-t-lg" style={{ height: `${h}%`, background: i % 2 === 0 ? "var(--gs-cobalto)" : "var(--gs-esm)", animationDelay: `${i * 80}ms` }} />
+                  <div key={i} className="gs-barra flex-1 rounded-t-lg" style={{ height: `${h}%`, background: "linear-gradient(to top, #10b981, #22d3ee)", animationDelay: `${i * 80}ms` }} />
                 ))}
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -529,7 +554,8 @@ function LandingPage() {
         </section>
 
         {/* B. SELECTOR POR ESPECIALIDAD */}
-        <Aparece className="mt-20">
+        <Aparece className="mt-20 scroll-mt-24">
+          <span id="sectores" className="block scroll-mt-24" />
           <Encabezado ojo="Propuestas dirigidas" titulo="Una solución pensada para tu tipo de negocio" texto="Elige tu especialidad y mira cómo se ve Gosaryc en tu día a día." />
           <SelectorEspecialidad />
         </Aparece>
