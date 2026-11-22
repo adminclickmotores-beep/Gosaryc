@@ -10,6 +10,7 @@ import { escaparHtml, imprimirComandaTermica, imprimirFactura } from "@/lib/expo
 import { LIMITES, limpiarTexto } from "@/lib/validacion-publica";
 import { useNegocio } from "@/hooks/use-negocio";
 import { useBarcodeScanner } from "@/hooks/use-barcode-scanner";
+import { CamaraEscaner } from "@/components/comercio/CamaraEscaner";
 import { descontarStockOffline, evitarSubmitConEnter, generarEAN13, reproducirBeep, stockEfectivoOffline } from "@/lib/escaner-barras";
 import { mismoTipoNegocio } from "@/lib/modulos-negocio";
 import { autoComandaActivada, estadoApiLocal, fijarImpresionDirecta, impresionDirectaActivada, imprimirComandaCocina, imprimirTirillaLocal, leerImpresoraCaja } from "@/lib/impresion-local";
@@ -585,21 +586,24 @@ export function VentaPOS({ onCambio }: { onCambio?: () => void }) {
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(380px,26rem)]">
       <div className="min-w-0 space-y-4">
-        <div className="relative">
-          <ScanBarcode className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-          <input
-            className={`${campo} rounded-2xl py-3.5 pl-12 shadow-sm`}
-            placeholder="Escanea código de barras o busca producto..."
-            value={busqueda}
-            autoComplete="off"
-            onChange={(e) => setBusqueda(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                procesarCodigoEscaneado(busqueda);
-              }
-            }}
-          />
+        <div className="flex items-center gap-2">
+          <div className="relative min-w-0 flex-1">
+            <ScanBarcode className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+            <input
+              className={`${campo} rounded-2xl py-3.5 pl-12 shadow-sm`}
+              placeholder="Escanea código de barras o busca producto..."
+              value={busqueda}
+              autoComplete="off"
+              onChange={(e) => setBusqueda(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  procesarCodigoEscaneado(busqueda);
+                }
+              }}
+            />
+          </div>
+          <CamaraEscaner onScan={(c) => procesarCodigoEscaneado(c)} />
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1 text-sm">
           {[{ id: "todas", nombre: "Todos" }, ...categorias].map((c) => (

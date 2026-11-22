@@ -9,6 +9,7 @@ import { ModuleHeader } from "@/components/ui-custom/ModuleHeader";
 import { identidadRubro, resolverTipoNegocio } from "@/lib/modulos-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { useBarcodeScanner } from "@/hooks/use-barcode-scanner";
+import { CamaraEscaner } from "@/components/comercio/CamaraEscaner";
 import { descontarStockOffline, evitarSubmitConEnter, generarEAN13, reproducirBeep, stockEfectivoOffline } from "@/lib/escaner-barras";
 import { CLASE_NIVEL, diasPara, nivelVence, textoVence, type NivelVence } from "@/lib/lotes-comercio";
 import { escaparHtml, exportarExcel, imprimirReporte } from "@/lib/exportes";
@@ -824,22 +825,25 @@ export function PosComercial() {
       <Encabezado titulo="Punto de venta" texto="Escanea el código de barras o escribe el SKU y presiona Enter. Vende por peso, fracción o caja con el precio proporcional exacto." />
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(340px,24rem)]">
         <div className="min-w-0 space-y-3">
-          <div className="relative">
-            <ScanBarcode className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-            <input
-              ref={lector}
-              className={`${campo} rounded-2xl py-3.5 pl-12`}
-              placeholder="Escanea código de barras o busca producto..."
-              value={codigo}
-              autoComplete="off"
-              onChange={(e) => setCodigo(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  escanear();
-                }
-              }}
-            />
+          <div className="flex items-center gap-2">
+            <div className="relative min-w-0 flex-1">
+              <ScanBarcode className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+              <input
+                ref={lector}
+                className={`${campo} rounded-2xl py-3.5 pl-12`}
+                placeholder="Escanea código de barras o busca producto..."
+                value={codigo}
+                autoComplete="off"
+                onChange={(e) => setCodigo(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    escanear();
+                  }
+                }}
+              />
+            </div>
+            <CamaraEscaner onScan={(c) => procesarCodigoEscaneado(c)} />
           </div>
           {sugeridos.length > 0 && (
             <div className="flex flex-wrap gap-2">
