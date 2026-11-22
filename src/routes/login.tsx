@@ -37,6 +37,9 @@ function LoginPage() {
   const [resendBusy, setResendBusy] = useState(false);
   const [recordar, setRecordar] = useState(true);
   const [errorDetalle, setErrorDetalle] = useState<string | null>(null);
+  const [diagnostico, setDiagnostico] = useState<{ titulo: string; causa: string; pasos: string[]; tono: "rojo" | "ambar" } | null>(null);
+  const [verTecnico, setVerTecnico] = useState(false);
+  const [copiado, setCopiado] = useState(false);
 
   useEffect(() => {
     if (search.mode) setMode(search.mode);
@@ -86,6 +89,9 @@ function LoginPage() {
     }
     setBusy(true);
     setErrorDetalle(null);
+    setDiagnostico(null);
+    setVerTecnico(false);
+    setCopiado(false);
     try {
       if (mode === "signup") {
         guardarPreferenciaSesion();
@@ -158,10 +164,37 @@ function LoginPage() {
           const extra = `prueba directa al servidor: respondió HTTP ${r.status}`;
           console.error("[Login] " + extra);
           setErrorDetalle(`${detalle} | ${extra}`);
+          setDiagnostico({
+            titulo: "El servidor sí responde, pero el inicio de sesión no pudo completarse",
+            causa: "Tu dispositivo llega al servicio (respondió HTTP " + r.status + "). Probablemente fue una caída breve o un bloqueo momentáneo en esa petición.",
+            pasos: [
+              "Espera unos segundos e inténtalo de nuevo.",
+              "Recarga la página con Ctrl + F5 (o cierra y abre la app).",
+              "Desactiva por un momento extensiones que bloquean anuncios o rastreadores.",
+              "Si se repite, copia el detalle técnico y envíalo a soporte.",
+            ],
+            tono: "ambar",
+          });
         } catch (pe) {
           const extra = `prueba directa al servidor: sin respuesta (${pe instanceof Error ? pe.message : String(pe)}). Puede ser bloqueo de red/extensión/VPN o el proyecto está en pausa.`;
           console.error("[Login] " + extra);
           setErrorDetalle(`${detalle} | ${extra}`);
+          const sinInternet = typeof navigator !== "undefined" && !navigator.onLine;
+          setDiagnostico({
+            titulo: sinInternet ? "Tu dispositivo no tiene internet" : "No hay respuesta del servidor",
+            causa: sinInternet
+              ? "El equipo reporta que está sin conexión."
+              : "La página cargó, pero la petición al servicio de inicio de sesión no obtuvo respuesta. Puede ser tu red, una VPN, un antivirus o extensión que la bloquea, o que el servicio esté en pausa o con una caída.",
+            pasos: sinInternet
+              ? ["Revisa tu Wi-Fi o datos móviles.", "Cuando vuelva la conexión, inténtalo otra vez."]
+              : [
+                  "Prueba desde otra red (por ejemplo, datos móviles del celular).",
+                  "Desactiva la VPN, el modo ahorro de datos o el antivirus web un momento.",
+                  "Prueba en una ventana de incógnito sin extensiones.",
+                  "Si en todas las redes falla, el servicio está caído o pausado: espera unos minutos y reintenta; tus datos están a salvo.",
+                ],
+            tono: "rojo",
+          });
         }
       }
       if (esRed && (!urlProyecto || !hayClave)) {
@@ -450,8 +483,42 @@ function LoginPage() {
                     role="alert"
                     className="break-words rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-foreground"
                   >
-                    <p className="mb-1 font-medium">Detalle del error</p>
-                    <p className="break-all text-muted-foreground">{errorDetalle}</p>
+                    {diagnostico && (
+                      <div className="mb-2">
+                        <p className="text-sm font-semibold">{diagnostico.titulo}</p>
+                        <p className="mt-1 text-muted-foreground">{diagnostico.causa}</p>
+                        <p className="mt-2 font-medium">Qué puedes hacer:</p>
+                        <ol className="mt-1 list-decimal space-y-0.5 pl-4 text-muted-foreground">
+                          {diagnostico.pasos.map((p: string) => (
+                            <li key={p}>{p}</li>
+                          ))}
+                        </ol>
+                      </div>
+                    )}
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button
+                        type="button"
+                        className="text-primary underline-offset-2 hover:underline"
+                        onClick={() => setVerTecnico((v: boolean) => !v)}
+                      >
+                        {verTecnico ? "Ocultar detalle técnico" : "Ver detalle técnico"}
+                      </button>
+                      <button
+                        type="button"
+                        className="text-primary underline-offset-2 hover:underline"
+                        onClick={() => {
+                          void navigator.clipboard?.writeText(errorDetalle).then(() => {
+                            setCopiado(true);
+                            setTimeout(() => setCopiado(false), 2000);
+                          });
+                        }}
+                      >
+                        {copiado ? "Copiado" : "Copiar detalle"}
+                      </button>
+                    </div>
+                    {(verTecnico || !diagnostico) && (
+                      <p className="mt-2 break-all text-muted-foreground">{errorDetalle}</p>
+                    )}
                   </div>
                 )}
               </form>
