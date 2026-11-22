@@ -20,6 +20,7 @@ import {
   type AgenteAutoRow,
 } from "@/lib/agente-autoconfig";
 import { entrenarSectorAgente } from "@/lib/agente-entrenamiento.functions";
+import { perfilCrm, datosSectorDe, type CampoCrm, type PerfilCrm } from "@/lib/crm-campos-sector";
 
 type Lead = Tables<"crm_leads">;
 type Pqrs = Tables<"crm_pqrs">;
@@ -747,6 +748,7 @@ export function CrmEmbudo() {
           negocioId={negocio.id}
           ownerId={negocio.owner_id ?? user.id}
           etapas={etapas}
+          tipoClave={tipo.clave}
         />
       )}
       {abierto && (
@@ -1470,13 +1472,17 @@ function NuevoProspecto({
   negocioId,
   ownerId,
   etapas,
+  tipoClave,
 }: {
   onCerrar: () => void;
   onCreado: () => void;
   negocioId: string;
   ownerId: string;
   etapas: Etapa[];
+  tipoClave: string;
 }) {
+  const perfil = perfilCrm(tipoClave);
+  const [sector, setSector] = useState<Record<string, string>>({});
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
   const [interes, setInteres] = useState("");
@@ -1496,7 +1502,13 @@ function NuevoProspecto({
   const guardar = async () => {
     if (!nombre.trim()) return toast.error("Escribe el nombre del prospecto.");
     setGuardando(true);
-    const extra: Record<string, string> = {};
+    const extra: Record<string, unknown> = {};
+    const datosSector: Record<string, string> = {};
+    for (const c of perfil.campos) {
+      const v = limpiarTexto(sector[c.id] ?? "", c.tipo === "area" ? 400 : 120);
+      if (v) datosSector[c.id] = v;
+    }
+    if (Object.keys(datosSector).length > 0) extra.sector_datos = datosSector;
     if (correo.trim()) extra.correo = limpiarTexto(correo, 120);
     if (ciudad.trim()) extra.ciudad = limpiarTexto(ciudad, 80);
     if (documento.trim()) extra.documento = limpiarTexto(documento, 30);
@@ -1541,13 +1553,13 @@ function NuevoProspecto({
           {[
             ["Nombre", nombre, setNombre, 80],
             ["Teléfono / WhatsApp", telefono, setTelefono, 20],
-            ["Interés", interes, setInteres, 300],
-            ["Valor estimado (COP)", valor, setValor, 12],
+            [perfil.interes, interes, setInteres, 300],
+            [perfil.valor, valor, setValor, 12],
             ["Correo electrónico", correo, setCorreo, 120],
             ["Ciudad", ciudad, setCiudad, 80],
             ["Documento / NIT", documento, setDocumento, 30],
-            ["Capacidad de pago / presupuesto", capacidad, setCapacidad, 120],
-            ["Próxima acción (ej. llamar, enviar cotización)", proxAccion, setProxAccion, 160],
+            [perfil.capacidad, capacidad, setCapacidad, 120],
+            [`Próxima acción (${perfil.accionAyuda})`, proxAccion, setProxAccion, 160],
           ].map(([et, v, set, max]) => (
             <label key={et as string} className="block text-sm">
               <span className="mb-1 block text-muted-foreground">{et as string}</span>
@@ -1555,11 +1567,20 @@ function NuevoProspecto({
                 className="w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base"
                 value={v as string}
                 maxLength={max as number}
-                inputMode={et === "Valor estimado (COP)" || et === "Teléfono / WhatsApp" ? "numeric" : "text"}
+                placeholder={et === perfil.interes ? perfil.interesAyuda : undefined}
+                inputMode={et === perfil.valor || et === "Teléfono / WhatsApp" ? "numeric" : "text"}
                 onChange={(e) => (set as (x: string) => void)(e.target.value)}
               />
             </label>
           ))}
+          {perfil.campos.length > 0 && (
+            <div className="space-y-3 rounded-xl border border-primary/30 bg-primary/5 p-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary">{perfil.titulo}</p>
+              {perfil.campos.map((c) => (
+                <CampoSector key={c.id} campo={c} valor={sector[c.id] ?? ""} onCambio={(v: string) => setSector((s) => ({ ...s, [c.id]: v }))} />
+              ))}
+            </div>
+          )}
           <label className="block text-sm">
             <span className="mb-1 block text-muted-foreground">Fecha de la próxima acción</span>
             <input type="date" className="w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base" value={proxFecha} onChange={(e) => setProxFecha(e.target.value)} />
@@ -1612,6 +1633,79 @@ function NuevoProspecto({
           </button>
         </div>
       </GlassPanel>
+    </div>
+  );
+}
+
+const CLASE_CAMPO = "w-full rounded-lg border border-glass-border bg-background/60 px-3 py-2 text-base";
+
+/** Una pregunta propia del sector (texto, número, lista, fecha o párrafo). */
+function CampoSector({ campo, valor, onCambio }: { campo: CampoCrm; valor: string; onCambio: (v: string) => void }) {
+  return (
+    <label className="block text-sm">
+      <span className="mb-1 block text-muted-foreground">{campo.etiqueta}</span>
+      {campo.tipo === "opciones" ? (
+        <select className={CLASE_CAMPO} value={valor} onChange={(e) => onCambio(e.target.value)}>
+          <option value="">Sin definir</option>
+          {(campo.opciones ?? []).map((op) => (
+            <option key={op} value={op}>{op}</option>
+          ))}
+        </select>
+      ) : campo.tipo === "area" ? (
+        <textarea className={`${CLASE_CAMPO} min-h-16`} value={valor} maxLength={400} onChange={(e) => onCambio(e.target.value)} />
+      ) : (
+        <input
+          className={CLASE_CAMPO}
+          type={campo.tipo === "fecha" ? "date" : "text"}
+          inputMode={campo.tipo === "numero" ? "numeric" : "text"}
+          value={valor}
+          maxLength={120}
+          onChange={(e) => onCambio(campo.tipo === "numero" ? e.target.value.replace(/[^\d.,]/g, "") : e.target.value)}
+        />
+      )}
+    </label>
+  );
+}
+
+/** Datos propios del tipo de negocio dentro de la ficha 360°. */
+function FichaSector({ lead, perfil, onParchar }: { lead: Lead; perfil: PerfilCrm; onParchar: (l: Lead, c: Partial<Lead>) => Promise<void> }) {
+  const [datos, setDatos] = useState<Record<string, string>>(() => datosSectorDe(extraDe(lead)));
+  const [sucio, setSucio] = useState(false);
+  if (perfil.campos.length === 0) return null;
+  const guardar = () => {
+    const limpio: Record<string, string> = {};
+    for (const c of perfil.campos) {
+      const v = limpiarTexto(datos[c.id] ?? "", c.tipo === "area" ? 400 : 120);
+      if (v) limpio[c.id] = v;
+    }
+    void onParchar(lead, {
+      datos_extra: nuevoExtra(lead, { sector_datos: limpio }, { tipo: "Datos", texto: `Actualizó ${perfil.titulo.toLowerCase()}`, cuando: new Date().toISOString() }),
+    });
+    setSucio(false);
+    toast.success("Datos guardados");
+  };
+  return (
+    <div className="space-y-3 rounded-xl border border-primary/30 bg-primary/5 p-3">
+      <p className="text-xs font-semibold uppercase tracking-wider text-primary">{perfil.titulo}</p>
+      {perfil.campos.map((c) => (
+        <CampoSector
+          key={c.id}
+          campo={c}
+          valor={datos[c.id] ?? ""}
+          onCambio={(v: string) => {
+            setDatos((d) => ({ ...d, [c.id]: v }));
+            setSucio(true);
+          }}
+        />
+      ))}
+      <button
+        type="button"
+        disabled={!sucio}
+        onClick={guardar}
+        className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
+      >
+        Guardar datos
+      </button>
     </div>
   );
 }
@@ -2027,8 +2121,9 @@ function Panel360({
                   <p className="whitespace-pre-line text-sm">{extra.resumen_ia}</p>
                 </div>
               )}
-              <Dato k="Interés" v={lead.interes} />
-              <Dato k="Capacidad de pago / cuota inicial" v={lead.capacidad_pago} />
+              <FichaSector key={lead.id} lead={lead} perfil={perfilCrm(tipoClave)} onParchar={onParchar} />
+              <Dato k={perfilCrm(tipoClave).interes} v={lead.interes} />
+              <Dato k={perfilCrm(tipoClave).capacidad} v={lead.capacidad_pago} />
               <Dato k="Urgencia" v={lead.urgencia} />
               <div className="space-y-2 rounded-xl border border-glass-border p-3">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Próxima acción</p>
