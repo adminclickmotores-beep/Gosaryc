@@ -18,6 +18,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 import { exportarExcel } from "@/lib/exportes";
+import { BorradorRenta } from "@/components/fiscal/BorradorRenta";
 import { actualizarNormativa, asesorContable, type MensajeContador } from "@/lib/contador-ia.functions";
 
 type Cuenta = Tables<"cuentas_contables">;
@@ -671,6 +672,14 @@ export function ContadorPro({ cuentas, filas }: { cuentas: Cuenta[]; filas: Asie
               </label>
             </GlassPanel>
           </div>
+
+          <BorradorRenta
+            ingresos={libro.ingresos}
+            gastos={libro.gastos}
+            retenciones={Math.max(0, fiscal.retencionesAFavor)}
+            nombre={negocio?.nombre ?? ""}
+            nit=""
+          />
 
           <GlassPanel className="space-y-2 p-4">
             <p className="text-sm font-medium text-foreground">Tarifas ICA por CIIU y municipio</p>
