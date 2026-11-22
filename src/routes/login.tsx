@@ -145,6 +145,25 @@ function LoginPage() {
       setErrorDetalle(detalle);
       const bruto = (e2?.message ?? "").toLowerCase();
       const esRed = bruto.includes("failed to fetch") || bruto.includes("networkerror") || bruto.includes("load failed");
+      if (esRed && urlProyecto) {
+        // Prueba directa al servicio de autenticación para saber si el servidor responde.
+        try {
+          const ctl = new AbortController();
+          const t = setTimeout(() => ctl.abort(), 8000);
+          const r = await fetch(`${urlProyecto.replace(/\/+$/, "")}/auth/v1/health`, {
+            headers: { apikey: (import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] as string | undefined) ?? "" },
+            signal: ctl.signal,
+          });
+          clearTimeout(t);
+          const extra = `prueba directa al servidor: respondió HTTP ${r.status}`;
+          console.error("[Login] " + extra);
+          setErrorDetalle(`${detalle} | ${extra}`);
+        } catch (pe) {
+          const extra = `prueba directa al servidor: sin respuesta (${pe instanceof Error ? pe.message : String(pe)}). Puede ser bloqueo de red/extensión/VPN o el proyecto está en pausa.`;
+          console.error("[Login] " + extra);
+          setErrorDetalle(`${detalle} | ${extra}`);
+        }
+      }
       if (esRed && (!urlProyecto || !hayClave)) {
         toast.error("No se pudo conectar: faltan las variables de conexión del proyecto.");
       } else if (esRed) {
