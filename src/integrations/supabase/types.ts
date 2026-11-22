@@ -2780,6 +2780,12 @@ export type Database = {
         Update: { aplicada?: boolean; created_at?: string; fuente?: string; id?: string; resumen?: string; titulo?: string; vigencia_desde?: string | null }
         Relationships: []
       }
+      sst_matriz_legal: {
+        Row: { codigo: string; created_at: string; estado: string; evidencia: string; id: string; owner_id: string | null; proxima_revision: string | null; responsable: string }
+        Insert: { codigo: string; created_at?: string; estado?: string; evidencia?: string; id?: string; owner_id?: string | null; proxima_revision?: string | null; responsable?: string }
+        Update: { codigo?: string; created_at?: string; estado?: string; evidencia?: string; id?: string; owner_id?: string | null; proxima_revision?: string | null; responsable?: string }
+        Relationships: []
+      }
       sst_normas: {
         Row: { codigo: string; created_at: string; estado: string; fuente: string; id: string; nota: string | null; origen: string; owner_id: string | null; resumen: string; tema: string; titulo: string; ultima_actualizacion: string }
         Insert: { codigo: string; created_at?: string; estado?: string; fuente?: string; id?: string; nota?: string | null; origen?: string; owner_id?: string | null; resumen?: string; tema?: string; titulo: string; ultima_actualizacion?: string }

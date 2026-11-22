@@ -74,6 +74,12 @@ const CapacitacionesBrigadasLazy = lazy(() =>
 const NormativaSSTLazy = lazy(() =>
   import("@/components/sst/NormativaSSTPanel").then((m) => ({ default: m.NormativaSSTPanel })),
 );
+const MatrizLegalSSTLazy = lazy(() =>
+  import("@/components/sst/MatrizLegalAlertasSST").then((m) => ({ default: m.MatrizLegalSST })),
+);
+const AlertasSSTLazy = lazy(() =>
+  import("@/components/sst/MatrizLegalAlertasSST").then((m) => ({ default: m.AlertasSST })),
+);
 const SecopRadarLazy = lazy(() =>
   import("@/components/secop/SecopRadar").then((m) => ({ default: m.SecopRadar })),
 );
@@ -175,6 +181,8 @@ function ModuloPage() {
   if (id === "sst_sve") return (<Suspense fallback={<CargaModulo />}><VigilanciaAusentismoLazy /></Suspense>);
   if (id === "sst_capacitaciones") return (<Suspense fallback={<CargaModulo />}><CapacitacionesBrigadasLazy /></Suspense>);
   if (id === "secop_radar") return (<Suspense fallback={<CargaModulo />}><SecopRadarLazy /></Suspense>);
+  if (id === "sst_matriz_legal") return (<Suspense fallback={<CargaModulo />}><MatrizLegalSSTLazy /></Suspense>);
+  if (id === "sst_alertas") return (<Suspense fallback={<CargaModulo />}><AlertasSSTLazy /></Suspense>);
   if (id === "sst_normativa") return (<Suspense fallback={<CargaModulo />}><NormativaSSTLazy /></Suspense>);
   if (id === "prof_casos") return <ProfesionalCasos />;
   if (id === "tec_proyectos") return <TecnologiaProyectos />;

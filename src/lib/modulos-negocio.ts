@@ -1344,6 +1344,8 @@ const MODULOS_SST: ModuloNegocio[] = [
   m("sst_sve", "Vigilancia y ausentismo (SVE)", "Riesgo psicosocial, osteomuscular, auditivo y control de incapacidades por días.", TrendingUp),
   m("sst_capacitaciones", "Capacitaciones y brigadas", "Cronograma por temas, asistencia digital y certificados en PDF.", GraduationCap),
   m("sst_normativa", "Normativa SST Colombia (IA)", "Decreto 1072, Res. 0312, alturas y GTC 45 con actualización automática.", Scale),
+  m("sst_matriz_legal", "Matriz legal SST", "Cada norma con estado de cumplimiento, responsable, evidencia y fecha de revisión.", Scale),
+  m("sst_alertas", "Alertas SST", "Exámenes vencidos, capacitaciones, ATEL, estándares, comités y ausentismo en un solo lugar.", Bell),
 ];
 for (const t of TIPOS_NEGOCIO) {
   if (t.clave !== "salud") continue;

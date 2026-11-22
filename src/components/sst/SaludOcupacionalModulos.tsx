@@ -8,6 +8,7 @@ import { Campo, Cargando, Encabezado, boton, botonSec, campo, dinero, num } from
 import { escaparHtml, exportarExcel, imprimirReporte } from "@/lib/exportes";
 import { ClasificacionEmpleados } from "@/components/empresa/ClasificacionEmpleados";
 import { EVENTO_COTIZAR_SST, estandaresSST, type DatosCotizarSST } from "@/lib/clasificacion-empresa";
+import { NIVEL_CONSECUENCIA, NIVEL_DEFICIENCIA, NIVEL_EXPOSICION, PERFILES_CARGO, nivelAusentismo, recomendacionPorDias, reincidentes, RECOMENDACION_PROGRAMA, valorarGTC45 } from "@/lib/sst-conocimiento";
 
 type Empresa = Tables<"sst_empresas"> & { ciiu?: string | null };
 type Trab = Tables<"sst_trabajadores">;
@@ -547,6 +548,20 @@ export function ProfesiogramaMatriz() {
   const [controles, setControles] = useState("");
   const [epp, setEpp] = useState("");
   const [per, setPer] = useState("12");
+  const [perfilId, setPerfilId] = useState("");
+  const [exam, setExam] = useState("");
+  const [normaPerfil, setNormaPerfil] = useState("");
+  const [nd, setNd] = useState(6);
+  const [ne, setNe] = useState(3);
+  const [nc, setNc] = useState(25);
+  const aplicarPerfil = (id: string) => {
+    setPerfilId(id);
+    const p = PERFILES_CARGO.find((x) => x.id === id);
+    if (!p) return;
+    setCargo(p.cargo); setPeligros(p.peligros); setControles(p.controles); setEpp(p.epp);
+    setPer(String(p.periodicidad)); setExam(p.examenes); setNormaPerfil(p.norma);
+  };
+  const gtc = valorarGTC45(nd, ne, nc);
   const cargar = useCallback(async () => {
     const { data } = await supabase.from("sst_profesiogramas").select("*").order("created_at", { ascending: false }).limit(80);
     setLista(data ?? []);
@@ -556,11 +571,11 @@ export function ProfesiogramaMatriz() {
   const crear = async () => {
     if (cargo.trim().length < 2) return toast.error("Escribe el cargo.");
     const { error } = await supabase.from("sst_profesiogramas").insert({
-      empresa: empresa.trim(), cargo: cargo.trim(), peligros: peligros.trim(),
+      empresa: empresa.trim(), cargo: cargo.trim(), peligros: `${peligros.trim()}${exam ? ` | Exámenes: ${exam}` : ""}${normaPerfil ? ` | Norma: ${normaPerfil}` : ""}${peligros.trim() ? ` | Valoración GTC 45: nivel ${gtc.nivel} (NR ${gtc.nr})` : ""}`.slice(0, 900),
       controles: controles.trim(), epp: epp.trim(), periodicidad_meses: Math.max(Math.round(num(per)), 1),
     });
     if (error) return toast.error(msg(error.message, "No se pudo guardar."));
-    setCargo(""); setPeligros(""); setControles(""); setEpp("");
+    setCargo(""); setPeligros(""); setControles(""); setEpp(""); setExam(""); setNormaPerfil(""); setPerfilId("");
     toast.success("Profesiograma guardado.");
     void cargar();
   };
@@ -568,6 +583,22 @@ export function ProfesiogramaMatriz() {
   return (
     <GlassPanel>
       <Encabezado titulo="Profesiograma y matriz de peligros IPVR (GTC 45)" texto="Por cada empresa y cargo defina peligros (físico, químico, biomecánico, psicosocial, altura, confinado), controles, EPP obligatorio y cada cuántos meses se repite el examen. Cuando un examen vence, se avisa por WhatsApp desde Medicina del trabajo." />
+      <div className="mb-3 rounded-xl border border-glass-border p-3">
+        <Campo etiqueta="Perfil de cargo definido (llena peligros, controles, EPP, exámenes y norma)">
+          <select className={campo} value={perfilId} onChange={(e) => aplicarPerfil(e.target.value)}>
+            <option value="">Elegir un perfil…</option>
+            {PERFILES_CARGO.map((p) => <option key={p.id} value={p.id}>{p.cargo}</option>)}
+          </select>
+        </Campo>
+        {normaPerfil && <p className="mt-2 text-xs text-muted-foreground">Norma aplicable: {normaPerfil}. Exámenes: {exam}. Confirme con su médico laboral antes de usarlo.</p>}
+        <p className="mt-3 text-xs font-semibold">Valoración del riesgo GTC 45</p>
+        <div className="mt-1 grid gap-2 sm:grid-cols-3">
+          <Campo etiqueta="Deficiencia"><select className={campo} value={nd} onChange={(e) => setNd(Number(e.target.value))}>{NIVEL_DEFICIENCIA.map((o) => <option key={o.v} value={o.v}>{o.t}</option>)}</select></Campo>
+          <Campo etiqueta="Exposición"><select className={campo} value={ne} onChange={(e) => setNe(Number(e.target.value))}>{NIVEL_EXPOSICION.map((o) => <option key={o.v} value={o.v}>{o.t}</option>)}</select></Campo>
+          <Campo etiqueta="Consecuencia"><select className={campo} value={nc} onChange={(e) => setNc(Number(e.target.value))}>{NIVEL_CONSECUENCIA.map((o) => <option key={o.v} value={o.v}>{o.t}</option>)}</select></Campo>
+        </div>
+        <p className={`mt-2 text-sm font-semibold ${gtc.color}`}>Nivel de riesgo {gtc.nivel} (NR = {gtc.nr}) · {gtc.texto}</p>
+      </div>
       <div className="grid gap-2 sm:grid-cols-3">
         <Campo etiqueta="Empresa"><input className={campo} value={empresa} onChange={(e) => setEmpresa(e.target.value)} /></Campo>
         <Campo etiqueta="Cargo"><input className={campo} value={cargo} onChange={(e) => setCargo(e.target.value)} placeholder="Auxiliar de bodega…" /></Campo>
@@ -710,6 +741,8 @@ export function VigilanciaAusentismo() {
   const [emp, setEmp] = useState("");
   const [prog, setProg] = useState("Osteomuscular");
   const [dias, setDias] = useState("");
+  const [plantilla, setPlantilla] = useState("");
+  const [diasPeriodo, setDiasPeriodo] = useState("30");
   const cargar = useCallback(async () => {
     const { data } = await supabase.from("sst_ausentismo").select("*").order("created_at", { ascending: false }).limit(80);
     setLista(data ?? []);
@@ -729,6 +762,12 @@ export function VigilanciaAusentismo() {
   if (cargando) return <Cargando />;
   const porProg: Record<string, number> = {};
   for (const a of lista) porProg[a.programa] = (porProg[a.programa] ?? 0) + (a.dias ?? 0);
+  const totalDias = lista.reduce((s, a) => s + (a.dias ?? 0), 0);
+  const nTrab = Math.max(Math.round(num(plantilla)), 0);
+  const pctAus = nTrab > 0 ? (totalDias / (nTrab * Math.max(Math.round(num(diasPeriodo)), 1))) * 100 : 0;
+  const nivelAus = nivelAusentismo(pctAus);
+  const progMayor = Object.entries(porProg).sort((x, y) => y[1] - x[1])[0];
+  const repetidos = reincidentes(lista, new Date());
   return (
     <GlassPanel>
       <Encabezado titulo="Vigilancia epidemiológica (SVE) y ausentismo" texto="Lleve cada incapacidad por programa: riesgo psicosocial, osteomuscular o ergonómico, auditivo, respiratorio y cardiovascular. El total de días perdidos por programa le muestra dónde actuar primero." />
@@ -736,6 +775,17 @@ export function VigilanciaAusentismo() {
         {Object.entries(porProg).map(([k, v]) => (
           <span key={k} className="rounded-full border border-glass-border px-3 py-1 text-xs">{k}: {v} días</span>
         ))}
+      </div>
+      <div className="mb-3 rounded-xl border border-glass-border p-3">
+        <p className="text-xs font-semibold">Nivel de ausentismo</p>
+        <div className="mt-1 grid gap-2 sm:grid-cols-3">
+          <Campo etiqueta="Trabajadores de la empresa"><input className={campo} inputMode="numeric" value={plantilla} onChange={(e) => setPlantilla(e.target.value)} /></Campo>
+          <Campo etiqueta="Días del periodo"><input className={campo} inputMode="numeric" value={diasPeriodo} onChange={(e) => setDiasPeriodo(e.target.value)} /></Campo>
+          <div className="flex items-end text-sm">{nTrab > 0 ? <span className={`font-semibold ${nivelAus.color}`}>{pctAus.toFixed(2)} % · nivel {nivelAus.nivel}</span> : <span className="text-xs text-muted-foreground">Escribe cuántos trabajadores hay para calcular el porcentaje.</span>}</div>
+        </div>
+        {nTrab > 0 && <p className="mt-2 text-xs text-muted-foreground">{nivelAus.texto} Fórmula: días perdidos ({totalDias}) ÷ (trabajadores × días del periodo) × 100.</p>}
+        {progMayor && <p className="mt-2 text-xs"><b>Programa con más días: {progMayor[0]} ({progMayor[1]} días).</b> {RECOMENDACION_PROGRAMA[progMayor[0]]}</p>}
+        {repetidos.map((r) => <p key={r.trabajador} className="mt-1 text-xs font-semibold text-red-500">Alerta: {r.trabajador} suma {r.veces} incapacidades ({r.dias} días) en 6 meses. Cite a valoración con el médico laboral.</p>)}
       </div>
       <div className="grid gap-2 sm:grid-cols-4">
         <Campo etiqueta="Trabajador"><input className={campo} value={trab} onChange={(e) => setTrab(e.target.value)} /></Campo>
@@ -752,6 +802,7 @@ export function VigilanciaAusentismo() {
         {lista.map((a) => (
           <div key={a.id} className="rounded-xl border border-glass-border p-3">
             <p className="text-sm font-semibold">{a.trabajador} <span className="text-xs text-muted-foreground">· {a.empresa} · {a.programa} · {a.dias} días · {a.fecha}</span></p>
+            <p className="mt-1 text-xs text-muted-foreground">Recomendación: {recomendacionPorDias(a.programa, a.dias ?? 0)}</p>
           </div>
         ))}
         {lista.length === 0 && <p className="text-sm text-muted-foreground">Sin incapacidades registradas.</p>}

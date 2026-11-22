@@ -571,6 +571,16 @@ const POR_MODULO: Record<string, Instructivo> = {
     paraQue: "Programar temas, tomar asistencia y certificar.",
     pasos: ["Programa cada capacitación con tema, empresa y fecha.", "Marca la asistencia de cada persona.", "Genera la lista en PDF y los certificados.", "Cobra el contrato: entra a Caja y Contabilidad."],
   },
+  sst_matriz_legal: {
+    titulo: "Matriz legal SST",
+    paraQue: "Saber qué normas cumples, quién responde por cada una y con qué evidencia.",
+    pasos: ["Para cada norma elige el estado: cumple, parcial, no cumple o no aplica.", "Anota responsable, evidencia y la fecha de la próxima revisión.", "Exporta la matriz a Excel para auditorías."],
+  },
+  sst_alertas: {
+    titulo: "Alertas SST",
+    paraQue: "Ver en un solo lugar lo vencido o en riesgo.",
+    pasos: ["Revisa las alertas urgentes primero: exámenes vencidos, ATEL sin investigar, ausentismo recurrente.", "Usa «Avisar» para escribir al trabajador por WhatsApp.", "Pulsa Actualizar después de corregir algo."],
+  },
   sst_normativa: {
     titulo: "Normativa SST Colombia (IA)",
     paraQue: "Tener vigentes Decreto 1072, Res. 0312, alturas y GTC 45.",
