@@ -6,6 +6,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertAiQuota } from "@/lib/ai-quota.server";
+import { generarJsonEstricto } from "@/lib/gemini-nativo.server";
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-2.5-flash";
@@ -55,6 +56,47 @@ export const leerFacturaIA = createServerFn({ method: "POST" })
     if (imagen.length > MAX_BASE64) throw new Error("La imagen es muy pesada. Usa una foto más pequeña.");
 
     await assertAiQuota(context.supabase, "factura-lector");
+
+    // 1) Salida estructurada nativa de Gemini (responseSchema estricto).
+    const mime = imagen.slice(5, imagen.indexOf(";")) || "image/jpeg";
+    const base64 = imagen.slice(imagen.indexOf(",") + 1);
+    const estricto = await generarJsonEstricto<Record<string, unknown>>({
+      sistema:
+        "Eres un auxiliar contable colombiano. Lees facturas de proveedores y devuelves SOLO el JSON del esquema. Si un dato no se ve claro, déjalo vacío o en null; nunca inventes cifras.",
+      partes: [
+        {
+          text: "Extrae de esta factura: nombre del proveedor, NIT, número de factura, fecha (AAAA-MM-DD), IVA, total a pagar y los ítems con descripción, cantidad y valor total de la línea. Cifras en pesos colombianos sin separadores.",
+        },
+        { inlineData: { mimeType: mime, data: base64 } },
+      ],
+      esquema: {
+        type: "OBJECT",
+        properties: {
+          proveedor: { type: "STRING" },
+          nit: { type: "STRING" },
+          numero: { type: "STRING" },
+          fecha: { type: "STRING", nullable: true },
+          iva: { type: "NUMBER", nullable: true },
+          total: { type: "NUMBER", nullable: true },
+          items: {
+            type: "ARRAY",
+            items: {
+              type: "OBJECT",
+              properties: {
+                descripcion: { type: "STRING" },
+                cantidad: { type: "NUMBER", nullable: true },
+                valor_total: { type: "NUMBER", nullable: true },
+              },
+              required: ["descripcion"],
+            },
+          },
+        },
+        required: ["proveedor", "total"],
+      },
+    });
+    if (estricto) return normalizarFactura(estricto);
+
+    // 2) Respaldo: función con la API compatible o la IA integrada.
     const { endpoint, modelo, llave } = destino();
     if (!llave) throw new Error("La IA todavía no está configurada.");
 
@@ -128,24 +170,26 @@ export const leerFacturaIA = createServerFn({ method: "POST" })
     };
     const args = json.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
     if (!args) throw new Error("No pude leer la factura. Intenta con una foto más clara.");
-    const parsed = JSON.parse(args) as Record<string, unknown>;
-
-    const fechaTexto = textoSeguro(parsed.fecha, 10);
-    const items = Array.isArray(parsed.items) ? parsed.items : [];
-    return {
-      proveedor: textoSeguro(parsed.proveedor, 120),
-      nit: textoSeguro(parsed.nit, 30),
-      numero: textoSeguro(parsed.numero, 40),
-      fecha: /^\d{4}-\d{2}-\d{2}$/.test(fechaTexto) ? fechaTexto : null,
-      total: numeroONulo(parsed.total),
-      iva: numeroONulo(parsed.iva),
-      items: items.slice(0, 60).map((it) => {
-        const r = (it ?? {}) as Record<string, unknown>;
-        return {
-          descripcion: textoSeguro(r.descripcion, 160),
-          cantidad: numeroONulo(r.cantidad),
-          valor_total: numeroONulo(r.valor_total),
-        };
-      }),
-    };
+    return normalizarFactura(JSON.parse(args) as Record<string, unknown>);
   });
+
+function normalizarFactura(parsed: Record<string, unknown>): FacturaLeida {
+  const fechaTexto = textoSeguro(parsed.fecha, 10);
+  const items = Array.isArray(parsed.items) ? (parsed.items as unknown[]) : [];
+  return {
+    proveedor: textoSeguro(parsed.proveedor, 120),
+    nit: textoSeguro(parsed.nit, 30),
+    numero: textoSeguro(parsed.numero, 40),
+    fecha: /^\d{4}-\d{2}-\d{2}$/.test(fechaTexto) ? fechaTexto : null,
+    total: numeroONulo(parsed.total),
+    iva: numeroONulo(parsed.iva),
+    items: items.slice(0, 60).map((it: unknown) => {
+      const r = (it ?? {}) as Record<string, unknown>;
+      return {
+        descripcion: textoSeguro(r.descripcion, 160),
+        cantidad: numeroONulo(r.cantidad),
+        valor_total: numeroONulo(r.valor_total),
+      };
+    }),
+  };
+}

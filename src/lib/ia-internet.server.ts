@@ -17,7 +17,7 @@ type RespuestaNativa = {
 /** Consulta internet con googleSearch. Respaldo automático Pro → Flash → Lite. Devuelve null si no hay llave o falla todo. */
 export async function buscarEnInternet(
   pregunta: string,
-  o: { llave?: string; sistema?: string; expertos?: boolean; timeoutMs?: number } = {},
+  o: { llave?: string; sistema?: string; expertos?: boolean; timeoutMs?: number; calculo?: boolean } = {},
 ): Promise<Hallazgo | null> {
   const llave = o.llave || process.env.GEMINI_API_KEY;
   if (!llave) return null;
@@ -31,7 +31,8 @@ export async function buscarEnInternet(
         body: JSON.stringify({
           systemInstruction: o.sistema ? { parts: [{ text: o.sistema }] } : undefined,
           contents: [{ role: "user", parts: [{ text: pregunta }] }],
-          tools: [{ googleSearch: {} }],
+          // calculo: además de buscar, el modelo puede ejecutar código para cifras exactas.
+          tools: o.calculo ? [{ googleSearch: {} }, { codeExecution: {} }] : [{ googleSearch: {} }],
         }),
       });
       if (!res.ok) {

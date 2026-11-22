@@ -117,7 +117,7 @@ export const tasarVehiculo = createServerFn({ method: "POST" })
     const esNuevo = anio >= anioActual;
     const h = await buscarEnInternet(
       `Busca los anuncios publicados HOY (${mes}) en Colombia en MercadoLibre, Tucarro, Autocosmos y Publimotos para: ${tipo} ${marca} ${linea}, modelo ${anio}${cil ? `, cilindraje ${cil}` : ""}, aproximadamente ${km} km. Considera solo avisos comparables y DESCARTA los valores atípicos (muy bajos por estafa o muy altos sin sustento). ${esNuevo ? `Como es modelo ${anio}, busca también el precio oficial 0 km en concesionario en Colombia.` : ""} Indica si el precio de este modelo está en alza, estable o a la baja frente al mes anterior. Responde SOLO un objeto JSON así: {"bajo": pesos_COP, "promedio": pesos_COP, "alto": pesos_COP, "tendencia": "alza" | "estable" | "baja", "precio_0km": pesos_COP o null, "resumen": "2 frases sobre el mercado de este vehículo, su rotación y los avisos comparables"}`,
-      { llave, expertos: true, sistema: "Eres un tasador de vehículos usados en Colombia. Responde únicamente JSON válido, con números enteros en pesos colombianos y datos reales encontrados en la búsqueda; no inventes." },
+      { llave, expertos: true, calculo: true, sistema: "Eres un tasador de vehículos usados en Colombia. Usa código para promedios, medianas y descuentos, así los cálculos son exactos. Responde únicamente JSON válido, con números enteros en pesos colombianos y datos reales encontrados en la búsqueda; no inventes." },
     );
     if (!h) throw new Error("No pude consultar el mercado ahora. Intenta de nuevo en un momento.");
     const j = extraerJson<{ bajo?: number; promedio?: number; alto?: number; resumen?: string; tendencia?: string; precio_0km?: number | null }>(h.texto, "object");

@@ -7,6 +7,14 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertAiQuota } from "@/lib/ai-quota.server";
 
 import { chatConRespaldo } from "@/lib/ia-motores";
+import { responderConCodigo } from "@/lib/gemini-nativo.server";
+
+const SISTEMA_ASESOR = `Eres un Contador Público y tributarista colombiano actualizado a 2026. Hablas claro y en español sencillo para dueños de negocio que no son contadores.
+Reglas:
+• Analizas las cifras reales del negocio que te doy y adviertes riesgos de sanción (extemporaneidad, intereses, retefuente sin pago).
+• Recuerdas los criterios que el usuario te enseñe en esta conversación y los aplicas en tus respuestas.
+• Siempre cierras recordando que confirmen con su contador antes de declarar.
+• Respuestas cortas (máximo 150 palabras), sin tecnicismos innecesarios.`;
 
 type Novedad = { titulo: string; resumen: string; fuente: string; vigencia: string | null };
 
@@ -107,6 +115,20 @@ export const asesorContable = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<{ respuesta: string }> => {
     await assertAiQuota(context.supabase, "contador-asesor");
     if (!hayLlave()) throw new Error("La IA todavía no está configurada.");
+
+    const historial = (Array.isArray(data.messages) ? data.messages : [])
+      .filter((m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
+      .map((m) => (m.role === "assistant" ? "[Respuesta anterior mostrada en pantalla, no verificada] " : "") + m.content.slice(0, 2000))
+      .slice(-10);
+    // Primero con ejecución de código nativa: liquidaciones y proyecciones exactas.
+    const conCodigo = await responderConCodigo({
+      sistema: `${SISTEMA_ASESOR}\n• Para cualquier cálculo (impuestos, retenciones, intereses, proyecciones) ejecuta código y usa ese resultado exacto.`,
+      turnos: [
+        { role: "user", parts: [{ text: `Cifras reales del negocio:\n${data.cifras}` }] },
+        ...historial.map((t) => ({ role: "user" as const, parts: [{ text: t }] })),
+      ],
+    });
+    if (conCodigo) return { respuesta: conCodigo };
 
     const { res: resp } = await llamarContador({
         messages: [
