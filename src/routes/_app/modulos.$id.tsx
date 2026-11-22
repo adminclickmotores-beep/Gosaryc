@@ -74,6 +74,9 @@ const CapacitacionesBrigadasLazy = lazy(() =>
 const NormativaSSTLazy = lazy(() =>
   import("@/components/sst/NormativaSSTPanel").then((m) => ({ default: m.NormativaSSTPanel })),
 );
+const SecopRadarLazy = lazy(() =>
+  import("@/components/secop/SecopRadar").then((m) => ({ default: m.SecopRadar })),
+);
 const CajaTurnosLazy = lazy(() =>
   import("@/components/caja/CajaTurnos").then((m) => ({ default: m.CajaTurnos })),
 );
@@ -171,6 +174,7 @@ function ModuloPage() {
   if (id === "sst_estandares") return (<Suspense fallback={<CargaModulo />}><EstandaresSSTLazy /></Suspense>);
   if (id === "sst_sve") return (<Suspense fallback={<CargaModulo />}><VigilanciaAusentismoLazy /></Suspense>);
   if (id === "sst_capacitaciones") return (<Suspense fallback={<CargaModulo />}><CapacitacionesBrigadasLazy /></Suspense>);
+  if (id === "secop_radar") return (<Suspense fallback={<CargaModulo />}><SecopRadarLazy /></Suspense>);
   if (id === "sst_normativa") return (<Suspense fallback={<CargaModulo />}><NormativaSSTLazy /></Suspense>);
   if (id === "prof_casos") return <ProfesionalCasos />;
   if (id === "tec_proyectos") return <TecnologiaProyectos />;

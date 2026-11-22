@@ -1,4 +1,4 @@
-import { TIPOS_NEGOCIO, CRM_AUTOMATICO, MODULO_CRM } from "@/lib/modulos-negocio";
+import { TIPOS_NEGOCIO, CRM_AUTOMATICO, MODULO_CRM, SECOP_AUTOMATICO, MODULO_SECOP } from "@/lib/modulos-negocio";
 
 /** Ids de módulos con pantalla dedicada (lógica propia, tablas tipadas) en la ruta /modulos/$id. */
 const IDS_DEDICADOS = new Set<string>([
@@ -76,7 +76,7 @@ export function esModuloDedicado(id: string, ruta?: string): boolean {
 export function auditoriaNegocios(): FilaAuditoria[] {
   return TIPOS_NEGOCIO.map((t, i): FilaAuditoria => {
     const crmVisible = CRM_AUTOMATICO.includes(t.clave);
-    const activos = t.modulos.filter((m) => m.estado === "Activo" && (m.id !== MODULO_CRM.id || crmVisible));
+    const activos = t.modulos.filter((m) => m.estado === "Activo" && (m.id !== MODULO_CRM.id || crmVisible) && (m.id !== MODULO_SECOP.id || SECOP_AUTOMATICO.includes(t.clave)));
     const dedic = activos.filter((m) => esModuloDedicado(m.id, m.ruta));
     const gen = activos.filter((m) => !esModuloDedicado(m.id, m.ruta));
     // Los módulos "de apoyo" (clientes, pagos, metas, personal, reseñas...) usan formularios propios del negocio.

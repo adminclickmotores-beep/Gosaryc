@@ -34,7 +34,7 @@ import { BRAND } from "@/lib/brand";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { useAnunciarPresencia } from "@/hooks/use-presencia";
-import { resolverTipoNegocio, CRM_AUTOMATICO, MODULO_CRM } from "@/lib/modulos-negocio";
+import { resolverTipoNegocio, CRM_AUTOMATICO, MODULO_CRM, SECOP_AUTOMATICO, MODULO_SECOP } from "@/lib/modulos-negocio";
 
 import { AutosaveStatus } from "@/components/app/AutosaveStatus";
 import { purgeExpiredDrafts } from "@/hooks/use-draft";
@@ -83,7 +83,10 @@ function AppShell() {
     return () => window.removeEventListener("crm:cambio", releer);
   }, [recargarNegocio]);
   const crmVisible = CRM_AUTOMATICO.includes(tipoNegocio.clave) || crmManual;
-  const modulosVisibles = tipoNegocio.modulos.filter((m) => m.id !== MODULO_CRM.id || crmVisible);
+  const secopVisible = SECOP_AUTOMATICO.includes(tipoNegocio.clave) || negocio?.secop_activo === true;
+  const modulosVisibles = tipoNegocio.modulos.filter(
+    (m) => (m.id !== MODULO_CRM.id || crmVisible) && (m.id !== MODULO_SECOP.id || secopVisible),
+  );
   const navItems: NavItem[] = [
     ...(verPanel || cargandoPermisos
       ? [{ to: rutaPanel, label: tipoNegocio.panel, Icon: IconBolt } as NavItem]

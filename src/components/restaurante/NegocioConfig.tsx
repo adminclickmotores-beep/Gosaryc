@@ -146,6 +146,8 @@ const AJUSTES: Record<string, Partial<Record<keyof Form, Ajuste>>> = {
   tecnologia: { telefono_pedidos: { etiqueta: "WhatsApp comercial" } },
 };
 
+import { SecopInterruptor } from "@/components/secop/SecopRadar";
+
 export function NegocioConfig() {
   const { negocio, recargar } = useNegocio();
   const navegar = useNavigate();
@@ -586,6 +588,7 @@ export function NegocioConfig() {
     </GlassPanel>
     <AgenteWhatsApp />
     <MenuQR />
+    <SecopInterruptor />
     <SucursalesTraslados />
     <RespaldoTotal />
     </div>

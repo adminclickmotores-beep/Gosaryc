@@ -5284,6 +5284,99 @@ export type Database = {
         }
         Relationships: []
       }
+      secop_perfiles: {
+        Row: {
+          activo: boolean
+          codigos_unspsc: string[]
+          created_at: string
+          cuantia_minima: number
+          departamentos: string[]
+          id: string
+          notificar_whatsapp: boolean
+          owner_id: string
+          palabras_clave: string[]
+          ultima_consulta: string | null
+        }
+        Insert: {
+          activo?: boolean
+          codigos_unspsc?: string[]
+          created_at?: string
+          cuantia_minima?: number
+          departamentos?: string[]
+          id?: string
+          notificar_whatsapp?: boolean
+          owner_id?: string
+          palabras_clave?: string[]
+          ultima_consulta?: string | null
+        }
+        Update: {
+          activo?: boolean
+          codigos_unspsc?: string[]
+          created_at?: string
+          cuantia_minima?: number
+          departamentos?: string[]
+          id?: string
+          notificar_whatsapp?: boolean
+          owner_id?: string
+          palabras_clave?: string[]
+          ultima_consulta?: string | null
+        }
+        Relationships: []
+      }
+      secop_oportunidades: {
+        Row: {
+          checklist_ia: Json | null
+          created_at: string
+          cuantia: number
+          departamento: string | null
+          entidad: string | null
+          estado_interno: string
+          fecha_cierre: string | null
+          fecha_publicacion: string | null
+          id: string
+          modalidad: string | null
+          objeto: string | null
+          owner_id: string
+          proceso_id: string
+          referencia: string | null
+          url_proceso: string | null
+        }
+        Insert: {
+          checklist_ia?: Json | null
+          created_at?: string
+          cuantia?: number
+          departamento?: string | null
+          entidad?: string | null
+          estado_interno?: string
+          fecha_cierre?: string | null
+          fecha_publicacion?: string | null
+          id?: string
+          modalidad?: string | null
+          objeto?: string | null
+          owner_id?: string
+          proceso_id: string
+          referencia?: string | null
+          url_proceso?: string | null
+        }
+        Update: {
+          checklist_ia?: Json | null
+          created_at?: string
+          cuantia?: number
+          departamento?: string | null
+          entidad?: string | null
+          estado_interno?: string
+          fecha_cierre?: string | null
+          fecha_publicacion?: string | null
+          id?: string
+          modalidad?: string | null
+          objeto?: string | null
+          owner_id?: string
+          proceso_id?: string
+          referencia?: string | null
+          url_proceso?: string | null
+        }
+        Relationships: []
+      }
       crm_leads: {
         Row: {
           atendido_por_humano: boolean
@@ -5585,6 +5678,7 @@ export type Database = {
           ica_ciuu: string | null
           pie_factura: string | null
           crm_activo: boolean
+          secop_activo: boolean
           permitir_inventario_negativo: boolean
           prefijo_facturacion: string | null
           dian_software_id: string | null
@@ -5635,6 +5729,7 @@ export type Database = {
           ica_ciuu?: string | null
           pie_factura?: string | null
           crm_activo?: boolean
+          secop_activo?: boolean
           permitir_inventario_negativo?: boolean
           prefijo_facturacion?: string | null
           dian_software_id?: string | null
@@ -5685,6 +5780,7 @@ export type Database = {
           ica_ciuu?: string | null
           pie_factura?: string | null
           crm_activo?: boolean
+          secop_activo?: boolean
           permitir_inventario_negativo?: boolean
           prefijo_facturacion?: string | null
           dian_software_id?: string | null

@@ -71,6 +71,7 @@ import {
   Wine,
   Church,
   HeartHandshake,
+  Radar,
   type LucideIcon,
 } from "lucide-react";
 
@@ -1375,6 +1376,24 @@ export const CRM_AUTOMATICO: TipoNegocioClave[] = [
 ];
 for (const t of TIPOS_NEGOCIO) {
   if (!t.modulos.some((x) => x.id === MODULO_CRM.id)) t.modulos.push(MODULO_CRM);
+}
+
+/** Radar de Licitaciones SECOP II: activo de fábrica solo en negocios que contratan con el Estado; en los demás es un switch en Configuración. */
+export const MODULO_SECOP: ModuloNegocio = {
+  id: "secop_radar",
+  titulo: "Radar de Licitaciones SECOP II",
+  descripcion: "Rastrea procesos del Estado que encajan con tu negocio, los pasa al CRM y te avisa por WhatsApp.",
+  Icon: Radar,
+  ruta: "/modulos/secop_radar",
+  estado: "Activo",
+};
+export const SECOP_AUTOMATICO: TipoNegocioClave[] = [
+  "salud", "construccion", "inmobiliaria", "ferreteria", "distribuidora", "farmacia", "alquiler_vehiculos", "transporte",
+  "seguridad_aseo", "tecnologia", "profesional", "taller", "taller_motos", "eventos", "educacion", "agro", "ganaderia",
+  "fundacion", "mascotas",
+];
+for (const t of TIPOS_NEGOCIO) {
+  if (!t.modulos.some((x) => x.id === MODULO_SECOP.id)) t.modulos.push(MODULO_SECOP);
 }
 
 /** Busca un módulo por id en todos los tipos de negocio. */
