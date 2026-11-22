@@ -20,7 +20,8 @@ export type DatosCotizarSST = {
 };
 
 /** Estándares mínimos de la Res. 0312 de 2019 según el número de trabajadores. */
-export function estandaresSST(empleados: number): number {
+export function estandaresSST(empleados: number, riesgo?: string): number {
+  if (riesgo === "IV-V") return 60;
   if (empleados <= 10) return 7;
   if (empleados <= 50) return 21;
   return 60;

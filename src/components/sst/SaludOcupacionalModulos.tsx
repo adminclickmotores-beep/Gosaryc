@@ -615,7 +615,7 @@ export function EstandaresSST() {
     setCargando(false);
   }, []);
   useEffect(() => { void cargar(); }, [cargar]);
-  const totalPara = (t: string, r: string): number => (t === "1-10" ? 7 : t === "11-50" ? 21 : 60) + (r === "IV-V" && t !== "mas-50" ? 0 : 0);
+  const totalPara = (t: string, r: string): number => (r === "IV-V" ? 60 : t === "1-10" ? 7 : t === "11-50" ? 21 : 60);
   const crear = async () => {
     if (empresa.trim().length < 2) return toast.error("Escribe la empresa evaluada.");
     const total = totalPara(tamano, riesgo);
