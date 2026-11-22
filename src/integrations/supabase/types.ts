@@ -32,6 +32,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      tarifas_vehiculares_colombia: {
+        Row: {
+          id: string
+          anio: number
+          datos: Json
+          fuente: string | null
+          origen: string
+          verificado_en: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          anio: number
+          datos: Json
+          fuente?: string | null
+          origen?: string
+          verificado_en?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          anio?: number
+          datos?: Json
+          fuente?: string | null
+          origen?: string
+          verificado_en?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       asesor_ia_diagnosticos: {
         Row: {
           id: string

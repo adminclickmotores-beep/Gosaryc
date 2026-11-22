@@ -6,6 +6,7 @@ import { ArrowLeft, Car, Eye, FileText, ImagePlus, LayoutGrid, Pencil, Table2, T
 import { usePermisosVehiculos } from "@/hooks/use-permisos-vehiculos";
 import { FichaVehiculo, PROCEDENCIAS, calcularCostos } from "@/components/vehiculos/FichaVehiculo";
 import { VistaVehiculo } from "@/components/vehiculos/VistaVehiculo";
+import { RevisarVitrina } from "@/components/vehiculos/RevisarVitrina";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -406,6 +407,8 @@ ${tarjetas}
         <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Disponibles</p><p className="text-lg font-medium text-foreground">{disponibles.length}</p></GlassPanel>
         <GlassPanel className="p-4"><p className="text-xs text-muted-foreground">Valor disponible</p><p className="truncate text-lg font-medium text-foreground">{dinero(valorDisponible)}</p></GlassPanel>
       </div>
+
+      <RevisarVitrina vehiculos={disponibles} />
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
         <GlassPanel className="h-fit space-y-3 p-5">
