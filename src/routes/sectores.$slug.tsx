@@ -28,6 +28,21 @@ export const Route = createFileRoute("/sectores/$slug")({
         { name: "twitter:description", content: descripcion },
       ],
       links: [{ rel: "canonical", href: url }],
+      scripts: sector
+        ? [
+            {
+              type: "application/ld+json",
+              children: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "BreadcrumbList",
+                itemListElement: [
+                  { "@type": "ListItem", position: 1, name: BRAND.name, item: appUrl("/") },
+                  { "@type": "ListItem", position: 2, name: sector.label, item: url },
+                ],
+              }),
+            },
+          ]
+        : [],
     };
   },
 });

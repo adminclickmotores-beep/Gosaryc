@@ -20,7 +20,15 @@ export const Route = createFileRoute("/demo")({
     sector: typeof s.sector === "string" ? s.sector : undefined,
     tab: typeof s.tab === "string" ? s.tab : undefined,
   }),
-  head: () => ({ meta: [{ title: "Demo interactiva en vivo | Gosaryc" }] }),
+  head: () => ({
+    meta: [
+      { title: "Demo interactiva en vivo | Gosaryc" },
+      { name: "description", content: "Prueba Gosaryc sin registrarte: recorre un restaurante o un concesionario con datos de ejemplo, punto de venta, caja y WhatsApp con IA." },
+      { property: "og:title", content: "Demo interactiva en vivo | Gosaryc" },
+      { property: "og:url", content: "https://gosaryc.lovable.app/demo" },
+    ],
+    links: [{ rel: "canonical", href: "https://gosaryc.lovable.app/demo" }],
+  }),
   component: DemoPage,
 });
 

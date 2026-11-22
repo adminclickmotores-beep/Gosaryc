@@ -43,6 +43,8 @@ import { getCachedOnboardedAt } from "@/hooks/use-onboarding-status";
 import { esCuentaMaestra, esSuperadminServidor } from "@/lib/cuenta-maestra";
 
 export const Route = createFileRoute("/_app")({
+  // El panel es privado: no debe aparecer en buscadores.
+  head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow" }] }),
   component: AppShell,
 });
 

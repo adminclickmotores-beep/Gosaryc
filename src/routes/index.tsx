@@ -21,7 +21,9 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: `${BRAND.name} — Gestión profesional para cada tipo de negocio en Colombia` },
       { property: "og:description", content: BRAND.description },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: `https://${BRAND.domain}/` },
     ],
+    links: [{ rel: "canonical", href: `https://${BRAND.domain}/` }],
   }),
 });
 

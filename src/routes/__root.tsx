@@ -89,7 +89,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "software para negocios Colombia, punto de venta, pos, inventario, facturación DIAN, nómina Colombia, software para restaurantes, software para concesionarios, software para consultorios, software para tiendas, software para salones de belleza, software para talleres, software para hoteles, pedidos en línea, menú digital, domicilios, control de costos, Gosaryc",
       },
-      { property: "og:url", content: `https://${BRAND.domain}/` },
       { property: "og:image", content: `https://${BRAND.domain}/imagen-compartir` },
       { property: "og:image:secure_url", content: `https://${BRAND.domain}/imagen-compartir` },
       { property: "og:image:type", content: "image/png" },
@@ -112,7 +111,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "manifest", href: "/manifest.webmanifest" },
-      { rel: "canonical", href: `https://${BRAND.domain}/` },
       { rel: "icon", type: "image/svg+xml", href: "/icono-app.svg" },
       { rel: "apple-touch-icon", href: "/icono-app.svg" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -134,6 +132,36 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           description: BRAND.description,
           url: `https://${BRAND.domain}/`,
           inLanguage: "es",
+          offers: { "@type": "Offer", price: "0", priceCurrency: "COP", description: "30 días de prueba gratis" },
+          areaServed: { "@type": "Country", name: "Colombia" },
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: BRAND.name,
+          url: `https://${BRAND.domain}/`,
+          logo: `https://${BRAND.domain}/icono-app.svg`,
+          email: BRAND.supportEmail,
+          contactPoint: {
+            "@type": "ContactPoint",
+            contactType: "customer support",
+            telephone: `+${BRAND.supportWhatsapp}`,
+            areaServed: "CO",
+            availableLanguage: "Spanish",
+          },
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: BRAND.name,
+          url: `https://${BRAND.domain}/`,
+          inLanguage: "es-CO",
         }),
       },
     ],

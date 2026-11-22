@@ -2,6 +2,8 @@ User-agent: *
 Allow: /
 Allow: /menu
 Allow: /instalar
+Allow: /demo
+Allow: /sectores/
 Disallow: /restaurante
 Disallow: /negocio/
 Disallow: /modulos/
