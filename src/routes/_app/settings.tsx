@@ -16,7 +16,7 @@ import { EquipoPermisos } from "@/components/settings/EquipoPermisos";
 import { ResumenCierreWhatsApp } from "@/components/restaurante/Reportes";
 import { ThemeToggle } from "@/components/ui-custom/ThemeToggle";
 import { BRAND } from "@/lib/brand";
-import { autoComandaActivada, estadoApiLocal, fijarAutoComanda, fijarImpresionDirecta, fijarImpresoraCaja, fijarImpresoraCocina, guardarConfigImpresoras, impresionDirectaActivada, imprimirTirillaLocal, leerImpresoraCaja, leerImpresoraCocina } from "@/lib/impresion-local";
+import { autoComandaActivada, estadoApiLocal, fijarAutoComanda, fijarImpresionDirecta, fijarImpresoraCaja, fijarImpresoraCocina, guardarConfigImpresoras, impresionDirectaActivada, imprimirTirillaLocal, fijarAnchoPapel, leerAnchoPapel, imprimirTirillaPruebaNavegador, type AnchoPapel, leerImpresoraCaja, leerImpresoraCocina } from "@/lib/impresion-local";
 
 export const Route = createFileRoute("/_app/settings")({
   validateSearch: (s: Record<string, unknown>): { tab?: TabId } => {
@@ -183,6 +183,8 @@ function TarjetaImpresion() {
   const [predeterminada, setPredeterminada] = useState("");
   const [msg, setMsg] = useState("");
   const [probando, setProbando] = useState<"caja" | "cocina" | null>(null);
+  const [ancho, setAncho] = useState<AnchoPapel>("80mm");
+  useEffect(() => { setAncho(leerAnchoPapel()); }, []);
 
   useEffect(() => {
     (async () => {
@@ -303,6 +305,20 @@ function TarjetaImpresion() {
             {opciones(cocina)}
           </select>
         </label>
+      </div>
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <span className="text-sm text-muted-foreground">Ancho de papel:</span>
+        {([["58mm", "58 mm"], ["80mm", "80 mm"], ["a4", "Carta A4"]] as [AnchoPapel, string][]).map(([v, t]) => (
+          <button
+            key={v} type="button" onClick={() => { setAncho(v); fijarAnchoPapel(v); }}
+            className={`rounded-full border px-4 py-2 text-sm ${ancho === v ? "border-primary bg-primary text-primary-foreground" : "border-glass-border bg-glass"}`}
+          >{t}</button>
+        ))}
+        <button
+          type="button"
+          onClick={() => setMsg(imprimirTirillaPruebaNavegador(ancho) ? "Se abrió la tirilla de prueba: elige tu impresora en el diálogo de impresión." : "Tu navegador bloqueó la ventana. Permite las ventanas emergentes e inténtalo de nuevo.")}
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+        >Imprimir Tirilla de Prueba</button>
       </div>
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-glass-border bg-glass px-4 py-2 text-sm">

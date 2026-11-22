@@ -76,6 +76,57 @@ export function fijarAutoComanda(v: boolean): void {
   guardarClave(CLAVE_AUTO_COMANDA, v ? "1" : "0");
 }
 
+export type AnchoPapel = "58mm" | "80mm" | "a4";
+const CLAVE_ANCHO = "gosaryc:ancho-papel";
+
+/** Ancho de papel preferido (por defecto 80mm). */
+export function leerAnchoPapel(): AnchoPapel {
+  const v = leerClave(CLAVE_ANCHO);
+  return v === "58mm" || v === "a4" ? v : "80mm";
+}
+
+export function fijarAnchoPapel(v: AnchoPapel): void {
+  guardarClave(CLAVE_ANCHO, v);
+}
+
+/**
+ * Tirilla de prueba con la impresión nativa del navegador/sistema (funciona con cualquier
+ * marca de impresora con driver instalado: Epson, Star, Bixolon, Xprinter, etc.).
+ */
+export function imprimirTirillaPruebaNavegador(ancho: AnchoPapel): boolean {
+  const w = ancho === "a4" ? "210mm" : ancho;
+  const caracteres = ancho === "58mm" ? 32 : 48;
+  const linea = "-".repeat(caracteres);
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Tirilla de prueba</title>
+<style>@page{size:${w} auto;margin:0}html,body{margin:0;padding:0;background:#fff;color:#000}
+body{width:${w};max-width:100%;padding:${ancho === "a4" ? "15mm" : "3mm"};box-sizing:border-box;font-family:"Courier New",monospace;font-size:${ancho === "58mm" ? "11px" : "12px"};line-height:1.35;font-weight:600}
+pre{margin:0;white-space:pre-wrap;word-break:break-word;break-inside:avoid}</style></head><body><pre>
+PRUEBA DE IMPRESION
+${linea}
+Ancho: ${ancho === "a4" ? "Carta / A4" : ancho}
+Fuente monoespaciada negro puro
+1234567890 ABCDEFGHIJKLMNOPQRSTUVWXYZ
+${linea}
+Cant  Producto            Total
+1     Tirilla de prueba   $1.000
+${linea}
+TOTAL                     $1.000
+${linea}
+Si lees esto completo, tu
+impresora esta lista.
+</pre><script>window.onload=function(){setTimeout(function(){window.print()},150)}</script></body></html>`;
+  try {
+    const v = window.open("", "_blank", "width=420,height=640");
+    if (!v) return false;
+    v.document.open();
+    v.document.write(html);
+    v.document.close();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function conTiempo(ms: number, promesa: Promise<Response>): Promise<Response | null> {
   const ctrl = new AbortController();
   const t = window.setTimeout(() => ctrl.abort(), ms);

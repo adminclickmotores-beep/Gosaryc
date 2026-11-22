@@ -17,7 +17,7 @@ type OpcionesEscaner = {
  */
 export function useBarcodeScanner({
   activo = true,
-  maxIntervaloMs = 80,
+  maxIntervaloMs = 50,
   longitudMinima = 3,
   onScan,
 }: OpcionesEscaner): void {
@@ -47,7 +47,7 @@ export function useBarcodeScanner({
       if (e.ctrlKey || e.altKey || e.metaKey) return;
 
       const ahora = Date.now();
-      if (e.key === "Enter") {
+      if (e.key === "Enter" || e.key === "Tab") {
         const codigo = buffer.trim();
         const reciente = ahora - ultimaTecla <= maxIntervaloMs * 2;
         buffer = "";
