@@ -109,9 +109,11 @@ type DatosEmpresa = {
   direccion: string;
   correo: string;
   telefono: string;
+  representante: string;
+  organizacion: string;
 };
 
-const VACIO: DatosEmpresa = { razonSocial: "", estado: "", ciiu: "", ciudad: "", empleados: "", direccion: "", correo: "", telefono: "" };
+const VACIO: DatosEmpresa = { razonSocial: "", estado: "", ciiu: "", ciudad: "", empleados: "", direccion: "", correo: "", telefono: "", representante: "", organizacion: "" };
 
 /** Conjunto de datos abiertos de matrículas mercantiles (RUES) en datos.gov.co. */
 const URL_DATOS_ABIERTOS = "https://www.datos.gov.co/resource/c82u-588k.json";
@@ -165,6 +167,7 @@ export function ConsultorEmpresaNIT({ modo, valor = "", cotizarSST = false }: Pr
   const [leyendoPdf, setLeyendoPdf] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const refArchivo = useRef<HTMLInputElement | null>(null);
+  const [filaRues, setFilaRues] = useState<Record<string, unknown> | null>(null);
 
   if (modo === "rapido") {
     const r = analizarNIT(valor);
@@ -188,6 +191,7 @@ export function ConsultorEmpresaNIT({ modo, valor = "", cotizarSST = false }: Pr
       return;
     }
     setConsultandoAbiertos(true);
+    setFilaRues(null);
     try {
       const url = `${URL_DATOS_ABIERTOS}?$q=${encodeURIComponent(termino)}&$limit=1`;
       const ctrl = new AbortController();
@@ -205,8 +209,14 @@ export function ConsultorEmpresaNIT({ modo, valor = "", cotizarSST = false }: Pr
         toast.info("No se encontró esa empresa en Datos Abiertos. Verifica en DIAN, RUES o VUE.");
         return;
       }
+      setFilaRues(f);
       setDatos((d: DatosEmpresa) => ({
         ...d,
+        representante: primero(f, ["representante_legal", "nombre_representante_legal", "rep_legal", "representante"]) || d.representante,
+        organizacion: primero(f, ["organizacion_juridica", "tipo_sociedad", "organizacion_juridica_descripcion"]) || d.organizacion,
+        direccion: primero(f, ["direccion_comercial", "direccion", "dir_comercial"]) || d.direccion,
+        correo: primero(f, ["correo_electronico_comercial", "correo_comercial", "email"]) || d.correo,
+        telefono: primero(f, ["telefono_comercial_1", "telefono_comercial", "telefono"]) || d.telefono,
         razonSocial: primero(f, ["razon_social", "razon_social_nombre", "nombre"]) || d.razonSocial,
         estado: primero(f, ["estado_matricula", "estado_de_la_matricula", "estado"]) || d.estado,
         ciiu: primero(f, ["ciiu", "cod_ciiu_act_econ_pri", "codigo_ciiu", "actividad_economica"]) || d.ciiu,
@@ -362,7 +372,7 @@ export function ConsultorEmpresaNIT({ modo, valor = "", cotizarSST = false }: Pr
       )}
       <div className="mt-2 flex flex-wrap gap-2">
         <button type="button" className={boton} onClick={() => void consultarAbiertos()} disabled={consultandoAbiertos}>
-          <Globe className="h-4 w-4" /> {consultandoAbiertos ? "Consultando…" : "Consultar en Datos Abiertos"}
+          <Globe className="h-4 w-4" /> {consultandoAbiertos ? "Consultando…" : "Consultar en RUES"}
         </button>
         <button type="button" className={boton} onClick={() => refArchivo.current?.click()} disabled={leyendoPdf}>
           <FileUp className="h-4 w-4" /> {leyendoPdf ? "Leyendo RUT…" : "Subir RUT (PDF)"}
@@ -382,6 +392,8 @@ export function ConsultorEmpresaNIT({ modo, valor = "", cotizarSST = false }: Pr
         {(
           [
             ["razonSocial", "Razón social"],
+            ["representante", "Representante legal"],
+            ["organizacion", "Tipo de organización"],
             ["estado", "Estado de matrícula"],
             ["ciiu", "Código CIIU"],
             ["ciudad", "Ciudad"],
@@ -397,6 +409,21 @@ export function ConsultorEmpresaNIT({ modo, valor = "", cotizarSST = false }: Pr
           </label>
         ))}
       </div>
+      {filaRues && (
+        <details className="mt-2 rounded-lg border border-glass-border bg-glass/40 px-3 py-2 text-xs">
+          <summary className="cursor-pointer font-medium">Ver todos los datos que devolvió RUES</summary>
+          <dl className="mt-2 grid gap-x-4 gap-y-1 sm:grid-cols-2">
+            {Object.entries(filaRues)
+              .filter(([, v]) => typeof v === "string" || typeof v === "number")
+              .map(([k, v]) => (
+                <div key={k} className="min-w-0 break-words">
+                  <dt className="text-muted-foreground">{k.replace(/_/g, " ")}</dt>
+                  <dd>{String(v)}</dd>
+                </div>
+              ))}
+          </dl>
+        </details>
+      )}
       {clasif && (
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <ClasificacionEmpleados cantidad={datos.empleados} />
