@@ -45,15 +45,40 @@ function createSupabaseFetch(supabaseUrl: string, supabaseKey: string): typeof f
     }
 
     headers.set('apikey', supabaseKey);
-    if (serverUrl) {
-      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
-      if (url.startsWith(`${publicUrl}/`)) {
-        const target = serverUrl + url.slice(publicUrl.length);
+    const urlPeticion = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    const metodo = (init?.method ?? (typeof Request !== 'undefined' && input instanceof Request ? input.method : 'GET')).toUpperCase();
+    // Solo se reintenta lo que es seguro repetir: lecturas y el inicio/renovación de sesión.
+    const reintentable =
+      metodo === 'GET' || metodo === 'HEAD' || urlPeticion.includes('/auth/v1/token');
+
+    const enviar = (): Promise<Response> => {
+      if (serverUrl && urlPeticion.startsWith(`${publicUrl}/`)) {
+        const target = serverUrl + urlPeticion.slice(publicUrl.length);
         const request = typeof input === 'string' || input instanceof URL ? target : new Request(target, input);
         return fetch(request, { ...init, headers });
       }
-    }
-    return fetch(input, { ...init, headers });
+      return fetch(input, { ...init, headers });
+    };
+
+    if (!reintentable) return enviar();
+
+    // Reintentos con espera progresiva ante caída breve de red o servicio (502/503/504).
+    return (async () => {
+      const esperas = [600, 1500, 3000];
+      for (let i = 0; ; i++) {
+        try {
+          const r = await enviar();
+          if ((r.status === 502 || r.status === 503 || r.status === 504) && i < esperas.length) {
+            await new Promise((ok) => setTimeout(ok, esperas[i]));
+            continue;
+          }
+          return r;
+        } catch (e) {
+          if (init?.signal?.aborted || i >= esperas.length) throw e;
+          await new Promise((ok) => setTimeout(ok, esperas[i]));
+        }
+      }
+    })();
   };
 }
 

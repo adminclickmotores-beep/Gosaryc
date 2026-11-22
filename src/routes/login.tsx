@@ -167,7 +167,11 @@ function LoginPage() {
       if (esRed && (!urlProyecto || !hayClave)) {
         toast.error("No se pudo conectar: faltan las variables de conexión del proyecto.");
       } else if (esRed) {
-        toast.error("No se pudo conectar con el servidor (red caída o servicio no disponible).");
+        toast.error(
+          typeof navigator !== "undefined" && !navigator.onLine
+            ? "Tu dispositivo no tiene internet. Revisa tu conexión e inténtalo de nuevo."
+            : "El servicio no respondió tras varios intentos. Espera un momento y vuelve a intentar; tus datos están a salvo.",
+        );
       } else {
         toast.error(err instanceof Error ? traducirError(err.message) : "Algo salió mal. Inténtalo de nuevo.");
       }
