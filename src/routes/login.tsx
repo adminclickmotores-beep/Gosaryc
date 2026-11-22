@@ -36,6 +36,7 @@ function LoginPage() {
   const [pendingConfirm, setPendingConfirm] = useState<string | null>(null);
   const [resendBusy, setResendBusy] = useState(false);
   const [recordar, setRecordar] = useState(true);
+  const [errorDetalle, setErrorDetalle] = useState<string | null>(null);
 
   useEffect(() => {
     if (search.mode) setMode(search.mode);
@@ -84,6 +85,7 @@ function LoginPage() {
       return;
     }
     setBusy(true);
+    setErrorDetalle(null);
     try {
       if (mode === "signup") {
         guardarPreferenciaSesion();
@@ -112,7 +114,44 @@ function LoginPage() {
         if (error) throw error;
       }
     } catch (err) {
-      toast.error(err instanceof Error ? traducirError(err.message) : "Algo salió mal. Inténtalo de nuevo.");
+      const e2 = err as { message?: string; name?: string; status?: number; code?: string } | null;
+      const urlProyecto = (import.meta.env["VITE_SUPABASE_URL"] as string | undefined) ?? "";
+      let host = "(sin VITE_SUPABASE_URL)";
+      try {
+        if (urlProyecto) host = new URL(urlProyecto).host;
+      } catch {
+        host = "(VITE_SUPABASE_URL inválida)";
+      }
+      const hayClave = Boolean(import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"]);
+      const detalle = [
+        `mensaje: ${e2?.message ?? String(err)}`,
+        `nombre: ${e2?.name ?? "-"}`,
+        `estado HTTP: ${e2?.status ?? "-"}`,
+        `código: ${e2?.code ?? "-"}`,
+        `servidor: ${host}`,
+        `clave pública cargada: ${hayClave ? "sí" : "no"}`,
+        `en línea: ${typeof navigator !== "undefined" && navigator.onLine ? "sí" : "no"}`,
+      ].join(" | ");
+      console.error("[Login] Error exacto de autenticación:", {
+        modo: mode,
+        mensaje: e2?.message,
+        nombre: e2?.name,
+        estado: e2?.status,
+        codigo: e2?.code,
+        servidor: host,
+        claveCargada: hayClave,
+        errorOriginal: err,
+      });
+      setErrorDetalle(detalle);
+      const bruto = (e2?.message ?? "").toLowerCase();
+      const esRed = bruto.includes("failed to fetch") || bruto.includes("networkerror") || bruto.includes("load failed");
+      if (esRed && (!urlProyecto || !hayClave)) {
+        toast.error("No se pudo conectar: faltan las variables de conexión del proyecto.");
+      } else if (esRed) {
+        toast.error("No se pudo conectar con el servidor (red caída o servicio no disponible).");
+      } else {
+        toast.error(err instanceof Error ? traducirError(err.message) : "Algo salió mal. Inténtalo de nuevo.");
+      }
     } finally {
       setBusy(false);
     }
@@ -383,6 +422,15 @@ function LoginPage() {
                     to { --beam-angle: 360deg; }
                   }
                 `}</style>
+                {errorDetalle && (
+                  <div
+                    role="alert"
+                    className="break-words rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-foreground"
+                  >
+                    <p className="mb-1 font-medium">Detalle del error</p>
+                    <p className="break-all text-muted-foreground">{errorDetalle}</p>
+                  </div>
+                )}
               </form>
 
               <div className="mt-6 text-center text-sm text-muted-foreground">
