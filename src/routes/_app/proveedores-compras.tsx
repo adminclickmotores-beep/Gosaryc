@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json, Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { LectorFacturaIA } from "@/components/compras/LectorFacturaIA";
 
 export const Route = createFileRoute("/_app/proveedores-compras")({
   head: () => ({ meta: [{ title: "Proveedores y compras" }] }),
@@ -208,6 +209,14 @@ function ProveedoresComprasPage() {
           </Link>.
         </p>
       </div>
+
+      <LectorFacturaIA
+        onUsar={(datos) => {
+          if (datos.proveedor) setProveedor(datos.proveedor);
+          if (datos.nit) setNitProv(datos.nit);
+          if (datos.total !== null && datos.total >= 0) setCosto(String(Math.round(datos.total)));
+        }}
+      />
 
       <GlassPanel className="space-y-3 p-5">
         <h2 className="font-medium text-foreground">Registrar compra al inventario</h2>
