@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "@tanstack/react-router";
-import { ChevronDown, ChevronUp, HelpCircle, Lightbulb } from "lucide-react";
+import { Award, ChevronDown, ChevronUp, HelpCircle, Lightbulb } from "lucide-react";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { instructivoPara } from "@/lib/instructivos";
 
@@ -44,6 +44,15 @@ function Cuerpo({ guia }: { guia: NonNullable<ReturnType<typeof instructivoPara>
               </li>
             ))}
           </ol>
+          {guia.ventaja && (
+            <p className="flex items-start gap-2 rounded-lg border border-primary/30 p-3 text-sm text-foreground">
+              <Award className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              <span className="min-w-0 break-words">
+                <span className="font-medium">Por qué Gosaryc es mejor: </span>
+                {guia.ventaja}
+              </span>
+            </p>
+          )}
           {guia.consejo && (
             <p className="flex items-start gap-2 rounded-lg bg-primary/10 p-3 text-sm text-foreground">
               <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-primary" />

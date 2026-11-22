@@ -6,6 +6,8 @@ export type Instructivo = {
   paraQue: string;
   pasos: string[];
   consejo?: string;
+  /** Por qué esta pantalla es mejor con Gosaryc. */
+  ventaja?: string;
 };
 
 /** Instructivos de las pantallas propias (no genéricas), por ruta. */
@@ -600,8 +602,58 @@ const POR_MODULO: Record<string, Instructivo> = {
 
 const GENERICO ="Para guardar cambios toca el botón de guardar; todo queda registrado en tu cuenta.";
 
+/** Por qué esta pantalla es mejor en Gosaryc (se muestra a los clientes en cada instructivo). */
+const VENTAJA_GENERAL =
+  "Todo en un solo programa: ventas, caja, contabilidad, nómina, DIAN y WhatsApp con IA comparten la misma información, sin digitar dos veces. Funciona en web, celular, Windows y Linux, incluso sin internet, y se actualiza solo sin perder tus datos.";
+
+const VENTAJA_RUTA: Record<string, string> = {
+  "/": "Eliges tu tipo de negocio y ves exactamente lo que resuelve para ti. 30 días gratis, sin compromiso, con más de 45 tipos de negocio que tienen pantallas propias, no una plantilla genérica.",
+  "/calendar": "La cita se cobra en un clic y la plata entra sola a Caja y a Contabilidad: cero cuadres manuales al cierre.",
+  "/cartera-fiados": "Cada abono baja el saldo y queda en la contabilidad. Con un clic recuerdas el cobro por WhatsApp.",
+  "/combos": "Los combos se descuentan del inventario por receta, así sabes tu utilidad real y no solo lo vendido.",
+  "/cotizaciones": "De la cotización a la venta sin volver a escribir los datos, y la envías por WhatsApp con tu logo.",
+  "/domicilios": "Pedidos de WhatsApp, menú QR y POS llegan a un solo lugar, con repartidor, estado y comanda automática en cocina.",
+  "/equipo-nomina": "Nómina con las reglas de Colombia que se actualizan solas cada año (SMMLV, auxilio, recargos) y se contabiliza sin digitar.",
+  "/finanzas": "Ingresos, gastos y utilidad real al instante, alimentados solos por cada venta y cada gasto. Incluye Contador Pro con vencimientos y pre-liquidación de impuestos.",
+  "/crm-embudo": "El agente de WhatsApp con IA convierte conversaciones en clientes, citas o pedidos y los deja ordenados en tu embudo, 24/7.",
+  "/asistente-virtual": "Un asistente que responde a tus clientes con tus precios y tu catálogo reales, y aprende de tus respuestas.",
+  "/settings": "Respaldo total con un clic, varias sedes con traslados, impresoras de caja y cocina, y actualizaciones que conservan todo.",
+  "/restaurante": "Tu panel se adapta a tu tipo de negocio: ves solo lo que necesitas, con permisos por rol para tu equipo.",
+  "/metas": "Metas ligadas a tus ventas reales: el avance se calcula solo.",
+  "/proveedores-compras": "Las compras suben el inventario y los costos solos, y puedes leer facturas de proveedores con IA.",
+  "/propinas": "Reparto transparente que queda registrado, sin hojas de cálculo.",
+  "/puntos-recompensas": "Fideliza clientes con puntos automáticos en cada venta, sin tarjetas ni papeles.",
+  "/resenas-pqrs": "Cada reseña o PQRS queda con estado y responsable: atiendes mejor y proteges tu reputación.",
+};
+
+const VENTAJA_PREFIJO: Array<[string, string]> = [
+  ["sst_", "SG-SST completo en Colombia: matriz legal, GTC 45, estándares 0312, certificados con validación pública y alertas, todo con normativa que se verifica sola."],
+  ["veh", "Tasador de mercado con tarifas de Colombia del año, revisión de tu vitrina contra el mercado y crédito simulado: compras mejor y vendes más rápido."],
+  ["com_", "Inventario con lotes y vencimientos, escáner de barras y precios sugeridos según inflación: proteges tu margen todos los días."],
+  ["bel_", "Agenda, fichas de clientes, comisiones y cobro en un solo flujo, con recordatorios por WhatsApp."],
+  ["gim_", "Control de socios con carnet QR, check-in rápido y cobro de planes automático."],
+  ["tal_", "Órdenes de trabajo con repuestos, comisiones y cobro directo a Caja con asiento contable."],
+  ["hot_", "Rack de habitaciones por colores, cuenta única del huésped y liquidación al check-out."],
+  ["far_", "Control INVIMA, fórmulas y refrigerados: cumples la norma sin llevar papeles."],
+  ["facturas", "Facturación con consecutivo, CUFE y QR oficial cuando se activa la DIAN, y tirilla o carta en tu impresora. La venta nunca se bloquea."],
+];
+
+function conVentaja(g: Instructivo, pathname: string, id?: string): Instructivo {
+  if (g.ventaja) return g;
+  const ruta = Object.keys(VENTAJA_RUTA).find((r) => (r === "/" ? pathname === "/" : pathname === r || pathname.startsWith(`${r}/`)));
+  const pref = id ? VENTAJA_PREFIJO.find(([p]) => id.startsWith(p)) : undefined;
+  return { ...g, ventaja: (ruta && VENTAJA_RUTA[ruta]) || (pref && pref[1]) || VENTAJA_GENERAL };
+}
+
 /** Devuelve el instructivo de la pantalla actual, o null si no hay uno. */
 export function instructivoPara(pathname: string): Instructivo | null {
+  const base = instructivoBase(pathname);
+  if (!base) return null;
+  const m = /^\/modulos\/([^/]+)/.exec(pathname);
+  return conVentaja(base, pathname, m ? decodeURIComponent(m[1]) : undefined);
+}
+
+function instructivoBase(pathname: string): Instructivo | null {
   const mod = /^\/modulos\/([^/]+)/.exec(pathname);
   if (mod) {
     const modulo = buscarModulo(decodeURIComponent(mod[1]));
