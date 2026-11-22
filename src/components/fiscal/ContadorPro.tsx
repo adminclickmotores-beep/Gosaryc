@@ -19,6 +19,7 @@ import { GlassPanel } from "@/components/ui-custom/GlassPanel";
 import { useNegocio } from "@/hooks/use-negocio";
 import { exportarExcel } from "@/lib/exportes";
 import { BorradorRenta } from "@/components/fiscal/BorradorRenta";
+import { DocumentosFiscalesPro } from "@/components/fiscal/DocumentosFiscalesPro";
 import { actualizarNormativa, asesorContable, type MensajeContador } from "@/lib/contador-ia.functions";
 
 type Cuenta = Tables<"cuentas_contables">;
@@ -678,7 +679,18 @@ export function ContadorPro({ cuentas, filas }: { cuentas: Cuenta[]; filas: Asie
             gastos={libro.gastos}
             retenciones={Math.max(0, fiscal.retencionesAFavor)}
             nombre={negocio?.nombre ?? ""}
-            nit=""
+            nit={negocio?.nit ?? ""}
+          />
+
+          <DocumentosFiscalesPro
+            nombre={negocio?.nombre ?? ""}
+            nit={negocio?.nit ?? ""}
+            ciudad={negocio?.ciudad ?? ""}
+            cuentas={cuentas}
+            asientos={datosFiscales.asientos}
+            facturas={datosFiscales.facturas}
+            provs={datosFiscales.provs}
+            ownerId={duenoId}
           />
 
           <GlassPanel className="space-y-2 p-4">
