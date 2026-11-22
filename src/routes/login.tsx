@@ -355,13 +355,14 @@ function LoginPage() {
                     disabled={busy}
                     className="relative h-11 w-full overflow-hidden rounded-full text-sm font-medium text-white shadow-none hover:text-white"
                     style={{
+                      color: "#FFFFFF",
                       background:
                         "linear-gradient(160deg, oklch(0.22 0.01 270), oklch(0.14 0.01 270))",
                       boxShadow:
                         "inset 0 1px 0 oklch(1 0 0 / 0.08), inset 0 -1px 0 oklch(0 0 0 / 0.3)",
                     }}
                   >
-                    <span className="relative z-10">
+                    <span className="relative z-10" style={{ color: "#FFFFFF" }}>
                       {busy
                         ? "…"
                         : mode === "signin"
