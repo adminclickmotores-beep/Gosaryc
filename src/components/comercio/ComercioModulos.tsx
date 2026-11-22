@@ -15,6 +15,7 @@ import { CLASE_NIVEL, diasPara, nivelVence, textoVence, type NivelVence } from "
 import { escaparHtml, exportarExcel, imprimirReporte } from "@/lib/exportes";
 import { limpiarAtributos, perfilRetail } from "@/lib/retail-grupo1";
 import { ImportadorMasivo } from "@/components/comercio/ImportadorMasivo";
+import { ReabastecimientoAutomatico } from "@/components/comercio/ReabastecimientoAutomatico";
 import { EtiquetasBarras } from "@/components/comercio/EtiquetasBarras";
 import { SucursalesTraslados } from "@/components/negocio/SucursalesTraslados";
 
@@ -302,6 +303,7 @@ export function ProductosComercial() {
         </button>
       </div>
       <ImportadorMasivo alTerminar={recargar} />
+      <ReabastecimientoAutomatico productos={productos} />
       <EtiquetasBarras productos={productos} />
       <SucursalesTraslados />
       <GlassPanel className="space-y-3 p-5">
