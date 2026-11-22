@@ -28,7 +28,7 @@ export function EstadoSinConexion() {
   if (!montado || (enLinea && pendientes === 0)) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-50 flex justify-center px-3 md:bottom-4">
+    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+4.5rem+var(--barra-demo,0px))] z-50 flex justify-center px-3 md:bottom-[calc(1rem+var(--barra-demo,0px))]">
       <div className="pointer-events-auto flex max-w-full items-center gap-2 rounded-full border border-glass-border bg-background/90 px-4 py-2 text-xs text-foreground shadow-lg backdrop-blur-xl">
         {enLinea ? (
           <CloudUpload className="h-4 w-4 shrink-0 text-primary" />

@@ -437,7 +437,7 @@ function AppShell() {
 
         <CommandPalette />
 
-        <main className="flex-1 min-w-0 overflow-x-hidden pb-[calc(env(safe-area-inset-bottom)+5rem)] md:pb-0">
+        <main className="flex-1 min-w-0 overflow-x-hidden pb-[calc(env(safe-area-inset-bottom)+5rem+var(--barra-demo,0px))] md:pb-[var(--barra-demo,0px)]">
           {/* Mobile top bar */}
           <header className={`sticky top-0 z-30 ${completaFinal ? "hidden" : "flex"} items-center justify-between border-b border-glass-border bg-background/80 px-4 py-3 backdrop-blur-xl md:hidden`}>
             <Link to="/" className="flex items-center gap-2 text-foreground">

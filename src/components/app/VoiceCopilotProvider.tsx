@@ -288,7 +288,7 @@ export function VoiceCopilotProvider({ esAdmin, puede, modulos, tipoNegocio, rut
         onClick={alternar}
         aria-label={escuchando ? "Detener el copiloto de voz" : "Hablar con el copiloto de voz (Ctrl+Espacio)"}
         title="Copiloto de voz (Ctrl+Espacio)"
-        className={`fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] right-[max(0.75rem,env(safe-area-inset-right))] z-40 flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md ring-1 ring-glass-border transition hover:scale-105 hover:opacity-100 active:scale-95 md:bottom-6 md:right-6 md:h-12 md:w-12 ${escuchando ? "animate-pulse opacity-100" : abierto ? "opacity-100" : "opacity-70"}`}
+        className={`fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom)+var(--barra-demo,0px))] right-[max(0.75rem,env(safe-area-inset-right))] z-40 flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md ring-1 ring-glass-border transition hover:scale-105 hover:opacity-100 active:scale-95 md:bottom-[calc(1.5rem+var(--barra-demo,0px))] md:right-6 md:h-12 md:w-12 ${escuchando ? "animate-pulse opacity-100" : abierto ? "opacity-100" : "opacity-70"}`}
       >
         {escuchando ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
       </button>
@@ -297,7 +297,7 @@ export function VoiceCopilotProvider({ esAdmin, puede, modulos, tipoNegocio, rut
         <div
           role="dialog"
           aria-label="Copiloto de voz"
-          className="fixed inset-x-3 bottom-[calc(8rem+env(safe-area-inset-bottom))] z-50 mx-auto max-h-[min(60dvh,28rem)] w-auto max-w-lg overflow-y-auto overscroll-contain rounded-2xl border border-glass-border bg-background/95 p-3 shadow-2xl backdrop-blur-xl md:bottom-24 md:left-auto md:right-6 md:mx-0 md:w-96 md:p-4"
+          className="fixed inset-x-3 bottom-[calc(8rem+env(safe-area-inset-bottom)+var(--barra-demo,0px))] z-50 mx-auto max-h-[min(60dvh,28rem)] w-auto max-w-lg overflow-y-auto overscroll-contain rounded-2xl border border-glass-border bg-background/95 p-3 shadow-2xl backdrop-blur-xl md:bottom-[calc(6rem+var(--barra-demo,0px))] md:left-auto md:right-6 md:mx-0 md:w-96 md:p-4"
         >
           <div className="flex items-center justify-between gap-2">
             <p className="flex items-center gap-2 text-sm font-medium text-foreground">
