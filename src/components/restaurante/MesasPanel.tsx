@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { GlassPanel } from "@/components/ui-custom/GlassPanel";
+import { VisualFloorMap } from "@/components/ui-custom/VisualFloorMap";
 
 type Mesa = Tables<"restaurante_mesas">;
 
@@ -78,10 +79,22 @@ export function MesasPanel() {
         </button>
       </GlassPanel>
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         {cargando && <p className="text-sm text-muted-foreground">Cargando mesas…</p>}
         {!cargando && mesas.length === 0 && (
           <p className="text-sm text-muted-foreground">Aún no tienes mesas. Agrega la primera con el formulario.</p>
+        )}
+        {mesas.length > 0 && (
+          <GlassPanel className="p-4">
+            <p className="mb-3 text-xs text-muted-foreground">Toca una mesa para cambiar su estado: libre, ocupada y por cobrar.</p>
+            <VisualFloorMap
+              espacios={mesas.map((m) => ({ id: m.id, etiqueta: m.numero, capacidad: m.capacidad, estado: m.estado }))}
+              onSeleccionar={(e) => {
+                const m = mesas.find((x) => x.id === e.id);
+                if (m) cambiarEstado(m, SIGUIENTE_ESTADO[m.estado] ?? "libre");
+              }}
+            />
+          </GlassPanel>
         )}
         {mesas.map((m) => (
           <GlassPanel key={m.id} className="flex flex-wrap items-center gap-3 p-4">
