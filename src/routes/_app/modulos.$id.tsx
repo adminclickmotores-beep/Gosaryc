@@ -27,6 +27,8 @@ import {
 } from "@/components/clinica/ClinicaModulos";
 import { PosComercial, ProductosComercial } from "@/components/comercio/ComercioModulos";
 import { SerialesGarantia } from "@/components/comercio/SerialesGarantia";
+import { ProductosInteligentes } from "@/components/comercio/PreciosInteligentes";
+import { TasadorMercado } from "@/components/vehiculos/TasadorMercado";
 import { CotizadorFerreteria,DespostesFrescos, LotesComercial } from "@/components/comercio/ComercioEspecial";
 import { AgendaBelleza, ComisionesBelleza, FichasBelleza, ServiciosBelleza } from "@/components/belleza/BellezaModulos";
 import { CheckinGimnasio, PlanesGimnasio, SociosGimnasio, ValoracionGimnasio } from "@/components/gimnasio/GimnasioModulos";
@@ -154,7 +156,7 @@ function ModuloPage() {
   if (id === "encargos_tortas") return <EncargosPan />;
   if (id === "pan_turnos") return <TurnosPan />;
   if (id === "com_pos") return <PosComercial />;
-  if (id === "com_productos") return <ProductosComercial />;
+  if (id === "com_productos") return <ProductosInteligentes productos={<ProductosComercial />} />;
   if (id === "com_lotes") return <LotesComercial />;
   if (id === "com_seriales") return <SerialesGarantia />;
   if (id === "com_cotizador") return <CotizadorFerreteria />;
@@ -272,6 +274,17 @@ function ModuloPage() {
   if (id === "facturas" || id.startsWith("facturas_")) return (<Suspense fallback={<CargaModulo texto="Cargando facturación…" />}><FacturaFiscalLazy /></Suspense>);
   return <ModuloOperativo id={id} />;
   })();
+
+  // Tasador de mercado en vivo: concesionario (inventario, retomas, compras) y compraventa/empeño.
+  const CON_TASADOR = ["vehiculos", "vehiculos_usados", "compras_veh", "consignaciones_veh", "empenos_cv", "articulos_cv", "compras_cv"];
+  if (CON_TASADOR.includes(id)) {
+    return (
+      <>
+        <TasadorMercado abierto={id === "vehiculos_usados"} />
+        {contenido}
+      </>
+    );
+  }
 
   // Consultor de empresa por NIT: solo en la ficha de clientes corporativos / cotizaciones de los rubros B2B.
   if (mostrarConsultorNIT(tipo.clave, id)) {

@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { CrmEmbudo } from "@/components/crm/CrmEmbudo";
+import { TasadorMercado } from "@/components/vehiculos/TasadorMercado";
 import { useNegocio } from "@/hooks/use-negocio";
 import { resolverTipoNegocio, CRM_AUTOMATICO } from "@/lib/modulos-negocio";
 
@@ -21,5 +22,11 @@ function CrmEmbudoRuta() {
   }, [negocio, permitido, nav]);
 
   if (!negocio || !permitido) return null;
-  return <CrmEmbudo />;
+  const vende = tipo.clave === "concesionario" || tipo.clave === "compraventa";
+  return (
+    <>
+      {vende && <TasadorMercado />}
+      <CrmEmbudo />
+    </>
+  );
 }
