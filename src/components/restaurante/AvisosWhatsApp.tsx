@@ -54,6 +54,7 @@ export function AvisosWhatsApp() {
       </div>
       <p className="text-xs text-muted-foreground">
         Elige una plantilla o escribe tu aviso. Se envía desde el WhatsApp de tu negocio a través del PC local.
+        Cuando un pedido pasa a «listo», el aviso al cliente se programa solo.
       </p>
       <div className="flex flex-wrap gap-2">
         {PLANTILLAS.map((p) => (
