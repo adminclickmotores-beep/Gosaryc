@@ -65,6 +65,8 @@ function LoginPage() {
     if (m.includes("email not confirmed")) return "Debes confirmar tu correo antes de entrar. Revisa tu bandeja y el spam.";
     if (m.includes("signups not allowed") || m.includes("signup is disabled") || m.includes("signups are disabled"))
       return "El registro de cuentas nuevas está desactivado en este momento.";
+    if (m.includes("failed to fetch") || m.includes("networkerror") || m.includes("load failed"))
+      return "No se pudo conectar con el servidor. Revisa tu internet e inténtalo de nuevo en unos segundos.";
     if (m.includes("rate limit")) return "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.";
     if (m.includes("at least 6")) return "La contraseña debe tener mínimo 6 caracteres.";
     return msg;
@@ -351,7 +353,7 @@ function LoginPage() {
                   <Button
                     type="submit"
                     disabled={busy}
-                    className="relative h-11 w-full overflow-hidden rounded-full text-sm font-medium text-foreground shadow-none hover:text-foreground"
+                    className="relative h-11 w-full overflow-hidden rounded-full text-sm font-medium text-white shadow-none hover:text-white"
                     style={{
                       background:
                         "linear-gradient(160deg, oklch(0.22 0.01 270), oklch(0.14 0.01 270))",
