@@ -117,6 +117,75 @@ export type Database = {
           },
         ]
       }
+      whatsapp_meta_config: {
+        Row: {
+          id: string
+          business_id: string
+          owner_id: string
+          meta_phone_number_id: string
+          meta_access_token: string
+          meta_verify_token: string
+          meta_app_secret: string
+          activo: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          business_id: string
+          owner_id: string
+          meta_phone_number_id: string
+          meta_access_token?: string
+          meta_verify_token: string
+          meta_app_secret?: string
+          activo?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          business_id?: string
+          owner_id?: string
+          meta_phone_number_id?: string
+          meta_access_token?: string
+          meta_verify_token?: string
+          meta_app_secret?: string
+          activo?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      whatsapp_meta_historial: {
+        Row: {
+          id: string
+          business_id: string
+          telefono: string
+          rol: string
+          contenido: string
+          wa_message_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          business_id: string
+          telefono: string
+          rol: string
+          contenido?: string
+          wa_message_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          business_id?: string
+          telefono?: string
+          rol?: string
+          contenido?: string
+          wa_message_id?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       whatsapp_comandos_autorizados: {
         Row: {
           id: string
@@ -9269,6 +9338,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      meta_guardar_config: { Args: { p_phone_number_id: string; p_access_token: string; p_verify_token: string; p_app_secret: string; p_activo: boolean }; Returns: Json }
+      meta_estado_config: { Args: never; Returns: Json }
       registro_es_del_negocio: { Args: { p_tabla: string; p_id: string; p_owner: string }; Returns: boolean }
       tal_agregar_repuesto: { Args: { p_orden: string; p_repuesto: string; p_cantidad: number }; Returns: Json }
       tal_cobrar_orden: { Args: { p_orden: string; p_metodo: string }; Returns: Json }

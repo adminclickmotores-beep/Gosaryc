@@ -105,6 +105,10 @@ function leerJson(texto: string): Entidades | null {
 }
 
 /** Transcribe una nota de voz con Gemini (solo si hay llave de Gemini). */
+export async function transcribirAudio(audio: ArchivoComando): Promise<string> {
+  return transcribir(audio);
+}
+
 async function transcribir(audio: ArchivoComando): Promise<string> {
   const llave = process.env.GEMINI_API_KEY;
   if (!llave) return "";
