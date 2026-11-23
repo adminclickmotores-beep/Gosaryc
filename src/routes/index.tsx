@@ -6,8 +6,9 @@ import {
   UtensilsCrossed, ChefHat, Bike, Boxes, Wallet, Download, ArrowRight, Check, Users, Receipt, BarChart3,
   TrendingUp, FileText, Gift, CalendarDays, Bot, MessageCircle, Brain, Headphones, X, Search, Sun, Moon,
   Car, Calculator, ChevronDown, ShieldCheck, Smartphone, WifiOff, CheckCheck, QrCode, Wrench, BadgeCheck,
-  Banknote, Radio, Mic,
+  Banknote, Radio, Mic, Languages,
 } from "lucide-react";
+import { useIdioma } from "@/lib/idioma";
 import { SECTORES, buscarSector } from "@/lib/sectores";
 import { useAuth } from "@/contexts/AuthContext";
 import { BRAND } from "@/lib/brand";
@@ -406,6 +407,7 @@ function MiniNomina() {
 
 function LandingPage() {
   const { session } = useAuth();
+  const { idioma, cambiarIdioma, t } = useIdioma();
   const [fichaModulo, setFichaModulo] = useState<Modulo | null>(null);
   const [oscuro, setOscuro] = useState<boolean>(false);
 
@@ -451,20 +453,30 @@ function LandingPage() {
             <span className="gs-titulo truncate text-xl">{BRAND.name}</span>
           </Link>
           <nav className="gs-muted hidden items-center gap-1 text-sm font-medium lg:flex" aria-label="Principal">
-            <a href="#sectores" className="rounded-full px-3 py-2 hover:opacity-80">Soluciones por Sector</a>
-            <a href="#conocer" className="rounded-full px-3 py-2 hover:opacity-80">CRM Inteligente</a>
-            <a href="#crm-ia" className="rounded-full px-3 py-2 hover:opacity-80">WhatsApp IA 24/7</a>
-            <Link to="/demo" className="rounded-full px-3 py-2 hover:opacity-80">Demostración en Vivo</Link>
+            <a href="#sectores" className="rounded-full px-3 py-2 hover:opacity-80">{t("nav_sectores")}</a>
+            <a href="#conocer" className="rounded-full px-3 py-2 hover:opacity-80">{t("nav_crm")}</a>
+            <a href="#crm-ia" className="rounded-full px-3 py-2 hover:opacity-80">{t("nav_whatsapp")}</a>
+            <Link to="/demo" className="rounded-full px-3 py-2 hover:opacity-80">{t("nav_demo")}</Link>
           </nav>
           <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={() => cambiarIdioma(idioma === "es" ? "en" : "es")}
+              aria-label={t("idioma_cambiar")}
+              title={t("idioma_cambiar")}
+              className="gs-sec inline-flex h-10 items-center gap-1.5 rounded-full px-3 text-xs font-bold"
+            >
+              <Languages className="h-4 w-4" />
+              <span>{idioma === "es" ? "EN" : "ES"}</span>
+            </button>
             <button type="button" onClick={cambiarTema} aria-label={oscuro ? "Activar modo claro" : "Activar modo oscuro"} className="gs-sec grid h-10 w-10 place-items-center rounded-full">
               {oscuro ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
-            <Link to="/instalar" className="gs-muted hidden rounded-full px-4 py-2 text-sm font-medium sm:inline-flex">Descargar app</Link>
+            <Link to="/instalar" className="gs-muted hidden rounded-full px-4 py-2 text-sm font-medium sm:inline-flex">{t("descargar_app")}</Link>
             {session ? (
-              <Link to="/restaurante" className="gs-cta inline-flex rounded-full px-5 py-2.5 text-sm">Ir a mi panel</Link>
+              <Link to="/restaurante" className="gs-cta inline-flex rounded-full px-5 py-2.5 text-sm">{t("ir_panel")}</Link>
             ) : (
-              <Link to="/login" search={{ mode: "signin" }} className="gs-cta-esm inline-flex rounded-full px-5 py-2.5 text-sm">Iniciar sesión</Link>
+              <Link to="/login" search={{ mode: "signin" }} className="gs-cta-esm inline-flex rounded-full px-5 py-2.5 text-sm">{t("iniciar_sesion")}</Link>
             )}
           </div>
         </div>
@@ -479,17 +491,17 @@ function LandingPage() {
               Multiplataforma • Web, Android y PC • +48 Sectores en Colombia
             </p>
             <h1 className="gs-titulo gs-grad-titulo mt-6 break-words pb-1 text-4xl leading-[1.05] sm:text-6xl">
-              Controla cada peso, cada venta y cada turno de tu negocio.
+              {t("hero_titulo")}
             </h1>
             <p className="gs-muted mt-6 max-w-xl text-base leading-relaxed sm:text-lg">
               El sistema POS y administrativo todo-en-uno para restaurantes, compraventas, talleres, tiendas y +50 sectores en Colombia. Escanea códigos de barras con tu celular o pistola, imprime tirillas térmicas 58mm/80mm y comandas, factura con la DIAN, liquida nómina legal y vende 24/7 con Agente WhatsApp IA + CRM y bandeja PQRS, incluso sin internet.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link to="/demo" className="gs-cta-esm inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm">
-                Probar Demo Interactiva <ArrowRight className="h-4 w-4" />
+                {t("hero_probar_demo")} <ArrowRight className="h-4 w-4" />
               </Link>
               <Link to="/login" search={{ mode: "signup" }} className="gs-cristal inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-bold">
-                Crear Cuenta / 30 Días Gratis
+                {t("hero_crear_cuenta")}
               </Link>
               <Link to="/instalar" className="gs-cristal inline-flex items-center justify-center gap-2 rounded-full px-5 py-3.5 text-sm sm:hidden">
                 <Download className="h-4 w-4" /> Descargar App
@@ -731,7 +743,7 @@ function LandingPage() {
         <Aparece className="mt-24">
           <section id="acceso" className="gs-final relative overflow-hidden rounded-[2rem] p-8 text-center text-white sm:p-14">
             <div className="pointer-events-none absolute -top-24 left-1/2 h-48 w-96 -translate-x-1/2 rounded-full bg-blue-500/30 blur-3xl" />
-            <h2 className="gs-titulo relative text-3xl sm:text-5xl">Lleva tu negocio al siguiente nivel</h2>
+            <h2 className="gs-titulo relative text-3xl sm:text-5xl">{t("banner_titulo")}</h2>
             <p className="relative mx-auto mt-4 max-w-xl text-sm text-slate-300 sm:text-base">
               Crea tu cuenta con 30 días de prueba sin compromiso y activa los módulos de tu tipo de negocio, con tus colores y tu logo. Tus datos se conservan siempre, incluso al actualizar.
             </p>
@@ -742,10 +754,10 @@ function LandingPage() {
             </ul>
             <div className="relative mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Link to="/login" search={{ mode: "signup" }} className="inline-flex items-center justify-center gap-2 rounded-full bg-[#10B981] px-10 py-4 text-base font-bold text-white transition hover:brightness-110">
-                Empezar 30 días gratis <ArrowRight className="h-5 w-5" />
+                {t("banner_empezar")} <ArrowRight className="h-5 w-5" />
               </Link>
               <Link to="/login" search={{ mode: "signin" }} className="inline-flex items-center justify-center gap-2 rounded-full border border-white/25 px-8 py-4 text-sm font-semibold text-white transition hover:bg-white/10">
-                Ya tengo cuenta: iniciar sesión
+                {t("banner_ya_tengo")}
               </Link>
             </div>
             <p className="relative mt-6 inline-flex items-center gap-2 text-xs text-slate-400"><Smartphone className="h-3.5 w-3.5" /> Instálala como app desde <Link to="/instalar" className="underline">Descargar app</Link></p>
@@ -754,7 +766,7 @@ function LandingPage() {
 
         <footer className="mt-16 space-y-1 border-t pt-6 pb-4 text-center text-xs" style={{ borderColor: "var(--gs-borde)" }}>
           <p className="gs-muted">© 2026 {BRAND.name} · Diseñado y creado por Jhonathan Gonzalez Cortes</p>
-          <p className="gs-muted">Prohibida su distribución.</p>
+          <p className="gs-muted">{t("footer_prohibida")}</p>
         </footer>
       </main>
     </div>

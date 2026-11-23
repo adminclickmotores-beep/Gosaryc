@@ -15,6 +15,7 @@ import { SmoothScroll } from "@/components/ui-custom/SmoothScroll";
 import { LicenciaEscritorio } from "@/components/app/LicenciaEscritorio";
 import { AvisoActualizacion } from "@/components/app/AvisoActualizacion";
 import { BRAND } from "@/lib/brand";
+import { IdiomaProvider } from "@/lib/idioma";
 
 import appCss from "../styles.css?url";
 
@@ -227,6 +228,7 @@ function RootComponent() {
     };
   }, []);
   return (
+    <IdiomaProvider>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <SmoothScroll />
@@ -241,5 +243,6 @@ function RootComponent() {
         />
       </AuthProvider>
     </QueryClientProvider>
+    </IdiomaProvider>
   );
 }
