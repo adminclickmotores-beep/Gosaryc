@@ -22,16 +22,49 @@ if (!url || url.startsWith("--")) {
 }
 const dir = path.join(__dirname, "..", "supabase", "migrations");
 
+const os = require("os");
+const usaPsql = !spawnSync("psql", ["--version"], { encoding: "utf8", shell: process.platform === "win32" }).error
+  && spawnSync("psql", ["--version"], { encoding: "utf8", shell: process.platform === "win32" }).status === 0;
+console.log(usaPsql ? "Usando psql." : "psql no esta instalado: usando npx supabase db query.");
+
+// Ejecuta SQL con psql o, si no existe, con `npx supabase db query` (archivo temporal).
+function ejecutarSql(texto) {
+  if (usaPsql) {
+    return spawnSync("psql", [url, "-v", "ON_ERROR_STOP=1", "-q"], { encoding: "utf8", input: texto });
+  }
+  const tmp = path.join(os.tmpdir(), `mig-${process.pid}-${Date.now()}.sql`);
+  fs.writeFileSync(tmp, texto);
+  try {
+    return spawnSync("npx", ["--yes", "supabase", "db", "query", "--db-url", url, "-f", tmp], {
+      encoding: "utf8", shell: process.platform === "win32",
+    });
+  } finally {
+    try { fs.unlinkSync(tmp); } catch (_) { /* ignorar */ }
+  }
+}
 function psql(args, input) {
-  return spawnSync("psql", [url, "-v", "ON_ERROR_STOP=1", "-q", ...args], { encoding: "utf8", input });
+  // Consulta de lectura: devuelve las filas como texto (una por linea).
+  if (usaPsql) return spawnSync("psql", [url, "-v", "ON_ERROR_STOP=1", "-q", ...args], { encoding: "utf8", input });
+  const consulta = args[args.length - 1];
+  const r = ejecutarSql(consulta);
+  const filas = [];
+  try {
+    const j = JSON.parse(r.stdout);
+    const lista = Array.isArray(j) ? j : j.rows || j.result || [];
+    lista.forEach((x) => filas.push(Object.values(x)[0]));
+    r.stdout = filas.join("\n");
+  } catch (_) {
+    r.stdout = (r.stdout || "").split("\n").filter((l) => /^\d{6,}$/.test(l.trim())).join("\n");
+  }
+  return r;
 }
 function sql(texto) {
-  return psql([], texto);
+  return ejecutarSql(texto);
 }
 
-const prueba = psql(["-c", "select 1"]);
+const prueba = ejecutarSql("select 1");
 if (prueba.error || prueba.status !== 0) {
-  console.error("No se pudo conectar con psql:", prueba.error ? prueba.error.message : prueba.stderr);
+  console.error("No se pudo conectar:", prueba.error ? prueba.error.message : prueba.stderr);
   process.exit(1);
 }
 
