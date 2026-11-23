@@ -554,16 +554,25 @@ function LandingPage() {
             <Link to="/demo" className="rounded-full px-3 py-2 hover:opacity-80">{tx("Demostración en Vivo", "Live Demo")}</Link>
           </nav>
           <div className="flex shrink-0 items-center gap-2">
-            <button
-              type="button"
-              onClick={() => cambiarIdioma(idioma === "es" ? "en" : "es")}
+            <div
+              role="group"
               aria-label={tx("Cambiar idioma", "Change language")}
-              title={tx("Cambiar idioma", "Change language")}
-              className="gs-sec inline-flex h-10 items-center gap-1.5 rounded-full px-3 text-xs font-bold"
+              className="gs-sec inline-flex h-10 items-center gap-1 rounded-full px-2 text-xs font-bold"
             >
               <Languages className="h-4 w-4" />
-              <span>{idioma === "es" ? "EN" : "ES"}</span>
-            </button>
+              {(["es", "en"] as const).map((cod) => (
+                <button
+                  key={cod}
+                  type="button"
+                  onClick={() => cambiarIdioma(cod)}
+                  aria-pressed={idioma === cod}
+                  title={cod === "es" ? "Español" : "English"}
+                  className={`rounded-full px-2 py-1 ${idioma === cod ? "gs-cta" : "opacity-60 hover:opacity-100"}`}
+                >
+                  {cod.toUpperCase()}
+                </button>
+              ))}
+            </div>
             <button type="button" onClick={cambiarTema} aria-label={oscuro ? tx("Activar modo claro", "Switch to light mode") : tx("Activar modo oscuro", "Switch to dark mode")} className="gs-sec grid h-10 w-10 place-items-center rounded-full">
               {oscuro ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
