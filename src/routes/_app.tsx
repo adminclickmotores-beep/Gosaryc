@@ -34,6 +34,7 @@ import { SelectorNegocioInstalacion } from "@/components/app/SelectorNegocioInst
 import { EVENTO_PERFIL, PERFIL_MULTI, esAppInstalada, leerPerfilEquipo } from "@/lib/perfil-equipo";
 import { evaluarVigenciaLicencia, guardarTokenLicenciaOffline, leerTokenLicenciaOffline } from "@/lib/licencia-offline";
 import { BRAND } from "@/lib/brand";
+import { useTx } from "@/lib/idioma";
 import { useNegocio } from "@/hooks/use-negocio";
 import { usePermisos } from "@/hooks/use-permisos";
 import { useAnunciarPresencia } from "@/hooks/use-presencia";
@@ -58,6 +59,7 @@ type NavItem = {
 
 function AppShell() {
   const { session, loading, user } = useAuth();
+  const tx = useTx();
   const loc = useLocation();
   const nav = useNavigate();
   const completa = (loc.search as Record<string, unknown> | undefined)?.ventana === "completa";
@@ -321,7 +323,9 @@ function AppShell() {
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
             </span>
             <span className="font-display tracking-wide">
-              {loading ? `Iniciando ${BRAND.name}` : "Redirigiendo al inicio de sesión"}
+              {loading
+                ? tx(`Iniciando ${BRAND.name}`, `Starting ${BRAND.name}`)
+                : tx("Redirigiendo al inicio de sesión", "Redirecting to sign in")}
             </span>
           </div>
         </motion.div>
@@ -349,7 +353,7 @@ function AppShell() {
             {!collapsed && (
               <button
                 onClick={() => setCollapsed(true)}
-                aria-label="Contraer menú lateral"
+                aria-label={tx("Contraer menú lateral", "Collapse side menu")}
                 className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition hover:bg-glass/60 hover:text-foreground"
               >
                 <IconChevronLeft size={16} />
@@ -360,7 +364,7 @@ function AppShell() {
             <div className="px-2 pb-2">
               <button
                 onClick={() => setCollapsed(false)}
-                aria-label="Expandir menú lateral"
+                aria-label={tx("Expandir menú lateral", "Expand side menu")}
                 className="inline-flex h-7 w-full items-center justify-center rounded-md text-muted-foreground transition hover:bg-glass/60 hover:text-foreground"
               >
                 <IconChevronRight size={16} />
@@ -403,7 +407,7 @@ function AppShell() {
               <Link
                 to="/asistente-virtual"
                 preload="render"
-                title={collapsed ? "Agente virtual" : undefined}
+                title={collapsed ? tx("Agente virtual", "Virtual agent") : undefined}
                 className={`flex items-center ${collapsed ? "justify-center px-0" : "gap-3 px-3"} rounded-xl py-2.5 text-sm transition-colors ${
                   loc.pathname.startsWith("/asistente-virtual")
                     ? "bg-glass text-foreground"
@@ -411,12 +415,12 @@ function AppShell() {
                 }`}
               >
                 <IconSpark size={18} />
-                {!collapsed && <span>Agente virtual</span>}
+                {!collapsed && <span>{tx("Agente virtual", "Virtual agent")}</span>}
               </Link>
               <Link
                 to={"/academia" as never}
                 preload="render"
-                title={collapsed ? "Academia" : undefined}
+                title={collapsed ? tx("Academia", "Academy") : undefined}
                 className={`flex items-center ${collapsed ? "justify-center px-0" : "gap-3 px-3"} rounded-xl py-2.5 text-sm transition-colors ${
                   loc.pathname.startsWith("/academia")
                     ? "bg-glass text-foreground"
@@ -424,12 +428,12 @@ function AppShell() {
                 }`}
               >
                 <GraduationCap size={18} />
-                {!collapsed && <span>Academia</span>}
+                {!collapsed && <span>{tx("Academia", "Academy")}</span>}
               </Link>
               <Link
                 to={"/soporte" as never}
                 preload="render"
-                title={collapsed ? "Soporte" : undefined}
+                title={collapsed ? tx("Soporte", "Support") : undefined}
                 className={`flex items-center ${collapsed ? "justify-center px-0" : "gap-3 px-3"} rounded-xl py-2.5 text-sm transition-colors ${
                   loc.pathname.startsWith("/soporte")
                     ? "bg-glass text-foreground"
@@ -437,12 +441,12 @@ function AppShell() {
                 }`}
               >
                 <LifeBuoy size={18} />
-                {!collapsed && <span>Soporte</span>}
+                {!collapsed && <span>{tx("Soporte", "Support")}</span>}
               </Link>
               <Link
                 to="/settings"
                 preload="render"
-                title={collapsed ? "Configuración" : undefined}
+                title={collapsed ? tx("Configuración", "Settings") : undefined}
                 data-tour="nav-settings"
                 className={`flex items-center ${collapsed ? "justify-center px-0" : "gap-3 px-3"} rounded-xl py-2.5 text-sm transition-colors ${
                   loc.pathname.startsWith("/settings")
@@ -451,7 +455,7 @@ function AppShell() {
                 }`}
               >
                 <IconSettings size={18} />
-                {!collapsed && <span>Configuración</span>}
+                {!collapsed && <span>{tx("Configuración", "Settings")}</span>}
               </Link>
             </div>
           </nav>
@@ -473,10 +477,10 @@ function AppShell() {
                 window.dispatchEvent(ev);
               }}
               className="inline-flex items-center gap-2 rounded-lg border border-glass-border bg-glass/40 px-2.5 py-1.5 text-xs text-muted-foreground"
-              aria-label="Abrir búsqueda"
+              aria-label={tx("Abrir búsqueda", "Open search")}
             >
               <IconCommand size={14} />
-              <span>Buscar</span>
+              <span>{tx("Buscar", "Search")}</span>
             </button>
           </div>
           </header>
@@ -488,7 +492,7 @@ function AppShell() {
                 className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-glass-border bg-background/80 px-3 py-1.5 text-sm text-foreground backdrop-blur-xl transition hover:bg-glass/60"
               >
                 <IconChevronLeft size={16} />
-                <span>Menú de inicio</span>
+                <span>{tx("Menú de inicio", "Home menu")}</span>
               </Link>
             </div>
           )}
@@ -590,6 +594,7 @@ function AppShell() {
  *  ⌘K abre la búsqueda completa. */
 function SidebarSearch({ items }: { items: NavItem[] }) {
   const navigate = useNavigate();
+  const tx = useTx();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
 
@@ -627,7 +632,7 @@ function SidebarSearch({ items }: { items: NavItem[] }) {
               (e.target as HTMLInputElement).blur();
             }
           }}
-          placeholder="Buscar módulo…"
+          placeholder={tx("Buscar módulo…", "Search module…")}
           className="w-full bg-transparent outline-none placeholder:text-muted-foreground/60"
         />
         <kbd className="hidden rounded bg-muted px-1 py-0.5 font-mono text-[10px] text-muted-foreground/70 md:inline">
@@ -644,7 +649,7 @@ function SidebarSearch({ items }: { items: NavItem[] }) {
             className="absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-auto rounded-lg border border-glass-border bg-popover/95 p-1 shadow-lg backdrop-blur-xl"
           >
             {hits.length === 0 ? (
-              <div className="px-3 py-2 text-xs text-muted-foreground">Sin resultados</div>
+              <div className="px-3 py-2 text-xs text-muted-foreground">{tx("Sin resultados", "No results")}</div>
             ) : (
               hits.map((h) => (
                 <button

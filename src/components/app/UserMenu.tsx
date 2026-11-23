@@ -13,6 +13,7 @@ import {
 import { IconLogout, IconSettings } from "@/components/ui-custom/CustomIcon";
 import { KeyRound } from "lucide-react";
 import { esSuperadminServidor } from "@/lib/cuenta-maestra";
+import { useTx } from "@/lib/idioma";
 
 function initialsFor(name: string | null | undefined, email: string | null | undefined) {
   const source = (name || "").trim();
@@ -32,6 +33,7 @@ function initialsFor(name: string | null | undefined, email: string | null | und
 export function UserMenu() {
   const { user, signOut } = useAuth();
   const nav = useNavigate();
+  const tx = useTx();
   const userId = user?.id ?? null;
   const cacheKey = useMemo(() => (userId ? `um:name:${userId}` : null), [userId]);
   const [fullName, setFullName] = useState<string | null>(() => {
@@ -89,7 +91,7 @@ export function UserMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          aria-label="Menú de la cuenta"
+          aria-label={tx("Menú de la cuenta", "Account menu")}
           className="group inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-glass-border bg-glass/50 py-1 pl-1 pr-2 text-xs text-muted-foreground backdrop-blur-xl transition hover:border-primary/30 hover:text-foreground md:pr-3"
         >
           <span
@@ -116,14 +118,14 @@ export function UserMenu() {
         <DropdownMenuItem asChild className="cursor-pointer">
           <Link to="/settings" className="flex items-center gap-2">
             <IconSettings size={14} />
-            <span>Configuración</span>
+            <span>{tx("Configuración", "Settings")}</span>
           </Link>
         </DropdownMenuItem>
         {esAdminPlataforma && (
           <DropdownMenuItem asChild className="cursor-pointer">
             <Link to={"/licencias" as never} className="flex items-center gap-2">
               <KeyRound size={14} />
-              <span>Generador de licencias</span>
+              <span>{tx("Generador de licencias", "License generator")}</span>
             </Link>
           </DropdownMenuItem>
         )}
@@ -137,7 +139,7 @@ export function UserMenu() {
           className="cursor-pointer text-destructive focus:text-destructive"
         >
           <IconLogout size={14} />
-          <span>Cerrar sesión</span>
+          <span>{tx("Cerrar sesión", "Sign out")}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

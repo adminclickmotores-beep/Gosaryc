@@ -103,3 +103,9 @@ export function IdiomaProvider({ children }: { children: ReactNode }) {
 export function useIdioma(): ValorIdioma {
   return useContext(IdiomaContext) ?? valorPorDefecto;
 }
+
+/** Devuelve el texto en español o inglés según el idioma elegido. */
+export function useTx(): (es: string, en: string) => string {
+  const { idioma } = useIdioma();
+  return (es: string, en: string) => (idioma === "en" ? en : es);
+}
