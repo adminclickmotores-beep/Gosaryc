@@ -1,0 +1,5 @@
+project_id = "upqtualahrhosyqretde"
+
+# Meta no envía JWT de Supabase: el webhook se protege con el token de verificación y la firma de la app.
+[functions.whatsapp-meta-webhook]
+verify_jwt = false
