@@ -35,7 +35,7 @@ function ejecutarSql(texto) {
   const tmp = path.join(os.tmpdir(), `mig-${process.pid}-${Date.now()}.sql`);
   fs.writeFileSync(tmp, texto);
   try {
-    return spawnSync("npx", ["--yes", "supabase", "db", "query", "--db-url", url, "-f", tmp], {
+    return spawnSync("npx", ["--yes", "supabase", "db","query","--yes", "--remote", url, "-f", tmp], {
       encoding: "utf8", shell: process.platform === "win32",
     });
   } finally {
